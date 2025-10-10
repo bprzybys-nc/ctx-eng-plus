@@ -67,6 +67,18 @@ graph TB
     I -->|Pass| J["Production Code"]
     I -->|Fail| K["Self-Correction Loop"]
     K --> H
+
+    style A fill:#e3f2fd,color:#000
+    style B fill:#fff3e0,color:#000
+    style C fill:#e8f5e9,color:#000
+    style D fill:#f3e5f5,color:#000
+    style E fill:#ffe0b2,color:#000
+    style F fill:#b2ebf2,color:#000
+    style G fill:#ffecb3,color:#000
+    style H fill:#fff8e1,color:#000
+    style I fill:#fce4ec,color:#000
+    style J fill:#c8e6c9,color:#000
+    style K fill:#ffccbc,color:#000
 ```
 
 **Selection Decision Criteria:**
@@ -248,6 +260,18 @@ graph LR
 
     J -->|Success| K["Production<br/>Deployment"]
     J -->|Retry| G
+
+    style A fill:#e3f2fd,color:#000
+    style B fill:#fff8e1,color:#000
+    style C fill:#f3e5f5,color:#000
+    style D fill:#e8f5e9,color:#000
+    style E fill:#ffe0b2,color:#000
+    style F fill:#ffecb3,color:#000
+    style G fill:#b2ebf2,color:#000
+    style H fill:#c8e6c9,color:#000
+    style I fill:#fce4ec,color:#000
+    style J fill:#fff3e0,color:#000
+    style K fill:#a5d6a7,color:#000
 ```
 
 **Layer 1: Context Engineering Stack**
@@ -364,6 +388,27 @@ graph TD
     S --> I
 
     O --> T["Production Ready"]
+
+    style A fill:#e3f2fd,color:#000
+    style B fill:#fff8e1,color:#000
+    style C fill:#ffe0b2,color:#000
+    style D fill:#f3e5f5,color:#000
+    style E fill:#ffcdd2,color:#000
+    style F fill:#b2ebf2,color:#000
+    style G fill:#ffccbc,color:#000
+    style H fill:#ffecb3,color:#000
+    style I fill:#e1bee7,color:#000
+    style J fill:#ffab91,color:#000
+    style K fill:#fff59d,color:#000
+    style L fill:#90caf9,color:#000
+    style M fill:#ef9a9a,color:#000
+    style N fill:#b39ddb,color:#000
+    style O fill:#81c784,color:#000
+    style P fill:#ffcc80,color:#000
+    style Q fill:#64b5f6,color:#000
+    style R fill:#ce93d8,color:#000
+    style S fill:#dcedc8,color:#000
+    style T fill:#a5d6a7,color:#000
 ```
 
 **Three-Level Gate System:**
@@ -440,6 +485,23 @@ graph TD
 
     J --> O["GitHub MCP<br/>Create PR"]
     O --> P["Production"]
+
+    style A fill:#e3f2fd,color:#000
+    style B fill:#fff3e0,color:#000
+    style C fill:#e8f5e9,color:#000
+    style D fill:#f3e5f5,color:#000
+    style E fill:#ffe0b2,color:#000
+    style F fill:#c8e6c9,color:#000
+    style G fill:#b2ebf2,color:#000
+    style H fill:#ffccbc,color:#000
+    style I fill:#fff8e1,color:#000
+    style J fill:#a5d6a7,color:#000
+    style K fill:#ffecb3,color:#000
+    style L fill:#e1bee7,color:#000
+    style M fill:#b39ddb,color:#000
+    style N fill:#90caf9,color:#000
+    style O fill:#81c784,color:#000
+    style P fill:#64b5f6,color:#000
 ```
 
 **Complexity Scoring:**

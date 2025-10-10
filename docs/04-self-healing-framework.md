@@ -63,6 +63,31 @@ graph TB
         W --> D
         X --> F
     end
+
+    style A fill:#e3f2fd,color:#000
+    style B fill:#fff8e1,color:#000
+    style C fill:#f3e5f5,color:#000
+    style D fill:#b2ebf2,color:#000
+    style E fill:#ffe0b2,color:#000
+    style F fill:#e1bee7,color:#000
+    style G fill:#fff3e0,color:#000
+    style H fill:#ffecb3,color:#000
+    style I fill:#c8e6c9,color:#000
+    style J fill:#b39ddb,color:#000
+    style K fill:#fff59d,color:#000
+    style L fill:#90caf9,color:#000
+    style M fill:#ffccbc,color:#000
+    style N fill:#ffab91,color:#000
+    style O fill:#ef9a9a,color:#000
+    style P fill:#dcedc8,color:#000
+    style Q fill:#81c784,color:#000
+    style R fill:#64b5f6,color:#000
+    style S fill:#a5d6a7,color:#000
+    style T fill:#ce93d8,color:#000
+    style U fill:#ffcc80,color:#000
+    style V fill:#fce4ec,color:#000
+    style W fill:#ff6b6b,color:#000
+    style X fill:#4ecdc4,color:#000
 ```
 
 **Architecture Components:**
@@ -149,6 +174,20 @@ flowchart TB
     J --> K[Generate Sync Report]
     K --> End([Sync Complete])
     I --> End
+
+    style Start fill:#e3f2fd,color:#000
+    style A fill:#fff8e1,color:#000
+    style B fill:#f3e5f5,color:#000
+    style C fill:#ffe0b2,color:#000
+    style D fill:#b2ebf2,color:#000
+    style E fill:#ffecb3,color:#000
+    style F fill:#fff3e0,color:#000
+    style G fill:#c8e6c9,color:#000
+    style H fill:#ffccbc,color:#000
+    style I fill:#ffab91,color:#000
+    style J fill:#e1bee7,color:#000
+    style K fill:#90caf9,color:#000
+    style End fill:#a5d6a7,color:#000
 ```
 
 **Workflow Steps:**

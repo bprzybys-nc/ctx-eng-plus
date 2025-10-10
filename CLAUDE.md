@@ -278,4 +278,29 @@ uv run ce context health --json | jq '.drift_score'
 
 ---
 
+## Documentation Standards
+
+### Mermaid Diagrams - MANDATORY
+**Always specify text color in node style statements for theme compatibility**
+
+- **Reason:** Ensures readability in both light and dark themes
+- **Rule:** Light backgrounds → black text (`color:#000`), Dark backgrounds → white text (`color:#fff`)
+- **Pattern:** `style X fill:#bgcolor,color:#textcolor`
+
+**Examples:**
+```
+# Light backgrounds (use black text)
+style A fill:#ff6b6b,color:#000    # Light red
+style B fill:#4ecdc4,color:#000    # Light cyan
+style C fill:#ffe66d,color:#000    # Light yellow
+
+# Dark backgrounds (use white text)
+style D fill:#2c3e50,color:#fff    # Dark blue
+style E fill:#34495e,color:#fff    # Dark gray
+```
+
+**Source:** Mermaid official docs - inline `style` statements override theme defaults
+
+---
+
 **Remember**: This is a simple tool project. Keep it simple. No over-engineering.

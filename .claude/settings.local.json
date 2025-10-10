@@ -1,6 +1,9 @@
 {
   "permissions": {
     "allow": [
+      "Bash(for line in 137 196 316 558 571 588)",
+      "Bash(do echo \"=== Line $line ===\")",
+      "Bash(done)",
       "Bash(uv:*)",
       "Bash(cd:*)",
       "Bash(pytest:*)",

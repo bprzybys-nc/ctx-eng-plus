@@ -69,6 +69,15 @@ graph TB
     F -->|Yes| G[Production Code]
     F -->|No| H[Self-Healing]
     H --> D
+
+    style A fill:#e3f2fd,color:#000
+    style B fill:#fff8e1,color:#000
+    style C fill:#f3e5f5,color:#000
+    style D fill:#b2ebf2,color:#000
+    style E fill:#ffe0b2,color:#000
+    style F fill:#fff3e0,color:#000
+    style G fill:#c8e6c9,color:#000
+    style H fill:#ffccbc,color:#000
 ```
 
 #### 1.3.1 Bridge Between Specification and Implementation
@@ -478,6 +487,15 @@ graph LR
     D --> G{More Phases?}
     G -->|Yes| A
     G -->|No| H[Complete]
+
+    style A fill:#e3f2fd,color:#000
+    style B fill:#fff8e1,color:#000
+    style C fill:#fff3e0,color:#000
+    style D fill:#c8e6c9,color:#000
+    style E fill:#ffccbc,color:#000
+    style F fill:#b2ebf2,color:#000
+    style G fill:#f3e5f5,color:#000
+    style H fill:#a5d6a7,color:#000
 ```
 
 #### 3.3.3 Error Detection and Correction Mechanisms
@@ -514,8 +532,13 @@ graph TB
     E --> F[Step 6: Validation Loop<br/>Test & Self-Heal]
     F --> G[Production Code]
 
-    style D fill:#ff9999
-    style G fill:#99ff99
+    style A fill:#e3f2fd,color:#000
+    style B fill:#fff8e1,color:#000
+    style C fill:#f3e5f5,color:#000
+    style D fill:#ff9999,color:#000
+    style E fill:#b2ebf2,color:#000
+    style F fill:#ffe0b2,color:#000
+    style G fill:#99ff99,color:#000
 ```
 
 ### 4.2 Step 1: Global Rules (CLAUDE.md)
@@ -617,6 +640,15 @@ graph TD
     E --> F[Create Implementation Plan]
     F --> G[Define Validation Gates]
     G --> H[Output Complete PRP]
+
+    style A fill:#e3f2fd,color:#000
+    style B fill:#fff8e1,color:#000
+    style C fill:#f3e5f5,color:#000
+    style D fill:#b2ebf2,color:#000
+    style E fill:#ffe0b2,color:#000
+    style F fill:#e1bee7,color:#000
+    style G fill:#ffecb3,color:#000
+    style H fill:#c8e6c9,color:#000
 ```
 
 **Research Activities:**
@@ -713,6 +745,22 @@ graph TD
     M -->|No| N[Debug & Fix]
     N --> L
     M -->|Yes| O[Production-Ready Code]
+
+    style A fill:#e3f2fd,color:#000
+    style B fill:#fff8e1,color:#000
+    style C fill:#f3e5f5,color:#000
+    style D fill:#ffe0b2,color:#000
+    style E fill:#fff3e0,color:#000
+    style F fill:#ffccbc,color:#000
+    style G fill:#b2ebf2,color:#000
+    style H fill:#ffecb3,color:#000
+    style I fill:#fce4ec,color:#000
+    style J fill:#ffab91,color:#000
+    style K fill:#e1bee7,color:#000
+    style L fill:#fff59d,color:#000
+    style M fill:#ffcc80,color:#000
+    style N fill:#ef9a9a,color:#000
+    style O fill:#c8e6c9,color:#000
 ```
 
 #### 4.6.2 Implementation Phases

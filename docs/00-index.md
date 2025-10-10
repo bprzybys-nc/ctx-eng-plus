@@ -357,6 +357,41 @@ Each document in this suite:
 
 ---
 
+### [11-claude-code-features.md](11-claude-code-features.md)
+**Claude Code 2.0 Features: Checkpoints, Subagents, and Hooks**
+
+**Scope:** Claude Code-specific features, real-world PRP examples, lessons learned, emergency patterns
+
+**Key Topics:**
+- ESC ESC checkpoint rewind system (95% time savings on error recovery)
+- Subagent parallel execution (3x speed improvement)
+- Claude Code-specific hooks (after_file_edit, before_git_commit, on_validation_failure)
+- Real-world PRP implementations:
+  - PRP-001: JWT Authentication (165 min, 2 auto-heals, 0 manual interventions)
+  - PRP-002: Stripe Payments (135 min, 3 auto-heal attempts, 1 ESC ESC rewind)
+  - PRP-003: Inventory Management (120 min, perfect execution)
+  - PRP-004: Order Status Webhooks (in progress)
+- Lessons learned database:
+  - Type confusion = 80% of AI coding errors
+  - Serena symbol queries 10x more accurate
+  - Checkpoint discipline enables instant recovery
+  - Emergency recovery patterns (5 critical patterns)
+- Performance metrics (Claude Code 2.0 vs. old framework)
+- Configuration examples (checkpoints, subagents, hooks)
+- Troubleshooting guide
+
+**Use this when:**
+- Learning Claude Code 2.0-specific features
+- Understanding checkpoint/rewind workflows
+- Setting up subagent parallel execution
+- Reviewing real-world implementation examples
+- Troubleshooting Claude Code issues
+- Applying lessons learned from actual PRPs
+
+**Readers:** Claude Code users, developers seeking concrete examples, troubleshooters
+
+---
+
 ## Document Dependencies
 
 ```mermaid
@@ -382,16 +417,21 @@ graph TB
     A --> J["10-tooling-configuration<br/>Setup & Config"]
     C --> J
 
-    style A fill:#ff6b6b
-    style B fill:#4ecdc4
-    style C fill:#ffe66d
-    style D fill:#95e1d3
-    style E fill:#a8e6cf
-    style F fill:#ffd3b6
-    style G fill:#ffaaa5
-    style H fill:#ff8b94
-    style I fill:#9b59b6
-    style J fill:#3498db
+    E --> K["11-claude-code-features<br/>CC2.0 Specifics"]
+    F --> K
+    G --> K
+
+    style A fill:#ff6b6b,color:#000
+    style B fill:#4ecdc4,color:#000
+    style C fill:#ffe66d,color:#000
+    style D fill:#95e1d3,color:#000
+    style E fill:#a8e6cf,color:#000
+    style F fill:#ffd3b6,color:#000
+    style G fill:#ffaaa5,color:#000
+    style H fill:#ff8b94,color:#000
+    style I fill:#9b59b6,color:#fff
+    style J fill:#3498db,color:#000
+    style K fill:#ff6348,color:#000
 ```
 
 ### Reading Order by Goal
@@ -418,8 +458,13 @@ graph TB
 
 **Goal: Troubleshoot issues**
 1. [04-self-healing-framework.md](04-self-healing-framework.md)
-2. [09-best-practices-antipatterns.md](09-best-practices-antipatterns.md)
-3. [08-validation-testing.md](08-validation-testing.md)
+2. [11-claude-code-features.md](11-claude-code-features.md)
+3. [09-best-practices-antipatterns.md](09-best-practices-antipatterns.md)
+
+**Goal: Learn from real examples**
+1. [11-claude-code-features.md](11-claude-code-features.md)
+2. [06-workflow-patterns.md](06-workflow-patterns.md)
+3. [09-best-practices-antipatterns.md](09-best-practices-antipatterns.md)
 
 ---
 
@@ -437,6 +482,10 @@ graph TB
 | **Context Hierarchy** | [02-foundations](02-context-engineering-foundations.md) | [05-persistence-layers](05-persistence-layers.md) |
 | **Token Allocation** | [03-mcp-orchestration](03-mcp-orchestration.md) | [09-best-practices](09-best-practices-antipatterns.md) |
 | **KISS Principles** | [09-best-practices](09-best-practices-antipatterns.md) | [06-workflow-patterns](06-workflow-patterns.md) |
+| **Checkpoints (ESC ESC)** | [11-claude-code-features](11-claude-code-features.md) | [04-self-healing-framework](04-self-healing-framework.md), [06-workflow-patterns](06-workflow-patterns.md) |
+| **Subagents** | [11-claude-code-features](11-claude-code-features.md) | [06-workflow-patterns](06-workflow-patterns.md) |
+| **Claude Code Hooks** | [11-claude-code-features](11-claude-code-features.md) | [08-validation-testing](08-validation-testing.md) |
+| **Real-World Examples** | [11-claude-code-features](11-claude-code-features.md) | [01-prp-system](01-prp-system.md) |
 
 ---
 
@@ -509,7 +558,8 @@ All documents in this suite were extracted and transformed from:
 | [08-validation-testing](08-validation-testing.md) | 10 | 25+ | 8 | ~1,500 | QA, test automation |
 | [09-best-practices](09-best-practices-antipatterns.md) | 12 | 40+ | 2 | ~1,800 | Optimizers, architects |
 | [10-tooling-configuration](10-tooling-configuration.md) | 11 | 20+ | 3 | ~1,700 | DevOps, new users |
-| **Total** | **96** | **258+** | **47** | **~17,600** | - |
+| [11-claude-code-features](11-claude-code-features.md) | 9 | 20+ | 2 | ~1,900 | Claude Code users, example seekers |
+| **Total** | **105** | **278+** | **49** | **~19,500** | - |
 
 ---
 
@@ -543,6 +593,6 @@ For questions, issues, or contributions, refer to the source repository.
 
 **Source Exploration:** [context-mastery-exploration.md](context-mastery-exploration.md) (8,775 lines)
 
-**Documentation Suite:** 10 comprehensive documents, 96 sections, 258+ tables, 47 mermaid diagrams
+**Documentation Suite:** 11 comprehensive documents, 105 sections, 278+ tables, 49 mermaid diagrams
 
-**Framework Version:** Context Engineering v1.0 (Coleman00 methodology + MCP orchestration + Self-healing)
+**Framework Version:** Context Engineering v1.0 (Coleman00 methodology + MCP orchestration + Self-healing + Claude Code 2.0)

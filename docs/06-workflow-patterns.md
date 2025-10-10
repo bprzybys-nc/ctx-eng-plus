@@ -84,6 +84,42 @@ graph TB
 
     G5 --> H["GitHub PR Creation"]
     H --> I["Production Deployment"]
+
+    style A1 fill:#e3f2fd,color:#000
+    style A2 fill:#e8f5e9,color:#000
+    style A3 fill:#fff3e0,color:#000
+    style A4 fill:#f3e5f5,color:#000
+    style B1 fill:#e1f5fe,color:#000
+    style B2 fill:#e0f2f1,color:#000
+    style B3 fill:#fce4ec,color:#000
+    style C1 fill:#f1f8e9,color:#000
+    style C2 fill:#fff8e1,color:#000
+    style C3 fill:#e8eaf6,color:#000
+    style C4 fill:#fce4ec,color:#000
+    style C5 fill:#ffecb3,color:#000
+    style D1 fill:#e0f7fa,color:#000
+    style D2 fill:#f3e5f5,color:#000
+    style D3 fill:#fff9c4,color:#000
+    style D4 fill:#c8e6c9,color:#000
+    style E1 fill:#ffe0b2,color:#000
+    style E2 fill:#e1bee7,color:#000
+    style E3 fill:#b2ebf2,color:#000
+    style E4 fill:#fff59d,color:#000
+    style E5 fill:#ffccbc,color:#000
+    style E6 fill:#dcedc8,color:#000
+    style F1 fill:#ffcdd2,color:#000
+    style F2 fill:#ffecb3,color:#000
+    style F3 fill:#c5cae9,color:#000
+    style F4 fill:#f0f4c3,color:#000
+    style F5 fill:#ffab91,color:#000
+    style F6 fill:#a5d6a7,color:#000
+    style G1 fill:#b2dfdb,color:#000
+    style G2 fill:#d1c4e9,color:#000
+    style G3 fill:#ffcc80,color:#000
+    style G4 fill:#90caf9,color:#000
+    style G5 fill:#ce93d8,color:#000
+    style H fill:#81c784,color:#000
+    style I fill:#64b5f6,color:#000
 ```
 
 **Workflow Characteristics:**
@@ -134,6 +170,16 @@ graph TD
     G --> H["Re-run Compilation Check"]
     H --> A
     E --> I["Session Start Complete"]
+
+    style A fill:#e3f2fd,color:#000
+    style B fill:#fff3e0,color:#000
+    style C fill:#f3e5f5,color:#000
+    style D fill:#ffcdd2,color:#000
+    style E fill:#c8e6c9,color:#000
+    style F fill:#ffccbc,color:#000
+    style G fill:#ffe0b2,color:#000
+    style H fill:#b2ebf2,color:#000
+    style I fill:#a5d6a7,color:#000
 ```
 
 **Critical Rules:**
@@ -195,6 +241,14 @@ graph LR
     E --> F["Update Context"]
     F --> G["Validate Sync"]
     G --> D
+
+    style A fill:#e3f2fd,color:#000
+    style B fill:#fff8e1,color:#000
+    style C fill:#f3e5f5,color:#000
+    style D fill:#c8e6c9,color:#000
+    style E fill:#ffccbc,color:#000
+    style F fill:#b2ebf2,color:#000
+    style G fill:#ffe0b2,color:#000
 ```
 
 **Comparison Matrix:**
@@ -279,6 +333,15 @@ graph TD
     E --> F{"Health Score<br/>>85%?"}
     F -->|No| G["Manual Investigation Required"]
     F -->|Yes| H["Resume Development"]
+
+    style A fill:#ffcdd2,color:#000
+    style B fill:#ef9a9a,color:#000
+    style C fill:#e1bee7,color:#000
+    style D fill:#b2ebf2,color:#000
+    style E fill:#ffe0b2,color:#000
+    style F fill:#fff3e0,color:#000
+    style G fill:#ffab91,color:#000
+    style H fill:#c8e6c9,color:#000
 ```
 
 ---
@@ -437,6 +500,18 @@ graph TD
     I --> J["Auto-Fix Attempt"]
     J --> H
     H -->|Yes| K["Production Logic Complete"]
+
+    style A fill:#e3f2fd,color:#000
+    style B fill:#fff8e1,color:#000
+    style C fill:#f3e5f5,color:#000
+    style D fill:#c8e6c9,color:#000
+    style E fill:#ffe0b2,color:#000
+    style F fill:#b2ebf2,color:#000
+    style G fill:#e1bee7,color:#000
+    style H fill:#fff3e0,color:#000
+    style I fill:#ffccbc,color:#000
+    style J fill:#ffecb3,color:#000
+    style K fill:#a5d6a7,color:#000
 ```
 
 **Implementation Checklist:**
@@ -649,6 +724,17 @@ graph TD
     G -->|Yes| H["Sync Complete"]
     G -->|No| I["Error Analysis"]
     I --> J["Manual Investigation"]
+
+    style A fill:#e3f2fd,color:#000
+    style B fill:#fff8e1,color:#000
+    style C fill:#f3e5f5,color:#000
+    style D fill:#ffccbc,color:#000
+    style E fill:#b2ebf2,color:#000
+    style F fill:#ffe0b2,color:#000
+    style G fill:#fff3e0,color:#000
+    style H fill:#c8e6c9,color:#000
+    style I fill:#ffcdd2,color:#000
+    style J fill:#ffab91,color:#000
 ```
 
 **Implementation Steps:**
@@ -716,6 +802,16 @@ graph LR
     D --> H["Memory Pruning Required"]
     E --> G
     F --> I["Index Corruption"]
+
+    style A fill:#fff3e0,color:#000
+    style B fill:#ffccbc,color:#000
+    style C fill:#ffcdd2,color:#000
+    style D fill:#ffe0b2,color:#000
+    style E fill:#ffab91,color:#000
+    style F fill:#ef9a9a,color:#000
+    style G fill:#b2ebf2,color:#000
+    style H fill:#e1bee7,color:#000
+    style I fill:#ffeb3b,color:#000
 ```
 
 **Detection Metrics:**
@@ -1423,9 +1519,9 @@ Success: ZERO-SHOT PERFECTION
 graph TD
     A["Feature Request"] --> B{"Complexity<br/>Assessment"}
 
-    B -->|"Simple<br/>(1-2 files)"| C["Minimal MCP<br/>Context7 + Filesystem"]
-    B -->|"Medium<br/>(3-10 files)"| D["Core MCP<br/>+ Serena + Sequential"]
-    B -->|"Complex<br/>(10+ files)"| E["Full MCP Stack<br/>All 5 MCPs"]
+    B -->|"Simple (1-2 files)"| C["Minimal MCP<br/>Context7 + Filesystem"]
+    B -->|"Medium (3-10 files)"| D["Core MCP<br/>+ Serena + Sequential"]
+    B -->|"Complex (10+ files)"| E["Full MCP Stack<br/>All 5 MCPs"]
 
     C --> F["Direct Implementation<br/>~5 min"]
     D --> G["PRP-Based Implementation<br/>~15 min"]
@@ -1448,6 +1544,23 @@ graph TD
 
     J --> O["GitHub MCP<br/>Create PR"]
     O --> P["Production"]
+
+    style A fill:#e3f2fd,color:#000
+    style B fill:#fff3e0,color:#000
+    style C fill:#e8f5e9,color:#000
+    style D fill:#f3e5f5,color:#000
+    style E fill:#ffe0b2,color:#000
+    style F fill:#c8e6c9,color:#000
+    style G fill:#b2ebf2,color:#000
+    style H fill:#ffccbc,color:#000
+    style I fill:#fff8e1,color:#000
+    style J fill:#a5d6a7,color:#000
+    style K fill:#ffecb3,color:#000
+    style L fill:#e1bee7,color:#000
+    style M fill:#b39ddb,color:#000
+    style N fill:#90caf9,color:#000
+    style O fill:#81c784,color:#000
+    style P fill:#64b5f6,color:#000
 ```
 
 ### 8.1 Complexity Assessment Guidelines
@@ -1545,6 +1658,15 @@ graph TD
     F --> G["Identify Root Cause"]
     G --> H["Apply Manual Fix"]
     H --> E
+
+    style A fill:#ffcdd2,color:#000
+    style B fill:#b2ebf2,color:#000
+    style C fill:#ffe0b2,color:#000
+    style D fill:#fff3e0,color:#000
+    style E fill:#c8e6c9,color:#000
+    style F fill:#ffccbc,color:#000
+    style G fill:#ffecb3,color:#000
+    style H fill:#e1bee7,color:#000
 ```
 
 **Logic Errors:**
@@ -1558,6 +1680,15 @@ graph TD
     E --> F["Implement Fix"]
     F --> G["Add Regression Test"]
     G --> H["Re-run Validation"]
+
+    style A fill:#ffcdd2,color:#000
+    style B fill:#e1bee7,color:#000
+    style C fill:#ffe0b2,color:#000
+    style D fill:#fff8e1,color:#000
+    style E fill:#b2ebf2,color:#000
+    style F fill:#ffecb3,color:#000
+    style G fill:#c8e6c9,color:#000
+    style H fill:#a5d6a7,color:#000
 ```
 
 **Integration Errors:**
@@ -1575,6 +1706,18 @@ graph TD
     E --> J["Re-run Tests"]
     I --> J
     H --> K["Manual Investigation"]
+
+    style A fill:#ffcdd2,color:#000
+    style B fill:#e1bee7,color:#000
+    style C fill:#ffe0b2,color:#000
+    style D fill:#fff3e0,color:#000
+    style E fill:#b2ebf2,color:#000
+    style F fill:#fff8e1,color:#000
+    style G fill:#ffecb3,color:#000
+    style H fill:#ffccbc,color:#000
+    style I fill:#c8e6c9,color:#000
+    style J fill:#a5d6a7,color:#000
+    style K fill:#ffab91,color:#000
 ```
 
 ### 9.3 Performance Degradation Troubleshooting

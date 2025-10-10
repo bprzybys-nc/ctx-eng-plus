@@ -38,9 +38,9 @@ graph LR
     A["Stage 1:<br/>Vibe Coding"] -->|10x improvement| B["Stage 2:<br/>Prompt Engineering"]
     B -->|10x improvement| C["Stage 3:<br/>Context Engineering"]
 
-    style A fill:#ffcccc
-    style B fill:#ffffcc
-    style C fill:#ccffcc
+    style A fill:#ffcccc,color:#000
+    style B fill:#ffffcc,color:#000
+    style C fill:#ccffcc,color:#000
 ```
 
 **Stage 1: Vibe Coding**
@@ -93,7 +93,7 @@ This principle shifts debugging focus from "fixing AI output" to "fixing context
 Context engineering is built on four foundational pillars that address distinct challenges in AI-assisted development:
 
 ```mermaid
-graph TD
+graph LR
     A["Context Engineering<br/>System"] --> B["Pillar 1: WRITE<br/>Persist State"]
     A --> C["Pillar 2: SELECT<br/>Dynamic Retrieval"]
     A --> D["Pillar 3: COMPRESS<br/>Manage Scarcity"]
@@ -115,11 +115,23 @@ graph TD
     E --> E2["Reduce noise interference"]
     E --> E3["Improve focus and specialization"]
 
-    style A fill:#e1f5ff
-    style B fill:#fff4e1
-    style C fill:#e8f8e8
-    style D fill:#f8e8f8
-    style E fill:#ffe8e8
+    style A fill:#e1f5ff,color:#000
+    style B fill:#fff4e1,color:#000
+    style C fill:#e8f8e8,color:#000
+    style D fill:#f8e8f8,color:#000
+    style E fill:#ffe8e8,color:#000
+    style B1 fill:#ffe0b2,color:#000
+    style B2 fill:#ffecb3,color:#000
+    style B3 fill:#fff9c4,color:#000
+    style C1 fill:#c8e6c9,color:#000
+    style C2 fill:#dcedc8,color:#000
+    style C3 fill:#f0f4c3,color:#000
+    style D1 fill:#e1bee7,color:#000
+    style D2 fill:#f3e5f5,color:#000
+    style D3 fill:#fce4ec,color:#000
+    style E1 fill:#ffccbc,color:#000
+    style E2 fill:#ffab91,color:#000
+    style E3 fill:#ef9a9a,color:#000
 ```
 
 ### 2.1 Pillar 1: WRITE (Persist State)
@@ -230,10 +242,10 @@ graph TB
     C --> D["Layer 4: Memory<br/>(Serena/Memories)<br/>Dynamic Context"]
     B --> D
 
-    style A fill:#ff6b6b
-    style B fill:#4ecdc4
-    style C fill:#ffe66d
-    style D fill:#95e1d3
+    style A fill:#ff6b6b,color:#000
+    style B fill:#4ecdc4,color:#000
+    style C fill:#ffe66d,color:#000
+    style D fill:#95e1d3,color:#000
 ```
 
 ### 3.1 Layer 1: Constitution (Project-Wide Rules)
@@ -422,6 +434,13 @@ graph LR
     D -->|Pass| E["Complete"]
     D -->|Fail| F["Self-Correct"]
     F --> C
+
+    style A fill:#e3f2fd,color:#000
+    style B fill:#fff8e1,color:#000
+    style C fill:#f3e5f5,color:#000
+    style D fill:#ffe0b2,color:#000
+    style E fill:#c8e6c9,color:#000
+    style F fill:#ffccbc,color:#000
 ```
 
 **Validation Gate Structure:**
@@ -772,9 +791,13 @@ graph TB
     G --> C
     G --> D
 
-    style A fill:#ff9999
-    style E fill:#99ccff
-    style F fill:#99ff99
+    style A fill:#ff9999,color:#000
+    style B fill:#e3f2fd,color:#000
+    style C fill:#fff8e1,color:#000
+    style D fill:#f3e5f5,color:#000
+    style E fill:#99ccff,color:#000
+    style F fill:#99ff99,color:#000
+    style G fill:#ffe0b2,color:#000
 ```
 
 ### 7.2 Single vs Multi-Agent Trade-Offs
@@ -879,11 +902,11 @@ graph LR
     A <-->|MCP Protocol| D["MCP Server 3:<br/>API Gateway"]
     A <-->|MCP Protocol| E["MCP Server N:<br/>Custom Tools"]
 
-    style A fill:#ffcccc
-    style B fill:#ccffcc
-    style C fill:#ccffcc
-    style D fill:#ccffcc
-    style E fill:#ccffcc
+    style A fill:#ffcccc,color:#000
+    style B fill:#ccffcc,color:#000
+    style C fill:#ccffcc,color:#000
+    style D fill:#ccffcc,color:#000
+    style E fill:#ccffcc,color:#000
 ```
 
 **Key Capabilities:**
@@ -932,9 +955,14 @@ graph TB
     H --> D
     H --> E
 
-    style A fill:#ffe66d
-    style B fill:#ff9999
-    style H fill:#99ccff
+    style A fill:#ffe66d,color:#000
+    style B fill:#ff9999,color:#000
+    style C fill:#e3f2fd,color:#000
+    style D fill:#fff8e1,color:#000
+    style E fill:#f3e5f5,color:#000
+    style F fill:#c8e6c9,color:#000
+    style G fill:#ffccbc,color:#000
+    style H fill:#99ccff,color:#000
 ```
 
 **Workflow State Management:**
@@ -1034,13 +1062,13 @@ graph TD
     F --> G["09-best-practices-antipatterns.md"]
     A --> G
 
-    style A fill:#ffcccc
-    style B fill:#ccffcc
-    style C fill:#ccffcc
-    style D fill:#ccffcc
-    style E fill:#ccffcc
-    style F fill:#ffffcc
-    style G fill:#ccccff
+    style A fill:#ffcccc,color:#000
+    style B fill:#ccffcc,color:#000
+    style C fill:#ccffcc,color:#000
+    style D fill:#ccffcc,color:#000
+    style E fill:#ccffcc,color:#000
+    style F fill:#ffffcc,color:#000
+    style G fill:#ccccff,color:#000
 ```
 
 ### 9.3 Key Terms Defined
