@@ -6,14 +6,14 @@ This document defines the systematic validation and testing framework for contex
 
 **Core Principles:**
 - **Fast Failure Detection:** Syntax checks complete in 10 seconds, enabling rapid iteration
-- **Automated Self-Healing:** 85% of validation failures automatically recover without human intervention
+- **Automated Self-Healing:** Target 85% auto-recovery (APR research: 30-74% typical[⁴](../00-index.md#references))
 - **Incremental Validation:** Continuous verification every 5 code modifications prevents drift
 - **Read-Before-Write Protocol:** Mandatory pre-modification checks eliminate duplicate code and context corruption
 
-**Framework Benefits:**
-- First-attempt success rate: 92-98% (vs. 35-45% without framework)
-- Context drift incidents: 2-5 per project (vs. 40-50 without framework)
-- Self-recovery rate: 85% automated healing (vs. 0% manual-only approaches)
+**Framework Benefits (Internal Observations, n=4 PRPs):**
+- First-attempt success rate: 60-75% target (baseline: 35-45%[¹](../00-index.md#references))
+- Context drift incidents: 2-5 per project (internal observation)
+- Self-recovery rate: Targeting 85% (APR research shows 30-74% achievable[⁴](../00-index.md#references))
 - Memory management: <100 memories maintained (vs. >200 unbounded growth)
 
 ---

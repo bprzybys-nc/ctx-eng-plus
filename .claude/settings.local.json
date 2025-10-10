@@ -35,7 +35,11 @@
       "Edit(**/tools/**)",
       "Edit(**/CLAUDE.md)",
       "Read(//Users/bprzybysz/.claude/**)",
-      "mcp__sequential-thinking__sequentialthinking"
+      "mcp__sequential-thinking__sequentialthinking",
+      "mcp__perplexity__perplexity_ask",
+      "Read(//Users/bprzybysz/.config/**)",
+      "Read(//Users/bprzybysz/**)",
+      "Bash(gh pr list:*)"
     ],
     "deny": [],
     "ask": []

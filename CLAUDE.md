@@ -303,4 +303,51 @@ style E fill:#34495e,color:#fff    # Dark gray
 
 ---
 
+## Efficient Documentation Review Pattern
+
+**Problem:** Reading all documentation files sequentially causes token overflow
+
+**Solution:** Grep-first validation with targeted reads (90% token reduction)
+
+### Review Workflow
+
+**Phase 1: Structural Validation** (Grep-based, ~1-2k tokens)
+```bash
+# Run parallel Grep patterns across docs/*.md
+# 1. Headers: verify numbering sequence
+# 2. Cross-references: validate links
+# 3. Mermaid styles: check color specs
+# 4. Code blocks: count and categorize
+```
+
+**Phase 2: Code Quality Checks** (Grep patterns, ~500 tokens)
+```bash
+# Anti-pattern scans
+# - pip install → should be uv add
+# - except: → bare except clauses
+# - Hardcoded success messages
+```
+
+**Phase 3: Targeted Reads** (2-3 files only, ~3-5k tokens)
+```bash
+# Always read navigation/index file
+# Read 1-2 complex docs based on Grep findings
+# Spot-check quality, clarity, completeness
+```
+
+**Total: ~5-7k tokens vs 200k+ for read-all approach**
+
+### When NOT to Use This Pattern
+- Single document reviews (just read it)
+- Small doc sets (<5 files)
+- Content-heavy review requiring full text analysis
+
+### Example: Reviewing 12-doc suite
+```
+❌ BAD: Read all 12 files → 200k+ tokens, prompt overflow
+✅ GOOD: Grep validation + 2 targeted reads → 5-7k tokens
+```
+
+---
+
 **Remember**: This is a simple tool project. Keep it simple. No over-engineering.

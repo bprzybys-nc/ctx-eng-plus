@@ -144,6 +144,7 @@ pipx install git+https://github.com/oraios/serena
 
 # Using pip
 pip install git+https://github.com/oraios/serena
+# Note: Serena installation currently requires pip/pipx. UV support not yet available.
 
 # Verify installation
 serena --version
