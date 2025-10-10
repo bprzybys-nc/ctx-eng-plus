@@ -678,8 +678,10 @@ Result: Same codebase has three different async patterns
 
 #### 3.5.3 Solution: Unified Documentation (Best Practice)
 
-```
-### CLAUDE.md (Single Source of Truth)
+**Example CLAUDE.md (Single Source of Truth):**
+
+```markdown
+### CLAUDE.md
 
 ## Asynchronous Operations
 
@@ -690,7 +692,13 @@ Result: Same codebase has three different async patterns
 - Better error handling with try/catch
 - More readable than Promise chains
 
-**Pattern**:
+**Exception**: None. All async code uses async/await.
+
+**Migration**: Convert existing Promise chains to async/await on modification.
+```
+
+**Code Pattern Example:**
+
 ```javascript
 // ✅ CORRECT
 async function fetchUser(id) {
@@ -714,23 +722,16 @@ function fetchUser(id) {
 }
 ```
 
-**Exception**: None. All async code uses async/await.
-
-**Migration**: Convert existing Promise chains to async/await on modification.
-```
-
 **Solution**: Single source of truth with explicit standard and no exceptions.
 
 #### 3.5.4 Prevention Strategy
 
-```
 1. Establish single source of truth (CLAUDE.md)
 2. All module docs reference (not redefine) global standards
 3. Regular documentation audits for consistency
 4. Version control all documentation
 5. Code review checks for compliance
 6. Automated linting enforces standards
-```
 
 ---
 

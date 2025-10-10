@@ -1,0 +1,9 @@
+tools/.venv/
+tools/__pycache__/
+tools/**/__pycache__/
+tools/.pytest_cache/
+tools/**/.pytest_cache/
+tools/*.egg-info/
+
+# Temporary files and reports
+tmp/

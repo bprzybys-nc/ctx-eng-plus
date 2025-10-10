@@ -1,0 +1,28 @@
+[project]
+name = "ce-tools"
+version = "0.1.0"
+description = "Context Engineering CLI Tools"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = []
+
+[project.scripts]
+ce = "ce.__main__:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = "test_*.py"
+python_functions = "test_*"
+addopts = "-v --tb=short"
+
+[tool.hatch.build.targets.wheel]
+packages = ["ce"]
+
+[dependency-groups]
+dev = [
+    "pytest>=8.4.2",
+]
