@@ -7,3 +7,11 @@ tools/*.egg-info/
 
 # Temporary files and reports
 tmp/
+
+# PRP temporary files
+PRPs/ai_docs/*
+PRPs/feature-requests/*.tmp
+PRPs/.cache/
+
+# Examples temporary files
+examples/.tmp/

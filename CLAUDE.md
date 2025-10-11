@@ -39,6 +39,35 @@ uv sync                          # Install dependencies
 # Manual pyproject.toml editing
 ```
 
+# ❌ FORBIDDEN - Ad-Hoc Code Policy
+* **Long ad-hoc scripts proposed** - Max 3 LOC for inline code
+* **Proposing code without execution** - Must execute via run_py
+* **Violating 3 LOC limit** - Longer code MUST be in tmp/ file
+
+**STRICT RULE:** Ad-hoc code max 3 lines of code (LOC). No exceptions.
+- ✅ ALLOWED: Ad-hoc ≤3 LOC: `"x = [1,2,3]; print(sum(x))"`
+- ❌ FORBIDDEN: Proposing 5+ line scripts without running
+- ✅ REQUIRED: Longer code → tmp/ file and execute
+
+---
+
+## Working Directory
+
+**Default Context:** Project root (`/Users/bprzybysz/nc-src/ctx-eng-plus`)
+
+**For tools/ commands:** Always prefix with `cd tools &&` or use full paths from root.
+
+**Note:** Claude Code doesn't have a persistent working directory setting per project. Always specify context explicitly:
+```bash
+# Correct patterns
+cd tools && uv run ce --help
+cd tools && uv run pytest tests/ -v
+uv run -C tools ce validate --level all  # Using uv -C flag
+
+# Avoid (relative paths from wrong location)
+uv run ce --help  # Will fail if not in tools/
+```
+
 ---
 
 ## Tool Usage Workflow
@@ -56,6 +85,16 @@ uv run ce --help
 uv run ce validate --level all
 uv run ce git status
 uv run ce context health
+
+# Run Python code (tools/ce domain, 3 LOC max ad-hoc)
+# Auto-detect mode (preferred - detects code vs file)
+cd tools && uv run ce run_py "print('hello')"
+cd tools && uv run ce run_py "x = [1,2,3]; print(sum(x))"
+cd tools && uv run ce run_py ../tmp/script.py
+
+# Explicit mode (optional)
+cd tools && uv run ce run_py --code "print('hello')"
+cd tools && uv run ce run_py --file ../tmp/script.py
 
 # Bootstrap (first time setup)
 ./bootstrap.sh

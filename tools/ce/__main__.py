@@ -6,7 +6,7 @@ import sys
 from typing import Any, Dict
 
 from . import __version__
-from .core import git_status, git_checkpoint, git_diff
+from .core import git_status, git_checkpoint, git_diff, run_py
 from .validate import validate_level_1, validate_level_2, validate_level_3, validate_all
 from .context import sync, health, prune
 
@@ -132,6 +132,42 @@ def cmd_context(args) -> int:
         return 1
 
 
+def cmd_run_py(args) -> int:
+    """Execute run_py command."""
+    try:
+        # Determine input mode
+        auto_input = getattr(args, 'input', None)
+
+        result = run_py(
+            code=args.code if hasattr(args, 'code') else None,
+            file=args.file if hasattr(args, 'file') else None,
+            auto=auto_input,
+            args=args.script_args or ""
+        )
+
+        # Always show output
+        if result["stdout"]:
+            print(result["stdout"], end="")
+
+        if result["stderr"]:
+            print(result["stderr"], end="", file=sys.stderr)
+
+        # Show summary if JSON requested
+        if args.json:
+            summary = {
+                "exit_code": result["exit_code"],
+                "success": result["success"],
+                "duration": result["duration"]
+            }
+            print(json.dumps(summary, indent=2))
+
+        return result["exit_code"]
+
+    except Exception as e:
+        print(f"❌ Python execution failed: {str(e)}", file=sys.stderr)
+        return 1
+
+
 def main():
     """Main CLI entry point."""
     parser = argparse.ArgumentParser(
@@ -144,6 +180,11 @@ Examples:
   ce git checkpoint "Phase 1 complete"
   ce context sync
   ce context health --json
+  ce run_py "print('hello')"
+  ce run_py "x = [1,2,3]; print(sum(x))"
+  ce run_py tmp/script.py
+  ce run_py --code "import sys; print(sys.version)"
+  ce run_py --file tmp/script.py --args "--input data.csv"
         """
     )
 
@@ -218,6 +259,36 @@ Examples:
         help="Output as JSON"
     )
 
+    # === RUN_PY COMMAND ===
+    runpy_parser = subparsers.add_parser(
+        "run_py",
+        help="Execute Python code (auto-detect or explicit mode)"
+    )
+    runpy_group = runpy_parser.add_mutually_exclusive_group(required=False)
+    runpy_group.add_argument(
+        "input",
+        nargs="?",
+        help="Auto-detect: code (≤3 LOC) or file path (tmp/*.py)"
+    )
+    runpy_parser.add_argument(
+        "--code",
+        help="Explicit: Ad-hoc Python code (max 3 LOC)"
+    )
+    runpy_parser.add_argument(
+        "--file",
+        help="Explicit: Path to Python file in tmp/ folder"
+    )
+    runpy_parser.add_argument(
+        "--args",
+        dest="script_args",
+        help="Arguments to pass to Python script"
+    )
+    runpy_parser.add_argument(
+        "--json",
+        action="store_true",
+        help="Output execution summary as JSON"
+    )
+
     # Parse arguments
     args = parser.parse_args()
 
@@ -232,6 +303,8 @@ Examples:
         return cmd_git(args)
     elif args.command == "context":
         return cmd_context(args)
+    elif args.command == "run_py":
+        return cmd_run_py(args)
     else:
         print(f"Unknown command: {args.command}", file=sys.stderr)
         return 1

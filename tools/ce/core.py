@@ -281,3 +281,106 @@ def git_checkpoint(message: str = "Context Engineering checkpoint") -> str:
         )
 
     return checkpoint_id
+
+
+def run_py(code: Optional[str] = None, file: Optional[str] = None, args: str = "", auto: Optional[str] = None) -> Dict[str, Any]:
+    """Execute Python code using uv with strict LOC limits.
+
+    Rules:
+    - Ad-hoc code: Max 3 LOC (use code param or auto)
+    - Longer code: Must be in tmp/ file (use file param or auto)
+    - Auto mode: Detects if input is file path or code
+    - Never modify codebase or tests via this function
+
+    Args:
+        code: Ad-hoc Python code (max 3 LOC, one-liners allowed)
+        file: Path to Python file in tmp/ folder
+        args: Command-line arguments to pass
+        auto: Auto-detect mode - file path or code (≤3 LOC)
+
+    Returns:
+        Dict with: success (bool), stdout (str), stderr (str),
+                   exit_code (int), duration (float)
+
+    Raises:
+        ValueError: If code > 3 LOC or file not in tmp/
+        RuntimeError: If execution fails
+
+    Examples:
+        # Ad-hoc (max 3 LOC)
+        run_py(code="import sys; print(sys.version)")
+        run_py(auto="print('hello')")
+
+        # File-based (longer scripts)
+        run_py(file="tmp/analysis.py", args="--input data.csv")
+        run_py(auto="tmp/script.py")
+
+    Note: No fishy fallbacks - exceptions thrown for troubleshooting.
+    """
+    # Auto-detect mode
+    if auto is not None:
+        if code is not None or file is not None:
+            raise ValueError(
+                "Cannot use 'auto' with 'code' or 'file'\n"
+                "🔧 Troubleshooting: Use auto alone for detection or specify code/file explicitly"
+            )
+
+        # Check if auto is a file path (contains / or ends with .py)
+        if "/" in auto or auto.endswith(".py"):
+            file = auto
+        else:
+            code = auto
+
+    if code is None and file is None:
+        raise ValueError(
+            "Either 'code', 'file', or 'auto' must be provided\n"
+            "🔧 Troubleshooting: Pass code='...' for quick scripts or file='tmp/script.py'"
+        )
+
+    if code is not None and file is not None:
+        raise ValueError(
+            "Cannot provide both 'code' and 'file'\n"
+            "🔧 Troubleshooting: Use code for ad-hoc (≤3 LOC) or file for scripts"
+        )
+
+    # Validate ad-hoc code length (max 3 LOC)
+    if code is not None:
+        lines = [line for line in code.split('\n') if line.strip()]
+        if len(lines) > 3:
+            raise ValueError(
+                f"Ad-hoc code exceeds 3 LOC limit (found {len(lines)} lines)\n"
+                f"🔧 Troubleshooting: Move code to tmp/ file and use file parameter"
+            )
+
+        # Execute ad-hoc code
+        # Use shlex.quote for proper escaping
+        import shlex
+        cmd = f"uv run python -c {shlex.quote(code)}"
+        if args:
+            cmd += f" {args}"
+
+        return run_cmd(cmd, timeout=120)
+
+    # Validate file path (must be in tmp/)
+    if file is not None:
+        file_path = Path(file)
+
+        # Check if file is in tmp/ (relative or absolute)
+        if not any(part == "tmp" for part in file_path.parts):
+            raise ValueError(
+                f"File must be in tmp/ folder: {file}\n"
+                "🔧 Troubleshooting: Move script to tmp/ directory"
+            )
+
+        if not file_path.exists():
+            raise FileNotFoundError(
+                f"Python file not found: {file}\n"
+                "🔧 Troubleshooting: Create file first or check path"
+            )
+
+        # Execute file
+        cmd = f"uv run python {file}"
+        if args:
+            cmd += f" {args}"
+
+        return run_cmd(cmd, timeout=300)
