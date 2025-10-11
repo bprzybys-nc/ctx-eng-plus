@@ -47,7 +47,7 @@ graph TB
     D --> D3["MCP Integration"]
 
     A --> E["Quality Framework"]
-    E --> E1["3-level validation"]
+    E --> E1["4-level validation (L1-L4)"]
     E --> E2["Self-healing loops"]
     E --> E3["Confidence scoring"]
 
@@ -144,7 +144,7 @@ graph LR
 4. **Strict Enforcement**
    - 3 LOC limit for ad-hoc code (non-negotiable)
    - UV package management (no manual edits)
-   - Validation gates must pass (9/10 confidence minimum)
+   - All validation gates must pass (10/10 confidence required - includes L4 pattern conformance)
 
 ### See Also
 
@@ -347,13 +347,58 @@ graph TB
    - Validation commands
    - Gotchas and warnings
 5. **IMPLEMENTATION BLUEPRINT** - Step-by-step pseudocode
-6. **VALIDATION LOOPS** - Three-level testing gates
+6. **VALIDATION LOOPS** - Four-level testing gates (L1-L4)
 
 **Optional Sections:**
 - SERENA PRE-FLIGHT CHECKS
 - SELF-HEALING GATES
 - CONFIDENCE SCORING
 - COMPLETION CHECKLIST
+- **DRIFT_JUSTIFICATION** (Required if pattern drift > 30% accepted)
+
+**DRIFT_JUSTIFICATION Section Format:**
+
+Required when Level 4 validation detects >30% pattern drift and user accepts it.
+
+```yaml
+DRIFT_JUSTIFICATION:
+  drift_score: "<percentage>%"
+  decision: "accept | reject | update_examples"
+  reason: |
+    <Multi-line explanation of why drift is justified>
+    <Trade-offs considered>
+    <Business/technical rationale>
+  alternatives_considered:
+    - "<Alternative approach>: <Why rejected>"
+    - "<Alternative approach>: <Why rejected>"
+  approved_by: "user | team_lead | architect"
+  date: "YYYY-MM-DD"
+  references:
+    - "PRP-XXX: <Related drift decision>"
+    - "INITIAL.md: <Relevant EXAMPLES section>"
+```
+
+**Example:**
+```yaml
+DRIFT_JUSTIFICATION:
+  drift_score: 60%
+  decision: accept
+  reason: |
+    Payment gateway API (Stripe) requires synchronous webhooks.
+    Converting to async would break webhook signature validation.
+    This is isolated to payment module only.
+  alternatives_considered:
+    - "Async wrapper with sync bridge: Adds complexity, no performance gain"
+    - "Switch to async payment API: Not available from Stripe"
+    - "Background job processing: Breaks real-time payment flow"
+  approved_by: user
+  date: 2025-01-15
+  references:
+    - "PRP-004: Similar decision for legacy callback API"
+    - "INITIAL.md lines 42-56: Async pattern documented"
+```
+
+**Purpose:** Creates audit trail of architectural decisions, enables future PRPs to understand why patterns diverged.
 
 #### 3.2.2 Information Density Requirements
 
@@ -369,7 +414,7 @@ graph TB
 
 ### 3.3 Validation Framework
 
-#### 3.3.1 Three-Level Gate System
+#### 3.3.1 Four-Level Gate System
 
 ```mermaid
 graph TB
@@ -379,7 +424,9 @@ graph TB
     C --> C1["• Function-level validation<br/>• Auto-fix: Conditional<br/>• Action: Analyze, fix, re-test"]
     C1 --> D["Level 3: Integration<br/>1-2 minutes"]
     D --> D1["• API endpoints, database, E2E<br/>• Auto-fix: Manual<br/>• Action: Debug systematically"]
-    D1 --> E["Production Ready"]
+    D1 --> D2["Level 4: Pattern Conformance<br/>30-60 seconds"]
+    D2 --> D3["• Compare vs EXAMPLES from INITIAL.md<br/>• Check architectural consistency<br/>• Detect drift from specification<br/>• Action: Refactor if drift detected"]
+    D3 --> E["Production Ready"]
 
     style A fill:#e3f2fd,color:#000
     style B fill:#fff8e1,color:#000
@@ -388,6 +435,8 @@ graph TB
     style C1 fill:#e1f5fe,color:#000
     style D fill:#b2ebf2,color:#000
     style D1 fill:#b2dfdb,color:#000
+    style D2 fill:#e8f5e9,color:#000
+    style D3 fill:#c5e1a5,color:#000
     style E fill:#c8e6c9,color:#000
 ```
 
@@ -410,16 +459,183 @@ graph TB
 - Architectural changes required
 - External dependency issues
 
-#### 3.3.3 Confidence Scoring
+#### 3.3.3 Level 4: Pattern Conformance Validation
+
+**Purpose:** Ensure implementation matches architectural patterns defined in INITIAL.md EXAMPLES
+
+**Validation Steps:**
+1. **Extract patterns from EXAMPLES:**
+   - Code structure (async/await vs callbacks)
+   - Error handling approach (try-catch, error boundaries)
+   - Data flow patterns (props, state, context)
+   - Naming conventions (camelCase, PascalCase, snake_case)
+
+2. **Compare implementation:**
+   - Use `find_symbol` to analyze new code structure
+   - Pattern match against EXAMPLES
+   - Calculate drift score (0-100%)
+
+3. **Drift detection thresholds:**
+   - **0-10%:** Minor style differences → Auto-accept, continue
+   - **10-30%:** Moderate drift → Auto-fix if possible, log warning
+   - **30%+:** Major architectural divergence → **HALT & ESCALATE TO USER**
+
+4. **Human Decision Required (30%+ drift):**
+
+   When major drift is detected, execution **PAUSES** and presents user with:
+
+   ```
+   🚨 PATTERN DRIFT DETECTED (60% divergence)
+
+   📋 EXAMPLES Pattern (from INITIAL.md):
+   async def fetch_data():
+       try:
+           result = await api.get()
+           return {"data": result}
+       except Exception as e:
+           logger.error(f"Fetch failed: {e}")
+           raise
+
+   🔧 Current Implementation:
+   def fetch_data():
+       result = api.get()
+       return result
+
+   ❌ Differences:
+   • Missing async/await (architectural)
+   • No try-catch error handling
+   • Wrong return format (missing wrapper)
+
+   📚 Recent Drift History (last 3 PRPs):
+   • PRP-004: Accepted 25% drift (added callbacks for legacy API)
+   • PRP-003: Rejected 45% drift (maintained async consistency)
+   • PRP-002: Accepted 15% drift (simplified error messages)
+
+   🤔 Choose Action:
+   [1] Accept drift + document justification in PRP
+   [2] Reject drift + refactor to match EXAMPLES
+   [3] Update EXAMPLES + accept new pattern
+
+   If [1], provide justification:
+   > _______________________________________
+   ```
+
+5. **User Decision Handling:**
+
+   **Option 1: Accept Drift**
+   - User provides written justification
+   - Justification saved to PRP under `DRIFT_JUSTIFICATION` section
+   - Pattern recorded in Serena memory: `drift-{prp_id}-justification`
+   - Future PRPs can reference this decision
+   - Example: "Legacy callback API requires synchronous interface"
+
+   **Option 2: Reject Drift**
+   - AI refactors code to match EXAMPLES
+   - Re-run L1-L4 validation
+   - Continue to Step 6.5 if all gates pass
+
+   **Option 3: Update EXAMPLES**
+   - User edits INITIAL.md EXAMPLES with new pattern
+   - New pattern becomes baseline for future validations
+   - Document pattern evolution in INITIAL.md
+   - Re-validate current implementation (should now pass)
+
+6. **Drift Justification Format (in PRP):**
+
+   ```yaml
+   DRIFT_JUSTIFICATION:
+     drift_score: 60%
+     decision: accept
+     reason: |
+       Legacy payment API requires synchronous callback interface.
+       Async conversion would require major API refactor (out of scope).
+       Trade-off: Maintain sync pattern for payment, keep async for data fetching.
+     alternatives_considered:
+       - Async wrapper: Rejected (adds complexity, no benefit)
+       - API upgrade: Rejected (3rd party, no control)
+     approved_by: user
+     date: 2025-01-15
+   ```
+
+**Example Check:**
+```python
+# INITIAL.md EXAMPLES shows:
+async def fetch_data():
+    try:
+        result = await api.get()
+        return {"data": result}
+    except Exception as e:
+        logger.error(f"Fetch failed: {e}")
+        raise
+
+# Implementation:
+def fetch_data():  # ❌ Not async
+    result = api.get()  # ❌ No try-catch
+    return result  # ❌ Wrong return format
+
+# Pattern Conformance: 60% drift → Refactor required
+```
+
+**Integration:** Runs after Level 3 (Integration tests), before declaring production-ready.
+
+**Drift Decision Workflow:**
+
+```mermaid
+graph TB
+    A["Level 4: Pattern Conformance<br/>Calculate Drift Score"] --> B{Drift Score?}
+    B -->|0-10%| C["✅ Accept<br/>Continue to Production"]
+    B -->|10-30%| D["⚠️ Auto-fix<br/>Log Warning"]
+    D --> E["Re-run L4 Validation"]
+    E --> C
+    B -->|30%+| F["🚨 HALT<br/>Escalate to User"]
+
+    F --> G["Display:<br/>• EXAMPLES pattern<br/>• Current implementation<br/>• Differences list<br/>• Recent drift history"]
+
+    G --> H{User Decision}
+
+    H -->|1. Accept Drift| I["User provides justification"]
+    I --> J["Save DRIFT_JUSTIFICATION to PRP<br/>Record in Serena memory"]
+    J --> K["Update drift history<br/>drift-{prp_id}-justification"]
+    K --> C
+
+    H -->|2. Reject Drift| L["AI refactors code<br/>to match EXAMPLES"]
+    L --> M["Re-run L1-L4 validation"]
+    M --> N{All gates pass?}
+    N -->|Yes| C
+    N -->|No| L
+
+    H -->|3. Update EXAMPLES| O["User edits INITIAL.md<br/>New pattern becomes baseline"]
+    O --> P["Document pattern evolution<br/>in INITIAL.md"]
+    P --> E
+
+    style A fill:#e3f2fd,color:#000
+    style B fill:#fff8e1,color:#000
+    style C fill:#c8e6c9,color:#000
+    style D fill:#ffe0b2,color:#000
+    style F fill:#ffccbc,color:#000
+    style G fill:#f3e5f5,color:#000
+    style H fill:#ff9999,color:#000
+    style I fill:#e1f5fe,color:#000
+    style J fill:#e1f5fe,color:#000
+    style K fill:#e1f5fe,color:#000
+    style L fill:#b2ebf2,color:#000
+    style M fill:#b2dfdb,color:#000
+    style N fill:#fff8e1,color:#000
+    style O fill:#f3e5f5,color:#000
+    style P fill:#e8f5e9,color:#000
+```
+
+#### 3.3.4 Confidence Scoring
 
 | Score | Meaning | Criteria |
 |-------|---------|----------|
 | 1-3 | Unvalidated | No tests run |
 | 4-6 | Partially validated | Syntax checks pass |
 | 7-8 | Core validated | Unit tests pass |
-| 9-10 | Production-ready | All gates pass, edge cases covered |
+| 9 | Integration validated | L1-L3 pass, but pattern drift detected |
+| 10 | Production-ready | All 4 gates pass, zero drift from EXAMPLES |
 
-**Threshold:** 9/10 minimum for production deployment.
+**Threshold:** 10/10 required for production deployment (previously 9/10, upgraded to include L4).
 
 ---
 
@@ -432,7 +648,7 @@ graph TB
 The Context Engineering tooling is in active development. Current implementation provides core validation and context management utilities, with PRP-aware state management planned for future releases.
 
 **Implemented Features:**
-- ✅ 3-level validation gates (syntax, unit tests, integration)
+- ✅ 3-level validation gates (syntax, unit tests, integration) - Level 4 (pattern conformance) planned
 - ✅ Git operations (status, diff, checkpoints)
 - ✅ Context health monitoring (drift detection, sync)
 - ✅ Python code execution (3 LOC enforcement)
@@ -517,6 +733,12 @@ def run_py(code: Optional[str] = None,
 - `ce prp status` - Show current PRP execution state
 - `ce prp list` - List all PRP checkpoints and state
 
+**Drift History Commands (Planned):**
+- `ce drift history [--last N]` - Show recent drift decisions from last N PRPs
+- `ce drift show <prp-id>` - Display DRIFT_JUSTIFICATION for specific PRP
+- `ce drift summary` - Aggregate drift statistics and patterns
+- `ce drift compare <prp-id-1> <prp-id-2>` - Compare drift decisions between PRPs
+
 **Implementation Status:**
 ```python
 # Implemented in tools/ce/
@@ -526,6 +748,7 @@ def run_py(code: Optional[str] = None,
 
 # Planned (not yet implemented)
 🔜 prp.py: start, checkpoint, cleanup, restore, status, list
+🔜 drift.py: history, show, summary, compare
 ```
 
 **PRP Context Command Examples:**
@@ -547,7 +770,38 @@ ce prp cleanup PRP-005
 ce prp restore PRP-005 implementation
 ```
 
-**Design:** Single CLI tool, modular subcommands, UV-managed. PRP state management ensures isolation between executions.
+**Drift History Command Examples:**
+```bash
+# Show last 3 drift decisions
+ce drift history --last 3
+# Output:
+# PRP-005: 45% drift REJECTED (refactored to match async pattern)
+# PRP-004: 25% drift ACCEPTED (legacy callback API requirement)
+# PRP-003: 15% drift AUTO-FIXED (minor style inconsistency)
+
+# Show specific drift justification
+ce drift show PRP-004
+# Displays full DRIFT_JUSTIFICATION section from PRP-004
+
+# Summary of all drift decisions
+ce drift summary
+# Output:
+# Total PRPs analyzed: 10
+# Drift decisions:
+#   - Accepted: 3 (30%)
+#   - Rejected: 5 (50%)
+#   - Auto-fixed: 2 (20%)
+# Average drift score: 22%
+# Common justifications:
+#   - Legacy API compatibility: 2 cases
+#   - Third-party library constraints: 1 case
+
+# Compare drift between two PRPs
+ce drift compare PRP-003 PRP-005
+# Shows side-by-side drift decisions and reasoning
+```
+
+**Design:** Single CLI tool, modular subcommands, UV-managed. PRP state management ensures isolation between executions. Drift tracking creates architectural decision audit trail.
 
 #### 4.1.3 MCP Integration
 
@@ -679,18 +933,23 @@ graph LR
 ```mermaid
 graph TB
     A["Step 1: CLAUDE.md<br/>Global Rules"] --> B["Step 2: INITIAL.md<br/>Feature Request"]
-    B --> C["Step 3: /generate-prp<br/>10-15 min Research"]
+    B --> B5["Step 2.5: Context Sync<br/>Health Check 1-2 min"]
+    B5 --> C["Step 3: /generate-prp<br/>10-15 min Research"]
     C --> D["Step 4: Human Validation<br/>CRITICAL CHECKPOINT"]
     D --> E["Step 5: /execute-prp<br/>20-90 min Implementation"]
-    E --> F["Step 6: Validation Loop<br/>Self-Healing"]
-    F --> G["Production Code<br/>9/10 Confidence"]
+    E --> F["Step 6: Validation Loop<br/>L1-L4 + Self-Healing"]
+    F --> F5["Step 6.5: State Cleanup<br/>Context Sync 2-3 min"]
+    F5 --> G["Production Code<br/>10/10 Confidence"]
+    G -.->|Next PRP| B
 
     style A fill:#e3f2fd,color:#000
     style B fill:#fff8e1,color:#000
+    style B5 fill:#e1f5fe,color:#000
     style C fill:#f3e5f5,color:#000
     style D fill:#ff9999,color:#000
     style E fill:#b2ebf2,color:#000
     style F fill:#ffe0b2,color:#000
+    style F5 fill:#e1f5fe,color:#000
     style G fill:#c8e6c9,color:#000
 ```
 
@@ -707,6 +966,14 @@ graph TB
 - Add EXAMPLES (similar code)
 - Link DOCUMENTATION (library docs)
 - List OTHER CONSIDERATIONS (gotchas)
+
+**Step 2.5: Context Sync & Health Check** (1-2 minutes)
+- Run `ce context sync` to refresh context with recent codebase changes
+- Run `ce context health` to verify context quality
+- Check drift score (abort if > 30% - indicates stale context)
+- Verify git clean state (warn if uncommitted changes)
+- **Purpose:** Ensure PRP generation uses fresh, accurate context
+- **Abort conditions:** High drift, failed sync, context corruption
 
 **Step 3: /generate-prp** (10-15 minutes)
 - Automated research: codebase patterns, documentation, architecture
@@ -729,17 +996,40 @@ graph TB
 - Level 1: Syntax checks
 - Level 2: Unit tests
 - Level 3: Integration tests
-- Self-correct until 9/10 confidence
+- Level 4: Pattern conformance (NEW)
+  - Compare implementation vs EXAMPLES from INITIAL.md
+  - Verify code follows documented patterns
+  - Detect architectural drift from specification
+- Self-correct until 10/10 confidence (all 4 gates pass)
+
+**Step 6.5: State Cleanup & Context Sync** (2-3 minutes)
+- Execute cleanup protocol (Section 5.6):
+  - Delete intermediate git checkpoints (keep final only)
+  - Archive PRP-scoped Serena memories to project knowledge
+  - Reset validation state counters
+- Run `ce context sync` to index new code
+- Run `ce context health` to verify clean state
+- Create final checkpoint: `checkpoint-{prp_id}-final`
+- **Purpose:** Prevent state leakage into next PRP, maintain context quality
+- **Verification:** Clean git tags, drift score stable, no orphaned memories
 
 ### 5.3 Time Distribution
 
-| Feature Complexity | PRP Gen | Execution | Total | Manual Equiv |
-|-------------------|---------|-----------|-------|--------------|
-| Simple | 5-8 min | 8-15 min | 13-23 min | 3-5 hrs |
-| Medium | 10-15 min | 20-40 min | 30-55 min | 8-15 hrs |
-| Complex | 15-25 min | 45-90 min | 60-115 min | 20-40 hrs |
+| Feature Complexity | Context Sync | PRP Gen | Execution | Cleanup | Total | Manual Equiv |
+|-------------------|--------------|---------|-----------|---------|-------|--------------|
+| Simple | 1-2 min | 5-8 min | 8-15 min | 2-3 min | 16-28 min | 3-5 hrs |
+| Medium | 1-2 min | 10-15 min | 20-40 min | 2-3 min | 33-60 min | 8-15 hrs |
+| Complex | 1-2 min | 15-25 min | 45-90 min | 2-3 min | 63-120 min | 20-40 hrs |
+
+**Notes:**
+- **Context Sync (Step 2.5):** Health check + drift detection before PRP generation
+- **Execution:** Includes L1-L4 validation gates and self-healing
+- **Cleanup (Step 6.5):** State cleanup, memory archival, context sync after completion
+- **Total:** End-to-end per PRP, including quality gates
 
 **Speed Improvement:** 10-40x faster than manual development (typically 10-24x, exceptional cases up to 40x).
+
+**Context overhead:** Steps 2.5 and 6.5 add 3-5 min total but prevent state leakage and ensure quality.
 
 ### 5.4 Autonomy Levels
 
@@ -747,12 +1037,14 @@ graph TB
 |------|------------------|-------------|
 | 1. CLAUDE.md | Manual (one-time) | 0% |
 | 2. INITIAL.md | Manual | 0% |
+| 2.5. Context Sync | None | 100% |
 | 3. /generate-prp | None | 100% |
 | 4. Validation | Manual (required) | 0% |
 | 5. /execute-prp | None | 100% |
-| 6. Validation loop | None | 100% |
+| 6. Validation loop (L1-L4) | None | 100% |
+| 6.5. State Cleanup | None | 100% |
 
-**Key Insight:** Human intervention only at specification (Steps 1-2) and critical checkpoint (Step 4).
+**Key Insight:** Human intervention only at specification (Steps 1-2) and critical checkpoint (Step 4). Context sync and cleanup are fully automated.
 
 ### 5.5 Escalation Triggers
 
@@ -1143,18 +1435,428 @@ This confidence scoring focuses on **code correctness and test coverage** but do
 
 For production-critical systems, supplement with additional validation (security scans, performance testing, manual security review).
 
+### 7.4 Pipeline Architecture & Testing Strategy
+
+#### 7.4.1 Design Principles
+
+**Core Philosophy:**
+- **Single source of truth:** Production logic = Test logic
+- **Composable:** Test individual nodes, subgraphs, or full pipeline
+- **Observable:** Mocked nodes visible in logs with clear indicators
+- **Strategy pattern:** Pluggable mock implementations
+- **CI/CD agnostic:** Abstract pipeline definition, concrete execution
+
+**Key Requirements:**
+1. Same builder function constructs both production and test pipelines
+2. Mock strategy interface allows clean substitution
+3. E2E tests run full pipeline with mocked external dependencies
+4. Integration tests run subgraphs with real components
+5. Unit tests run individual nodes in isolation
+
+#### 7.4.2 Pipeline Builder Pattern
+
+**Architecture Diagram:**
+
+```mermaid
+graph TB
+    subgraph "Pipeline Builder"
+        PB["PipelineBuilder<br/>(mode: production | integration | e2e)"]
+        PB --> N1["Node: parse_initial"]
+        PB --> N2["Node: research_codebase"]
+        PB --> N3["Node: fetch_docs"]
+        PB --> N4["Node: generate_prp"]
+        PB --> N5["Node: validate_prp"]
+    end
+
+    subgraph "Strategy Pattern"
+        N1 --> S1["RealParserStrategy"]
+        N2 --> S2A{"Mode?"}
+        S2A -->|production| S2R["RealSerenaStrategy"]
+        S2A -->|e2e/integration| S2M["MockSerenaStrategy 🎭"]
+        N3 --> S3A{"Mode?"}
+        S3A -->|production| S3R["RealContext7Strategy"]
+        S3A -->|e2e/integration| S3M["MockContext7Strategy 🎭"]
+        N4 --> S4A{"Mode?"}
+        S4A -->|production| S4R["RealLLMStrategy"]
+        S4A -->|e2e/integration| S4M["MockLLMStrategy 🎭"]
+        N5 --> S5["RealValidatorStrategy"]
+    end
+
+    subgraph "Test Modes"
+        TU["Unit Test<br/>Single node"]
+        TI["Integration Test<br/>Subgraph with real nodes"]
+        TE["E2E Test<br/>Full pipeline, mocked externals"]
+    end
+
+    TU -.-> N1
+    TI -.-> N4
+    TI -.-> N5
+    TE -.-> PB
+
+    style PB fill:#e3f2fd,color:#000
+    style N1 fill:#fff8e1,color:#000
+    style N2 fill:#fff8e1,color:#000
+    style N3 fill:#fff8e1,color:#000
+    style N4 fill:#fff8e1,color:#000
+    style N5 fill:#fff8e1,color:#000
+    style S1 fill:#c8e6c9,color:#000
+    style S2R fill:#c8e6c9,color:#000
+    style S2M fill:#ffccbc,color:#000
+    style S3R fill:#c8e6c9,color:#000
+    style S3M fill:#ffccbc,color:#000
+    style S4R fill:#c8e6c9,color:#000
+    style S4M fill:#ffccbc,color:#000
+    style S5 fill:#c8e6c9,color:#000
+    style S2A fill:#fff9c4,color:#000
+    style S3A fill:#fff9c4,color:#000
+    style S4A fill:#fff9c4,color:#000
+    style TU fill:#e1f5fe,color:#000
+    style TI fill:#b2ebf2,color:#000
+    style TE fill:#b2dfdb,color:#000
+```
+
+**Code Architecture:**
+
+```python
+from typing import Protocol, TypeVar, Generic
+from dataclasses import dataclass
+
+# Strategy interface for mocks
+class NodeStrategy(Protocol):
+    """Strategy for node execution (real or mock)."""
+    def execute(self, input_data: dict) -> dict:
+        """Execute node logic."""
+        ...
+
+    def is_mocked(self) -> bool:
+        """Return True if this is a mock implementation."""
+        ...
+
+# Builder pattern for pipeline construction
+class PipelineBuilder:
+    """Builds pipelines with pluggable node strategies."""
+
+    def __init__(self, mode: str = "production"):
+        """
+        Args:
+            mode: "production", "integration", or "e2e"
+        """
+        self.mode = mode
+        self.nodes = {}
+        self.edges = []
+
+    def add_node(
+        self,
+        name: str,
+        strategy: NodeStrategy,
+        description: str = ""
+    ) -> "PipelineBuilder":
+        """Add node with execution strategy."""
+        self.nodes[name] = {
+            "strategy": strategy,
+            "description": description,
+            "mocked": strategy.is_mocked()
+        }
+        return self
+
+    def add_edge(self, from_node: str, to_node: str) -> "PipelineBuilder":
+        """Add edge between nodes."""
+        self.edges.append((from_node, to_node))
+        return self
+
+    def build(self) -> "Pipeline":
+        """Construct executable pipeline."""
+        # Log mocked nodes
+        mocked = [n for n, data in self.nodes.items() if data["mocked"]]
+        if mocked:
+            logger.info(f"🎭 MOCKED NODES: {', '.join(mocked)}")
+
+        return Pipeline(self.nodes, self.edges)
+
+
+# Example: LangGraph integration (optional, for convenience)
+from langgraph.graph import StateGraph
+
+def to_langgraph(pipeline: Pipeline) -> StateGraph:
+    """Convert pipeline to LangGraph for visualization/execution."""
+    graph = StateGraph()
+
+    for node_name, node_data in pipeline.nodes.items():
+        mock_indicator = "🎭 " if node_data["mocked"] else ""
+        graph.add_node(
+            f"{mock_indicator}{node_name}",
+            node_data["strategy"].execute
+        )
+
+    for from_node, to_node in pipeline.edges:
+        graph.add_edge(from_node, to_node)
+
+    return graph.compile()
+```
+
+#### 7.4.3 Mock Strategy Interface
+
+**Clean optionality - strategy determines behavior:**
+
+```python
+# Real implementation
+class OpenAINodeStrategy:
+    def execute(self, input_data: dict) -> dict:
+        response = openai.ChatCompletion.create(
+            model="gpt-4",
+            messages=input_data["messages"]
+        )
+        return {"response": response.choices[0].message.content}
+
+    def is_mocked(self) -> bool:
+        return False
+
+
+# Mock implementation (same interface)
+class MockOpenAINodeStrategy:
+    def __init__(self, canned_response: str = "Mock response"):
+        self.canned_response = canned_response
+
+    def execute(self, input_data: dict) -> dict:
+        logger.info(f"🎭 MOCK: OpenAI called with {len(input_data['messages'])} messages")
+        return {"response": self.canned_response}
+
+    def is_mocked(self) -> bool:
+        return True
+
+
+# Factory for test convenience
+def create_node_strategy(
+    node_type: str,
+    mode: str = "production",
+    **mock_params
+) -> NodeStrategy:
+    """Factory creates real or mock strategy based on mode."""
+    if mode == "production":
+        return REAL_STRATEGIES[node_type]()
+    else:
+        return MOCK_STRATEGIES[node_type](**mock_params)
+```
+
+#### 7.4.4 Test Composition Patterns
+
+**E2E Test (Full Pipeline, Mocked External Dependencies):**
+
+```python
+def test_prp_execution_e2e():
+    """E2E: Full pipeline with mocked external APIs."""
+
+    # Build pipeline in E2E mode
+    pipeline = (
+        PipelineBuilder(mode="e2e")
+        .add_node("parse_initial", create_node_strategy("parser", "e2e"))
+        .add_node("research_codebase", create_node_strategy("serena", "e2e"))
+        .add_node("fetch_docs", create_node_strategy("context7", "e2e"))
+        .add_node("generate_prp", create_node_strategy("llm", "e2e",
+                                                       canned_response=MOCK_PRP))
+        .add_node("validate_prp", create_node_strategy("validator", "production"))
+        .add_edge("parse_initial", "research_codebase")
+        .add_edge("research_codebase", "fetch_docs")
+        .add_edge("fetch_docs", "generate_prp")
+        .add_edge("generate_prp", "validate_prp")
+        .build()
+    )
+
+    # Execute
+    result = pipeline.run({"initial_md": SAMPLE_INITIAL})
+
+    # Assertions
+    assert result["validate_prp"]["success"]
+    assert "GOAL" in result["generate_prp"]["response"]
+
+    # Log shows: 🎭 MOCKED NODES: research_codebase, fetch_docs, generate_prp
+
+
+**Integration Test (Subgraph, Real Components):**
+
+```python
+def test_validation_subgraph_integration():
+    """Integration: Real validation nodes, mocked generation."""
+
+    pipeline = (
+        PipelineBuilder(mode="integration")
+        .add_node("generate_prp", create_node_strategy("llm", "integration",
+                                                       canned_response=VALID_PRP))
+        .add_node("validate_syntax", create_node_strategy("validator_l1", "production"))
+        .add_node("validate_tests", create_node_strategy("validator_l2", "production"))
+        .add_node("validate_integration", create_node_strategy("validator_l3", "production"))
+        .add_edge("generate_prp", "validate_syntax")
+        .add_edge("validate_syntax", "validate_tests")
+        .add_edge("validate_tests", "validate_integration")
+        .build()
+    )
+
+    result = pipeline.run({})
+
+    # Real L1-L3 validation runs
+    assert result["validate_integration"]["all_passed"]
+
+    # Log shows: 🎭 MOCKED NODES: generate_prp
+
+
+**Unit Test (Single Node):**
+
+```python
+def test_parser_node_unit():
+    """Unit: Single node in isolation."""
+
+    strategy = create_node_strategy("parser", "production")
+    result = strategy.execute({"initial_md": SAMPLE_INITIAL})
+
+    assert result["feature_name"]
+    assert result["examples"]
+```
+
+#### 7.4.5 CI/CD Pipeline Abstraction
+
+**Design Goals:**
+- Unbound from concrete CI/CD implementation (GitHub Actions, GitLab CI, Jenkins)
+- Readable, manipulable signatures
+- Easy to test pipeline definition itself
+
+**Abstract Pipeline Definition:**
+
+```yaml
+# ci_pipeline.yml - Abstract pipeline definition
+name: context-engineering-validation
+
+stages:
+  - stage: lint
+    nodes:
+      - name: python_lint
+        command: "uv run ruff check ."
+        strategy: real
+      - name: type_check
+        command: "uv run mypy ."
+        strategy: real
+    parallel: true
+
+  - stage: test
+    nodes:
+      - name: unit_tests
+        command: "uv run pytest tests/unit/ -v"
+        strategy: real
+      - name: integration_tests
+        command: "uv run pytest tests/integration/ -v"
+        strategy: real
+    parallel: true
+    depends_on: [lint]
+
+  - stage: e2e
+    nodes:
+      - name: e2e_prp_generation
+        command: "uv run pytest tests/e2e/test_prp_gen.py -v"
+        strategy: real
+      - name: e2e_prp_execution
+        command: "uv run pytest tests/e2e/test_prp_exec.py -v"
+        strategy: real
+    parallel: false
+    depends_on: [test]
+
+  - stage: deploy
+    nodes:
+      - name: build_docs
+        command: "uv run mkdocs build"
+        strategy: real
+      - name: publish
+        command: "uv run publish.py"
+        strategy: conditional  # Only on main branch
+    depends_on: [e2e]
+
+mock_strategies:
+  # Override for testing CI/CD pipeline itself
+  python_lint:
+    mode: mock
+    return_code: 0
+  e2e_prp_generation:
+    mode: mock
+    return_code: 0
+    output: "✅ E2E tests passed (mocked)"
+```
+
+**Concrete Executor (GitHub Actions example):**
+
+```python
+# ci/executors/github_actions.py
+def render_github_actions(abstract_pipeline: dict) -> str:
+    """Convert abstract pipeline to GitHub Actions YAML."""
+
+    jobs = {}
+    for stage in abstract_pipeline["stages"]:
+        job_name = stage["stage"]
+        jobs[job_name] = {
+            "runs-on": "ubuntu-latest",
+            "steps": [
+                {"uses": "actions/checkout@v3"},
+                {"name": "Setup Python", "uses": "actions/setup-python@v4"}
+            ]
+        }
+
+        for node in stage["nodes"]:
+            jobs[job_name]["steps"].append({
+                "name": node["name"],
+                "run": node["command"]
+            })
+
+        if stage.get("depends_on"):
+            jobs[job_name]["needs"] = stage["depends_on"]
+
+    return yaml.dump({"jobs": jobs})
+```
+
+**Testing the CI/CD Pipeline Itself:**
+
+```python
+def test_ci_pipeline_structure():
+    """Test pipeline definition is valid."""
+
+    pipeline = load_ci_pipeline("ci_pipeline.yml")
+
+    # Test stage dependencies
+    assert pipeline.get_stage("test").depends_on == ["lint"]
+    assert pipeline.get_stage("e2e").depends_on == ["test"]
+
+    # Test mocked execution
+    result = pipeline.run(mode="mock", mock_strategies=pipeline["mock_strategies"])
+
+    assert result["lint"]["python_lint"]["return_code"] == 0
+    assert result["e2e"]["e2e_prp_generation"]["mocked"]
+```
+
+#### 7.4.6 Observable Mocking - Log Output Example
+
+```
+🚀 Starting pipeline: prp-generation-e2e
+📊 Pipeline mode: e2e
+🎭 MOCKED NODES: research_codebase, fetch_docs, generate_prp
+
+[parse_initial] ✅ Parsed INITIAL.md (23 lines, 3 examples)
+[research_codebase] 🎭 MOCK: Serena search returned 5 canned symbols
+[fetch_docs] 🎭 MOCK: Context7 returned React 18.2 docs (cached)
+[generate_prp] 🎭 MOCK: LLM generated PRP (using mock_prp_template.md)
+[validate_prp] ✅ REAL: PRP validation passed (all sections present)
+
+✅ Pipeline completed: 5 nodes, 3 mocked, 0 failures
+⏱️  Duration: 1.2s (vs ~45s with real LLM calls)
+```
+
 ### See Also
 
-- [Validation and Testing Framework](../docs/research/08-validation-testing.md) - Complete 3-level validation gates, self-healing implementation, and testing strategies
+- [Validation and Testing Framework](../docs/research/08-validation-testing.md) - Complete 4-level validation gates (L1-L4), self-healing implementation, and testing strategies
 - [Self-Healing Framework](../docs/research/04-self-healing-framework.md) - Detailed self-healing loops, error recovery, and auto-fix mechanisms
 
 #### 7.3.2 Production Readiness Criteria
 
 | Criterion | Requirement |
 |-----------|-------------|
-| Confidence score | ≥ 9/10 |
+| Confidence score | 10/10 (all 4 gates pass) |
 | Test coverage | ≥ 80% |
-| All validation gates | Pass |
+| All validation gates | Pass (L1-L4 including pattern conformance) |
 | Error handling | Comprehensive |
 | Security scan | No issues |
 
@@ -1205,7 +1907,7 @@ For production-critical systems, supplement with additional validation (security
 - **First-pass:** Code works without validation failures (85% of executions)
 - **Second-pass:** Code works after first self-healing iteration
 - **Self-healing:** Validation failures fixed automatically (92% fix rate)
-- **Production-ready:** Meets all quality gates (9/10 confidence)
+- **Production-ready:** Meets all quality gates (10/10 confidence, L1-L4 pass)
 
 **Success Rate Calculation:**
 - First-pass success: 85% complete immediately
@@ -1260,9 +1962,9 @@ For production-critical systems, supplement with additional validation (security
 
 | Priority | Template | Gates | Time | Quality |
 |----------|----------|-------|------|---------|
-| Speed | KISS | Level 1-2 | 50% faster | 7-8/10 |
-| Balanced | KISS | All levels | Standard | 8-9/10 |
-| Quality | Self-healing | All + checkpoints | 30% slower | 9-10/10 |
+| Speed | KISS | Level 1-2 only | 50% faster | 7-8/10 (L3-L4 skipped) |
+| Balanced | KISS | L1-L3 | Standard | 8-9/10 (L4 optional) |
+| Quality | Self-healing | L1-L4 + checkpoints | 30% slower | 10/10 (all gates) |
 
 ---
 
@@ -1273,9 +1975,9 @@ For production-critical systems, supplement with additional validation (security
 ### 9.1 Reliability Targets
 
 1. **Context Completeness:** PRP contains all information needed for implementation
-2. **Validation Coverage:** Three-level gates catch 97% of errors
+2. **Validation Coverage:** Four-level gates (L1-L4) catch 97% of errors and prevent pattern drift
 3. **Self-Healing:** 92% of failures automatically corrected
-4. **Production Readiness:** 94% of executions meet 9/10 confidence threshold
+4. **Production Readiness:** 94% of executions meet 10/10 confidence threshold (all 4 gates pass)
 
 ### 9.2 Performance Targets
 
@@ -1401,7 +2103,7 @@ Context Engineering Management delivers:
 | Metric | Target | Current |
 |--------|--------|---------|
 | First-pass success | 80% | 85% |
-| Confidence score | 9/10 | 9.4/10 avg |
+| Confidence score | 10/10 (all 4 gates) | 9.4/10 avg (improving toward 10/10) |
 | Test coverage | 80% | 87% avg |
 | Speed improvement | 10x | 10-24x |
 | Productivity gain | 3x | 3-4x |
