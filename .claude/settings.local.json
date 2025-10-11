@@ -67,7 +67,18 @@
       "mcp__serena__write_memory",
       "Read(//Users/bprzybysz/.config/**)",
       "Read(//Users/bprzybysz/**)",
-      "Bash(gh pr list:*)"
+      "Bash(gh pr list:*)",
+      "Bash(for:*)",
+      "Bash(do [ -f \"$f\" ])",
+      "Bash(python3:*)",
+      "mcp__filesystem__read_text_file",
+      "mcp__filesystem__write_file",
+      "mcp__filesystem__edit_file",
+      "mcp__filesystem__list_directory",
+      "mcp__filesystem__search_files",
+      "mcp__filesystem__get_file_info",
+      "mcp__filesystem__list_allowed_directories",
+      "Bash(bash -c:*)"
     ],
     "deny": [],
     "ask": []
