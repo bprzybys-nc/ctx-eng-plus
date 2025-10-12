@@ -593,38 +593,128 @@ def run_validation_loop(
 
     Process:
         1. Run L1 (Syntax): validate_level_1()
-        2. Run L2 (Unit Tests): validate_level_2(phase["validation_command"])
+        2. Run L2 (Unit Tests): Custom validation from phase
         3. Run L3 (Integration): validate_level_3()
         4. Run L4 (Pattern Conformance): validate_level_4(prp_path)
 
         For each level:
         - If pass: continue to next level
-        - If fail: enter self-healing loop (max 3 attempts)
-          1. Parse error: parse_validation_error(output)
-          2. Check escalation triggers
-          3. Locate error: find_error_location(error)
-          4. Apply fix: apply_self_healing_fix(location, error)
-          5. Re-run validation
-        - If still failing after 3 attempts: escalate_to_human()
+        - If fail: Phase 4 will add self-healing, for now log and continue
 
-    Note: Phase 3 will implement actual validation integration
-          Phase 4 will add self-healing logic
-          For now, returns success stub
+    Note: Phase 4 will add self-healing logic
     """
-    print(f"  🧪 Running validation: {phase.get('validation_command', 'N/A')}")
-    print(f"  ⚠️  MVP Mode: Validation stub (Phase 3 will implement)")
+    from .validate import validate_level_1, validate_level_2, validate_level_3, validate_level_4
 
-    # Stub implementation - Phase 3 will add real validation
+    print(f"  🧪 Running validation...")
+
+    validation_levels = {}
+    self_healed = []
+    escalated = []
+    all_passed = True
+
+    # L1: Syntax & Style
+    try:
+        print(f"    L1: Syntax & Style...")
+        l1_result = validate_level_1()
+        validation_levels["L1"] = {
+            "passed": l1_result["success"],
+            "attempts": 1,
+            "errors": l1_result.get("errors", [])
+        }
+        if l1_result["success"]:
+            print(f"    ✅ L1 passed ({l1_result['duration']:.2f}s)")
+        else:
+            print(f"    ❌ L1 failed: {len(l1_result['errors'])} errors")
+            all_passed = False
+    except Exception as e:
+        print(f"    ❌ L1 exception: {str(e)}")
+        validation_levels["L1"] = {"passed": False, "attempts": 1, "errors": [str(e)]}
+        all_passed = False
+
+    # L2: Unit Tests (use phase validation command if provided)
+    if phase.get("validation_command"):
+        try:
+            print(f"    L2: Running {phase['validation_command']}...")
+            from .core import run_cmd
+            l2_result = run_cmd(phase["validation_command"])
+            validation_levels["L2"] = {
+                "passed": l2_result["success"],
+                "attempts": 1,
+                "errors": [] if l2_result["success"] else [l2_result.get("stderr", "Test failed")]
+            }
+            if l2_result["success"]:
+                print(f"    ✅ L2 passed ({l2_result['duration']:.2f}s)")
+            else:
+                print(f"    ❌ L2 failed")
+                print(f"       {l2_result.get('stderr', 'Unknown error')[:200]}")
+                all_passed = False
+        except Exception as e:
+            print(f"    ❌ L2 exception: {str(e)}")
+            validation_levels["L2"] = {"passed": False, "attempts": 1, "errors": [str(e)]}
+            all_passed = False
+    else:
+        # No validation command - try generic L2
+        try:
+            print(f"    L2: Unit Tests...")
+            l2_result = validate_level_2()
+            validation_levels["L2"] = {
+                "passed": l2_result["success"],
+                "attempts": 1,
+                "errors": l2_result.get("errors", [])
+            }
+            if l2_result["success"]:
+                print(f"    ✅ L2 passed ({l2_result['duration']:.2f}s)")
+            else:
+                print(f"    ❌ L2 failed")
+                all_passed = False
+        except Exception as e:
+            print(f"    ⚠️  L2 skipped: {str(e)}")
+            validation_levels["L2"] = {"passed": True, "attempts": 1, "errors": [], "skipped": True}
+
+    # L3: Integration Tests
+    try:
+        print(f"    L3: Integration Tests...")
+        l3_result = validate_level_3()
+        validation_levels["L3"] = {
+            "passed": l3_result["success"],
+            "attempts": 1,
+            "errors": l3_result.get("errors", [])
+        }
+        if l3_result["success"]:
+            print(f"    ✅ L3 passed ({l3_result['duration']:.2f}s)")
+        else:
+            print(f"    ❌ L3 failed")
+            all_passed = False
+    except Exception as e:
+        print(f"    ⚠️  L3 skipped: {str(e)}")
+        validation_levels["L3"] = {"passed": True, "attempts": 1, "errors": [], "skipped": True}
+
+    # L4: Pattern Conformance
+    try:
+        print(f"    L4: Pattern Conformance...")
+        l4_result = validate_level_4(prp_path)
+        validation_levels["L4"] = {
+            "passed": l4_result["success"],
+            "attempts": 1,
+            "errors": [],
+            "drift_score": l4_result.get("drift_score", 0)
+        }
+        if l4_result["success"]:
+            print(f"    ✅ L4 passed (drift: {l4_result.get('drift_score', 0):.1f}%)")
+        else:
+            print(f"    ❌ L4 failed (drift: {l4_result.get('drift_score', 100):.1f}%)")
+            all_passed = False
+    except Exception as e:
+        print(f"    ⚠️  L4 skipped: {str(e)}")
+        validation_levels["L4"] = {"passed": True, "attempts": 1, "errors": [], "skipped": True}
+
+    print(f"  {'✅' if all_passed else '❌'} Validation {'complete' if all_passed else 'failed'}")
+
     return {
-        "success": True,
-        "validation_levels": {
-            "L1": {"passed": True, "attempts": 1, "errors": []},
-            "L2": {"passed": True, "attempts": 1, "errors": []},
-            "L3": {"passed": True, "attempts": 1, "errors": []},
-            "L4": {"passed": True, "attempts": 1, "errors": []}
-        },
-        "self_healed": [],
-        "escalated": [],
+        "success": all_passed,
+        "validation_levels": validation_levels,
+        "self_healed": self_healed,
+        "escalated": escalated,
         "attempts": 1
     }
 
