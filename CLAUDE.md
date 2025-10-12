@@ -396,4 +396,5 @@ style E fill:#34495e,color:#fff    # Dark gray
 ---
 
 **Remember**: This is a simple tool project. Keep it simple. No over-engineering.
-- PRPs are in ./PRPs/
+- PRPs are in ./PRPs/[executed,feature-requests]
+- Create new PRPs in PRPs/feature-requests
