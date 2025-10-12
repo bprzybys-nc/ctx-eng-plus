@@ -49,6 +49,8 @@ uv sync                          # Install dependencies
 - ❌ FORBIDDEN: Proposing 5+ line scripts without running
 - ✅ REQUIRED: Longer code → tmp/ file and execute
 
+# NEVER OVERWRITE .claude/settings.local.json PERMISSIONS OR I WILL BE UNHAPPY AND NO REWARD FOR YOU
+
 ---
 
 ## Working Directory
