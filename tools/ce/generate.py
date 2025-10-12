@@ -700,3 +700,487 @@ def fetch_external_link(
     except Exception as e:
         logger.warning(f"Failed to fetch {url}: {e}")
         return None
+
+
+# =============================================================================
+# Phase 4: Template Engine
+# =============================================================================
+
+
+def generate_prp(initial_md_path: str, output_dir: str = "PRPs/feature-requests") -> str:
+    """Generate complete PRP from INITIAL.md.
+
+    Main orchestration function that coordinates all phases.
+
+    Args:
+        initial_md_path: Path to INITIAL.md file
+        output_dir: Directory for output PRP file
+
+    Returns:
+        Path to generated PRP file
+
+    Raises:
+        FileNotFoundError: If INITIAL.md doesn't exist
+        ValueError: If INITIAL.md invalid
+        RuntimeError: If PRP generation fails
+
+    Process:
+        1. Parse INITIAL.md → structured data
+        2. Research codebase → Serena findings
+        3. Fetch documentation → Context7 + WebFetch
+        4. Synthesize sections (TLDR, Implementation, Validation Gates, etc.)
+        5. Get next PRP ID
+        6. Write PRP file with YAML header
+        7. Check completeness
+    """
+    logger.info(f"Starting PRP generation from: {initial_md_path}")
+
+    # Phase 1: Parse INITIAL.md
+    parsed_data = parse_initial_md(initial_md_path)
+    logger.info(f"Parsed feature: {parsed_data['feature_name']}")
+
+    # Phase 2: Research codebase
+    serena_research = research_codebase(
+        parsed_data["feature_name"],
+        parsed_data["examples"],
+        parsed_data["feature"]
+    )
+    logger.info(f"Codebase research complete: {len(serena_research['patterns'])} patterns found")
+
+    # Phase 3: Fetch documentation
+    documentation = fetch_documentation(
+        parsed_data["documentation"],
+        parsed_data["feature"],
+        serena_research
+    )
+    logger.info(f"Documentation fetched: {len(documentation['library_docs'])} libraries")
+
+    # Phase 4: Synthesize PRP sections
+    prp_content = synthesize_prp_content(parsed_data, serena_research, documentation)
+
+    # Get next PRP ID
+    prp_id = get_next_prp_id(output_dir)
+    logger.info(f"Assigned PRP ID: {prp_id}")
+
+    # Write PRP file
+    output_path = Path(output_dir) / f"{prp_id}-{_slugify(parsed_data['feature_name'])}.md"
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+
+    with open(output_path, "w", encoding="utf-8") as f:
+        f.write(prp_content)
+
+    logger.info(f"PRP generated: {output_path}")
+
+    # Check completeness
+    completeness = check_prp_completeness(str(output_path))
+    if not completeness["complete"]:
+        logger.warning(f"PRP incomplete: {completeness['missing_sections']}")
+    else:
+        logger.info("PRP completeness check: PASSED")
+
+    return str(output_path)
+
+
+def synthesize_prp_content(
+    parsed_data: Dict[str, Any],
+    serena_research: Dict[str, Any],
+    documentation: Dict[str, Any]
+) -> str:
+    """Synthesize complete PRP content from research.
+
+    Args:
+        parsed_data: Parsed INITIAL.md data
+        serena_research: Codebase research results
+        documentation: Fetched documentation
+
+    Returns:
+        Complete PRP markdown content with YAML header
+
+    Process:
+        1. Generate YAML header with metadata
+        2. Synthesize TLDR section
+        3. Synthesize Context section
+        4. Synthesize Implementation Steps
+        5. Synthesize Validation Gates
+        6. Add Research Findings appendix
+        7. Format final markdown
+    """
+    logger.info("Synthesizing PRP content")
+
+    # Generate sections
+    yaml_header = _generate_yaml_header(parsed_data)
+    tldr = synthesize_tldr(parsed_data, serena_research)
+    context = synthesize_context(parsed_data, documentation)
+    implementation = synthesize_implementation(parsed_data, serena_research)
+    validation_gates = synthesize_validation_gates(parsed_data, serena_research)
+    testing = synthesize_testing_strategy(parsed_data, serena_research)
+    rollout = synthesize_rollout_plan(parsed_data)
+
+    # Combine sections
+    prp_content = f"""---
+{yaml_header}
+---
+
+# {parsed_data['feature_name']}
+
+## 1. TL;DR
+
+{tldr}
+
+## 2. Context
+
+{context}
+
+## 3. Implementation Steps
+
+{implementation}
+
+## 4. Validation Gates
+
+{validation_gates}
+
+## 5. Testing Strategy
+
+{testing}
+
+## 6. Rollout Plan
+
+{rollout}
+
+---
+
+## Research Findings
+
+### Serena Codebase Analysis
+- **Patterns Found**: {len(serena_research['patterns'])}
+- **Test Patterns**: {len(serena_research['test_patterns'])}
+- **Serena Available**: {serena_research['serena_available']}
+
+### Documentation Sources
+- **Library Docs**: {len(documentation['library_docs'])}
+- **External Links**: {len(documentation['external_links'])}
+- **Context7 Available**: {documentation['context7_available']}
+"""
+
+    return prp_content
+
+
+def synthesize_tldr(
+    parsed_data: Dict[str, Any],
+    serena_research: Dict[str, Any]
+) -> str:
+    """Generate TLDR section.
+
+    Args:
+        parsed_data: INITIAL.md structured data
+        serena_research: Codebase research findings
+
+    Returns:
+        TLDR markdown text (3-5 bullet points)
+    """
+    feature = parsed_data["feature"]
+    examples_count = len(parsed_data["examples"])
+
+    tldr = f"""**Objective**: {parsed_data['feature_name']}
+
+**What**: {feature[:200]}...
+
+**Why**: Enable functionality described in INITIAL.md with {examples_count} reference examples
+
+**Effort**: Medium (3-5 hours estimated based on complexity)
+
+**Dependencies**: {', '.join([doc['title'] for doc in parsed_data['documentation'][:3]])}
+"""
+    return tldr
+
+
+def synthesize_context(
+    parsed_data: Dict[str, Any],
+    documentation: Dict[str, Any]
+) -> str:
+    """Generate Context section.
+
+    Args:
+        parsed_data: INITIAL.md data
+        documentation: Fetched documentation
+
+    Returns:
+        Context markdown with background and constraints
+    """
+    feature = parsed_data["feature"]
+    other = parsed_data.get("other_considerations", "")
+
+    context = f"""### Background
+
+{feature}
+
+### Constraints and Considerations
+
+{other if other else "See INITIAL.md for additional considerations"}
+
+### Documentation References
+
+"""
+    # Add documentation links
+    for doc in parsed_data["documentation"]:
+        if doc["type"] == "link":
+            context += f"- [{doc['title']}]({doc['url']})\n"
+        elif doc["type"] == "library":
+            context += f"- {doc['title']} (library documentation)\n"
+
+    return context
+
+
+def synthesize_implementation(
+    parsed_data: Dict[str, Any],
+    serena_research: Dict[str, Any]
+) -> str:
+    """Generate Implementation Steps section.
+
+    Args:
+        parsed_data: INITIAL.md data
+        serena_research: Codebase patterns
+
+    Returns:
+        Implementation steps markdown
+    """
+    examples = parsed_data["examples"]
+
+    steps = """### Phase 1: Setup and Research (30 min)
+
+1. Review INITIAL.md examples and requirements
+2. Analyze existing codebase patterns
+3. Identify integration points
+
+### Phase 2: Core Implementation (2-3 hours)
+
+"""
+    # Generate steps from examples
+    for i, example in enumerate(examples[:3], 1):
+        if example["type"] == "inline":
+            steps += f"{i}. Implement {example.get('language', 'code')} component\n"
+        elif example["type"] == "file_ref":
+            steps += f"{i}. Reference pattern in {example['file']}\n"
+
+    steps += """
+### Phase 3: Testing and Validation (1-2 hours)
+
+1. Write unit tests following project patterns
+2. Write integration tests
+3. Run validation gates
+4. Update documentation
+"""
+
+    return steps
+
+
+def synthesize_validation_gates(
+    parsed_data: Dict[str, Any],
+    serena_research: Dict[str, Any]
+) -> str:
+    """Generate Validation Gates section.
+
+    Args:
+        parsed_data: INITIAL.md data with acceptance criteria
+        serena_research: Test patterns from codebase
+
+    Returns:
+        Validation gates markdown
+    """
+    test_framework = "pytest"
+    if serena_research["test_patterns"]:
+        test_framework = serena_research["test_patterns"][0]["framework"]
+
+    gates = f"""### Gate 1: Unit Tests Pass
+
+**Command**: `uv run {test_framework} tests/unit/ -v`
+
+**Success Criteria**:
+- All new unit tests pass
+- Existing tests not broken
+- Code coverage ≥ 80%
+
+### Gate 2: Integration Tests Pass
+
+**Command**: `uv run {test_framework} tests/integration/ -v`
+
+**Success Criteria**:
+- Integration tests verify end-to-end functionality
+- No regressions in existing features
+
+### Gate 3: Acceptance Criteria Met
+
+**Verification**: Manual review against INITIAL.md requirements
+
+**Success Criteria**:
+"""
+    # Extract acceptance criteria from feature text
+    feature = parsed_data["feature"]
+    if "acceptance criteria" in feature.lower():
+        gates += "\n- Requirements from INITIAL.md validated\n"
+    else:
+        gates += "\n- All examples from INITIAL.md working\n"
+        gates += "- Feature behaves as described\n"
+
+    return gates
+
+
+def synthesize_testing_strategy(
+    parsed_data: Dict[str, Any],
+    serena_research: Dict[str, Any]
+) -> str:
+    """Generate Testing Strategy section."""
+    test_cmd = "uv run pytest tests/ -v"
+    if serena_research["test_patterns"]:
+        test_cmd = serena_research["test_patterns"][0]["test_command"]
+
+    return f"""### Test Framework
+
+{serena_research['test_patterns'][0]['framework'] if serena_research['test_patterns'] else 'pytest'}
+
+### Test Command
+
+```bash
+{test_cmd}
+```
+
+### Coverage Requirements
+
+- Unit test coverage: ≥ 80%
+- Integration tests for critical paths
+- Edge cases from INITIAL.md covered
+"""
+
+
+def synthesize_rollout_plan(parsed_data: Dict[str, Any]) -> str:
+    """Generate Rollout Plan section."""
+    return """### Phase 1: Development
+
+1. Implement core functionality
+2. Write tests
+3. Pass validation gates
+
+### Phase 2: Review
+
+1. Self-review code changes
+2. Peer review (optional)
+3. Update documentation
+
+### Phase 3: Deployment
+
+1. Merge to main branch
+2. Monitor for issues
+3. Update stakeholders
+"""
+
+
+def get_next_prp_id(prps_dir: str = "PRPs/feature-requests") -> str:
+    """Get next available PRP ID.
+
+    Args:
+        prps_dir: Directory containing PRPs
+
+    Returns:
+        Next PRP ID (e.g., "PRP-123")
+
+    Process:
+        1. List all PRP-*.md files in directory
+        2. Extract numeric IDs
+        3. Return max + 1
+    """
+    prps_path = Path(prps_dir)
+    if not prps_path.exists():
+        return "PRP-1"
+
+    # Find all PRP-*.md files
+    prp_files = list(prps_path.glob("PRP-*.md"))
+    if not prp_files:
+        return "PRP-1"
+
+    # Extract numeric IDs
+    ids = []
+    for file in prp_files:
+        match = re.match(r"PRP-(\d+)", file.name)
+        if match:
+            ids.append(int(match.group(1)))
+
+    # Return next ID
+    next_id = max(ids) + 1 if ids else 1
+    return f"PRP-{next_id}"
+
+
+def check_prp_completeness(prp_path: str) -> Dict[str, Any]:
+    """Check if PRP has all required sections.
+
+    Args:
+        prp_path: Path to PRP file
+
+    Returns:
+        {
+            "complete": True/False,
+            "missing_sections": [],
+            "warnings": []
+        }
+
+    Required sections:
+        1. TL;DR
+        2. Context
+        3. Implementation Steps
+        4. Validation Gates
+        5. Testing Strategy
+        6. Rollout Plan
+    """
+    required_sections = [
+        "TL;DR",
+        "Context",
+        "Implementation Steps",
+        "Validation Gates",
+        "Testing Strategy",
+        "Rollout Plan"
+    ]
+
+    content = Path(prp_path).read_text(encoding="utf-8")
+
+    missing = []
+    for section in required_sections:
+        # Check for section header (## N. Section or ## Section)
+        pattern = rf"##\s+\d*\.?\s*{re.escape(section)}"
+        if not re.search(pattern, content, re.IGNORECASE):
+            missing.append(section)
+
+    warnings = []
+    if len(content) < 1000:
+        warnings.append("PRP content seems short (< 1000 chars)")
+
+    return {
+        "complete": len(missing) == 0,
+        "missing_sections": missing,
+        "warnings": warnings
+    }
+
+
+def _generate_yaml_header(parsed_data: Dict[str, Any]) -> str:
+    """Generate YAML frontmatter for PRP."""
+    from datetime import datetime
+
+    now = datetime.now().isoformat()
+
+    return f"""prp_id: TBD
+feature_name: {parsed_data['feature_name']}
+status: pending
+created: {now}
+updated: {now}
+complexity: medium
+estimated_hours: 3-5
+dependencies: {', '.join([doc['title'] for doc in parsed_data['documentation'][:3]])}"""
+
+
+def _slugify(text: str) -> str:
+    """Convert text to URL-friendly slug."""
+    # Lowercase and replace spaces with hyphens
+    slug = text.lower().replace(" ", "-")
+    # Remove special characters
+    slug = re.sub(r'[^a-z0-9-]', '', slug)
+    # Remove multiple hyphens
+    slug = re.sub(r'-+', '-', slug)
+    return slug.strip("-")

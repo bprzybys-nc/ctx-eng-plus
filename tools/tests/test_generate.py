@@ -11,6 +11,9 @@ from ce.generate import (
     _extract_keywords,
     fetch_documentation,
     extract_topics_from_feature,
+    generate_prp,
+    get_next_prp_id,
+    check_prp_completeness,
     SECTION_MARKERS,
 )
 
@@ -191,3 +194,127 @@ def test_extract_topics_multiple_patterns():
     assert "api" in topics
     assert "database" in topics
     assert "security" in topics or "validation" in topics
+
+
+# =============================================================================
+# Phase 4: Template Engine Tests
+# =============================================================================
+
+
+def test_get_next_prp_id_empty_dir(tmp_path):
+    """Test PRP ID generation in empty directory."""
+    prp_id = get_next_prp_id(str(tmp_path))
+    assert prp_id == "PRP-1"
+
+
+def test_get_next_prp_id_existing_prps(tmp_path):
+    """Test PRP ID generation with existing PRPs."""
+    # Create mock PRP files
+    (tmp_path / "PRP-1-test.md").touch()
+    (tmp_path / "PRP-2-another.md").touch()
+    (tmp_path / "PRP-5-skip.md").touch()
+
+    prp_id = get_next_prp_id(str(tmp_path))
+    assert prp_id == "PRP-6"  # Max + 1
+
+
+def test_check_prp_completeness_complete():
+    """Test completeness check with complete PRP."""
+    # Use sample_initial to generate PRP
+    prp_path = FIXTURES_DIR / "complete_prp.md"
+
+    # Create complete PRP
+    complete_content = """---
+prp_id: PRP-TEST
+---
+
+# Test Feature
+
+## 1. TL;DR
+Test content
+
+## 2. Context
+Test content
+
+## 3. Implementation Steps
+Test content
+
+## 4. Validation Gates
+Test content
+
+## 5. Testing Strategy
+Test content
+
+## 6. Rollout Plan
+Test content
+"""
+    prp_path.write_text(complete_content)
+
+    result = check_prp_completeness(str(prp_path))
+
+    assert result["complete"] is True
+    assert len(result["missing_sections"]) == 0
+
+    # Cleanup
+    prp_path.unlink()
+
+
+def test_check_prp_completeness_missing_sections():
+    """Test completeness check with missing sections."""
+    prp_path = FIXTURES_DIR / "incomplete_prp.md"
+
+    # Create incomplete PRP (missing Testing Strategy and Rollout Plan)
+    incomplete_content = """---
+prp_id: PRP-TEST
+---
+
+# Test Feature
+
+## 1. TL;DR
+Test content
+
+## 2. Context
+Test content
+
+## 3. Implementation Steps
+Test content
+
+## 4. Validation Gates
+Test content
+"""
+    prp_path.write_text(incomplete_content)
+
+    result = check_prp_completeness(str(prp_path))
+
+    assert result["complete"] is False
+    assert "Testing Strategy" in result["missing_sections"]
+    assert "Rollout Plan" in result["missing_sections"]
+
+    # Cleanup
+    prp_path.unlink()
+
+
+def test_generate_prp_end_to_end(tmp_path):
+    """Test complete PRP generation from INITIAL.md."""
+    # Use sample_initial.md fixture
+    output_dir = tmp_path / "prps"
+    output_dir.mkdir()
+
+    prp_path = generate_prp(str(SAMPLE_INITIAL), str(output_dir))
+
+    # Verify file created
+    assert Path(prp_path).exists()
+
+    # Verify content
+    content = Path(prp_path).read_text()
+    assert "User Authentication System" in content
+    assert "## 1. TL;DR" in content
+    assert "## 2. Context" in content
+    assert "## 3. Implementation Steps" in content
+    assert "## 4. Validation Gates" in content
+    assert "## 5. Testing Strategy" in content
+    assert "## 6. Rollout Plan" in content
+
+    # Verify completeness
+    completeness = check_prp_completeness(prp_path)
+    assert completeness["complete"] is True
