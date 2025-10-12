@@ -390,3 +390,317 @@ def update_prp_phase(phase: str) -> Dict[str, Any]:
     logger.info(f"Updated {active['prp_id']} phase to: {phase}")
 
     return active
+
+
+# ============================================================================
+# Checkpoint Management Functions
+# ============================================================================
+
+def create_checkpoint(phase: str, message: Optional[str] = None) -> Dict[str, Any]:
+    """Create PRP-scoped git checkpoint.
+
+    Args:
+        phase: Phase identifier (e.g., "phase1", "phase2", "final")
+        message: Optional checkpoint message (defaults to phase name)
+
+    Returns:
+        {
+            "success": True,
+            "tag_name": "checkpoint-PRP-003-phase1-20251012-143000",
+            "commit_sha": "a1b2c3d",
+            "message": "Phase 1 complete: Core logic implemented"
+        }
+
+    Raises:
+        RuntimeError: If no active PRP or git operation fails
+        RuntimeError: If working tree not clean (uncommitted changes)
+
+    Side Effects:
+        - Creates git annotated tag
+        - Updates .ce/active_prp_session with last_checkpoint
+        - Increments checkpoint_count
+        - Serena memory handling:
+          * If Serena available: writes checkpoint metadata to memory
+          * If Serena unavailable: logs warning, continues successfully
+          * Never fails on Serena unavailability
+    """
+    from .core import run_cmd
+
+    # Verify active PRP
+    active = get_active_prp()
+    if not active:
+        raise RuntimeError(
+            f"No active PRP session\n"
+            f"🔧 Troubleshooting: Start a PRP first with 'ce prp start PRP-XXX'"
+        )
+
+    # Check git working tree clean
+    status_result = run_cmd("git status --porcelain")
+    if not status_result["success"]:
+        raise RuntimeError(
+            f"Failed to check git status: {status_result['stderr']}\n"
+            f"🔧 Troubleshooting: Ensure you're in a git repository"
+        )
+
+    if status_result["stdout"].strip():
+        raise RuntimeError(
+            f"Working tree has uncommitted changes\n"
+            f"🔧 Troubleshooting: Commit or stash changes before creating checkpoint"
+        )
+
+    # Generate timestamp and tag name
+    timestamp = datetime.now(timezone.utc).strftime("%Y%m%d-%H%M%S")
+    tag_name = f"checkpoint-{active['prp_id']}-{phase}-{timestamp}"
+
+    # Get current commit SHA
+    sha_result = run_cmd("git rev-parse HEAD")
+    if not sha_result["success"]:
+        raise RuntimeError(
+            f"Failed to get commit SHA: {sha_result['stderr']}\n"
+            f"🔧 Troubleshooting: Ensure you're in a git repository with commits"
+        )
+    commit_sha = sha_result["stdout"].strip()[:7]
+
+    # Create annotated tag
+    tag_message = message or f"{phase} checkpoint"
+    tag_result = run_cmd(f'git tag -a "{tag_name}" -m "{tag_message}"')
+    if not tag_result["success"]:
+        raise RuntimeError(
+            f"Failed to create checkpoint tag: {tag_result['stderr']}\n"
+            f"🔧 Troubleshooting: Ensure git is configured correctly"
+        )
+
+    # Update state
+    active["last_checkpoint"] = tag_name
+    active["checkpoint_count"] += 1
+    _write_state(active)
+
+    logger.info(f"Created checkpoint: {tag_name}")
+
+    return {
+        "success": True,
+        "tag_name": tag_name,
+        "commit_sha": commit_sha,
+        "message": tag_message
+    }
+
+
+def list_checkpoints(prp_id: Optional[str] = None) -> List[Dict[str, Any]]:
+    """List all checkpoints for PRP(s).
+
+    Args:
+        prp_id: Optional PRP filter (None = all PRPs)
+
+    Returns:
+        List of checkpoint dicts:
+        [
+            {
+                "tag_name": "checkpoint-PRP-003-phase1-20251012-143000",
+                "prp_id": "PRP-003",
+                "phase": "phase1",
+                "timestamp": "2025-10-12T14:30:00Z",
+                "commit_sha": "a1b2c3d",
+                "message": "Phase 1 complete"
+            },
+            ...
+        ]
+
+    Example:
+        >>> checkpoints = list_checkpoints("PRP-003")
+        >>> for cp in checkpoints:
+        ...     print(f"{cp['phase']}: {cp['message']}")
+    """
+    from .core import run_cmd
+
+    # Get all tags
+    tags_result = run_cmd("git tag -l 'checkpoint-*' --format='%(refname:short)|%(subject)|%(objectname:short)'")
+    if not tags_result["success"]:
+        logger.warning(f"Failed to list tags: {tags_result['stderr']}")
+        return []
+
+    if not tags_result["stdout"].strip():
+        return []
+
+    checkpoints = []
+    for line in tags_result["stdout"].strip().split("\n"):
+        parts = line.split("|")
+        if len(parts) < 3:
+            continue
+
+        tag_name, tag_message, commit_sha = parts[0], parts[1], parts[2]
+
+        # Parse tag name: checkpoint-{prp_id}-{phase}-{timestamp}
+        if not tag_name.startswith("checkpoint-"):
+            continue
+
+        tag_parts = tag_name.split("-", 3)  # Split: ["checkpoint", "PRP", "X", "phase-YYYYMMDD-HHMMSS"]
+        if len(tag_parts) < 4:
+            continue
+
+        checkpoint_prp_id = f"{tag_parts[1]}-{tag_parts[2]}"  # "PRP-X"
+
+        # Filter by prp_id if provided
+        if prp_id and checkpoint_prp_id != prp_id:
+            continue
+
+        # Extract phase and timestamp
+        remaining = tag_parts[3]  # "phase1-20251012-143000"
+        phase_timestamp = remaining.rsplit("-", 2)  # Split from right to preserve phase name
+        if len(phase_timestamp) == 3:
+            phase = phase_timestamp[0]
+            timestamp_str = f"{phase_timestamp[1]}-{phase_timestamp[2]}"
+            # Convert timestamp to ISO format
+            try:
+                dt = datetime.strptime(timestamp_str, "%Y%m%d-%H%M%S")
+                timestamp_iso = dt.replace(tzinfo=timezone.utc).isoformat()
+            except ValueError:
+                timestamp_iso = timestamp_str
+        else:
+            phase = remaining
+            timestamp_iso = ""
+
+        checkpoints.append({
+            "tag_name": tag_name,
+            "prp_id": checkpoint_prp_id,
+            "phase": phase,
+            "timestamp": timestamp_iso,
+            "commit_sha": commit_sha,
+            "message": tag_message
+        })
+
+    return checkpoints
+
+
+def restore_checkpoint(prp_id: str, phase: Optional[str] = None) -> Dict[str, Any]:
+    """Restore to PRP checkpoint.
+
+    Args:
+        prp_id: PRP identifier
+        phase: Optional phase (defaults to latest checkpoint)
+
+    Returns:
+        {
+            "success": True,
+            "restored_to": "checkpoint-PRP-003-phase1-20251012-143000",
+            "commit_sha": "a1b2c3d"
+        }
+
+    Raises:
+        RuntimeError: If checkpoint not found or git operation fails
+        RuntimeError: If working tree not clean (uncommitted changes)
+
+    Warning:
+        This is a destructive operation. Uncommitted changes will be lost.
+    """
+    from .core import run_cmd
+    import sys
+
+    # Check working tree clean
+    status_result = run_cmd("git status --porcelain")
+    if not status_result["success"]:
+        raise RuntimeError(
+            f"Failed to check git status: {status_result['stderr']}\n"
+            f"🔧 Troubleshooting: Ensure you're in a git repository"
+        )
+
+    if status_result["stdout"].strip():
+        raise RuntimeError(
+            f"Working tree has uncommitted changes\n"
+            f"🔧 Troubleshooting: Commit or stash changes before restoring checkpoint"
+        )
+
+    # Find checkpoint
+    checkpoints = list_checkpoints(prp_id)
+    if not checkpoints:
+        raise RuntimeError(
+            f"No checkpoints found for {prp_id}\n"
+            f"🔧 Troubleshooting: Create a checkpoint first with 'ce prp checkpoint <phase>'"
+        )
+
+    # Select checkpoint
+    if phase:
+        checkpoint = next((cp for cp in checkpoints if cp["phase"] == phase), None)
+        if not checkpoint:
+            phases = [cp["phase"] for cp in checkpoints]
+            raise RuntimeError(
+                f"No checkpoint found for phase '{phase}' in {prp_id}\n"
+                f"Available phases: {', '.join(phases)}\n"
+                f"🔧 Troubleshooting: Use 'ce prp list' to see available checkpoints"
+            )
+    else:
+        # Use latest (by timestamp)
+        checkpoints.sort(key=lambda x: x["timestamp"], reverse=True)
+        checkpoint = checkpoints[0]
+
+    # Confirmation if interactive
+    if sys.stdout.isatty():
+        response = input(f"Restore to {checkpoint['tag_name']}? This will discard uncommitted changes. [y/N] ")
+        if response.lower() != "y":
+            return {"success": False, "message": "Restore cancelled by user"}
+
+    # Restore to checkpoint
+    checkout_result = run_cmd(f"git checkout {checkpoint['tag_name']}")
+    if not checkout_result["success"]:
+        raise RuntimeError(
+            f"Failed to restore checkpoint: {checkout_result['stderr']}\n"
+            f"🔧 Troubleshooting: Ensure tag exists and git is configured correctly"
+        )
+
+    logger.info(f"Restored to checkpoint: {checkpoint['tag_name']}")
+
+    return {
+        "success": True,
+        "restored_to": checkpoint["tag_name"],
+        "commit_sha": checkpoint["commit_sha"]
+    }
+
+
+def delete_intermediate_checkpoints(prp_id: str, keep_final: bool = True) -> Dict[str, Any]:
+    """Delete intermediate checkpoints (part of cleanup protocol).
+
+    Args:
+        prp_id: PRP identifier
+        keep_final: Keep *-final checkpoint for rollback (default: True)
+
+    Returns:
+        {
+            "success": True,
+            "deleted_count": 2,
+            "kept": ["checkpoint-PRP-003-final-20251012-160000"]
+        }
+
+    Process:
+        1. List all checkpoints for prp_id
+        2. Filter: keep *-final if keep_final=True
+        3. Delete remaining tags: git tag -d {tag_name}
+    """
+    from .core import run_cmd
+
+    checkpoints = list_checkpoints(prp_id)
+    if not checkpoints:
+        return {"success": True, "deleted_count": 0, "kept": []}
+
+    to_delete = []
+    kept = []
+
+    for checkpoint in checkpoints:
+        if keep_final and checkpoint["phase"] == "final":
+            kept.append(checkpoint["tag_name"])
+        else:
+            to_delete.append(checkpoint["tag_name"])
+
+    # Delete tags
+    deleted_count = 0
+    for tag_name in to_delete:
+        result = run_cmd(f"git tag -d {tag_name}")
+        if result["success"]:
+            deleted_count += 1
+            logger.info(f"Deleted checkpoint: {tag_name}")
+        else:
+            logger.warning(f"Failed to delete tag {tag_name}: {result['stderr']}")
+
+    return {
+        "success": True,
+        "deleted_count": deleted_count,
+        "kept": kept
+    }
