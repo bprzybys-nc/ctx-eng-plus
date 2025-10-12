@@ -876,7 +876,7 @@ def cleanup_prp(prp_id: str) -> Dict[str, Any]:
         - May remove active session file
     """
     from .core import run_cmd
-    from .context import context_health
+    from .context import health as context_health
 
     result = {
         "success": True,
