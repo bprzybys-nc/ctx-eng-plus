@@ -4,6 +4,7 @@ Minimal, efficient tooling for Context Engineering framework operations.
 
 ## Features
 
+✅ **PRP Generation**: Automated PRP creation from INITIAL.md
 ✅ **File Operations**: Read/write with security validation
 ✅ **Git Integration**: Status, diff, checkpoints
 ✅ **3-Level Validation**: Syntax, unit tests, integration tests
@@ -27,6 +28,54 @@ uv pip install -e .
 ```
 
 ## Commands Reference
+
+### PRP Generation
+
+**Generate PRP from INITIAL.md**
+```bash
+ce prp generate <initial-md-path> [-o OUTPUT_DIR] [--json]
+
+# Example
+ce prp generate ../feature-requests/user-auth/INITIAL.md
+# Output: ../PRPs/feature-requests/PRP-6-user-authentication-system.md
+
+# Custom output directory
+ce prp generate feature.md -o /tmp/prps
+
+# JSON output for scripting
+ce prp generate feature.md --json
+```
+
+**What it does**:
+1. Parses INITIAL.md (FEATURE, EXAMPLES, DOCUMENTATION, OTHER CONSIDERATIONS)
+2. Researches codebase using Serena MCP (pattern search, symbol analysis)
+3. Fetches documentation using Context7 MCP (library docs, external links)
+4. Generates complete 6-section PRP with YAML header
+5. Auto-assigns next PRP ID (PRP-N+1)
+6. Validates completeness (all required sections present)
+
+**INITIAL.md structure** (see `.claude/commands/generate-prp.md` for details):
+```markdown
+# Feature: <Feature Name>
+
+## FEATURE
+<What to build - user story, acceptance criteria>
+
+## EXAMPLES
+<Code examples, file references>
+
+## DOCUMENTATION
+<Library docs, external resources>
+
+## OTHER CONSIDERATIONS
+<Security, constraints, edge cases>
+```
+
+**Graceful degradation**: Works without MCP servers (reduced functionality)
+
+See also: `/generate-prp` slash command
+
+---
 
 ### Validation Gates
 
@@ -133,7 +182,9 @@ ce/
 ├── __main__.py       # CLI entry point
 ├── core.py           # File, git, shell operations
 ├── validate.py       # 3-level validation gates
-└── context.py        # Context management
+├── context.py        # Context management
+├── generate.py       # PRP generation from INITIAL.md
+└── prp.py            # PRP state management
 ```
 
 **Design Principles**:
