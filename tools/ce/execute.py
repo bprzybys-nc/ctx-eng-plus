@@ -814,3 +814,64 @@ def _find_prp_file(prp_id: str) -> str:
         f"PRP file not found: {prp_id}\n"
         f"🔧 Troubleshooting: Check PRPs/feature-requests/ or PRPs/executed/"
     )
+
+
+# ============================================================================
+# Phase 4: Self-Healing Functions (Stubs for MVP)
+# ============================================================================
+
+def parse_validation_error(output: str, level: str) -> Dict[str, Any]:
+    """Parse validation error output into structured format.
+
+    Note: MVP stub - returns basic error structure
+          Full implementation will add error type detection and fix suggestions
+    """
+    return {
+        "type": "unknown_error",
+        "file": "unknown",
+        "line": 0,
+        "message": output[:200] if output else "Unknown error",
+        "suggested_fix": "Manual review required"
+    }
+
+
+def check_escalation_triggers(
+    error: Dict[str, Any],
+    attempt: int,
+    error_history: List[str]
+) -> bool:
+    """Check if error triggers human escalation.
+
+    Note: MVP stub - returns False (no escalation)
+          Full implementation will check 5 escalation triggers
+    """
+    return False  # Phase 4 MVP: No automatic escalation
+
+
+def apply_self_healing_fix(error: Dict[str, Any], attempt: int) -> Dict[str, Any]:
+    """Apply self-healing fix based on error type.
+
+    Note: MVP stub - returns success without applying fixes
+          Full implementation will use Serena MCP for code editing
+    """
+    return {
+        "success": False,
+        "fix_type": "not_implemented",
+        "description": "Self-healing not implemented in MVP"
+    }
+
+
+def escalate_to_human(error: Dict[str, Any], reason: str) -> None:
+    """Escalate to human with detailed error report.
+
+    Note: MVP stub - raises EscalationRequired
+    """
+    raise EscalationRequired(
+        reason=reason,
+        error=error,
+        troubleshooting=(
+            "Self-healing failed\n"
+            "Manual intervention required\n"
+            "Review error details above"
+        )
+    )

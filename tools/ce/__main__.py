@@ -232,6 +232,64 @@ def cmd_prp_generate(args) -> int:
         return 1
 
 
+def cmd_prp_execute(args) -> int:
+    """Execute prp execute command."""
+    from .execute import execute_prp
+    from .exceptions import EscalationRequired
+
+    try:
+        result = execute_prp(
+            prp_id=args.prp_id,
+            start_phase=args.start_phase,
+            end_phase=args.end_phase,
+            skip_validation=args.skip_validation,
+            dry_run=args.dry_run
+        )
+
+        if args.json:
+            print(format_output(result, True))
+        else:
+            if result.get("dry_run"):
+                print(f"\n✅ Dry run: {len(result['phases'])} phases parsed")
+                for phase in result['phases']:
+                    print(f"  Phase {phase['phase_number']}: {phase['phase_name']} ({phase['hours']}h)")
+            else:
+                print(f"\n{'='*80}")
+                print(f"✅ PRP-{args.prp_id} execution complete")
+                print(f"{'='*80}")
+                print(f"Phases completed: {result['phases_completed']}")
+                print(f"Confidence score: {result['confidence_score']}")
+                print(f"Execution time: {result['execution_time']}")
+                print(f"Checkpoints created: {len(result['checkpoints_created'])}")
+
+        return 0 if result["success"] else 1
+
+    except EscalationRequired as e:
+        print(f"\n{'='*80}", file=sys.stderr)
+        print(f"🚨 ESCALATION REQUIRED", file=sys.stderr)
+        print(f"{'='*80}", file=sys.stderr)
+        print(f"Reason: {e.reason}", file=sys.stderr)
+        print(f"\nError Details:", file=sys.stderr)
+        print(f"  Type: {e.error.get('type', 'unknown')}", file=sys.stderr)
+        print(f"  Location: {e.error.get('file', 'unknown')}:{e.error.get('line', '?')}", file=sys.stderr)
+        print(f"  Message: {e.error.get('message', 'No message')}", file=sys.stderr)
+        print(f"\n🔧 Troubleshooting:", file=sys.stderr)
+        print(e.troubleshooting, file=sys.stderr)
+        return 2
+
+    except FileNotFoundError as e:
+        print(f"❌ {str(e)}", file=sys.stderr)
+        return 1
+    except RuntimeError as e:
+        print(f"❌ Execution failed: {str(e)}", file=sys.stderr)
+        return 1
+    except Exception as e:
+        print(f"❌ Unexpected error: {str(e)}", file=sys.stderr)
+        import traceback
+        traceback.print_exc()
+        return 1
+
+
 def main():
     """Main CLI entry point."""
     parser = argparse.ArgumentParser(
@@ -393,6 +451,29 @@ Examples:
         "--json", action="store_true", help="Output as JSON"
     )
 
+    # prp execute subcommand
+    prp_execute_parser = prp_subparsers.add_parser(
+        "execute", help="Execute PRP implementation"
+    )
+    prp_execute_parser.add_argument(
+        "prp_id", help="PRP identifier (e.g., PRP-4)"
+    )
+    prp_execute_parser.add_argument(
+        "--start-phase", type=int, help="Start from specific phase"
+    )
+    prp_execute_parser.add_argument(
+        "--end-phase", type=int, help="End at specific phase"
+    )
+    prp_execute_parser.add_argument(
+        "--skip-validation", action="store_true", help="Skip validation loops"
+    )
+    prp_execute_parser.add_argument(
+        "--dry-run", action="store_true", help="Parse blueprint only, don't execute"
+    )
+    prp_execute_parser.add_argument(
+        "--json", action="store_true", help="Output as JSON"
+    )
+
     # Parse arguments
     args = parser.parse_args()
 
@@ -414,6 +495,8 @@ Examples:
             return cmd_prp_validate(args)
         elif args.prp_command == "generate":
             return cmd_prp_generate(args)
+        elif args.prp_command == "execute":
+            return cmd_prp_execute(args)
     else:
         print(f"Unknown command: {args.command}", file=sys.stderr)
         return 1
