@@ -471,3 +471,232 @@ def _extract_keywords(text: str) -> List[str]:
     words = re.findall(r'\b\w+\b', text.lower())
     keywords = [w for w in words if w not in stop_words and len(w) > 2]
     return list(set(keywords))  # Deduplicate
+
+
+# =============================================================================
+# Phase 3: Context7 Integration
+# =============================================================================
+
+
+def fetch_documentation(
+    documentation_links: List[Dict[str, str]],
+    feature_context: str,
+    serena_research: Dict[str, Any]
+) -> Dict[str, Any]:
+    """Fetch documentation using Context7 MCP.
+
+    Args:
+        documentation_links: Parsed from INITIAL.md DOCUMENTATION section
+            [{"title": "FastAPI", "url": "", "type": "library"}, ...]
+        feature_context: FEATURE section text for topic extraction
+        serena_research: Results from research_codebase() for additional context
+
+    Returns:
+        {
+            "library_docs": [
+                {
+                    "library_name": "FastAPI",
+                    "library_id": "/tiangolo/fastapi",
+                    "topics": ["routing", "security", "dependencies"],
+                    "content": "<fetched markdown docs>",
+                    "tokens_used": 5000
+                }
+            ],
+            "external_links": [
+                {
+                    "title": "JWT Best Practices",
+                    "url": "https://jwt.io/introduction",
+                    "content": "<fetched content via WebFetch>",
+                    "relevant_sections": ["token structure", "security"]
+                }
+            ],
+            "context7_available": False,
+            "sequential_thinking_available": False
+        }
+
+    Raises:
+        RuntimeError: If Context7 MCP unavailable (non-blocking - log warning, return empty)
+
+    Process:
+        1. Extract topics from feature_context using Sequential Thinking MCP
+        2. Resolve library names to Context7 IDs: mcp__context7__resolve-library-id
+        3. Fetch docs: mcp__context7__get-library-docs(library_id, topics)
+        4. Fetch external links: WebFetch tool for URLs
+        5. Synthesize relevance scores
+    """
+    logger.info("Starting documentation fetch with Context7 and Sequential Thinking")
+
+    # Initialize result structure
+    result = {
+        "library_docs": [],
+        "external_links": [],
+        "context7_available": False,
+        "sequential_thinking_available": False
+    }
+
+    try:
+        # Extract topics from feature context using Sequential Thinking
+        topics = extract_topics_from_feature(feature_context, serena_research)
+        logger.info(f"Extracted topics: {topics}")
+
+        # Resolve library IDs and fetch docs
+        libraries = [doc for doc in documentation_links if doc["type"] == "library"]
+        for lib in libraries:
+            lib_result = resolve_and_fetch_library_docs(
+                lib["title"],
+                topics,
+                feature_context
+            )
+            if lib_result:
+                result["library_docs"].append(lib_result)
+
+        # Fetch external link content
+        external_links = [doc for doc in documentation_links if doc["type"] == "link"]
+        for link in external_links:
+            link_result = fetch_external_link(link["url"], link["title"], topics)
+            if link_result:
+                result["external_links"].append(link_result)
+
+        result["context7_available"] = False  # Will be True when MCP integrated
+        result["sequential_thinking_available"] = False
+
+    except Exception as e:
+        logger.warning(f"Context7/Sequential Thinking MCP unavailable: {e}")
+        logger.warning("Continuing with reduced documentation functionality")
+
+    return result
+
+
+def extract_topics_from_feature(
+    feature_text: str,
+    serena_research: Dict[str, Any]
+) -> List[str]:
+    """Extract documentation topics using Sequential Thinking MCP.
+
+    Uses: mcp__sequential-thinking__sequentialthinking
+
+    Args:
+        feature_text: FEATURE section from INITIAL.md
+        serena_research: Codebase research results for additional context
+
+    Returns:
+        List of topics (e.g., ["routing", "security", "async", "testing"])
+
+    Process:
+        1. Call Sequential Thinking MCP with prompt:
+           "Analyze this feature description and identify key technical topics
+            that would need documentation: {feature_text}"
+        2. Extract topics from thinking chain
+        3. Deduplicate and filter to 3-5 most relevant topics
+    """
+    logger.info("Extracting topics from feature text using Sequential Thinking")
+
+    # Graceful degradation - return heuristic-based topics
+    # Extract technical terms and common patterns
+    technical_terms = []
+
+    # Common technical patterns to look for
+    patterns = {
+        "authentication": ["auth", "login", "jwt", "oauth", "token"],
+        "database": ["database", "sql", "nosql", "query", "model"],
+        "api": ["api", "rest", "graphql", "endpoint", "route"],
+        "async": ["async", "await", "concurrent", "parallel"],
+        "testing": ["test", "pytest", "unittest", "mock"],
+        "security": ["security", "encrypt", "hash", "bcrypt", "secure"],
+        "validation": ["validate", "validation", "schema", "verify"],
+    }
+
+    feature_lower = feature_text.lower()
+    for topic, keywords in patterns.items():
+        if any(kw in feature_lower for kw in keywords):
+            technical_terms.append(topic)
+
+    # Limit to 3-5 topics
+    topics = technical_terms[:5] if technical_terms else ["general"]
+
+    logger.info(f"Extracted topics (heuristic): {topics}")
+    return topics
+
+
+def resolve_and_fetch_library_docs(
+    library_name: str,
+    topics: List[str],
+    feature_context: str,
+    max_tokens: int = 5000
+) -> Dict[str, Any]:
+    """Resolve library ID and fetch documentation.
+
+    Uses: mcp__context7__resolve-library-id, mcp__context7__get-library-docs
+
+    Args:
+        library_name: Library to fetch (e.g., "FastAPI", "pytest")
+        topics: Topics to focus documentation (e.g., ["routing", "security"])
+        feature_context: Feature description for relevance filtering
+        max_tokens: Maximum tokens to retrieve
+
+    Returns:
+        {
+            "library_name": "FastAPI",
+            "library_id": "/tiangolo/fastapi",
+            "topics": ["routing", "security"],
+            "content": "<markdown docs>",
+            "tokens_used": 4500
+        }
+        None if library not found or fetch fails
+
+    Process:
+        1. resolve-library-id(library_name) → library_id
+        2. get-library-docs(library_id, topics, max_tokens)
+        3. Return structured result
+    """
+    logger.info(f"Resolving and fetching docs for library: {library_name}")
+
+    # Graceful degradation
+    try:
+        # Would use: mcp__context7__resolve-library-id(libraryName=library_name)
+        # Would use: mcp__context7__get-library-docs(context7CompatibleLibraryID=library_id, topic=topics, tokens=max_tokens)
+        logger.info(f"Context7 fetch would execute for {library_name}")
+        return None  # Return None when MCP unavailable
+    except Exception as e:
+        logger.warning(f"Failed to fetch docs for {library_name}: {e}")
+        return None
+
+
+def fetch_external_link(
+    url: str,
+    title: str,
+    topics: List[str]
+) -> Dict[str, Any]:
+    """Fetch external documentation link using WebFetch.
+
+    Uses: WebFetch tool
+
+    Args:
+        url: URL to fetch
+        title: Link title from INITIAL.md
+        topics: Topics for relevance filtering
+
+    Returns:
+        {
+            "title": "JWT Best Practices",
+            "url": "https://jwt.io/introduction",
+            "content": "<fetched markdown>",
+            "relevant_sections": ["token structure", "security"]
+        }
+        None if fetch fails
+
+    Process:
+        1. WebFetch(url, prompt=f"Extract content relevant to: {topics}")
+        2. Parse and structure response
+        3. Identify relevant sections
+    """
+    logger.info(f"Fetching external link: {url}")
+
+    # Graceful degradation
+    try:
+        # Would use: WebFetch(url=url, prompt=f"Extract documentation relevant to: {', '.join(topics)}")
+        logger.info(f"WebFetch would execute for {url}")
+        return None  # Return None for now
+    except Exception as e:
+        logger.warning(f"Failed to fetch {url}: {e}")
+        return None

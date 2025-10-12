@@ -9,6 +9,8 @@ from ce.generate import (
     research_codebase,
     infer_test_patterns,
     _extract_keywords,
+    fetch_documentation,
+    extract_topics_from_feature,
     SECTION_MARKERS,
 )
 
@@ -114,3 +116,78 @@ def test_research_codebase():
 
     # Serena not available yet
     assert result["serena_available"] is False
+
+
+# =============================================================================
+# Phase 3: Context7 Integration Tests
+# =============================================================================
+
+
+def test_extract_topics_from_feature():
+    """Test topic extraction from feature text."""
+    feature_text = """
+    Build a JWT-based user authentication system with:
+    - User registration with email/password
+    - Login with JWT token generation
+    - Async/await for non-blocking operations
+    - pytest for testing
+    """
+
+    serena_research = {}  # Empty for now
+
+    topics = extract_topics_from_feature(feature_text, serena_research)
+
+    # Should extract relevant topics
+    assert isinstance(topics, list)
+    assert len(topics) > 0
+    assert len(topics) <= 5  # Limited to 5 topics
+
+    # Should identify authentication-related topics
+    assert any(t in ["authentication", "async", "testing", "security"] for t in topics)
+
+
+def test_fetch_documentation():
+    """Test documentation fetch orchestration."""
+    documentation_links = [
+        {"title": "FastAPI", "url": "", "type": "library"},
+        {"title": "pytest", "url": "", "type": "library"},
+        {"title": "JWT Best Practices", "url": "https://jwt.io/introduction", "type": "link"}
+    ]
+
+    feature_context = "Build JWT-based authentication with FastAPI"
+    serena_research = {"patterns": [], "test_patterns": []}
+
+    result = fetch_documentation(documentation_links, feature_context, serena_research)
+
+    # Verify structure
+    assert "library_docs" in result
+    assert "external_links" in result
+    assert "context7_available" in result
+    assert "sequential_thinking_available" in result
+
+    # Verify types
+    assert isinstance(result["library_docs"], list)
+    assert isinstance(result["external_links"], list)
+
+    # MCP not available yet
+    assert result["context7_available"] is False
+    assert result["sequential_thinking_available"] is False
+
+
+def test_extract_topics_multiple_patterns():
+    """Test topic extraction identifies multiple technical patterns."""
+    feature_text = """
+    Build a REST API with database integration:
+    - GraphQL endpoint for queries
+    - SQL database with models
+    - Schema validation
+    - Security with bcrypt hashing
+    """
+
+    topics = extract_topics_from_feature(feature_text, {})
+
+    # Should identify multiple patterns
+    assert len(topics) >= 3
+    assert "api" in topics
+    assert "database" in topics
+    assert "security" in topics or "validation" in topics
