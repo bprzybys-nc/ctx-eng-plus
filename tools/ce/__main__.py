@@ -168,6 +168,27 @@ def cmd_run_py(args) -> int:
         return 1
 
 
+def cmd_prp_validate(args) -> int:
+    """Execute prp validate command."""
+    from ce.prp import validate_prp_yaml, format_validation_result
+
+    try:
+        result = validate_prp_yaml(args.file)
+
+        if args.json:
+            print(format_output(result, True))
+        else:
+            print(format_validation_result(result))
+
+        return 0 if result["success"] else 1
+    except FileNotFoundError as e:
+        print(f"❌ {str(e)}", file=sys.stderr)
+        return 1
+    except Exception as e:
+        print(f"❌ PRP validation failed: {str(e)}", file=sys.stderr)
+        return 1
+
+
 def main():
     """Main CLI entry point."""
     parser = argparse.ArgumentParser(
@@ -289,6 +310,23 @@ Examples:
         help="Output execution summary as JSON"
     )
 
+    # === PRP COMMAND ===
+    prp_parser = subparsers.add_parser(
+        "prp", help="PRP management commands"
+    )
+    prp_subparsers = prp_parser.add_subparsers(dest="prp_command", required=True)
+
+    # prp validate subcommand
+    prp_validate_parser = prp_subparsers.add_parser(
+        "validate", help="Validate PRP YAML header"
+    )
+    prp_validate_parser.add_argument(
+        "file", help="Path to PRP markdown file"
+    )
+    prp_validate_parser.add_argument(
+        "--json", action="store_true", help="Output as JSON"
+    )
+
     # Parse arguments
     args = parser.parse_args()
 
@@ -305,6 +343,9 @@ Examples:
         return cmd_context(args)
     elif args.command == "run_py":
         return cmd_run_py(args)
+    elif args.command == "prp":
+        if args.prp_command == "validate":
+            return cmd_prp_validate(args)
     else:
         print(f"Unknown command: {args.command}", file=sys.stderr)
         return 1

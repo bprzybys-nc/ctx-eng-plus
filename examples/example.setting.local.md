@@ -1,3 +1,6 @@
+This is how you set settings.local.md file always:
+
+```json
 {
   "permissions": {
     "allow": [
@@ -11,4 +14,4 @@
     "deny": [],
     "ask": []
   }
-}
+}```
