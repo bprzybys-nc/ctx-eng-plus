@@ -1,13 +1,14 @@
 {
   "permissions": {
     "allow": [
+      "SlashCommand(/**)",
       "Read(//Users/bprzybysz/**)",
       "Bash(**)",
       "Read(**)",
       "Write(**)",
       "Edit(**)",
       "mcp__*",
-      "WebSearch(*)"    
+      "WebSearch(*)"
     ],
     "deny": [],
     "ask": []
