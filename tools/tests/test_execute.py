@@ -285,13 +285,119 @@ def test_extract_phase_metadata():
 
 
 # ============================================================================
-# Phase 2: Execution Orchestration Tests (Placeholder)
+# Phase 2: Execution Orchestration Tests
 # ============================================================================
 
 def test_execute_phase():
-    """Placeholder for execute_phase tests."""
-    # Will be implemented in Phase 2
-    pass
+    """Test execute_phase function."""
+    from ce.execute import execute_phase
+
+    phase = {
+        "phase_number": 1,
+        "phase_name": "Test Phase",
+        "goal": "Test goal",
+        "approach": "Test approach",
+        "files_to_create": [
+            {"path": "src/test.py", "description": "Test file"}
+        ],
+        "files_to_modify": [
+            {"path": "src/existing.py", "description": "Modify existing"}
+        ],
+        "functions": [
+            {
+                "signature": "def test_func():",
+                "docstring": "Test function",
+                "full_code": "def test_func():\n    pass"
+            }
+        ]
+    }
+
+    result = execute_phase(phase)
+
+    assert result["success"] is True
+    assert "src/test.py" in result["files_created"]
+    assert "src/existing.py" in result["files_modified"]
+    assert "test_func" in result["functions_added"]
+    assert "duration" in result
+
+
+def test_calculate_confidence_score():
+    """Test confidence score calculation."""
+    from ce.execute import calculate_confidence_score
+
+    # Perfect score - no retries
+    results_perfect = {
+        "Phase1": {
+            "success": True,
+            "validation_levels": {
+                "L1": {"passed": True, "attempts": 1},
+                "L2": {"passed": True, "attempts": 1},
+                "L3": {"passed": True, "attempts": 1},
+                "L4": {"passed": True, "attempts": 1}
+            }
+        }
+    }
+    assert calculate_confidence_score(results_perfect) == "10/10"
+
+    # Minor issues - 1-2 retries
+    results_minor = {
+        "Phase1": {
+            "success": True,
+            "validation_levels": {
+                "L1": {"passed": True, "attempts": 1},
+                "L2": {"passed": True, "attempts": 2},  # 1 retry
+                "L3": {"passed": True, "attempts": 1},
+                "L4": {"passed": True, "attempts": 1}
+            }
+        }
+    }
+    assert calculate_confidence_score(results_minor) == "9/10"
+
+    # Multiple retries - 3+
+    results_multiple = {
+        "Phase1": {
+            "success": True,
+            "validation_levels": {
+                "L1": {"passed": True, "attempts": 2},  # 1 retry
+                "L2": {"passed": True, "attempts": 3},  # 2 retries
+                "L3": {"passed": True, "attempts": 1},
+                "L4": {"passed": True, "attempts": 1}
+            }
+        }
+    }
+    assert calculate_confidence_score(results_multiple) == "8/10"
+
+    # Validation failures
+    results_failed = {
+        "Phase1": {
+            "success": False,
+            "validation_levels": {
+                "L1": {"passed": False, "attempts": 1}
+            }
+        }
+    }
+    assert calculate_confidence_score(results_failed) == "5/10"
+
+    # No validation
+    assert calculate_confidence_score({}) == "6/10"
+
+
+def test_find_prp_file():
+    """Test PRP file finding logic."""
+    from ce.execute import _find_prp_file
+
+    # Test with PRP-4 (should find this file)
+    prp_path = _find_prp_file("PRP-4")
+    assert "PRP-4" in prp_path
+    assert prp_path.endswith(".md")
+    assert Path(prp_path).exists()
+
+    # Test with invalid PRP
+    with pytest.raises(FileNotFoundError) as exc:
+        _find_prp_file("PRP-99999")
+
+    assert "PRP file not found" in str(exc.value)
+    assert "Troubleshooting" in str(exc.value)
 
 
 # ============================================================================

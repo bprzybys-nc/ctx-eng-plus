@@ -299,3 +299,428 @@ def extract_phase_metadata(phase_text: str) -> Dict[str, Any]:
         "phase_name": match.group(2).strip(),
         "hours": hours
     }
+
+
+# ============================================================================
+# Phase 2: Execution Orchestration Functions
+# ============================================================================
+
+def execute_prp(
+    prp_id: str,
+    start_phase: Optional[int] = None,
+    end_phase: Optional[int] = None,
+    skip_validation: bool = False,
+    dry_run: bool = False
+) -> Dict[str, Any]:
+    """Main execution function - orchestrates PRP implementation.
+
+    Args:
+        prp_id: PRP identifier (e.g., "PRP-4")
+        start_phase: Optional phase to start from (None = Phase 1)
+        end_phase: Optional phase to end at (None = all phases)
+        skip_validation: Skip validation loops (dangerous - for debugging only)
+        dry_run: Parse blueprint and return phases without execution
+
+    Returns:
+        {
+            "success": True,
+            "prp_id": "PRP-4",
+            "phases_completed": 3,
+            "validation_results": {
+                "L1": {"passed": True, "attempts": 1},
+                "L2": {"passed": True, "attempts": 2},
+                "L3": {"passed": True, "attempts": 1},
+                "L4": {"passed": True, "attempts": 1}
+            },
+            "checkpoints_created": ["checkpoint-PRP-4-phase1", ...],
+            "confidence_score": "10/10",
+            "execution_time": "45m 23s"
+        }
+
+    Raises:
+        RuntimeError: If execution fails after escalation
+        FileNotFoundError: If PRP file not found
+
+    Process:
+        1. Initialize PRP context: ce prp start <prp_id>
+        2. Parse blueprint: parse_blueprint(prp_path)
+        3. Filter phases: start_phase to end_phase
+        4. Handle dry-run: If dry_run=True, return parsed blueprint without execution
+        5. For each phase:
+           a. Update phase in state: update_prp_phase(phase_name)
+           b. Execute phase: execute_phase(phase)
+           c. Run validation loop: run_validation_loop(phase) (unless skip_validation)
+           d. Create checkpoint: create_checkpoint(phase)
+           e. Update validation attempts in state
+        6. Calculate confidence score
+        7. End PRP context: ce prp end <prp_id>
+        8. Return execution summary
+    """
+    import time
+    from datetime import datetime, timezone
+    from .prp import start_prp, end_prp, update_prp_phase, create_checkpoint
+
+    start_time = time.time()
+
+    # Find PRP file
+    prp_path = _find_prp_file(prp_id)
+
+    # Parse blueprint
+    phases = parse_blueprint(prp_path)
+
+    # Filter phases
+    if start_phase:
+        phases = [p for p in phases if p["phase_number"] >= start_phase]
+    if end_phase:
+        phases = [p for p in phases if p["phase_number"] <= end_phase]
+
+    if not phases:
+        raise RuntimeError(
+            f"No phases to execute (start={start_phase}, end={end_phase})\n"
+            f"🔧 Troubleshooting: Check phase numbers in PRP"
+        )
+
+    # Dry run - return parsed blueprint
+    if dry_run:
+        return {
+            "success": True,
+            "dry_run": True,
+            "prp_id": prp_id,
+            "phases": phases,
+            "total_phases": len(phases)
+        }
+
+    # Initialize PRP context
+    prp_name = phases[0]["phase_name"] if phases else prp_id
+    start_result = start_prp(prp_id, prp_name)
+
+    # Track execution state
+    phases_completed = 0
+    checkpoints_created = []
+    validation_results = {}
+
+    try:
+        # Execute each phase
+        for phase in phases:
+            phase_num = phase["phase_number"]
+            phase_name = phase["phase_name"]
+
+            print(f"\n{'='*80}")
+            print(f"Phase {phase_num}: {phase_name}")
+            print(f"Goal: {phase['goal']}")
+            print(f"{'='*80}\n")
+
+            # Update phase in state
+            update_prp_phase(f"phase{phase_num}")
+
+            # Execute phase
+            exec_result = execute_phase(phase)
+            if not exec_result["success"]:
+                raise RuntimeError(
+                    f"Phase {phase_num} execution failed: {exec_result.get('error', 'Unknown error')}\n"
+                    f"🔧 Troubleshooting: Check phase implementation logic"
+                )
+
+            # Run validation loop (unless skipped)
+            if not skip_validation and phase.get("validation_command"):
+                val_result = run_validation_loop(phase, prp_path)
+                validation_results[f"Phase{phase_num}"] = val_result
+
+                if not val_result["success"]:
+                    raise RuntimeError(
+                        f"Phase {phase_num} validation failed after {val_result.get('attempts', 0)} attempts\n"
+                        f"🔧 Troubleshooting: Review validation errors"
+                    )
+
+            # Create checkpoint
+            checkpoint_result = create_checkpoint(
+                f"phase{phase_num}",
+                f"Phase {phase_num} complete: {phase_name}"
+            )
+            checkpoints_created.append(checkpoint_result["tag_name"])
+
+            phases_completed += 1
+            print(f"\n✅ Phase {phase_num} complete\n")
+
+        # Calculate confidence score
+        confidence_score = calculate_confidence_score(validation_results)
+
+        # Calculate execution time
+        duration_seconds = time.time() - start_time
+        hours = int(duration_seconds // 3600)
+        minutes = int((duration_seconds % 3600) // 60)
+        seconds = int(duration_seconds % 60)
+
+        if hours > 0:
+            execution_time = f"{hours}h {minutes}m {seconds}s"
+        elif minutes > 0:
+            execution_time = f"{minutes}m {seconds}s"
+        else:
+            execution_time = f"{seconds}s"
+
+        # End PRP context
+        end_result = end_prp(prp_id)
+
+        return {
+            "success": True,
+            "prp_id": prp_id,
+            "phases_completed": phases_completed,
+            "validation_results": validation_results,
+            "checkpoints_created": checkpoints_created,
+            "confidence_score": confidence_score,
+            "execution_time": execution_time
+        }
+
+    except Exception as e:
+        # On error, still try to end PRP context
+        try:
+            end_prp(prp_id)
+        except:
+            pass
+        raise
+
+
+def execute_phase(phase: Dict[str, Any]) -> Dict[str, Any]:
+    """Execute a single blueprint phase.
+
+    Args:
+        phase: Parsed phase dict from parse_blueprint()
+
+    Returns:
+        {
+            "success": True,
+            "files_modified": ["src/auth.py"],
+            "files_created": ["src/models/user.py"],
+            "functions_added": ["authenticate", "validate_token"],
+            "duration": "12m 34s"
+        }
+
+    Process:
+        1. Create files listed in files_to_create
+        2. Modify files listed in files_to_modify
+        3. Implement functions from function signatures
+        4. Use Serena MCP for code editing:
+           - mcp__serena__create_text_file(path, content)
+           - mcp__serena__replace_symbol_body(name_path, new_body)
+           - mcp__serena__insert_after_symbol(name_path, content)
+        5. Log progress to console
+        6. Return execution summary
+
+    Implementation Strategy:
+        - Use function signatures as implementation guides
+        - Follow approach description for implementation style
+        - Reference goal for context
+        - For MVP: Log actions without actual file modification
+          (Phase 5 will add Serena MCP integration)
+    """
+    import time
+
+    start_time = time.time()
+
+    files_created = []
+    files_modified = []
+    functions_added = []
+
+    # Log files to create
+    for file_entry in phase.get("files_to_create", []):
+        filepath = file_entry["path"]
+        description = file_entry["description"]
+        print(f"  📝 Create: {filepath} - {description}")
+        files_created.append(filepath)
+
+    # Log files to modify
+    for file_entry in phase.get("files_to_modify", []):
+        filepath = file_entry["path"]
+        description = file_entry["description"]
+        print(f"  ✏️  Modify: {filepath} - {description}")
+        files_modified.append(filepath)
+
+    # Log functions to implement
+    for func_entry in phase.get("functions", []):
+        signature = func_entry["signature"]
+        # Extract function name from signature
+        func_name_match = re.search(r'(?:def|class)\s+(\w+)', signature)
+        if func_name_match:
+            func_name = func_name_match.group(1)
+            print(f"  🔧 Implement: {func_name}")
+            functions_added.append(func_name)
+
+    # Calculate duration
+    duration = time.time() - start_time
+
+    # Note: For MVP, we're logging actions
+    # Phase 5 will integrate with Serena MCP for actual implementation
+    print(f"\n  ⚠️  MVP Mode: Actions logged, not executed")
+    print(f"  Phase 5 will add Serena MCP integration for actual implementation")
+
+    return {
+        "success": True,
+        "files_created": files_created,
+        "files_modified": files_modified,
+        "functions_added": functions_added,
+        "duration": f"{duration:.2f}s"
+    }
+
+
+def run_validation_loop(
+    phase: Dict[str, Any],
+    prp_path: str,
+    max_attempts: int = 3
+) -> Dict[str, Any]:
+    """Run L1-L4 validation loop with self-healing.
+
+    Args:
+        phase: Phase dict with validation_command
+        prp_path: Path to PRP file (for L4 validation)
+        max_attempts: Max self-healing attempts (default: 3)
+
+    Returns:
+        {
+            "success": True,
+            "validation_levels": {
+                "L1": {"passed": True, "attempts": 1, "errors": []},
+                "L2": {"passed": True, "attempts": 2, "errors": ["..."]},
+                "L3": {"passed": True, "attempts": 1, "errors": []},
+                "L4": {"passed": True, "attempts": 1, "errors": []}
+            },
+            "self_healed": ["L2: Fixed import error"],
+            "escalated": [],
+            "attempts": 1
+        }
+
+    Raises:
+        EscalationRequired: If validation fails after max_attempts or trigger hit
+
+    Process:
+        1. Run L1 (Syntax): validate_level_1()
+        2. Run L2 (Unit Tests): validate_level_2(phase["validation_command"])
+        3. Run L3 (Integration): validate_level_3()
+        4. Run L4 (Pattern Conformance): validate_level_4(prp_path)
+
+        For each level:
+        - If pass: continue to next level
+        - If fail: enter self-healing loop (max 3 attempts)
+          1. Parse error: parse_validation_error(output)
+          2. Check escalation triggers
+          3. Locate error: find_error_location(error)
+          4. Apply fix: apply_self_healing_fix(location, error)
+          5. Re-run validation
+        - If still failing after 3 attempts: escalate_to_human()
+
+    Note: Phase 3 will implement actual validation integration
+          Phase 4 will add self-healing logic
+          For now, returns success stub
+    """
+    print(f"  🧪 Running validation: {phase.get('validation_command', 'N/A')}")
+    print(f"  ⚠️  MVP Mode: Validation stub (Phase 3 will implement)")
+
+    # Stub implementation - Phase 3 will add real validation
+    return {
+        "success": True,
+        "validation_levels": {
+            "L1": {"passed": True, "attempts": 1, "errors": []},
+            "L2": {"passed": True, "attempts": 1, "errors": []},
+            "L3": {"passed": True, "attempts": 1, "errors": []},
+            "L4": {"passed": True, "attempts": 1, "errors": []}
+        },
+        "self_healed": [],
+        "escalated": [],
+        "attempts": 1
+    }
+
+
+def calculate_confidence_score(validation_results: Dict[str, Any]) -> str:
+    """Calculate confidence score (1-10) based on validation results.
+
+    Args:
+        validation_results: Dict with L1-L4 results per phase
+
+    Returns:
+        "8/10" or "10/10"
+
+    Scoring:
+        - All L1-L4 passed on first attempt: 10/10
+        - All passed, 1-2 self-heals: 9/10
+        - All passed, 3+ self-heals: 8/10
+        - L1-L3 passed, L4 skipped: 7/10
+        - L1-L2 passed, L3-L4 skipped: 5/10
+    """
+    if not validation_results:
+        return "6/10"  # No validation = baseline
+
+    total_attempts = 0
+    all_passed = True
+
+    for phase_key, phase_result in validation_results.items():
+        if not phase_result.get("success"):
+            all_passed = False
+
+        # Count total attempts across all levels
+        for level_key, level_result in phase_result.get("validation_levels", {}).items():
+            total_attempts += level_result.get("attempts", 1) - 1  # -1 because first attempt doesn't count as retry
+
+    if not all_passed:
+        return "5/10"  # Validation failures
+
+    # All passed - score by attempts
+    if total_attempts == 0:
+        return "10/10"  # Perfect
+    elif total_attempts <= 2:
+        return "9/10"  # Minor issues
+    else:
+        return "8/10"  # Multiple retries
+
+
+def _find_prp_file(prp_id: str) -> str:
+    """Find PRP file path from PRP ID.
+
+    Args:
+        prp_id: PRP identifier (e.g., "PRP-4")
+
+    Returns:
+        Absolute path to PRP file
+
+    Raises:
+        FileNotFoundError: If PRP file not found
+
+    Search strategy:
+        1. Check PRPs/feature-requests/PRP-{id}-*.md
+        2. Check PRPs/executed/PRP-{id}-*.md
+        3. Check PRPs/PRP-{id}-*.md
+    """
+    from pathlib import Path
+    import glob
+
+    # Get project root (assuming we're in tools/ce/)
+    project_root = Path(__file__).parent.parent.parent
+
+    # Search locations
+    search_paths = [
+        project_root / "PRPs" / "feature-requests",
+        project_root / "PRPs" / "executed",
+        project_root / "PRPs"
+    ]
+
+    # Extract numeric ID (e.g., "PRP-4" -> "4")
+    numeric_id = prp_id.replace("PRP-", "").replace("prp-", "")
+
+    for search_dir in search_paths:
+        if not search_dir.exists():
+            continue
+
+        # Look for PRP-{id}-*.md or PRP{id}-*.md
+        patterns = [
+            f"PRP-{numeric_id}-*.md",
+            f"PRP{numeric_id}-*.md",
+            f"prp-{numeric_id}-*.md"
+        ]
+
+        for pattern in patterns:
+            matches = list(search_dir.glob(pattern))
+            if matches:
+                return str(matches[0].absolute())
+
+    raise FileNotFoundError(
+        f"PRP file not found: {prp_id}\n"
+        f"🔧 Troubleshooting: Check PRPs/feature-requests/ or PRPs/executed/"
+    )
