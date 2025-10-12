@@ -53,7 +53,7 @@ uv sync                          # Install dependencies
 
 # ⬇️ COMPACT CONVERSATION WITH CLAUDE HAIKU - claude-3-haiku-20240307
 
-# ACTIVATE SERENA PROJECT:/Users/bprzybysz/nc-src/ctx-eng-plus/
+# ACTIVATE SERENA PROJECT:<project's root full path>
 
 ---
 
