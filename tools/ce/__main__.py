@@ -9,6 +9,7 @@ from . import __version__
 from .core import git_status, git_checkpoint, git_diff, run_py
 from .validate import validate_level_1, validate_level_2, validate_level_3, validate_level_4, validate_all
 from .context import sync, health, prune
+from .generate import generate_prp
 
 
 def format_output(data: Dict[str, Any], as_json: bool = False) -> str:
@@ -201,6 +202,36 @@ def cmd_prp_validate(args) -> int:
         return 1
 
 
+def cmd_prp_generate(args) -> int:
+    """Execute prp generate command."""
+    try:
+        output_dir = args.output or "PRPs/feature-requests"
+        prp_path = generate_prp(args.initial_md, output_dir)
+
+        result = {
+            "success": True,
+            "prp_path": prp_path,
+            "message": f"PRP generated: {prp_path}"
+        }
+
+        if args.json:
+            print(format_output(result, True))
+        else:
+            print(f"✅ PRP generated: {prp_path}")
+
+        return 0
+
+    except FileNotFoundError as e:
+        print(f"❌ {str(e)}", file=sys.stderr)
+        return 1
+    except ValueError as e:
+        print(f"❌ Invalid INITIAL.md: {str(e)}", file=sys.stderr)
+        return 1
+    except Exception as e:
+        print(f"❌ PRP generation failed: {str(e)}", file=sys.stderr)
+        return 1
+
+
 def main():
     """Main CLI entry point."""
     parser = argparse.ArgumentParser(
@@ -347,6 +378,21 @@ Examples:
         "--json", action="store_true", help="Output as JSON"
     )
 
+    # prp generate subcommand
+    prp_generate_parser = prp_subparsers.add_parser(
+        "generate", help="Generate PRP from INITIAL.md"
+    )
+    prp_generate_parser.add_argument(
+        "initial_md", help="Path to INITIAL.md file"
+    )
+    prp_generate_parser.add_argument(
+        "-o", "--output",
+        help="Output directory for PRP (default: PRPs/feature-requests)"
+    )
+    prp_generate_parser.add_argument(
+        "--json", action="store_true", help="Output as JSON"
+    )
+
     # Parse arguments
     args = parser.parse_args()
 
@@ -366,6 +412,8 @@ Examples:
     elif args.command == "prp":
         if args.prp_command == "validate":
             return cmd_prp_validate(args)
+        elif args.prp_command == "generate":
+            return cmd_prp_generate(args)
     else:
         print(f"Unknown command: {args.command}", file=sys.stderr)
         return 1
