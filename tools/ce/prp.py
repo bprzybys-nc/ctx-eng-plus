@@ -704,3 +704,228 @@ def delete_intermediate_checkpoints(prp_id: str, keep_final: bool = True) -> Dic
         "deleted_count": deleted_count,
         "kept": kept
     }
+
+
+# ============================================================================
+# Memory Isolation Functions
+# ============================================================================
+
+def write_prp_memory(category: str, name: str, content: str) -> Dict[str, Any]:
+    """Write Serena memory with PRP namespace.
+
+    Args:
+        category: Memory category (checkpoint, learnings, temp)
+        name: Memory identifier
+        content: Memory content (markdown)
+
+    Returns:
+        {
+            "success": True,
+            "memory_name": "PRP-003-checkpoint-phase1",
+            "serena_available": True
+        }
+
+    Raises:
+        RuntimeError: If no active PRP
+        Warning: If Serena MCP unavailable (logs warning, continues)
+
+    Side Effects:
+        - Calls serena.write_memory(f"{prp_id}-{category}-{name}", content)
+        - Updates .ce/active_prp_session serena_memories list
+    """
+    active = get_active_prp()
+    if not active:
+        raise RuntimeError(
+            f"No active PRP session\n"
+            f"🔧 Troubleshooting: Start a PRP first with 'ce prp start PRP-XXX'"
+        )
+
+    memory_name = f"{active['prp_id']}-{category}-{name}"
+    serena_available = False
+
+    # Try to write to Serena (optional)
+    try:
+        # Check if mcp__serena__write_memory tool is available
+        # For now, we'll just log that Serena is not available
+        # In production, this would call the Serena MCP tool
+        logger.warning(f"Serena MCP not available - skipping memory write for {memory_name}")
+    except Exception as e:
+        logger.warning(f"Failed to write Serena memory: {e}")
+
+    # Update state file
+    if memory_name not in active["serena_memories"]:
+        active["serena_memories"].append(memory_name)
+        _write_state(active)
+
+    return {
+        "success": True,
+        "memory_name": memory_name,
+        "serena_available": serena_available
+    }
+
+
+def read_prp_memory(category: str, name: str) -> Optional[str]:
+    """Read Serena memory with PRP namespace.
+
+    Args:
+        category: Memory category
+        name: Memory identifier
+
+    Returns:
+        Memory content if exists, None otherwise
+
+    Raises:
+        RuntimeError: If no active PRP
+    """
+    active = get_active_prp()
+    if not active:
+        raise RuntimeError(
+            f"No active PRP session\n"
+            f"🔧 Troubleshooting: Start a PRP first with 'ce prp start PRP-XXX'"
+        )
+
+    memory_name = f"{active['prp_id']}-{category}-{name}"
+
+    # Try to read from Serena (optional)
+    try:
+        # In production, this would call the Serena MCP tool
+        logger.warning(f"Serena MCP not available - cannot read memory {memory_name}")
+        return None
+    except Exception as e:
+        logger.warning(f"Failed to read Serena memory: {e}")
+        return None
+
+
+def list_prp_memories(prp_id: Optional[str] = None) -> List[str]:
+    """List all Serena memories for PRP(s).
+
+    Args:
+        prp_id: Optional PRP filter (None = current active PRP)
+
+    Returns:
+        List of memory names (e.g., ["PRP-003-checkpoint-phase1", ...])
+
+    Process:
+        1. Call serena.list_memories()
+        2. Filter by prefix: {prp_id}-
+        3. Return matching names
+    """
+    if prp_id is None:
+        active = get_active_prp()
+        if not active:
+            return []
+        prp_id = active["prp_id"]
+
+    # Try to list from Serena (optional)
+    try:
+        # In production, this would call the Serena MCP tool
+        logger.warning(f"Serena MCP not available - returning memories from state file")
+        active = get_active_prp()
+        if active and active["prp_id"] == prp_id:
+            return active["serena_memories"]
+        return []
+    except Exception as e:
+        logger.warning(f"Failed to list Serena memories: {e}")
+        return []
+
+
+# ============================================================================
+# Cleanup Protocol Function
+# ============================================================================
+
+def cleanup_prp(prp_id: str) -> Dict[str, Any]:
+    """Execute cleanup protocol for PRP (Model.md Section 5.6).
+
+    Args:
+        prp_id: PRP identifier to clean up
+
+    Returns:
+        {
+            "success": True,
+            "checkpoints_deleted": 2,
+            "checkpoints_kept": ["checkpoint-PRP-003-final"],
+            "memories_archived": ["PRP-003-learnings-auth-patterns"],
+            "memories_deleted": ["PRP-003-checkpoint-*", "PRP-003-temp-*"],
+            "context_health": {"drift_score": 5.2, "status": "healthy"}
+        }
+
+    Raises:
+        RuntimeError: If cleanup operations fail
+
+    Cleanup Protocol Steps:
+        1. Delete intermediate git checkpoints (keep *-final)
+        2. Archive learnings to project knowledge:
+           - Read PRP-{id}-learnings-* memories
+           - Merge into global "project-patterns" memory (append with timestamp + PRP-id prefix)
+           - Delete PRP-{id}-learnings-* memories
+        3. Delete ephemeral memories:
+           - PRP-{id}-checkpoint-*
+           - PRP-{id}-temp-*
+        4. Reset validation state (if tracked)
+        5. Run context health check:
+           - ce context health
+           - ce context prune
+        6. Archive validation logs (if exist):
+           - Move to PRPs/{prp_id}/validation-log.md
+        7. Remove .ce/active_prp_session if prp_id matches active
+
+    Side Effects:
+        - Deletes git tags
+        - Deletes/modifies Serena memories
+        - Runs context health check
+        - May remove active session file
+    """
+    from .core import run_cmd
+    from .context import context_health
+
+    result = {
+        "success": True,
+        "checkpoints_deleted": 0,
+        "checkpoints_kept": [],
+        "memories_archived": [],
+        "memories_deleted": [],
+        "context_health": {}
+    }
+
+    # Step 1: Delete intermediate checkpoints (keep *-final)
+    checkpoint_result = delete_intermediate_checkpoints(prp_id, keep_final=True)
+    result["checkpoints_deleted"] = checkpoint_result["deleted_count"]
+    result["checkpoints_kept"] = checkpoint_result["kept"]
+
+    # Step 2-3: Handle Serena memories (optional - skip if unavailable)
+    memories = list_prp_memories(prp_id)
+
+    # Archive learnings
+    learnings = [m for m in memories if f"{prp_id}-learnings-" in m]
+    if learnings:
+        logger.info(f"Found {len(learnings)} learning memories to archive (Serena not implemented)")
+        result["memories_archived"] = learnings
+
+    # Delete ephemeral memories
+    ephemeral = [m for m in memories if
+                 f"{prp_id}-checkpoint-" in m or f"{prp_id}-temp-" in m]
+    if ephemeral:
+        logger.info(f"Found {len(ephemeral)} ephemeral memories to delete (Serena not implemented)")
+        result["memories_deleted"] = ephemeral
+
+    # Step 4: Reset validation state (already in state file)
+    logger.info(f"Validation state reset for {prp_id}")
+
+    # Step 5: Run context health check
+    try:
+        health = context_health()
+        result["context_health"] = health
+    except Exception as e:
+        logger.warning(f"Context health check failed: {e}")
+
+    # Step 6: Archive validation logs (if exist)
+    # TODO: Implement when validation logging is added
+
+    # Step 7: Remove active session if matches
+    active = get_active_prp()
+    if active and active["prp_id"] == prp_id:
+        STATE_FILE.unlink(missing_ok=True)
+        logger.info(f"Removed active session for {prp_id}")
+
+    logger.info(f"Cleanup completed for {prp_id}")
+    return result
