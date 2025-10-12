@@ -10,10 +10,11 @@ from datetime import datetime, timezone
 from .core import run_cmd
 from .pattern_extractor import extract_patterns_from_prp
 from .drift_analyzer import analyze_implementation, calculate_drift_score, get_auto_fix_suggestions
+from .mermaid_validator import lint_all_markdown_mermaid
 
 
 def validate_level_1() -> Dict[str, Any]:
-    """Run Level 1 validation: Syntax & Style (lint + type-check).
+    """Run Level 1 validation: Syntax & Style (lint + type-check + markdown-lint).
 
     Returns:
         Dict with: success (bool), errors (List[str]), duration (float)
@@ -39,6 +40,26 @@ def validate_level_1() -> Dict[str, Any]:
 
     if not typecheck_result["success"]:
         errors.append(f"Type-check failed:\n{typecheck_result['stderr']}")
+
+    # Run markdown-lint
+    markdownlint_result = run_cmd("npm run lint:md", capture_output=True)
+    total_duration += markdownlint_result["duration"]
+
+    if not markdownlint_result["success"]:
+        errors.append(f"Markdown lint failed:\n{markdownlint_result['stderr']}")
+
+    # Run mermaid validation
+    mermaid_start = time.time()
+    mermaid_result = lint_all_markdown_mermaid(".", auto_fix=True)
+    mermaid_duration = time.time() - mermaid_start
+    total_duration += mermaid_duration
+
+    if not mermaid_result["success"]:
+        errors.append(f"Mermaid validation failed: {len(mermaid_result['errors'])} issues")
+        for error in mermaid_result['errors'][:5]:  # Show first 5
+            errors.append(f"  - {error}")
+    elif mermaid_result["fixes_applied"]:
+        print(f"✅ Mermaid auto-fixes applied: {len(mermaid_result['fixes_applied'])} fixes")
 
     return {
         "success": len(errors) == 0,
