@@ -233,12 +233,16 @@ def test_checkpoint_naming_convention():
     tag_name = result["tag_name"]
     assert tag_name.startswith("checkpoint-PRP-999-phase1-")
 
-    # Timestamp should be YYYYMMDD-HHMMSS format
-    timestamp_part = tag_name.split("-", 3)[3]
-    parts = timestamp_part.split("-")
-    assert len(parts) == 2  # YYYYMMDD-HHMMSS
-    assert len(parts[0]) == 8  # YYYYMMDD
-    assert len(parts[1]) == 6  # HHMMSS
+    # Full tag: checkpoint-PRP-999-phase1-20251012-161355
+    # Split by "-" gives: ["checkpoint", "PRP", "999", "phase1", "20251012", "161355"]
+    parts = tag_name.split("-")
+    assert len(parts) >= 6
+    assert parts[0] == "checkpoint"
+    assert parts[1] == "PRP"
+    assert parts[2] == "999"
+    assert parts[3] == "phase1"
+    assert len(parts[4]) == 8  # YYYYMMDD
+    assert len(parts[5]) == 6  # HHMMSS
 
 
 def test_checkpoint_metadata():
