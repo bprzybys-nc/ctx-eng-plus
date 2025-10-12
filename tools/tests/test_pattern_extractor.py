@@ -4,10 +4,18 @@ import pytest
 from pathlib import Path
 from ce.pattern_extractor import (
     extract_patterns_from_prp,
-    parse_code_structure,
-    _parse_python_patterns,
-    _parse_typescript_patterns
+    parse_code_structure
 )
+from ce.code_analyzer import analyze_code_patterns
+
+
+# Helper wrappers for backward compatibility with tests
+def _parse_python_patterns(code: str):
+    return analyze_code_patterns(code, "python")
+
+
+def _parse_typescript_patterns(code: str):
+    return analyze_code_patterns(code, "typescript")
 
 
 @pytest.fixture

@@ -1,14 +1,15 @@
 """Drift analysis engine for L4 validation.
 
 Calculates semantic drift between expected patterns (from PRP EXAMPLES)
-and actual implementation code. Uses Serena MCP for semantic code analysis
-with fallback to AST-based analysis.
+and actual implementation code. Uses shared code_analyzer module for
+pattern detection.
 """
 
-import ast
-import re
-from typing import Dict, List, Any, Optional
+import time
+from typing import Dict, List, Any
 from pathlib import Path
+
+from .code_analyzer import analyze_code_patterns, determine_language, count_code_symbols
 
 
 def analyze_implementation(
@@ -76,20 +77,15 @@ def analyze_implementation(
 
         # Determine language from file extension
         extension = impl_path_obj.suffix.lower()
-        language = _determine_language(extension)
+        language = determine_language(extension)
 
         code = impl_path_obj.read_text()
 
-        # Analyze patterns using fallback AST/regex analysis
-        if language == "python":
-            patterns = _analyze_python_code(code)
-        elif language in ("typescript", "javascript"):
-            patterns = _analyze_typescript_code(code)
-        else:
-            patterns = _analyze_generic_code(code)
+        # Analyze patterns using shared code analyzer
+        patterns = analyze_code_patterns(code, language)
 
-        # Count symbols (rough estimate)
-        symbol_count += _count_symbols(code, language)
+        # Count symbols
+        symbol_count += count_code_symbols(code, language)
 
         # Merge patterns
         for category, values in patterns.items():
@@ -288,174 +284,6 @@ def get_auto_fix_suggestions(mismatches: List[Dict]) -> List[str]:
         suggestions.append("ℹ️  Review patterns and consider manual alignment")
 
     return suggestions
-
-
-def _determine_language(extension: str) -> str:
-    """Map file extension to language identifier."""
-    lang_map = {
-        ".py": "python",
-        ".ts": "typescript",
-        ".tsx": "typescript",
-        ".js": "javascript",
-        ".jsx": "javascript",
-        ".go": "go",
-        ".rs": "rust",
-        ".java": "java",
-        ".c": "c",
-        ".cpp": "cpp",
-        ".h": "c",
-        ".hpp": "cpp"
-    }
-    return lang_map.get(extension, "unknown")
-
-
-def _analyze_python_code(code: str) -> Dict[str, List[str]]:
-    """Analyze Python code using AST."""
-    patterns = {
-        "code_structure": [],
-        "error_handling": [],
-        "naming_conventions": [],
-        "data_flow": [],
-        "test_patterns": [],
-        "import_patterns": []
-    }
-
-    try:
-        tree = ast.parse(code)
-    except SyntaxError:
-        # Fallback to regex
-        return _analyze_generic_code(code)
-
-    # Code structure
-    for node in ast.walk(tree):
-        if isinstance(node, (ast.AsyncFunctionDef, ast.AsyncFor, ast.AsyncWith, ast.Await)):
-            patterns["code_structure"].append("async/await")
-
-        if isinstance(node, ast.ClassDef):
-            patterns["code_structure"].append("class-based")
-
-        if isinstance(node, ast.FunctionDef):
-            patterns["code_structure"].append("functional")
-
-        # Error handling
-        if isinstance(node, ast.Try):
-            patterns["error_handling"].append("try-except")
-            if node.finalbody:
-                patterns["error_handling"].append("try-except-finally")
-
-        if isinstance(node, ast.If):
-            if node.body and isinstance(node.body[0], ast.Return):
-                patterns["error_handling"].append("early-return")
-
-        # Naming conventions
-        if isinstance(node, ast.FunctionDef):
-            if "_" in node.name:
-                patterns["naming_conventions"].append("snake_case")
-            if node.name.startswith("test_"):
-                patterns["test_patterns"].append("pytest")
-
-        if isinstance(node, ast.ClassDef):
-            if node.name[0].isupper():
-                patterns["naming_conventions"].append("PascalCase")
-
-        # Imports
-        if isinstance(node, ast.ImportFrom):
-            if node.level > 0:
-                patterns["import_patterns"].append("relative")
-            else:
-                patterns["import_patterns"].append("absolute")
-
-    return patterns
-
-
-def _analyze_typescript_code(code: str) -> Dict[str, List[str]]:
-    """Analyze TypeScript/JavaScript code using regex."""
-    patterns = {
-        "code_structure": [],
-        "error_handling": [],
-        "naming_conventions": [],
-        "data_flow": [],
-        "test_patterns": [],
-        "import_patterns": []
-    }
-
-    # Code structure
-    if re.search(r"\basync\s+", code) or re.search(r"\bawait\s+", code):
-        patterns["code_structure"].append("async/await")
-    if re.search(r"\.then\(", code):
-        patterns["code_structure"].append("promises")
-    if re.search(r"\bclass\s+\w+", code):
-        patterns["code_structure"].append("class-based")
-    if re.search(r"=>\s*{", code) or re.search(r"\bfunction\s+\w+", code):
-        patterns["code_structure"].append("functional")
-
-    # Error handling
-    if re.search(r"\btry\s*{", code):
-        patterns["error_handling"].append("try-catch")
-    if re.search(r"\bif\s*\(.*?\)\s*return", code):
-        patterns["error_handling"].append("early-return")
-
-    # Naming conventions
-    func_names = re.findall(r"function\s+(\w+)", code)
-    var_names = re.findall(r"(?:const|let|var)\s+(\w+)", code)
-
-    for name in func_names + var_names:
-        if "_" in name:
-            patterns["naming_conventions"].append("snake_case")
-        elif name[0].islower() and any(c.isupper() for c in name[1:]):
-            patterns["naming_conventions"].append("camelCase")
-
-    # Imports
-    if re.search(r"import\s+.*?\s+from\s+['\"]\.{1,2}/", code):
-        patterns["import_patterns"].append("relative")
-    if re.search(r"import\s+.*?\s+from\s+['\"][^./]", code):
-        patterns["import_patterns"].append("absolute")
-
-    return patterns
-
-
-def _analyze_generic_code(code: str) -> Dict[str, List[str]]:
-    """Fallback generic code analysis."""
-    patterns = {
-        "code_structure": [],
-        "error_handling": [],
-        "naming_conventions": [],
-        "data_flow": [],
-        "test_patterns": [],
-        "import_patterns": []
-    }
-
-    if "async" in code.lower() or "await" in code.lower():
-        patterns["code_structure"].append("async/await")
-    if "class " in code.lower():
-        patterns["code_structure"].append("class-based")
-    if "function" in code.lower() or "def " in code:
-        patterns["code_structure"].append("functional")
-
-    if "try" in code.lower():
-        patterns["error_handling"].append("try-catch")
-
-    if "_" in code:
-        patterns["naming_conventions"].append("snake_case")
-    if re.search(r"[a-z][A-Z]", code):
-        patterns["naming_conventions"].append("camelCase")
-
-    return patterns
-
-
-def _count_symbols(code: str, language: str) -> int:
-    """Estimate symbol count (functions, classes, methods)."""
-    if language == "python":
-        try:
-            tree = ast.parse(code)
-            return sum(1 for node in ast.walk(tree)
-                      if isinstance(node, (ast.FunctionDef, ast.ClassDef, ast.AsyncFunctionDef)))
-        except SyntaxError:
-            pass
-
-    # Fallback: regex-based counting
-    func_count = len(re.findall(r"\b(def|function|class)\s+\w+", code))
-    return func_count
 
 
 def _determine_severity(category: str, pattern: str) -> str:
