@@ -371,12 +371,73 @@ def _persist_drift_decision(
         print(f"\n⚠️  Warning: Could not find YAML header in {prp_path}")
 
 
+def calculate_confidence(results: Dict[int, Dict[str, Any]]) -> int:
+    """Calculate confidence score (1-10) based on validation results.
+
+    Scoring breakdown:
+    - Baseline: 6 (untested code)
+    - Level 1 (Syntax & Style): +1
+    - Level 2 (Unit Tests): +2 (with >80% coverage)
+    - Level 3 (Integration): +1
+    - Level 4 (Pattern Conformance): +1 (NEW)
+    - Max: 10/10 (production-ready)
+
+    Requirements for +1 from L4:
+    - drift_score < 10% (auto-accept threshold)
+    - OR drift_score < 30% AND decision = "accepted" with justification
+
+    Args:
+        results: Dict mapping level (1-4) to validation results
+
+    Returns:
+        Confidence score 1-10
+
+    Examples:
+        >>> results = {1: {"success": True}, 2: {"success": True, "coverage": 0.85}}
+        >>> calculate_confidence(results)
+        9  # Without L3, L4
+
+        >>> results = {
+        ...     1: {"success": True},
+        ...     2: {"success": True, "coverage": 0.85},
+        ...     3: {"success": True},
+        ...     4: {"success": True, "drift_score": 8.5}
+        ... }
+        >>> calculate_confidence(results)
+        10  # All gates pass
+    """
+    score = 6  # Baseline
+
+    if results.get(1, {}).get("success"):
+        score += 1
+
+    if results.get(2, {}).get("success") and results.get(2, {}).get("coverage", 0) > 0.8:
+        score += 2
+
+    if results.get(3, {}).get("success"):
+        score += 1
+
+    # Level 4: Pattern conformance (NEW)
+    l4_result = results.get(4, {})
+    if l4_result.get("success"):
+        drift_score = l4_result.get("drift_score", 100)
+        decision = l4_result.get("decision")
+
+        # Pass L4 if:
+        # 1. drift < 10% (auto-accept)
+        # 2. drift < 30% AND explicitly accepted with justification
+        if drift_score < 10.0 or (drift_score < 30.0 and decision == "accepted"):
+            score += 1
+
+    return min(score, 10)
+
+
 def validate_all() -> Dict[str, Any]:
     """Run all validation levels sequentially.
 
     Returns:
         Dict with: success (bool), results (Dict[int, Dict]),
-                   total_duration (float)
+                   total_duration (float), confidence_score (int)
 
     Note: Runs all levels even if early ones fail (for comprehensive report).
     """
@@ -422,8 +483,12 @@ def validate_all() -> Dict[str, Any]:
     # Overall success: all levels must pass
     overall_success = all(r["success"] for r in results.values())
 
+    # Calculate confidence score
+    confidence_score = calculate_confidence(results)
+
     return {
         "success": overall_success,
         "results": results,
-        "total_duration": total_duration
+        "total_duration": total_duration,
+        "confidence_score": confidence_score
     }
