@@ -102,9 +102,10 @@ Context Engineering Management System
 **Success Criteria:**
 - ✅ Detects 90%+ of pattern divergence cases
 - ✅ User escalation flow functional with clear diff display
-- ✅ DRIFT_JUSTIFICATION persisted correctly
+- ✅ DRIFT_JUSTIFICATION persisted correctly to PRP YAML header for PRP-6 aggregation
 - ✅ Integration tests pass with sample PRPs
 - ✅ Confidence scoring enforces 10/10 requirement
+- ✅ Drift decisions (accept/reject/auto-fix) logged for historical tracking
 
 **Test Plan:**
 - Unit tests: Pattern extraction, drift calculation
@@ -261,6 +262,7 @@ Context Engineering Management System
   - Ambiguous error messages
   - Architectural changes required
   - External dependency issues
+  - Security concerns (vulnerability detection, secret exposure, permission escalation)
 
 **Technical Approach:**
 - Parse PRP IMPLEMENTATION BLUEPRINT into steps:
@@ -608,7 +610,14 @@ Context Engineering Management System
 - Logging and monitoring infrastructure:
   - Structured logging (JSON format)
   - Log levels (DEBUG, INFO, WARNING, ERROR)
-  - Performance metrics collection
+  - Performance metrics collection:
+    - First-pass success rate (target: 85%)
+    - Second-pass success rate (target: 97%)
+    - Self-healing success rate (target: 92%)
+    - Production-ready rate (target: 94%)
+    - Speed improvement tracking (typical: 10-24x)
+    - Validation gate pass rates (L1-L4)
+    - PRP execution timing (per complexity level)
 - Performance optimization:
   - Profiling and bottleneck identification
   - Caching strategies for repeated operations
