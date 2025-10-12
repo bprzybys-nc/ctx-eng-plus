@@ -1,8 +1,11 @@
-"""PRP YAML validation module."""
+"""PRP YAML validation and state management module."""
 from typing import Dict, Any, List, Optional
 import yaml
 import re
+import json
+import logging
 from pathlib import Path
+from datetime import datetime, timezone
 
 # Required fields schema
 REQUIRED_FIELDS = [
@@ -16,6 +19,14 @@ REQUIRED_FIELDS = [
 VALID_STATUS = ["ready", "in_progress", "executed", "validated", "archived"]
 VALID_PRIORITY = ["HIGH", "MEDIUM", "LOW"]
 VALID_RISK = ["LOW", "MEDIUM", "HIGH"]
+VALID_PHASES = ["planning", "implementation", "testing", "validation", "complete"]
+
+# State file paths
+STATE_DIR = Path(".ce")
+STATE_FILE = STATE_DIR / "active_prp_session"
+
+# Configure logging
+logger = logging.getLogger(__name__)
 
 
 def validate_prp_yaml(file_path: str) -> Dict[str, Any]:
@@ -194,3 +205,188 @@ def format_validation_result(result: Dict[str, Any]) -> str:
         output += "\n🔧 Troubleshooting: Review docs/prp-yaml-schema.md for schema reference"
 
     return output
+
+
+# ============================================================================
+# PRP State Management Functions
+# ============================================================================
+
+def _write_state(state: Dict[str, Any]) -> None:
+    """Write state to file using atomic write pattern."""
+    STATE_DIR.mkdir(exist_ok=True)
+    temp_file = STATE_FILE.with_suffix(".tmp")
+    temp_file.write_text(json.dumps(state, indent=2))
+    temp_file.replace(STATE_FILE)
+
+
+def start_prp(prp_id: str, prp_name: Optional[str] = None) -> Dict[str, Any]:
+    """Initialize PRP execution context.
+
+    Creates .ce/active_prp_session file and initializes state tracking.
+
+    Args:
+        prp_id: PRP identifier (e.g., "PRP-003")
+        prp_name: Optional PRP name for display
+
+    Returns:
+        {
+            "success": True,
+            "prp_id": "PRP-003",
+            "started_at": "2025-10-12T14:30:00Z",
+            "message": "PRP-003 context initialized"
+        }
+
+    Raises:
+        RuntimeError: If another PRP is active (call cleanup first)
+        ValueError: If prp_id format invalid
+    """
+    # Validate PRP ID format
+    error = validate_prp_id_format(prp_id)
+    if error:
+        raise ValueError(
+            f"{error}\n"
+            f"🔧 Troubleshooting: Use format PRP-X or PRP-X.Y"
+        )
+
+    # Check if another PRP is active
+    active = get_active_prp()
+    if active:
+        raise RuntimeError(
+            f"Another PRP is active: {active['prp_id']}\n"
+            f"🔧 Troubleshooting: Run 'ce prp cleanup {active['prp_id']}' or 'ce prp end {active['prp_id']}' first"
+        )
+
+    # Initialize state
+    started_at = datetime.now(timezone.utc).isoformat()
+    state = {
+        "prp_id": prp_id,
+        "prp_name": prp_name or prp_id,
+        "started_at": started_at,
+        "phase": "planning",
+        "last_checkpoint": None,
+        "checkpoint_count": 0,
+        "validation_attempts": {
+            "L1": 0,
+            "L2": 0,
+            "L3": 0,
+            "L4": 0
+        },
+        "serena_memories": []
+    }
+
+    _write_state(state)
+    logger.info(f"Started {prp_id} execution context")
+
+    return {
+        "success": True,
+        "prp_id": prp_id,
+        "started_at": started_at,
+        "message": f"{prp_id} context initialized"
+    }
+
+
+def get_active_prp() -> Optional[Dict[str, Any]]:
+    """Get current active PRP session.
+
+    Returns:
+        State dict if PRP active, None if no active session
+
+    Example:
+        >>> state = get_active_prp()
+        >>> if state:
+        ...     print(f"Active: {state['prp_id']}")
+        ... else:
+        ...     print("No active PRP")
+    """
+    if not STATE_FILE.exists():
+        return None
+
+    try:
+        return json.loads(STATE_FILE.read_text())
+    except (json.JSONDecodeError, OSError) as e:
+        logger.warning(f"Failed to read state file: {e}")
+        return None
+
+
+def end_prp(prp_id: str) -> Dict[str, Any]:
+    """End PRP execution context (without cleanup).
+
+    Removes .ce/active_prp_session file. Use cleanup_prp() for full cleanup.
+
+    Args:
+        prp_id: PRP identifier to end
+
+    Returns:
+        {
+            "success": True,
+            "duration": "2h 15m",
+            "checkpoints_created": 3
+        }
+
+    Raises:
+        RuntimeError: If prp_id doesn't match active PRP
+    """
+    active = get_active_prp()
+    if not active:
+        raise RuntimeError(
+            f"No active PRP session\n"
+            f"🔧 Troubleshooting: Use 'ce prp status' to check current state"
+        )
+
+    if active["prp_id"] != prp_id:
+        raise RuntimeError(
+            f"PRP ID mismatch: active={active['prp_id']}, requested={prp_id}\n"
+            f"🔧 Troubleshooting: End the active PRP first: 'ce prp end {active['prp_id']}'"
+        )
+
+    # Calculate duration
+    started = datetime.fromisoformat(active["started_at"])
+    ended = datetime.now(timezone.utc)
+    duration_seconds = (ended - started).total_seconds()
+    hours = int(duration_seconds // 3600)
+    minutes = int((duration_seconds % 3600) // 60)
+    duration = f"{hours}h {minutes}m" if hours > 0 else f"{minutes}m"
+
+    # Remove state file
+    STATE_FILE.unlink(missing_ok=True)
+    logger.info(f"Ended {prp_id} execution context")
+
+    return {
+        "success": True,
+        "duration": duration,
+        "checkpoints_created": active["checkpoint_count"]
+    }
+
+
+def update_prp_phase(phase: str) -> Dict[str, Any]:
+    """Update current PRP phase in state file.
+
+    Args:
+        phase: Phase name (e.g., "implementation", "testing", "validation")
+               Valid phases: planning, implementation, testing, validation, complete
+
+    Returns:
+        Updated state dict
+
+    Raises:
+        RuntimeError: If no active PRP session
+        ValueError: If phase not in valid phases list
+    """
+    if phase not in VALID_PHASES:
+        raise ValueError(
+            f"Invalid phase: '{phase}' (must be one of: {', '.join(VALID_PHASES)})\n"
+            f"🔧 Troubleshooting: Use a valid phase name"
+        )
+
+    active = get_active_prp()
+    if not active:
+        raise RuntimeError(
+            f"No active PRP session\n"
+            f"🔧 Troubleshooting: Start a PRP first with 'ce prp start PRP-XXX'"
+        )
+
+    active["phase"] = phase
+    _write_state(active)
+    logger.info(f"Updated {active['prp_id']} phase to: {phase}")
+
+    return active
