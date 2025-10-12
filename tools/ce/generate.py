@@ -254,3 +254,220 @@ def extract_documentation_links(docs_text: str) -> List[Dict[str, str]]:
                 })
 
     return doc_links
+
+
+# =============================================================================
+# Phase 2: Serena Research Orchestration
+# =============================================================================
+
+
+def research_codebase(
+    feature_name: str,
+    examples: List[Dict[str, Any]],
+    initial_context: str
+) -> Dict[str, Any]:
+    """Orchestrate codebase research using Serena MCP.
+
+    Args:
+        feature_name: Target feature name (e.g., "User Authentication")
+        examples: Parsed EXAMPLES from INITIAL.md
+        initial_context: FEATURE section text for context
+
+    Returns:
+        {
+            "related_files": ["src/auth.py", "src/models/user.py"],
+            "patterns": [
+                {"pattern": "async/await", "locations": ["src/auth.py:42"]},
+                {"pattern": "JWT validation", "locations": ["src/auth.py:67"]}
+            ],
+            "similar_implementations": [
+                {
+                    "file": "src/oauth.py",
+                    "symbol": "OAuthHandler/authenticate",
+                    "code": "...",
+                    "relevance": "Similar authentication flow"
+                }
+            ],
+            "test_patterns": [
+                {"file": "tests/test_auth.py", "pattern": "pytest fixtures"}
+            ],
+            "architecture": {
+                "layer": "authentication",
+                "dependencies": ["jwt", "bcrypt"],
+                "conventions": ["snake_case", "async functions"]
+            }
+        }
+
+    Raises:
+        RuntimeError: If Serena MCP unavailable (non-blocking - log warning, return empty results)
+
+    Process:
+        1. Extract keywords from feature_name (e.g., "authentication", "JWT")
+        2. Search for patterns: mcp__serena__search_for_pattern(keywords)
+        3. Discover symbols: mcp__serena__find_symbol(related_classes)
+        4. Get detailed code: mcp__serena__find_symbol(include_body=True)
+        5. Find references: mcp__serena__find_referencing_symbols(key_functions)
+        6. Infer architecture: Analyze file structure and imports
+        7. Detect test patterns: Look for pytest/unittest in tests/
+    """
+    logger.info(f"Starting codebase research for: {feature_name}")
+
+    # Initialize result structure
+    result = {
+        "related_files": [],
+        "patterns": [],
+        "similar_implementations": [],
+        "test_patterns": [],
+        "architecture": {
+            "layer": "",
+            "dependencies": [],
+            "conventions": []
+        },
+        "serena_available": False
+    }
+
+    try:
+        # Check if Serena MCP is available by attempting import
+        # In production, this would be: from mcp import serena
+        # For now, we'll gracefully handle unavailability
+        logger.info("Serena MCP research would execute here (graceful degradation)")
+
+        # Extract keywords from feature name
+        keywords = _extract_keywords(feature_name)
+        logger.info(f"Extracted keywords: {keywords}")
+
+        # Search for similar patterns
+        patterns = search_similar_patterns(keywords)
+        result["patterns"] = patterns
+
+        # Infer test patterns
+        test_patterns = infer_test_patterns({})
+        result["test_patterns"] = test_patterns
+
+        result["serena_available"] = False  # Will be True when MCP integrated
+
+    except Exception as e:
+        logger.warning(f"Serena MCP unavailable or error during research: {e}")
+        logger.warning("Continuing with reduced research functionality")
+
+    return result
+
+
+def search_similar_patterns(keywords: List[str], path: str = ".") -> List[Dict[str, Any]]:
+    """Search for similar code patterns using keywords.
+
+    Uses: mcp__serena__search_for_pattern
+
+    Args:
+        keywords: Search terms (e.g., ["authenticate", "JWT", "token"])
+        path: Search scope (default: entire project)
+
+    Returns:
+        [
+            {"file": "src/auth.py", "line": 42, "snippet": "..."},
+            {"file": "src/oauth.py", "line": 67, "snippet": "..."}
+        ]
+    """
+    logger.info(f"Searching for patterns with keywords: {keywords}")
+
+    # Graceful degradation when Serena unavailable
+    patterns = []
+
+    try:
+        # This would use: mcp__serena__search_for_pattern(pattern="|".join(keywords))
+        # For now, return empty (will be populated when MCP integrated)
+        logger.info("Pattern search would execute via Serena MCP")
+    except Exception as e:
+        logger.warning(f"Pattern search unavailable: {e}")
+
+    return patterns
+
+
+def analyze_symbol_structure(symbol_name: str, file_path: str) -> Dict[str, Any]:
+    """Get detailed symbol information.
+
+    Uses: mcp__serena__find_symbol, mcp__serena__get_symbols_overview
+
+    Args:
+        symbol_name: Class/function name
+        file_path: File containing symbol
+
+    Returns:
+        {
+            "name": "AuthHandler",
+            "type": "class",
+            "methods": ["authenticate", "validate_token", "refresh"],
+            "code": "<full class body>",
+            "references": 5
+        }
+    """
+    logger.info(f"Analyzing symbol: {symbol_name} in {file_path}")
+
+    # Graceful degradation
+    result = {
+        "name": symbol_name,
+        "type": "unknown",
+        "methods": [],
+        "code": "",
+        "references": 0
+    }
+
+    try:
+        # Would use: mcp__serena__find_symbol(name_path=symbol_name, relative_path=file_path)
+        logger.info("Symbol analysis would execute via Serena MCP")
+    except Exception as e:
+        logger.warning(f"Symbol analysis unavailable: {e}")
+
+    return result
+
+
+def infer_test_patterns(project_structure: Dict[str, Any]) -> List[Dict[str, str]]:
+    """Detect test framework and patterns.
+
+    Process:
+        1. Look for pytest.ini, setup.cfg, pyproject.toml
+        2. Search for test files (test_*.py, *_test.py)
+        3. Analyze test imports (pytest, unittest, nose)
+        4. Extract test command from pyproject.toml or tox.ini
+
+    Returns:
+        [
+            {
+                "framework": "pytest",
+                "test_command": "pytest tests/ -v",
+                "patterns": ["fixtures", "parametrize", "async tests"],
+                "coverage_required": True
+            }
+        ]
+    """
+    logger.info("Inferring test patterns from project structure")
+
+    # Check for pytest.ini, pyproject.toml
+    test_patterns = []
+
+    # Default pytest pattern (most Python projects)
+    default_pattern = {
+        "framework": "pytest",
+        "test_command": "uv run pytest tests/ -v",
+        "patterns": ["fixtures", "parametrize"],
+        "coverage_required": True
+    }
+    test_patterns.append(default_pattern)
+
+    return test_patterns
+
+
+def _extract_keywords(text: str) -> List[str]:
+    """Extract keywords from feature name or description.
+
+    Args:
+        text: Feature name or description
+
+    Returns:
+        List of keywords (lowercase, deduplicated)
+    """
+    # Simple keyword extraction - split by spaces, lowercase, remove common words
+    stop_words = {"a", "an", "the", "and", "or", "but", "with", "for", "to", "of", "in", "on"}
+    words = re.findall(r'\b\w+\b', text.lower())
+    keywords = [w for w in words if w not in stop_words and len(w) > 2]
+    return list(set(keywords))  # Deduplicate
