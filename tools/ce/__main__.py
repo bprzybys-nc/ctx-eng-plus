@@ -7,7 +7,7 @@ from typing import Any, Dict
 
 from . import __version__
 from .core import git_status, git_checkpoint, git_diff, run_py
-from .validate import validate_level_1, validate_level_2, validate_level_3, validate_all
+from .validate import validate_level_1, validate_level_2, validate_level_3, validate_level_4, validate_all
 from .context import sync, health, prune
 
 
@@ -50,6 +50,18 @@ def cmd_validate(args) -> int:
             result = validate_level_2()
         elif args.level == "3":
             result = validate_level_3()
+        elif args.level == "4":
+            # L4 requires --prp argument
+            if not args.prp:
+                print("❌ Level 4 validation requires --prp argument", file=sys.stderr)
+                return 1
+
+            # Parse --files if provided
+            files = None
+            if args.files:
+                files = [f.strip() for f in args.files.split(",")]
+
+            result = validate_level_4(prp_path=args.prp, implementation_paths=files)
         else:  # "all"
             result = validate_all()
 
@@ -220,9 +232,17 @@ Examples:
     )
     validate_parser.add_argument(
         "--level",
-        choices=["1", "2", "3", "all"],
+        choices=["1", "2", "3", "4", "all"],
         default="all",
-        help="Validation level (1=lint/type, 2=unit tests, 3=integration, all=all levels)"
+        help="Validation level (1=lint/type, 2=unit tests, 3=integration, 4=pattern conformance, all=all levels)"
+    )
+    validate_parser.add_argument(
+        "--prp",
+        help="Path to PRP file (required for level 4)"
+    )
+    validate_parser.add_argument(
+        "--files",
+        help="Comma-separated list of implementation files (for level 4, optional - auto-detected if not provided)"
     )
     validate_parser.add_argument(
         "--json",

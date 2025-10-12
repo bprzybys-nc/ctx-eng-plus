@@ -1,14 +1,9 @@
 {
   "permissions": {
     "allow": [
-      "SlashCommand(/**)",
-      "Read(//Users/bprzybysz/**)",
-      "Bash(**)",
-      "Read(**)",
-      "Write(**)",
-      "Edit(**)",
-      "mcp__*",
-      "WebSearch(*)"
+      "Bash(uv run pytest:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)"
     ],
     "deny": [],
     "ask": []
