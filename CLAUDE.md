@@ -53,6 +53,8 @@ uv sync                          # Install dependencies
 
 # ⬇️ COMPACT CONVERSATION WITH CLAUDE HAIKU - claude-3-haiku-20240307
 
+# ACTIVATE SERENA PROJECT:/Users/bprzybysz/nc-src/ctx-eng-plus/
+
 ---
 
 ## Working Directory
@@ -394,4 +396,4 @@ style E fill:#34495e,color:#fff    # Dark gray
 ---
 
 **Remember**: This is a simple tool project. Keep it simple. No over-engineering.
-- PRPs are in ./PRPs
+- PRPs are in ./PRPs/
