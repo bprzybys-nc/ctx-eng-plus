@@ -458,6 +458,23 @@ def execute_prp(
         else:
             execution_time = f"{seconds}s"
 
+        # Step 6.5: Post-execution sync (if auto-sync enabled)
+        from .context import is_auto_sync_enabled, post_execution_sync
+        if is_auto_sync_enabled():
+            try:
+                print(f"\n{'='*80}")
+                print("Running post-execution sync...")
+                print(f"{'='*80}\n")
+                sync_result = post_execution_sync(prp_id, skip_cleanup=False)
+                print(f"✅ Post-sync complete: drift={sync_result['drift_score']:.1f}%")
+                print(f"   Cleanup: {sync_result['cleanup_completed']}")
+                print(f"   Memories archived: {sync_result['memories_archived']}")
+                print(f"   Final checkpoint: {sync_result.get('final_checkpoint', 'N/A')}")
+            except Exception as e:
+                # Non-blocking - log warning but allow execution to complete
+                print(f"⚠️  Post-execution sync failed: {e}")
+                print(f"🔧 Troubleshooting: Run 'ce context post-sync {prp_id}' manually")
+
         # End PRP context
         end_result = end_prp(prp_id)
 

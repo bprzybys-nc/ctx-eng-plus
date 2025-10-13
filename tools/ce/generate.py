@@ -735,6 +735,21 @@ def generate_prp(initial_md_path: str, output_dir: str = "PRPs/feature-requests"
     """
     logger.info(f"Starting PRP generation from: {initial_md_path}")
 
+    # Step 2.5: Pre-generation sync (if auto-sync enabled)
+    from .context import is_auto_sync_enabled, pre_generation_sync
+    if is_auto_sync_enabled():
+        try:
+            logger.info("Auto-sync enabled - running pre-generation sync...")
+            sync_result = pre_generation_sync(force=False)
+            logger.info(f"Pre-sync complete: drift={sync_result['drift_score']:.1f}%")
+        except Exception as e:
+            logger.error(f"Pre-generation sync failed: {e}")
+            raise RuntimeError(
+                f"Generation aborted due to sync failure\n"
+                f"Error: {e}\n"
+                f"🔧 Troubleshooting: Run 'ce context health' to diagnose issues"
+            ) from e
+
     # Phase 1: Parse INITIAL.md
     parsed_data = parse_initial_md(initial_md_path)
     logger.info(f"Parsed feature: {parsed_data['feature_name']}")
