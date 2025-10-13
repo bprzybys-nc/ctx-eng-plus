@@ -16,3 +16,5 @@ PRPs/.cache/
 
 # Examples temporary files
 examples/.tmp/
+tools/.coverage
+tools/uv.lock

@@ -4,7 +4,9 @@
       "Bash(uv run pytest:*)",
       "Bash(git add:*)",
       "Bash(git commit:*)",
-      "Read(//Users/bprzybysz/nc-src/**)"
+      "Read(//Users/bprzybysz/nc-src/**)",
+      "mcp__sequential-thinking__sequentialthinking",
+      "Bash(uv run:*)"
     ],
     "deny": [],
     "ask": []
