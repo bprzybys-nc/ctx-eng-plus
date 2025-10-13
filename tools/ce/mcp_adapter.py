@@ -17,6 +17,11 @@ Design Decision (ADR-001):
 
 from typing import Dict, Any, List, Optional
 from pathlib import Path
+from ce.resilience import retry_with_backoff, CircuitBreaker, CircuitBreakerOpenError
+
+
+# Global circuit breaker for Serena MCP operations
+serena_breaker = CircuitBreaker(name="serena-mcp", failure_threshold=5, recovery_timeout=60)
 
 
 def _import_serena_mcp():
@@ -70,6 +75,23 @@ def is_mcp_available() -> bool:
         return False
 
 
+@retry_with_backoff(max_attempts=3, base_delay=1.0, exceptions=(IOError, ConnectionError, TimeoutError))
+def _create_file_via_mcp(filepath: str, content: str):
+    """Create file via MCP with retry logic.
+
+    Args:
+        filepath: Relative path to file
+        content: File content
+
+    Raises:
+        Exception: If MCP call fails after retries
+
+    Note: Internal function with retry decorator. Circuit breaker applied at call site.
+    """
+    serena = _import_serena_mcp()
+    serena.create_text_file(filepath, content)
+
+
 def create_file_with_mcp(filepath: str, content: str) -> Dict[str, Any]:
     """Create file using Serena MCP or fallback to filesystem.
 
@@ -87,7 +109,7 @@ def create_file_with_mcp(filepath: str, content: str) -> Dict[str, Any]:
 
     Process:
         1. Check MCP availability
-        2. If available, try mcp__serena__create_text_file
+        2. If available, try mcp__serena__create_text_file (with retry + circuit breaker)
         3. On MCP failure or unavailable, fallback to filesystem
         4. Return result with method used
 
@@ -99,8 +121,8 @@ def create_file_with_mcp(filepath: str, content: str) -> Dict[str, Any]:
     # Try MCP first if available
     if is_mcp_available():
         try:
-            serena = _import_serena_mcp()
-            serena.create_text_file(filepath, content)
+            # Apply circuit breaker + retry
+            _create_file_via_mcp(filepath, content)
 
             return {
                 "success": True,
@@ -108,8 +130,12 @@ def create_file_with_mcp(filepath: str, content: str) -> Dict[str, Any]:
                 "filepath": filepath
             }
 
+        except CircuitBreakerOpenError as e:
+            # Circuit breaker open - fall back immediately
+            print(f"      ⚠️  MCP circuit breaker open, falling back to filesystem: {e}")
+
         except Exception as e:
-            # Log warning but continue to fallback
+            # Other MCP failure - log and fallback
             print(f"      ⚠️  MCP file creation failed, falling back to filesystem: {e}")
 
     # Fallback to filesystem
@@ -134,6 +160,28 @@ def create_file_with_mcp(filepath: str, content: str) -> Dict[str, Any]:
             f"  3. Check write permissions\n"
             f"  4. Review file content for invalid characters"
         ) from e
+
+
+@retry_with_backoff(max_attempts=3, base_delay=1.0, exceptions=(IOError, ConnectionError, TimeoutError))
+def _insert_code_via_mcp(filepath: str, code: str, mode: str, symbol_name: str):
+    """Insert code via MCP with retry logic.
+
+    Args:
+        filepath: Path to file
+        code: Code to insert
+        mode: "after" or "before"
+        symbol_name: Symbol name path
+
+    Raises:
+        Exception: If MCP call fails after retries
+
+    Note: Internal function with retry decorator.
+    """
+    serena = _import_serena_mcp()
+    if mode == "after":
+        serena.insert_after_symbol(symbol_name, filepath, code)
+    else:
+        serena.insert_before_symbol(symbol_name, filepath, code)
 
 
 def insert_code_with_mcp(
@@ -161,7 +209,7 @@ def insert_code_with_mcp(
         1. Check MCP availability
         2. If available and mode is symbol-aware:
            a. Get symbols overview
-           b. Insert after/before symbol
+           b. Insert after/before symbol (with retry + circuit breaker)
         3. If MCP unavailable or append mode:
            a. Read file, append code, write back
         4. Return result with method used
@@ -182,7 +230,7 @@ def insert_code_with_mcp(
             if symbols and len(symbols) > 0:
                 if mode == "after_last_symbol":
                     last_symbol = symbols[-1]["name_path"]
-                    serena.insert_after_symbol(last_symbol, filepath, code)
+                    _insert_code_via_mcp(filepath, code, "after", last_symbol)
 
                     return {
                         "success": True,
@@ -193,7 +241,7 @@ def insert_code_with_mcp(
 
                 elif mode == "before_first_symbol":
                     first_symbol = symbols[0]["name_path"]
-                    serena.insert_before_symbol(first_symbol, filepath, code)
+                    _insert_code_via_mcp(filepath, code, "before", first_symbol)
 
                     return {
                         "success": True,
@@ -204,8 +252,12 @@ def insert_code_with_mcp(
 
             # No symbols found, fall through to append
 
+        except CircuitBreakerOpenError as e:
+            # Circuit breaker open - fall back immediately
+            print(f"      ⚠️  MCP circuit breaker open, falling back to append: {e}")
+
         except Exception as e:
-            # Log warning but continue to fallback
+            # Other MCP failure - log and fallback
             print(f"      ⚠️  MCP symbol insertion failed, falling back to append: {e}")
 
     # Fallback: append to end of file
