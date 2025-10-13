@@ -27,7 +27,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "cd tools && uv run ce context health --json | jq -r 'if .drift_score > 30 then \"⚠️ HIGH DRIFT: \" + (.drift_score | tostring) + \"% - Run: ce context sync\" elif .drift_score > 10 then \"⚠️ Moderate drift: \" + (.drift_score | tostring) + \"%\" else \"✅ Context healthy: \" + (.drift_score | tostring) + \"%\" end'",
+            "command": "cd tools && uv run ce context health --json | jq -r '(.drift_score | . * 100 | round / 100) as $rounded | if .drift_score > 30 then \"⚠️ HIGH DRIFT: \" + ($rounded | tostring) + \"% - Run: ce context sync\" elif .drift_score > 10 then \"⚠️ Moderate drift: \" + ($rounded | tostring) + \"%\" else \"✅ Context healthy: \" + ($rounded | tostring) + \"%\" end'",
             "timeout": 5
           }
         ]
