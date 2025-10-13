@@ -304,6 +304,10 @@ def _handle_user_escalation(
     Returns:
         (success, decision, justification) tuple
     """
+    from .drift import get_drift_history, drift_summary
+    import logging
+
+    logger = logging.getLogger(__name__)
     drift_score = drift_result["drift_score"]
     category_scores = drift_result["category_scores"]
     mismatches = drift_result["mismatches"]
@@ -313,6 +317,31 @@ def _handle_user_escalation(
     print("=" * 80)
     print(f"\nPRP: {prp_path}")
     print(f"Implementation: {', '.join(implementation_paths)}")
+
+    # NEW: Show drift history for context
+    try:
+        history = get_drift_history(last_n=5)
+        if history:
+            print("\n📊 RECENT DRIFT HISTORY (for context):\n")
+            print(f"{'PRP':<12} {'Score':<8} {'Action':<18} {'Date':<12}")
+            print("─" * 50)
+            for h in history:
+                dd = h["drift_decision"]
+                prp_id = h["prp_id"]
+                score = dd["score"]
+                action = dd["action"]
+                timestamp = dd.get("timestamp", "N/A")[:10]
+                print(f"{prp_id:<12} {score:<8.2f} {action:<18} {timestamp:<12}")
+            print()
+
+            # Show summary stats
+            summary = drift_summary()
+            print(f"Historical Average: {summary['avg_drift_score']:.2f}%")
+            print(f"Accepted: {summary['decisions'].get('accepted', 0)} | "
+                  f"Rejected: {summary['decisions'].get('rejected', 0)}\n")
+    except Exception as e:
+        logger.warning(f"Could not load drift history: {e}")
+
     print("\nDRIFT BREAKDOWN:")
     print("━" * 80)
     print(f"{'Category':<25} {'Expected':<20} {'Detected':<20} {'Drift':<10}")
