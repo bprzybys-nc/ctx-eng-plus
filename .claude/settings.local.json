@@ -22,7 +22,7 @@
       "Read(//Users/bprzybysz/.claude/**)",
       "Bash(cat:*)",
       "Bash(uvx:*)",
-      "Bash(env)",
+      "Bash(env:*)",
       "Read(//Users/bprzybysz/Library/Application Support/Claude/**)",
       "Bash(uv add:*)",
       "Bash(git diff-tree:*)"

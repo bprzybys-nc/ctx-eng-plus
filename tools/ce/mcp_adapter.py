@@ -18,7 +18,10 @@ Design Decision (ADR-001):
 from typing import Dict, Any, List, Optional
 from pathlib import Path
 from ce.resilience import retry_with_backoff, CircuitBreaker, CircuitBreakerOpenError
+from ce.logging_config import get_logger
 
+# Logger
+logger = get_logger(__name__)
 
 # Global circuit breaker for Serena MCP operations
 serena_breaker = CircuitBreaker(name="serena-mcp", failure_threshold=5, recovery_timeout=60)
@@ -132,11 +135,17 @@ def create_file_with_mcp(filepath: str, content: str) -> Dict[str, Any]:
 
         except CircuitBreakerOpenError as e:
             # Circuit breaker open - fall back immediately
-            print(f"      ⚠️  MCP circuit breaker open, falling back to filesystem: {e}")
+            logger.warning(
+                "MCP circuit breaker open, falling back to filesystem",
+                extra={"filepath": filepath, "error": str(e)}
+            )
 
         except Exception as e:
             # Other MCP failure - log and fallback
-            print(f"      ⚠️  MCP file creation failed, falling back to filesystem: {e}")
+            logger.warning(
+                "MCP file creation failed, falling back to filesystem",
+                extra={"filepath": filepath, "error": str(e)}
+            )
 
     # Fallback to filesystem
     try:
@@ -254,11 +263,17 @@ def insert_code_with_mcp(
 
         except CircuitBreakerOpenError as e:
             # Circuit breaker open - fall back immediately
-            print(f"      ⚠️  MCP circuit breaker open, falling back to append: {e}")
+            logger.warning(
+                "MCP circuit breaker open, falling back to append",
+                extra={"filepath": filepath, "mode": mode, "error": str(e)}
+            )
 
         except Exception as e:
             # Other MCP failure - log and fallback
-            print(f"      ⚠️  MCP symbol insertion failed, falling back to append: {e}")
+            logger.warning(
+                "MCP symbol insertion failed, falling back to append",
+                extra={"filepath": filepath, "mode": mode, "error": str(e)}
+            )
 
     # Fallback: append to end of file
     try:
