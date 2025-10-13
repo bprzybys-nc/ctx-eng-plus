@@ -520,3 +520,229 @@ def prune_stale_memories(age_days: int = 30) -> Dict[str, Any]:
         "space_freed_kb": 0.0,
         "message": "Memory pruning requires Serena MCP integration (not yet implemented)"
     }
+
+
+# ============================================================================
+# Drift Detection & Reporting Functions
+# ============================================================================
+
+def calculate_drift_score() -> float:
+    """Calculate context drift score (0-100%).
+
+    Returns:
+        Drift percentage (0 = perfect sync, 100 = completely stale)
+
+    Calculation:
+        drift = (
+            file_changes_score * 0.4 +
+            memory_staleness_score * 0.3 +
+            dependency_changes_score * 0.2 +
+            uncommitted_changes_score * 0.1
+        )
+
+    Components:
+        - file_changes_score: % of tracked files modified since last sync
+        - memory_staleness_score: Age of oldest Serena memory (normalized)
+        - dependency_changes_score: pyproject.toml/package.json changes
+        - uncommitted_changes_score: Penalty for dirty git state
+    """
+    # Component 1: File changes (40% weight)
+    try:
+        changed_files = git_diff(since="HEAD~5", name_only=True)
+        total_result = run_cmd("git ls-files | wc -l", capture_output=True)
+        if total_result["success"]:
+            total_files = int(total_result["stdout"].strip())
+            file_changes_score = (len(changed_files) / max(total_files, 1)) * 100
+        else:
+            file_changes_score = 0
+    except Exception:
+        file_changes_score = 0
+
+    # Component 2: Memory staleness (30% weight)
+    # FIXME: Placeholder - needs Serena MCP integration
+    memory_staleness_score = 0  # Would check age of memories
+
+    # Component 3: Dependency changes (20% weight)
+    dependency_changes_score = 0
+    try:
+        # Check if pyproject.toml changed recently
+        deps_result = run_cmd(
+            "git diff HEAD~5 -- pyproject.toml package.json 2>/dev/null | wc -l",
+            capture_output=True
+        )
+        if deps_result["success"]:
+            deps_lines = int(deps_result["stdout"].strip())
+            # Normalize: >10 lines of changes = 100% score
+            dependency_changes_score = min((deps_lines / 10.0) * 100, 100)
+    except Exception:
+        pass
+
+    # Component 4: Uncommitted changes (10% weight)
+    uncommitted_changes_score = 0
+    try:
+        status = git_status()
+        uncommitted = len(status["staged"]) + len(status["unstaged"])
+        untracked = len(status["untracked"])
+        # Normalize: >5 files = 100% score
+        uncommitted_changes_score = min(((uncommitted + untracked) / 5.0) * 100, 100)
+    except Exception:
+        pass
+
+    # Weighted sum
+    drift = (
+        file_changes_score * 0.4 +
+        memory_staleness_score * 0.3 +
+        dependency_changes_score * 0.2 +
+        uncommitted_changes_score * 0.1
+    )
+
+    return drift
+
+
+def context_health_verbose() -> Dict[str, Any]:
+    """Detailed context health report with breakdown.
+
+    Returns:
+        {
+            "drift_score": 23.4,
+            "threshold": "warn",  # healthy | warn | critical
+            "components": {
+                "file_changes": {"score": 18.2, "details": "12/127 files modified"},
+                "memory_staleness": {"score": 5.1, "details": "Oldest: 8 days"},
+                "dependency_changes": {"score": 0, "details": "No changes"},
+                "uncommitted_changes": {"score": 0.1, "details": "1 untracked file"}
+            },
+            "recommendations": [
+                "Run: ce context sync to refresh indexes",
+                "Consider: ce context prune to remove stale memories"
+            ]
+        }
+    """
+    components = {}
+    recommendations = []
+
+    # File changes component
+    try:
+        changed_files = git_diff(since="HEAD~5", name_only=True)
+        total_result = run_cmd("git ls-files | wc -l", capture_output=True)
+        if total_result["success"]:
+            total_files = int(total_result["stdout"].strip())
+            file_score = (len(changed_files) / max(total_files, 1)) * 100
+            components["file_changes"] = {
+                "score": file_score,
+                "details": f"{len(changed_files)}/{total_files} files modified"
+            }
+            if file_score > 15:
+                recommendations.append("Run: ce context sync to refresh indexes")
+    except Exception as e:
+        components["file_changes"] = {"score": 0, "details": f"Error: {e}"}
+
+    # Memory staleness component (placeholder)
+    components["memory_staleness"] = {
+        "score": 0,
+        "details": "Serena MCP not available"
+    }
+
+    # Dependency changes component
+    try:
+        deps_result = run_cmd(
+            "git diff HEAD~5 -- pyproject.toml package.json 2>/dev/null | wc -l",
+            capture_output=True
+        )
+        if deps_result["success"]:
+            deps_lines = int(deps_result["stdout"].strip())
+            deps_score = min((deps_lines / 10.0) * 100, 100)
+            components["dependency_changes"] = {
+                "score": deps_score,
+                "details": f"{deps_lines} lines changed" if deps_lines > 0 else "No changes"
+            }
+            if deps_score > 10:
+                recommendations.append("Dependencies changed - run: uv sync")
+    except Exception:
+        components["dependency_changes"] = {"score": 0, "details": "No changes"}
+
+    # Uncommitted changes component
+    try:
+        status = git_status()
+        uncommitted = len(status["staged"]) + len(status["unstaged"])
+        untracked = len(status["untracked"])
+        uncommitted_score = min(((uncommitted + untracked) / 5.0) * 100, 100)
+        components["uncommitted_changes"] = {
+            "score": uncommitted_score,
+            "details": f"{uncommitted} uncommitted, {untracked} untracked"
+        }
+        if uncommitted + untracked > 0:
+            recommendations.append("Commit or stash changes before PRP operations")
+    except Exception:
+        components["uncommitted_changes"] = {"score": 0, "details": "0 uncommitted"}
+
+    # Calculate overall drift
+    drift_score = calculate_drift_score()
+
+    # Determine threshold
+    if drift_score <= 10:
+        threshold = "healthy"
+    elif drift_score <= 30:
+        threshold = "warn"
+    else:
+        threshold = "critical"
+
+    return {
+        "drift_score": drift_score,
+        "threshold": threshold,
+        "components": components,
+        "recommendations": recommendations
+    }
+
+
+def drift_report_markdown() -> str:
+    """Generate markdown drift report for logging.
+
+    Returns:
+        Markdown-formatted drift report
+
+    Format:
+        ## Context Health Report
+
+        **Drift Score**: 23.4% (⚠️ WARNING)
+
+        ### Components
+        - File Changes: 18.2% (12/127 files modified)
+        - Memory Staleness: 5.1% (Oldest: 8 days)
+        - Dependency Changes: 0% (No changes)
+        - Uncommitted Changes: 0.1% (1 untracked file)
+
+        ### Recommendations
+        1. Run: ce context sync to refresh indexes
+        2. Consider: ce context prune to remove stale memories
+    """
+    report = context_health_verbose()
+
+    # Status emoji
+    if report["threshold"] == "healthy":
+        status_emoji = "✅"
+        status_text = "HEALTHY"
+    elif report["threshold"] == "warn":
+        status_emoji = "⚠️"
+        status_text = "WARNING"
+    else:
+        status_emoji = "❌"
+        status_text = "CRITICAL"
+
+    # Build markdown
+    md = f"## Context Health Report\n\n"
+    md += f"**Drift Score**: {report['drift_score']:.1f}% ({status_emoji} {status_text})\n\n"
+
+    # Components
+    md += "### Components\n"
+    for name, comp in report["components"].items():
+        display_name = name.replace("_", " ").title()
+        md += f"- {display_name}: {comp['score']:.1f}% ({comp['details']})\n"
+
+    # Recommendations
+    if report["recommendations"]:
+        md += "\n### Recommendations\n"
+        for i, rec in enumerate(report["recommendations"], 1):
+            md += f"{i}. {rec}\n"
+
+    return md
