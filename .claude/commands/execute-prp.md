@@ -255,6 +255,45 @@ With auto-sync enabled (`ce context auto-sync --enable`):
 4. Creates final checkpoint
 5. Removes active PRP session
 
+## Claude Code Hooks (Optional)
+
+**Proactive context monitoring** during interactive sessions:
+
+`.claude/hooks-examples.json` provides hook templates for:
+
+1. **SessionStart health check** - Warn about drift on session start
+2. **UserPromptSubmit reminder** - Remind to enable auto-sync
+3. **PostToolUse drift detector** - Alert on critical drift after edits
+
+**Example hook (copy to `.claude/settings.local.json`)**:
+```json
+{
+  "hooks": {
+    "SessionStart": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "cd tools && uv run ce context health --quiet || echo '⚠️ Context drift detected'",
+            "timeout": 5
+          }
+        ]
+      }
+    ]
+  }
+}
+```
+
+**Use cases**:
+- Daily development: SessionStart health check (drift warning)
+- Long sessions: PostToolUse drift spike detector (alerts >40% drift)
+- Exploration: Complements auto-sync for non-PRP work
+
+**Note**: Hooks are optional. Auto-sync mode handles PRP workflow automatically.
+
+**More info**: See `.claude/hooks-examples.json` for complete templates
+
 ## Common Issues
 
 ### Issue: "PRP file not found: PRP-5"
