@@ -16,6 +16,12 @@ from .context import (
     prune_stale_memories
 )
 from .generate import generate_prp
+from .drift import (
+    get_drift_history,
+    drift_summary,
+    show_drift_decision,
+    compare_drift_decisions
+)
 
 
 def format_output(data: Dict[str, Any], as_json: bool = False) -> str:
@@ -225,6 +231,165 @@ def cmd_context(args) -> int:
         print(f"❌ Context operation failed: {str(e)}", file=sys.stderr)
         import traceback
         traceback.print_exc()
+        return 1
+
+
+def cmd_drift(args) -> int:
+    """Execute drift history command."""
+    try:
+        if args.action == "history":
+            history = get_drift_history(
+                last_n=args.last,
+                prp_id=args.prp_id,
+                action_filter=args.action_filter
+            )
+
+            if args.json:
+                print(format_output({"history": history}, True))
+            else:
+                if not history:
+                    print("No drift decisions found")
+                    return 0
+
+                print("\n📊 DRIFT DECISION HISTORY\n")
+                print("━" * 80)
+                print(f"{'PRP ID':<12} {'Score':<8} {'Action':<18} {'Reviewer':<12} {'Date':<20}")
+                print("━" * 80)
+
+                for h in history:
+                    decision = h["drift_decision"]
+                    prp_id = h["prp_id"]
+                    score = decision["score"]
+                    action = decision["action"]
+                    reviewer = decision.get("reviewer", "unknown")
+                    timestamp = decision.get("timestamp", "N/A")[:10]
+
+                    print(f"{prp_id:<12} {score:<8.2f} {action:<18} {reviewer:<12} {timestamp:<20}")
+
+                print("━" * 80)
+                print(f"\nTotal: {len(history)} decisions\n")
+
+            return 0
+
+        elif args.action == "show":
+            if not args.prp_id:
+                print("❌ show requires PRP ID argument", file=sys.stderr)
+                return 1
+
+            decision = show_drift_decision(args.prp_id)
+
+            if args.json:
+                print(format_output(decision, True))
+            else:
+                dd = decision["drift_decision"]
+                print(f"\n📋 DRIFT DECISION: {decision['prp_id']}")
+                print(f"PRP: {decision['prp_name']}\n")
+                print(f"Score: {dd['score']:.2f}%")
+                print(f"Action: {dd['action']}")
+                print(f"Reviewer: {dd.get('reviewer', 'unknown')}")
+                print(f"Timestamp: {dd.get('timestamp', 'N/A')}\n")
+
+                print("Justification:")
+                print(f"  {dd['justification']}\n")
+
+                if "category_breakdown" in dd:
+                    print("Category Breakdown:")
+                    for cat, score in dd["category_breakdown"].items():
+                        print(f"  • {cat}: {score:.2f}%")
+                    print()
+
+            return 0
+
+        elif args.action == "summary":
+            summary = drift_summary()
+
+            if args.json:
+                print(format_output(summary, True))
+            else:
+                print("\n📊 DRIFT SUMMARY\n")
+                print("━" * 60)
+                print(f"Total PRPs: {summary['total_prps']}")
+                print(f"PRPs with Drift: {summary['prps_with_drift']}")
+                print(f"Average Drift Score: {summary['avg_drift_score']:.2f}%\n")
+
+                print("Decisions:")
+                for action, count in summary.get("decisions", {}).items():
+                    print(f"  • {action}: {count}")
+                print()
+
+                print("Score Distribution:")
+                dist = summary.get("score_distribution", {})
+                print(f"  • Low (0-10%): {dist.get('low', 0)}")
+                print(f"  • Medium (10-30%): {dist.get('medium', 0)}")
+                print(f"  • High (30%+): {dist.get('high', 0)}")
+                print()
+
+                if summary.get("category_breakdown"):
+                    print("Category Breakdown:")
+                    for cat, data in summary["category_breakdown"].items():
+                        print(f"  • {cat}: {data['avg']:.2f}% avg ({data['count']} PRPs)")
+                    print()
+
+                if summary.get("reviewer_breakdown"):
+                    print("Reviewer Breakdown:")
+                    for reviewer, count in summary["reviewer_breakdown"].items():
+                        print(f"  • {reviewer}: {count}")
+                    print()
+
+            return 0
+
+        elif args.action == "compare":
+            if not args.prp_id or not args.prp_id2:
+                print("❌ compare requires two PRP IDs", file=sys.stderr)
+                return 1
+
+            comparison = compare_drift_decisions(args.prp_id, args.prp_id2)
+
+            if args.json:
+                print(format_output(comparison, True))
+            else:
+                comp = comparison["comparison"]
+                prp1 = comparison["prp_1"]
+                prp2 = comparison["prp_2"]
+
+                print(f"\n🔍 DRIFT COMPARISON: {args.prp_id} vs {args.prp_id2}\n")
+                print("━" * 60)
+
+                print(f"\n{args.prp_id}:")
+                print(f"  Score: {prp1['drift_decision']['score']:.2f}%")
+                print(f"  Action: {prp1['drift_decision']['action']}")
+
+                print(f"\n{args.prp_id2}:")
+                print(f"  Score: {prp2['drift_decision']['score']:.2f}%")
+                print(f"  Action: {prp2['drift_decision']['action']}")
+
+                print(f"\nDifferences:")
+                print(f"  Score Difference: {comp['score_diff']:.2f}%")
+                print(f"  Same Action: {'Yes' if comp['same_action'] else 'No'}")
+
+                if comp.get("common_categories"):
+                    print(f"\nCommon Categories:")
+                    for cat in comp["common_categories"]:
+                        print(f"  • {cat}")
+
+                if comp.get("divergent_categories"):
+                    print(f"\nDivergent Categories:")
+                    for cat in comp["divergent_categories"]:
+                        print(f"  • {cat}")
+
+                print()
+
+            return 0
+
+        else:
+            print(f"Unknown drift action: {args.action}", file=sys.stderr)
+            return 1
+
+    except ValueError as e:
+        print(f"❌ {str(e)}", file=sys.stderr)
+        return 1
+    except Exception as e:
+        print(f"❌ Drift operation failed: {str(e)}", file=sys.stderr)
         return 1
 
 
@@ -542,6 +707,40 @@ Examples:
         help="Check auto-sync status (for auto-sync)"
     )
 
+    # === DRIFT COMMAND ===
+    drift_parser = subparsers.add_parser(
+        "drift",
+        help="Drift history tracking and analysis"
+    )
+    drift_parser.add_argument(
+        "action",
+        choices=["history", "show", "summary", "compare"],
+        help="Drift action to perform"
+    )
+    drift_parser.add_argument(
+        "--last",
+        type=int,
+        help="Show last N decisions (for history)"
+    )
+    drift_parser.add_argument(
+        "--prp-id",
+        help="Filter by PRP ID (for history/show)"
+    )
+    drift_parser.add_argument(
+        "--prp-id2",
+        help="Second PRP ID (for compare)"
+    )
+    drift_parser.add_argument(
+        "--action-filter",
+        choices=["accepted", "rejected", "examples_updated"],
+        help="Filter by action type (for history)"
+    )
+    drift_parser.add_argument(
+        "--json",
+        action="store_true",
+        help="Output as JSON"
+    )
+
     # === RUN_PY COMMAND ===
     runpy_parser = subparsers.add_parser(
         "run_py",
@@ -652,6 +851,8 @@ Examples:
         return cmd_git(args)
     elif args.command == "context":
         return cmd_context(args)
+    elif args.command == "drift":
+        return cmd_drift(args)
     elif args.command == "run_py":
         return cmd_run_py(args)
     elif args.command == "prp":
