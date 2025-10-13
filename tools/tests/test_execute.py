@@ -433,26 +433,462 @@ def test_find_prp_file():
 
 
 # ============================================================================
-# Phase 3: Validation Loop Tests (Placeholder)
+# Phase 3: Error Parsing Tests
 # ============================================================================
 
-def test_validation_loop():
-    """Placeholder for validation loop tests."""
-    # Will be implemented in Phase 3
-    pass
+def test_parse_validation_error_import_error():
+    """Test parsing ImportError with module name extraction."""
+    from ce.execute import parse_validation_error
+
+    output = """
+    Traceback (most recent call last):
+      File "src/auth.py", line 5, in authenticate
+        import jwt
+    ImportError: No module named 'jwt'
+    """
+
+    error = parse_validation_error(output, "L2")
+
+    assert error["type"] == "import_error"
+    assert error["file"] == "src/auth.py"
+    assert error["line"] == 5
+    assert error["function"] == "authenticate"
+    assert "jwt" in error["message"]
+    assert "import" in error["suggested_fix"].lower()
+
+
+def test_parse_validation_error_import_cannot_import():
+    """Test parsing 'cannot import name' errors."""
+    from ce.execute import parse_validation_error
+
+    output = """
+    Traceback (most recent call last):
+      File "tests/test_api.py", line 10
+        from models import User
+    ImportError: cannot import name 'User'
+    """
+
+    error = parse_validation_error(output, "L2")
+
+    assert error["type"] == "import_error"
+    assert "User" in error["message"]
+    assert "import" in error["suggested_fix"].lower()
+
+
+def test_parse_validation_error_assertion_error():
+    """Test parsing AssertionError with context."""
+    from ce.execute import parse_validation_error
+
+    output = """
+    tests/test_auth.py:42: in test_authenticate
+        assert result == expected
+    AssertionError: Expected User(id=1), got None
+    """
+
+    error = parse_validation_error(output, "L2")
+
+    assert error["type"] == "assertion_error"
+    assert error["file"] == "tests/test_auth.py"
+    assert error["line"] == 42
+    assert "assertion" in error["suggested_fix"].lower()
+
+
+def test_parse_validation_error_syntax_error():
+    """Test parsing SyntaxError with file:line location."""
+    from ce.execute import parse_validation_error
+
+    output = """
+      File "src/models.py", line 23
+        def validate_user(
+                         ^
+    SyntaxError: invalid syntax
+    """
+
+    error = parse_validation_error(output, "L1")
+
+    assert error["type"] == "syntax_error"
+    assert error["file"] == "src/models.py"
+    assert error["line"] == 23
+    assert "syntax" in error["suggested_fix"].lower()
+
+
+def test_parse_validation_error_type_error():
+    """Test parsing TypeError detection."""
+    from ce.execute import parse_validation_error
+
+    output = """
+    File "src/api.py", line 15, in call_api
+        response = requests.get(url, timeout=timeout)
+    TypeError: get() got an unexpected keyword argument 'timeout'
+    """
+
+    error = parse_validation_error(output, "L2")
+
+    assert error["type"] == "type_error"
+    assert error["file"] == "src/api.py"
+    assert error["line"] == 15
+    assert "type" in error["suggested_fix"].lower()
+
+
+def test_parse_validation_error_name_error():
+    """Test parsing NameError detection."""
+    from ce.execute import parse_validation_error
+
+    output = """
+    File "src/utils.py", line 8, in helper
+        return undefined_variable
+    NameError: name 'undefined_variable' is not defined
+    """
+
+    error = parse_validation_error(output, "L2")
+
+    assert error["type"] == "name_error"
+    assert "variable" in error["suggested_fix"].lower() or "import" in error["suggested_fix"].lower()
+
+
+def test_parse_validation_error_file_line_extraction():
+    """Test extracting file:line from various formats."""
+    from ce.execute import parse_validation_error
+
+    # Format 1: File "path", line N
+    output1 = 'File "src/test.py", line 42, in func\n    ImportError'
+    error1 = parse_validation_error(output1, "L2")
+    assert error1["file"] == "src/test.py"
+    assert error1["line"] == 42
+
+    # Format 2: path.py:N:
+    output2 = 'src/test.py:42: in func\n    AssertionError'
+    error2 = parse_validation_error(output2, "L2")
+    assert error2["file"] == "src/test.py"
+    assert error2["line"] == 42
 
 
 # ============================================================================
-# Phase 4: Self-Healing Tests (Placeholder)
+# Phase 4: Self-Healing Tests
 # ============================================================================
 
-def test_self_healing():
-    """Placeholder for self-healing tests."""
-    # Will be implemented in Phase 4
-    pass
+def test_apply_self_healing_fix_import_error_no_module():
+    """Test fixing 'No module named X' errors."""
+    from ce.execute import apply_self_healing_fix
+    import tempfile
+    from pathlib import Path
+
+    # Create temp file
+    with tempfile.NamedTemporaryFile(mode='w', suffix='.py', delete=False) as f:
+        f.write("# Test file\ndef main():\n    pass\n")
+        temp_file = f.name
+
+    try:
+        error = {
+            "type": "import_error",
+            "file": temp_file,
+            "message": "No module named 'jwt'"
+        }
+
+        result = apply_self_healing_fix(error, 1)
+
+        assert result["success"] == True
+        assert result["fix_type"] == "import_added"
+        assert "jwt" in result["description"]
+
+        # Verify import was actually added
+        content = Path(temp_file).read_text()
+        assert "import jwt" in content
+
+    finally:
+        Path(temp_file).unlink()
 
 
-def test_escalation_triggers():
-    """Placeholder for escalation trigger tests."""
-    # Will be implemented in Phase 4
-    pass
+def test_apply_self_healing_fix_import_error_cannot_import():
+    """Test fixing 'cannot import name X' errors."""
+    from ce.execute import apply_self_healing_fix
+    import tempfile
+    from pathlib import Path
+
+    with tempfile.NamedTemporaryFile(mode='w', suffix='.py', delete=False) as f:
+        f.write("import sys\n\ndef main():\n    pass\n")
+        temp_file = f.name
+
+    try:
+        error = {
+            "type": "import_error",
+            "file": temp_file,
+            "message": "cannot import name 'User'"
+        }
+
+        result = apply_self_healing_fix(error, 1)
+
+        assert result["success"] == True
+        assert result["fix_type"] == "import_added"
+        assert "User" in result["description"]
+
+        # Verify import was added after existing imports
+        content = Path(temp_file).read_text()
+        lines = content.split("\n")
+        assert "from . import User" in content
+        # Should be added after "import sys"
+        user_import_idx = next(i for i, line in enumerate(lines) if "User" in line)
+        sys_import_idx = next(i for i, line in enumerate(lines) if "import sys" in line)
+        assert user_import_idx > sys_import_idx
+
+    finally:
+        Path(temp_file).unlink()
+
+
+def test_apply_self_healing_fix_file_not_found():
+    """Test handling of file not found error."""
+    from ce.execute import apply_self_healing_fix
+
+    error = {
+        "type": "import_error",
+        "file": "/nonexistent/file.py",
+        "message": "No module named 'jwt'"
+    }
+
+    result = apply_self_healing_fix(error, 1)
+
+    assert result["success"] == False
+    assert "not found" in result["description"].lower()
+
+
+def test_apply_self_healing_fix_unsupported_error_type():
+    """Test that unsupported error types return failure (not crash)."""
+    from ce.execute import apply_self_healing_fix
+
+    error = {
+        "type": "assertion_error",
+        "file": "test.py",
+        "message": "Test failed"
+    }
+
+    result = apply_self_healing_fix(error, 1)
+
+    assert result["success"] == False
+    assert "not_implemented" in result["fix_type"]
+
+
+def test_add_import_statement_top_of_file():
+    """Test import added at correct position in file."""
+    from ce.execute import _add_import_statement
+    import tempfile
+    from pathlib import Path
+
+    with tempfile.NamedTemporaryFile(mode='w', suffix='.py', delete=False) as f:
+        f.write('"""Module docstring."""\n\ndef main():\n    pass\n')
+        temp_file = f.name
+
+    try:
+        result = _add_import_statement(temp_file, "import jwt")
+
+        assert result["success"] == True
+
+        # Verify import was added
+        content = Path(temp_file).read_text()
+        assert "import jwt" in content
+
+    finally:
+        Path(temp_file).unlink()
+
+
+def test_add_import_statement_after_existing_imports():
+    """Test import added after existing imports, not at top."""
+    from ce.execute import _add_import_statement
+    import tempfile
+    from pathlib import Path
+
+    with tempfile.NamedTemporaryFile(mode='w', suffix='.py', delete=False) as f:
+        f.write("import sys\nimport os\n\ndef main():\n    pass\n")
+        temp_file = f.name
+
+    try:
+        result = _add_import_statement(temp_file, "import jwt")
+
+        assert result["success"] == True
+
+        content = Path(temp_file).read_text()
+        lines = content.split("\n")
+
+        # Find line indices
+        jwt_idx = next(i for i, line in enumerate(lines) if "import jwt" in line)
+        os_idx = next(i for i, line in enumerate(lines) if "import os" in line)
+
+        # jwt import should be after os import
+        assert jwt_idx > os_idx
+
+    finally:
+        Path(temp_file).unlink()
+
+
+# ============================================================================
+# Phase 5: Escalation Trigger Tests
+# ============================================================================
+
+def test_check_escalation_triggers_persistent_error():
+    """Test trigger 1: Same error after 3 attempts."""
+    from ce.execute import check_escalation_triggers
+
+    error = {
+        "type": "import_error",
+        "message": "No module named 'jwt'",
+        "file": "test.py",
+        "line": 5
+    }
+
+    # Same error 3 times
+    error_history = [
+        "No module named 'jwt'",
+        "No module named 'jwt'",
+        "No module named 'jwt'"
+    ]
+
+    result = check_escalation_triggers(error, 3, error_history)
+    assert result == True
+
+
+def test_check_escalation_triggers_persistent_error_different():
+    """Test trigger 1: Different errors - no escalation."""
+    from ce.execute import check_escalation_triggers
+
+    error = {
+        "type": "import_error",
+        "message": "No module named 'requests'",
+        "file": "test.py",
+        "line": 5
+    }
+
+    # Different errors
+    error_history = [
+        "No module named 'jwt'",
+        "No module named 'pyjwt'",
+        "No module named 'requests'"
+    ]
+
+    result = check_escalation_triggers(error, 3, error_history)
+    assert result == False
+
+
+def test_check_escalation_triggers_ambiguous_error():
+    """Test trigger 2: Generic error with no file/line info."""
+    from ce.execute import check_escalation_triggers
+
+    error = {
+        "type": "unknown_error",
+        "message": "something went wrong",
+        "file": "unknown",
+        "line": 0
+    }
+
+    result = check_escalation_triggers(error, 1, ["something went wrong"])
+    assert result == True
+
+
+def test_check_escalation_triggers_ambiguous_with_location():
+    """Test trigger 2: Generic error but WITH file/line - no escalation."""
+    from ce.execute import check_escalation_triggers
+
+    error = {
+        "type": "unknown_error",
+        "message": "something went wrong",
+        "file": "test.py",
+        "line": 42
+    }
+
+    result = check_escalation_triggers(error, 1, ["something went wrong"])
+    assert result == False
+
+
+def test_check_escalation_triggers_architectural():
+    """Test trigger 3: Keywords like 'refactor', 'circular import'."""
+    from ce.execute import check_escalation_triggers
+
+    # Test architectural keywords
+    for keyword in ["refactor", "circular import", "redesign", "architecture"]:
+        error = {
+            "type": "import_error",
+            "message": f"Error: {keyword} required",
+            "traceback": f"Full traceback with {keyword}",
+            "file": "test.py",
+            "line": 5
+        }
+
+        result = check_escalation_triggers(error, 1, [error["message"]])
+        assert result == True, f"Should escalate for keyword: {keyword}"
+
+
+def test_check_escalation_triggers_dependencies():
+    """Test trigger 4: Network/dependency errors."""
+    from ce.execute import check_escalation_triggers
+
+    # Test dependency keywords
+    for keyword in ["connection refused", "network error", "timeout", "api error", "package not found"]:
+        error = {
+            "type": "unknown_error",
+            "message": f"Error: {keyword}",
+            "traceback": f"Traceback with {keyword}",
+            "file": "test.py",
+            "line": 5
+        }
+
+        result = check_escalation_triggers(error, 1, [error["message"]])
+        assert result == True, f"Should escalate for keyword: {keyword}"
+
+
+def test_check_escalation_triggers_security():
+    """Test trigger 5: CVE, secrets, credentials mentioned."""
+    from ce.execute import check_escalation_triggers
+
+    # Test security keywords
+    for keyword in ["cve-", "vulnerability", "secret", "password", "api key", "credential", "unauthorized"]:
+        error = {
+            "type": "unknown_error",
+            "message": f"Error with {keyword}",
+            "traceback": f"Traceback mentioning {keyword}",
+            "file": "test.py",
+            "line": 5
+        }
+
+        result = check_escalation_triggers(error, 1, [error["message"]])
+        assert result == True, f"Should escalate for keyword: {keyword}"
+
+
+def test_escalate_to_human_raises_exception():
+    """Test escalate_to_human always raises EscalationRequired."""
+    from ce.execute import escalate_to_human
+    from ce.exceptions import EscalationRequired
+
+    error = {
+        "type": "import_error",
+        "message": "No module named 'jwt'",
+        "file": "test.py",
+        "line": 5
+    }
+
+    with pytest.raises(EscalationRequired) as exc:
+        escalate_to_human(error, "persistent_error")
+
+    assert "persistent_error" in str(exc.value)
+    assert "jwt" in str(exc.value)
+
+
+def test_escalation_required_exception_format():
+    """Test exception includes reason, error, troubleshooting."""
+    from ce.exceptions import EscalationRequired
+
+    error = {
+        "type": "import_error",
+        "message": "No module named 'jwt'",
+        "file": "src/auth.py",
+        "line": 5
+    }
+
+    exc = EscalationRequired(
+        reason="persistent_error",
+        error=error,
+        troubleshooting="Steps:\n1. Check imports\n2. Install package"
+    )
+
+    assert exc.reason == "persistent_error"
+    assert exc.error == error
+    assert "Check imports" in exc.troubleshooting
+    assert "jwt" in str(exc)
+    assert "src/auth.py" in str(exc)
