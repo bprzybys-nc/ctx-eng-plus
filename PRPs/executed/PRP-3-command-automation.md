@@ -38,6 +38,7 @@ updated_by: "update-context-command"
 **Effort**: 15.0h (INITIAL.md Parser: 3h, Serena Research: 4h, Context7 Integration: 3h, Template Engine: 3h, Testing: 2h)
 
 **Non-Goals**:
+
 - ❌ INITIAL.md creation/editing (stays manual - human defines requirements)
 - ❌ PRP execution (handled by PRP-4)
 - ❌ Validation gate execution (part of PRP-4 workflow)
@@ -77,12 +78,14 @@ updated_by: "update-context-command"
 ## 📖 Context
 
 **Related Work**:
+
 - **PRP-2 dependency**: State management provides PRP context initialization (`ce prp start`)
 - **Existing slash command**: `.claude/commands/generate-prp.md` has stub - needs full implementation
 - **Model.md spec**: Section 5.2 defines INITIAL.md → PRP workflow
 - **GRAND-PLAN**: Lines 173-240 provide technical approach
 
 **Current State**:
+
 - ✅ Slash command stub exists: `.claude/commands/generate-prp.md`
 - ✅ PRP template structure defined: Model.md Section 3.2
 - ✅ INITIAL.md format documented: Model.md lines 1015-1019
@@ -94,6 +97,7 @@ updated_by: "update-context-command"
 - ❌ No CLI integration: Cannot run `ce generate <feature-name>`
 
 **Desired State**:
+
 - ✅ INITIAL.md parser: Extracts FEATURE, EXAMPLES, DOCUMENTATION, OTHER CONSIDERATIONS
 - ✅ Serena research orchestration: `search_for_pattern`, `find_symbol`, `get_symbols_overview`
 - ✅ Context7 documentation fetching: `resolve-library-id`, `get-library-docs`
@@ -136,11 +140,13 @@ updated_by: "update-context-command"
 **Approach**: Regex-based section parsing with fallback to simple header detection
 
 **Files to Create**:
+
 - `tools/ce/generate.py` - PRP generation logic
 - `tools/tests/test_generate.py` - Parser tests
 - `tools/tests/fixtures/sample_initial.md` - Test fixture
 
 **INITIAL.md Section Markers**:
+
 ```python
 SECTION_MARKERS = {
     "feature": r"^##\s*FEATURE\s*$",
@@ -236,6 +242,7 @@ def extract_documentation_links(docs_text: str) -> List[Dict[str, str]]:
 **Approach**: Multi-stage research pipeline - pattern search → symbol discovery → detailed reads
 
 **Files to Modify**:
+
 - `tools/ce/generate.py` - Add research functions
 
 **Research Pipeline**:
@@ -374,6 +381,7 @@ def infer_test_patterns(project_structure: Dict[str, Any]) -> Dict[str, str]:
 **Approach**: Resolve library IDs from DOCUMENTATION section, fetch topic-specific docs
 
 **Files to Modify**:
+
 - `tools/ce/generate.py` - Add documentation fetching functions
 
 **Key Functions**:
@@ -483,6 +491,7 @@ def extract_topics_from_feature(feature_text: str) -> List[str]:
 **Approach**: LLM-based synthesis with Sequential Thinking MCP for reasoning
 
 **Files to Modify**:
+
 - `tools/ce/generate.py` - Add template engine and synthesis functions
 
 **PRP Template Structure** (6 sections):
@@ -672,10 +681,12 @@ def check_prp_completeness(prp_content: str) -> int:
 **Approach**: Extend `ce` CLI with `generate` subcommand, add E2E tests
 
 **Files to Modify**:
+
 - `tools/ce/__main__.py` - Add `generate` subcommand
 - `.claude/commands/generate-prp.md` - Update slash command to call CLI
 
 **Files to Create**:
+
 - `tools/tests/test_generate_e2e.py` - End-to-end tests
 - `tools/tests/fixtures/sample_initial.md` - Test INITIAL.md
 - `tools/tests/fixtures/expected_prp.md` - Expected output
@@ -735,9 +746,11 @@ Automates PRP generation with comprehensive research and context.
 ```
 
 ## Implementation
+
 1. Create INITIAL.md in feature-requests/ directory
 2. Run CLI: `cd tools && uv run ce generate feature-requests/<feature-name>/INITIAL.md`
 3. Output: PRPs/PRP-{id}-{feature-slug}.md
+
 ```
 
 **Test Coverage**:
@@ -799,40 +812,52 @@ def test_generate_prp_missing_serena_graceful():
 ## 🔍 Validation Gates
 
 ### Gate 1: Parser Tests (After Phase 1)
+
 ```bash
 cd tools && uv run pytest tests/test_generate.py::test_parse_initial_md -v
 ```
+
 **Expected**: INITIAL.md parsing extracts all 4 sections correctly
 
 ### Gate 2: Research Tests (After Phase 2)
+
 ```bash
 cd tools && uv run pytest tests/test_generate.py::test_research_codebase -v
 ```
+
 **Expected**: Serena MCP integration finds related code patterns
 
 ### Gate 3: Documentation Tests (After Phase 3)
+
 ```bash
 cd tools && uv run pytest tests/test_generate.py::test_fetch_documentation -v
 ```
+
 **Expected**: Context7 MCP resolves library IDs and fetches docs
 
 ### Gate 4: Template Tests (After Phase 4)
+
 ```bash
 cd tools && uv run pytest tests/test_generate.py::test_synthesize_tldr -v
 cd tools && uv run pytest tests/test_generate.py::test_synthesize_implementation -v
 ```
+
 **Expected**: Template synthesis produces valid PRP sections
 
 ### Gate 5: E2E Tests (After Phase 5)
+
 ```bash
 cd tools && uv run pytest tests/test_generate_e2e.py -v
 ```
+
 **Expected**: Complete INITIAL.md → PRP generation works end-to-end
 
 ### Gate 6: Coverage Check (After Phase 5)
+
 ```bash
 cd tools && uv run pytest tests/ --cov=ce.generate --cov-report=term-missing --cov-fail-under=80
 ```
+
 **Expected**: ≥80% test coverage for generate.py
 
 ---
@@ -840,26 +865,31 @@ cd tools && uv run pytest tests/ --cov=ce.generate --cov-report=term-missing --c
 ## 📚 References
 
 **Model.md Sections**:
+
 - Section 3.2: PRP System (PRP structure specification)
 - Section 5.2: Workflow Steps 2-3 (INITIAL.md → /generate-prp workflow)
 - Lines 1015-1033: INITIAL.md format and PRP generation process
 
 **GRAND-PLAN.md**:
+
 - Lines 173-240: PRP-3 specification (this PRP)
 - Lines 117-171: PRP-2 (state management dependency)
 - Lines 241-317: PRP-4 (execution workflow that will use generated PRPs)
 
 **Existing Code**:
+
 - `.claude/commands/generate-prp.md`: Slash command stub
 - `tools/ce/__main__.py`: CLI entry point (lines 1-200)
 - `tools/ce/core.py`: Utility functions (run_cmd, file operations)
 
 **MCP Documentation**:
+
 - Serena MCP: search_for_pattern, find_symbol, get_symbols_overview
 - Context7 MCP: resolve-library-id, get-library-docs
 - Sequential Thinking MCP: sequentialthinking for reasoning
 
 **Research Docs**:
+
 - `docs/research/01-prp-system.md`: PRP methodology
 - `docs/research/06-workflow-patterns.md`: Workflow integration
 

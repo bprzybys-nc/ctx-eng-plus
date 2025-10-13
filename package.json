@@ -1,0 +1,13 @@
+{
+  "name": "ctx-eng-plus",
+  "version": "1.0.0",
+  "description": "Context Engineering Tools",
+  "private": true,
+  "scripts": {
+    "lint:md": "markdownlint-cli2 \"docs/**/*.md\" \"PRPs/**/*.md\" \"examples/**/*.md\" \"*.md\"",
+    "lint:md:fix": "markdownlint-cli2 --fix \"docs/**/*.md\" \"PRPs/**/*.md\" \"examples/**/*.md\" \"*.md\""
+  },
+  "devDependencies": {
+    "markdownlint-cli2": "^0.18.1"
+  }
+}

@@ -11,6 +11,7 @@ The integration of MCP orchestration with context engineering methodologies crea
 The MCP ecosystem consists of specialized servers that extend AI assistant capabilities through standardized protocols. Each MCP server provides domain-specific functionality that addresses particular development challenges:
 
 **Core Architecture Principles:**
+
 - **Standardized Communication**: All MCP servers communicate through a common protocol enabling interoperability
 - **Domain Specialization**: Each MCP focuses on specific capabilities rather than general-purpose functionality
 - **Stateful Context**: MCPs maintain project-specific state and indexing for consistent results
@@ -110,6 +111,7 @@ Serena MCP provides semantic code navigation through Language Server Protocol in
 | `get_symbols_overview` | `path` (string): Directory or file<br/>`depth` (optional integer): Recursion level<br/>`types` (optional array): Filter by symbol types | `overview` (object): Hierarchical structure<br/>`statistics` (object): Symbol counts by type<br/>`dependencies` (array): External references | High-level codebase understanding before detailed analysis | 98% reduction vs full codebase read |
 
 **Best Practices:**
+
 - Always use `get_symbols_overview` before detailed analysis to understand project structure
 - Prefer `find_symbol` with `include_body=false` for initial exploration; add body only when needed
 - Use `find_referencing_symbols` before refactoring to assess impact scope
@@ -126,6 +128,7 @@ Context7 MCP provides real-time access to authoritative library documentation, p
 | `get-library-docs` | `context7CompatibleLibraryID` (string): Format `/org/project` or `/org/project/version`<br/>`topic` (optional string): Focus area (e.g., "authentication", "routing")<br/>`tokens` (optional integer): Max tokens (default: 5000) | `documentation` (string): Formatted docs<br/>`examples` (array): Code snippets<br/>`version` (string): Documentation version<br/>`last_updated` (string): Freshness indicator | Inject up-to-date library usage patterns; prevent API hallucination | Reduces outdated/hallucinated code generation |
 
 **Workflow Example:**
+
 ```
 1. resolve-library-id("fastapi") → Returns "/tiangolo/fastapi"
 2. get-library-docs("/tiangolo/fastapi", topic="dependency injection", tokens=3000)
@@ -133,6 +136,7 @@ Context7 MCP provides real-time access to authoritative library documentation, p
 ```
 
 **Best Practices:**
+
 - Always call `resolve-library-id` first unless user provides explicit Context7 library ID
 - Use `topic` parameter to focus documentation on specific implementation needs
 - Set `tokens` parameter based on complexity: 2000 for simple APIs, 5000+ for complex integrations
@@ -156,6 +160,7 @@ GitHub MCP enables repository automation, code review workflows, and historical 
 | `merge_pull_request` | `owner` (string): Repo owner<br/>`repo` (string): Repo name<br/>`pull_number` (integer): PR number<br/>`merge_method` (optional string): merge/squash/rebase | `merged` (boolean): Merge success<br/>`sha` (string): Merge commit SHA | Automated merge workflows | Complete automation |
 
 **Best Practices:**
+
 - Use `search_code` to discover implementation patterns before writing new code
 - Create branches with `create_branch` before making changes for clean PR workflows
 - Leverage `push_files` for atomic multi-file commits rather than sequential single-file operations
@@ -182,12 +187,14 @@ Filesystem MCP provides secure file operations with path traversal protection an
 | `list_allowed_directories` | None | `directories` (array): Accessible directory paths | Verify filesystem access configuration | Security verification |
 
 **Security Considerations:**
+
 - All paths must be within configured allowed directories (verified by `list_allowed_directories`)
 - Path traversal attempts (e.g., `../../../etc/passwd`) are blocked at protocol level
 - File operations are logged for audit trails
 - Sensitive files (.env, credentials) should be excluded via configuration
 
 **Best Practices:**
+
 - Use `list_directory` before file operations to verify structure
 - Prefer `edit_file` over `read` + `write` for modifications to reduce token usage
 - Use `dryRun` parameter with `edit_file` to preview changes before applying
@@ -203,6 +210,7 @@ Sequential Thinking MCP enables multi-step reasoning with revision, backtracking
 | `sequentialthinking` | `thought` (string): Current reasoning step<br/>`nextThoughtNeeded` (boolean): Continue reasoning<br/>`thoughtNumber` (integer): Current step number<br/>`totalThoughts` (integer): Estimated total steps<br/>`isRevision` (optional boolean): Revising previous thought<br/>`revisesThought` (optional integer): Which thought to revise<br/>`branchFromThought` (optional integer): Branch starting point<br/>`branchId` (optional string): Branch identifier<br/>`needsMoreThoughts` (optional boolean): Request more steps | `reasoning_chain` (array): All thoughts<br/>`current_understanding` (string): Latest insight<br/>`decision_confidence` (float): Confidence score<br/`alternatives_considered` (array): Branch explorations | Complex problem decomposition; multi-step planning; architecture decisions | Improves complex reasoning through structured decomposition |
 
 **Reasoning Flow:**
+
 1. **Initial Planning**: Start with estimated `totalThoughts` (e.g., 5 steps)
 2. **Progressive Execution**: Each `thought` builds on previous understanding
 3. **Dynamic Adjustment**: Increase `totalThoughts` if complexity discovered
@@ -211,6 +219,7 @@ Sequential Thinking MCP enables multi-step reasoning with revision, backtracking
 6. **Termination**: Set `nextThoughtNeeded=false` when reasoning complete
 
 **Example Sequential Flow:**
+
 ```
 Step 1: thought="Analyze API design requirements", totalThoughts=5, nextThoughtNeeded=true
 Step 2: thought="Consider RESTful vs GraphQL", totalThoughts=5, nextThoughtNeeded=true
@@ -222,6 +231,7 @@ Step 7: thought="Finalize architecture decision", nextThoughtNeeded=false
 ```
 
 **Best Practices:**
+
 - Use for problems requiring 3+ reasoning steps
 - Start with conservative `totalThoughts` estimate; increase as needed via `needsMoreThoughts`
 - Leverage `isRevision` when discovering new constraints that invalidate earlier reasoning
@@ -275,16 +285,19 @@ graph LR
 ```
 
 **Layer 1: Context Engineering Stack**
+
 - **CLAUDE.md**: Global rules defining MCP usage protocols, code standards, and validation requirements
 - **PRP Template**: Structured format for feature requirements with embedded MCP directives
 - **Research Phase**: Systematic context gathering using MCP capabilities before implementation
 
 **Layer 2: MCP Orchestration Layer**
+
 - **Parallel Context Enrichment**: Simultaneous queries to Context7, Serena, and Sequential Thinking
 - **Context Aggregation**: Merge documentation, code analysis, and reasoning into unified context
 - **Conflict Resolution**: Handle contradictions between MCP outputs (e.g., outdated docs vs actual code)
 
 **Layer 3: Execution Layer**
+
 - **Code Generation**: Implement features using enriched context from Layer 2
 - **Atomic Operations**: GitHub and Filesystem MCPs ensure transactional changes
 - **Validation Loop**: Three-level gate system with self-correction capabilities
@@ -414,18 +427,21 @@ graph TD
 **Three-Level Gate System:**
 
 **Level 1: Syntax & Style Validation**
+
 - **Executor**: Serena MCP via `execute_shell_command`
 - **Tools**: Language-specific linters (ruff, mypy, eslint, clippy)
 - **Auto-Fix**: Context7 queries for common lint error solutions
 - **Success Criteria**: Zero linting errors, type checking passes
 
 **Level 2: Unit Test Validation**
+
 - **Executor**: Serena MCP via `execute_shell_command`
 - **Tools**: Test frameworks (pytest, jest, go test)
 - **Failure Analysis**: Sequential Thinking for root cause + Serena for reference analysis
 - **Success Criteria**: All unit tests pass, coverage threshold met
 
 **Level 3: Integration Test Validation**
+
 - **Executor**: Serena MCP via `execute_shell_command` or direct API calls
 - **Tools**: Integration test suites, API testing tools (curl, Postman)
 - **Failure Recovery**: Context7 for API compatibility + Filesystem for configuration updates
@@ -505,11 +521,13 @@ graph TD
 ```
 
 **Complexity Scoring:**
+
 - **Simple (Score 1-3)**: Single responsibility, minimal dependencies, clear requirements
 - **Medium (Score 4-6)**: Multiple components, moderate dependencies, some ambiguity
 - **Complex (Score 7-10)**: Distributed changes, complex dependencies, high ambiguity or risk
 
 **Scoring Factors:**
+
 - Files modified: +1 per file (capped at +5)
 - External dependencies: +1 per new library
 - Cross-module changes: +2 if touching multiple modules
@@ -519,6 +537,7 @@ graph TD
 ### 6.3 MCP-Specific Usage Criteria
 
 **Use Serena When:**
+
 - Working with files >300 lines of code
 - Refactoring across 5+ files
 - Need symbol-level precision (not file-level)
@@ -527,6 +546,7 @@ graph TD
 - Running validation commands
 
 **Use Context7 When:**
+
 - Integrating new library (especially unfamiliar)
 - Library version upgrade with breaking changes
 - API usage patterns needed
@@ -535,6 +555,7 @@ graph TD
 - Learning new framework
 
 **Use Sequential Thinking When:**
+
 - Problem requires 3+ reasoning steps
 - Multiple implementation approaches exist
 - Architecture decisions needed
@@ -543,6 +564,7 @@ graph TD
 - Planning multi-phase work
 
 **Use GitHub MCP When:**
+
 - Analyzing codebase history for patterns
 - Creating automated PR workflows
 - CI/CD integration required
@@ -551,6 +573,7 @@ graph TD
 - Release management tasks
 
 **Use Filesystem MCP When:**
+
 - Operating in sandboxed environment
 - Security-critical file access
 - Batch file processing
@@ -776,12 +799,14 @@ graph TD
 ### 10.1 Internal Documentation
 
 **Context Engineering Documentation:**
+
 - **PRP Methodology**: Detailed structure and generation process (referenced in integration architecture)
 - **CLAUDE.md Template**: Complete template with MCP usage protocols (Section 5.1)
 - **INITIAL.md Structure**: Feature request format with MCP directives (referenced in workflow)
 - **Validation Gates**: Three-level gate system specification (Section 5.3)
 
 **MCP-Specific Documentation:**
+
 - **Serena MCP**: Command reference (Section 4.1), installation (referenced in integration), usage heuristics (Section 6.3)
 - **Context7 MCP**: Command reference (Section 4.2), token allocation (Section 7), documentation injection patterns
 - **GitHub MCP**: Command reference (Section 4.3), PR automation (Section 5.2), workflow integration
@@ -789,6 +814,7 @@ graph TD
 - **Sequential Thinking MCP**: Command reference (Section 4.5), reasoning patterns (Section 6.3), planning methodology
 
 **Workflow Documentation:**
+
 - **Zero-Shot Execution Workflow**: Complete sequence diagram (Section 5.2)
 - **Self-Correction Loop**: Referenced in selection matrix (Section 3) and decision tree (Section 6.2)
 - **Validation Loop**: Architecture diagram (Section 5.3) and implementation details
@@ -797,22 +823,25 @@ graph TD
 ### 10.2 External Resources
 
 **MCP Ecosystem:**
-- Model Context Protocol Specification: https://modelcontextprotocol.io/
-- MCP Server Registry: https://github.com/modelcontextprotocol/servers
-- Claude Desktop MCP Configuration: https://claude.ai/docs/mcp
+
+- Model Context Protocol Specification: <https://modelcontextprotocol.io/>
+- MCP Server Registry: <https://github.com/modelcontextprotocol/servers>
+- Claude Desktop MCP Configuration: <https://claude.ai/docs/mcp>
 
 **Individual MCP Documentation:**
-- Serena LSP Integration: https://github.com/oraios/serena
-- Context7 API: https://context7.com/docs
-- GitHub MCP: https://github.com/github/github-mcp-server
-- Filesystem MCP: https://github.com/modelcontextprotocol/server-filesystem
-- Sequential Thinking MCP: https://github.com/modelcontextprotocol/server-sequential-thinking
+
+- Serena LSP Integration: <https://github.com/oraios/serena>
+- Context7 API: <https://context7.com/docs>
+- GitHub MCP: <https://github.com/github/github-mcp-server>
+- Filesystem MCP: <https://github.com/modelcontextprotocol/server-filesystem>
+- Sequential Thinking MCP: <https://github.com/modelcontextprotocol/server-sequential-thinking>
 
 **Related Methodologies:**
-- Context Engineering Principles: https://arxiv.org/abs/2404.15176
-- LangGraph Multi-Agent Patterns: https://langchain-ai.github.io/langgraph/
-- Zero-Shot Learning: https://arxiv.org/abs/2109.01652
-- Prompt Engineering Guide: https://www.promptingguide.ai/
+
+- Context Engineering Principles: <https://arxiv.org/abs/2404.15176>
+- LangGraph Multi-Agent Patterns: <https://langchain-ai.github.io/langgraph/>
+- Zero-Shot Learning: <https://arxiv.org/abs/2109.01652>
+- Prompt Engineering Guide: <https://www.promptingguide.ai/>
 
 ### 10.3 Document Relationships
 

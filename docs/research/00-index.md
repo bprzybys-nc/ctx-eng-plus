@@ -7,6 +7,7 @@ This documentation suite provides a comprehensive, structured exploration of the
 ## Documentation Philosophy
 
 Each document in this suite:
+
 - **Explores a different aspect** of the framework without redundancy
 - **Builds an integrated picture** when read together
 - **Uses structured formats**: hierarchical numbering, tables, mermaid diagrams, checklists
@@ -21,16 +22,19 @@ Each document in this suite:
 ### Quick Start Path
 
 **For new users:**
+
 1. Start with [02-context-engineering-foundations.md](#02-context-engineering-foundations) - understand core concepts
 2. Read [01-prp-system.md](#01-prp-system) - learn the PRP methodology
 3. Review [06-workflow-patterns.md](#06-workflow-patterns) - see end-to-end workflows
 4. Set up tools with [10-tooling-configuration.md](#10-tooling-configuration)
 
 **For experienced users:**
+
 - Jump to [07-commands-reference.md](#07-commands-reference) for command specifications
 - Reference [09-best-practices-antipatterns.md](#09-best-practices-antipatterns) for optimization
 
 **For troubleshooting:**
+
 - Consult [04-self-healing-framework.md](#04-self-healing-framework) for error recovery
 - Check [08-validation-testing.md](#08-validation-testing) for validation issues
 
@@ -39,11 +43,13 @@ Each document in this suite:
 ## Document Summaries
 
 ### [01-prp-system.md](01-prp-system.md)
+
 **Product Requirements Prompt: Structured AI Task Specification**
 
 **Scope:** PRP (Product Requirements Prompt) meta-structure, methodology, templates, and workflow
 
 **Key Topics:**
+
 - PRP definition and the Context-as-Compiler model
 - Core structural elements (Goal, Why, What, Context, Blueprint, Validation)
 - 6-step PRP workflow from feature request to production
@@ -52,6 +58,7 @@ Each document in this suite:
 - Real-world performance metrics (25 min = $5K+ value)
 
 **Use this when:**
+
 - Creating implementation blueprints for AI agents
 - Need structured task specifications
 - Want autonomous code generation with validation
@@ -62,11 +69,13 @@ Each document in this suite:
 ---
 
 ### [02-context-engineering-foundations.md](02-context-engineering-foundations.md)
+
 **Core Principles, Philosophy, and Architecture**
 
 **Scope:** Philosophical foundation, Four Pillars architecture, context hierarchy, best practices
 
 **Key Topics:**
+
 - Mental model: LLM as CPU, context window as RAM
 - Evolution: vibe coding → prompt engineering → context engineering
 - Four Pillars: Write, Select, Compress, Isolate
@@ -77,6 +86,7 @@ Each document in this suite:
 - Integration ecosystem (MCP, LangGraph, CI/CD)
 
 **Use this when:**
+
 - Understanding framework fundamentals
 - Designing context architecture
 - Evaluating context engineering vs other approaches
@@ -87,11 +97,13 @@ Each document in this suite:
 ---
 
 ### [03-mcp-orchestration.md](03-mcp-orchestration.md)
+
 **Model Context Protocol: Tool Integration & Orchestration**
 
 **Scope:** MCP ecosystem, strategic selection, command specifications, integration patterns
 
 **Key Topics:**
+
 - Tier-1 Essential MCPs (Serena, Context7, GitHub, Filesystem, Sequential Thinking)
 - Strategic MCP selection matrix with decision criteria
 - Comprehensive command reference with I/O specifications
@@ -106,6 +118,7 @@ Each document in this suite:
 - Performance metrics (95% token reduction for Serena, 87% for Context7)
 
 **Use this when:**
+
 - Choosing which MCPs to use for a task
 - Understanding MCP command specifications
 - Optimizing token usage
@@ -117,11 +130,13 @@ Each document in this suite:
 ---
 
 ### [04-self-healing-framework.md](04-self-healing-framework.md)
+
 **Automated Error Recovery, Context Sync, and Drift Prevention**
 
 **Scope:** Self-healing mechanisms, context synchronization, pruning, health metrics
 
 **Key Topics:**
+
 - Closed-loop system architecture with feedback loops
 - Context synchronization protocols (automatic triggers, workflows)
 - Self-healing error recovery strategies
@@ -134,6 +149,7 @@ Each document in this suite:
 - Drift recovery protocol (7 steps)
 
 **Use this when:**
+
 - Debugging context-related errors
 - Preventing context drift
 - Recovering from validation failures
@@ -145,11 +161,13 @@ Each document in this suite:
 ---
 
 ### [05-persistence-layers.md](05-persistence-layers.md)
+
 **Data Persistence, Ground Truth Hierarchy, and Synchronization**
 
 **Scope:** Four persistence layers, relationships, ground truth, synchronization, CE/Examples vs Serena/Memories
 
 **Key Topics:**
+
 - Four persistence layers:
   1. CLAUDE.md (Constitution) - immutable project rules
   2. CE/Examples (Canonical Patterns) - reference implementations
@@ -166,6 +184,7 @@ Each document in this suite:
 - Health metrics and conflict resolution
 
 **Use this when:**
+
 - Deciding where to store information
 - Synchronizing context across layers
 - Resolving conflicts between layers
@@ -177,11 +196,13 @@ Each document in this suite:
 ---
 
 ### [06-workflow-patterns.md](06-workflow-patterns.md)
+
 **End-to-End Workflows from Feature Request to Production**
 
 **Scope:** Complete workflows, session protocols, multi-phase implementation, real-world examples
 
 **Key Topics:**
+
 - Complete workflow overview (Phase 0-6 diagram)
 - Session start protocol:
   - Compilation check (mandatory)
@@ -204,6 +225,7 @@ Each document in this suite:
 - Troubleshooting matrix (common issues + solutions)
 
 **Use this when:**
+
 - Planning feature implementation
 - Following standard workflows
 - Understanding session lifecycle
@@ -215,11 +237,13 @@ Each document in this suite:
 ---
 
 ### [07-commands-reference.md](07-commands-reference.md)
+
 **Complete Command Inventory with Specifications**
 
 **Scope:** All commands (33+), specifications, integration patterns, triggers
 
 **Key Topics:**
+
 - Command categories:
   1. PRP Commands (7 commands)
      - Creation: `/generate-prp`, `/create-base-prp`, `/planning-create`, `/spec-create-adv`
@@ -236,6 +260,7 @@ Each document in this suite:
 - Trigger conditions matrix (automatic vs manual)
 
 **Use this when:**
+
 - Looking up command specifications
 - Understanding command I/O
 - Integrating commands into workflows
@@ -247,11 +272,13 @@ Each document in this suite:
 ---
 
 ### [08-validation-testing.md](08-validation-testing.md)
+
 **Three-Level Validation Gates and Self-Correction**
 
 **Scope:** Validation system, self-correcting loops, compilation protocols, validation scripts
 
 **Key Topics:**
+
 - Three-level validation gate system:
   - Level 1: Syntax & Style (linters, formatters, type-check) - 10 seconds
   - Level 2: Unit Tests (pytest, jest, coverage) - 30-60 seconds
@@ -269,6 +296,7 @@ Each document in this suite:
 - Performance metrics (error recovery, timing benchmarks)
 
 **Use this when:**
+
 - Setting up validation pipelines
 - Debugging validation failures
 - Understanding self-correction mechanisms
@@ -280,11 +308,13 @@ Each document in this suite:
 ---
 
 ### [09-best-practices-antipatterns.md](09-best-practices-antipatterns.md)
+
 **Optimization Patterns, Decision Frameworks, and Red Flags**
 
 **Scope:** KISS principles, best practices, anti-patterns, heuristics, health metrics, decision trees
 
 **Key Topics:**
+
 - KISS principles overview (complexity-driven approach)
 - Best practices catalog:
   1. RAG-First Strategy
@@ -312,6 +342,7 @@ Each document in this suite:
 - Red flag identification guide (5 prohibited actions)
 
 **Use this when:**
+
 - Optimizing context engineering workflows
 - Making design decisions
 - Avoiding common mistakes
@@ -323,11 +354,13 @@ Each document in this suite:
 ---
 
 ### [10-tooling-configuration.md](10-tooling-configuration.md)
+
 **Complete Tooling Inventory, Installation, and Configuration**
 
 **Scope:** Tools, MCP installation, configurations, project structure, permissions, scripts
 
 **Key Topics:**
+
 - Tooling philosophy (zero-prompt approach, 96% friction reduction)
 - Essential vs optional tools (14 tools categorized)
 - MCP installation:
@@ -346,6 +379,7 @@ Each document in this suite:
 - Performance metrics (framework overhead 1.8%, 96% prompt reduction)
 
 **Use this when:**
+
 - Setting up the framework
 - Installing and configuring MCPs
 - Structuring projects
@@ -358,11 +392,13 @@ Each document in this suite:
 ---
 
 ### [11-claude-code-features.md](11-claude-code-features.md)
+
 **Claude Code 2.0 Features: Checkpoints, Subagents, and Hooks**
 
 **Scope:** Claude Code-specific features, real-world PRP examples, lessons learned, emergency patterns
 
 **Key Topics:**
+
 - ESC ESC checkpoint rewind system (95% time savings on error recovery)
 - Subagent parallel execution (3x speed improvement)
 - Claude Code-specific hooks (after_file_edit, before_git_commit, on_validation_failure)
@@ -381,6 +417,7 @@ Each document in this suite:
 - Troubleshooting guide
 
 **Use this when:**
+
 - Learning Claude Code 2.0-specific features
 - Understanding checkpoint/rewind workflows
 - Setting up subagent parallel execution
@@ -437,31 +474,37 @@ graph TB
 ### Reading Order by Goal
 
 **Goal: Understand the framework**
+
 1. [02-context-engineering-foundations.md](02-context-engineering-foundations.md)
 2. [05-persistence-layers.md](05-persistence-layers.md)
 3. [01-prp-system.md](01-prp-system.md)
 
 **Goal: Implement a feature**
+
 1. [01-prp-system.md](01-prp-system.md)
 2. [06-workflow-patterns.md](06-workflow-patterns.md)
 3. [07-commands-reference.md](07-commands-reference.md)
 
 **Goal: Set up the framework**
+
 1. [10-tooling-configuration.md](10-tooling-configuration.md)
 2. [03-mcp-orchestration.md](03-mcp-orchestration.md)
 3. [02-context-engineering-foundations.md](02-context-engineering-foundations.md)
 
 **Goal: Optimize workflows**
+
 1. [09-best-practices-antipatterns.md](09-best-practices-antipatterns.md)
 2. [03-mcp-orchestration.md](03-mcp-orchestration.md)
 3. [08-validation-testing.md](08-validation-testing.md)
 
 **Goal: Troubleshoot issues**
+
 1. [04-self-healing-framework.md](04-self-healing-framework.md)
 2. [11-claude-code-features.md](11-claude-code-features.md)
 3. [09-best-practices-antipatterns.md](09-best-practices-antipatterns.md)
 
 **Goal: Learn from real examples**
+
 1. [11-claude-code-features.md](11-claude-code-features.md)
 2. [06-workflow-patterns.md](06-workflow-patterns.md)
 3. [09-best-practices-antipatterns.md](09-best-practices-antipatterns.md)
@@ -509,27 +552,32 @@ Source: [03-mcp-orchestration.md § 9 Performance Metrics](03-mcp-orchestration.
 ## Quick Reference: Common Tasks
 
 ### Creating a PRP
+
 1. Read [01-prp-system.md § 4.2 INITIAL.md](01-prp-system.md#42-initialmd-feature-request)
 2. Run `/generate-prp INITIAL.md` - see [07-commands-reference.md § 2.1](07-commands-reference.md#21-prp-creation-commands)
 3. Validate PRP - see [01-prp-system.md § 4.4](01-prp-system.md#44-human-validation-checkpoint)
 4. Execute PRP - see [01-prp-system.md § 4.5](01-prp-system.md#45-prp-execution)
 
 ### Setting Up MCP
+
 1. Install MCPs - see [10-tooling-configuration.md § 3](10-tooling-configuration.md#3-mcp-installation)
 2. Configure Claude Desktop - see [10-tooling-configuration.md § 4.1](10-tooling-configuration.md#41-claude-desktop-configjson)
 3. Verify installation - see [10-tooling-configuration.md § 3.3](10-tooling-configuration.md#33-verification-steps)
 
 ### Troubleshooting Context Drift
+
 1. Check health metrics - see [04-self-healing-framework.md § 6](04-self-healing-framework.md#6-context-health-metrics)
 2. Run `/validate-state` - see [07-commands-reference.md § 3](07-commands-reference.md#3-context-management-commands)
 3. Execute drift recovery - see [04-self-healing-framework.md § 6.3](04-self-healing-framework.md#63-drift-recovery-protocol)
 
 ### Optimizing Token Usage
+
 1. Review token allocation - see [03-mcp-orchestration.md § 7](03-mcp-orchestration.md#7-token-allocation-strategy)
 2. Apply pruning rules - see [04-self-healing-framework.md § 5](04-self-healing-framework.md#5-context-pruning-rules)
 3. Use symbol queries - see [09-best-practices-antipatterns.md § 8.1](09-best-practices-antipatterns.md#81-symbol-first-development)
 
 ### Running Validation Gates
+
 1. Setup validation scripts - see [08-validation-testing.md § 8](08-validation-testing.md#8-validation-scripts)
 2. Execute three-level gates - see [08-validation-testing.md § 1](08-validation-testing.md#1-three-level-validation-gate-system)
 3. Handle failures - see [08-validation-testing.md § 2](08-validation-testing.md#2-self-correcting-validation-loops)
@@ -539,6 +587,7 @@ Source: [03-mcp-orchestration.md § 9 Performance Metrics](03-mcp-orchestration.
 ## Source Material
 
 All documents in this suite were extracted and transformed from:
+
 - **Source:** [context-mastery-exploration.md](context-mastery-exploration.md)
 - **Methodology:** Content extracted, structured, and transformed into technology-agnostic, formal documentation
 - **Approach:** Information preservation with optionability, no judgment or implementation code
@@ -582,6 +631,7 @@ This documentation suite is designed to be comprehensive yet maintainable. When 
 ## License & Usage
 
 These documents are part of the Context Engineering Framework documentation suite. They are designed for:
+
 - **Learning**: Understanding context engineering principles
 - **Reference**: Quick lookup of commands, patterns, best practices
 - **Implementation**: Setting up and using the framework

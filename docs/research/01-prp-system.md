@@ -108,11 +108,13 @@ graph TB
 **Purpose:** Define single, clear objective
 
 **Requirements:**
+
 - One top-level deliverable
 - Specific functionality statement
 - Measurable outcome
 
 **Example:**
+
 ```markdown
 ## GOAL
 Build MCP server for PRP parsing with LLM-powered information extraction,
@@ -138,6 +140,7 @@ CRUD operations for tasks/documentation, and 18 distinct tools for task manageme
 **Format:** Checkbox list of specific, testable requirements
 
 **Example:**
+
 ```markdown
 ## WHAT (Success Criteria)
 - [ ] MCP server starts without errors
@@ -148,6 +151,7 @@ CRUD operations for tasks/documentation, and 18 distinct tools for task manageme
 ```
 
 **Best Practices:**
+
 - Use concrete, testable criteria
 - Avoid subjective terms ("good", "fast")
 - Include performance thresholds where applicable
@@ -159,6 +163,7 @@ CRUD operations for tasks/documentation, and 18 distinct tools for task manageme
 **Sub-components:**
 
 ##### Project Structure
+
 ```markdown
 **Project Structure**
 - `src/server/` - MCP server implementation
@@ -167,6 +172,7 @@ CRUD operations for tasks/documentation, and 18 distinct tools for task manageme
 ```
 
 ##### Existing Patterns
+
 ```markdown
 **Existing Patterns**
 - Similar MCP server: `examples/mcp-task-server.ts`
@@ -175,6 +181,7 @@ CRUD operations for tasks/documentation, and 18 distinct tools for task manageme
 ```
 
 ##### Library Documentation
+
 ```markdown
 **Library Documentation**
 - MCP Protocol: https://modelcontextprotocol.io/docs/concepts/architecture
@@ -183,6 +190,7 @@ CRUD operations for tasks/documentation, and 18 distinct tools for task manageme
 ```
 
 ##### Gotchas and Warnings
+
 ```markdown
 **Gotchas:**
 - API key must be environment variable, never hardcoded
@@ -191,6 +199,7 @@ CRUD operations for tasks/documentation, and 18 distinct tools for task manageme
 ```
 
 ##### Validation Commands
+
 ```markdown
 **Validation Commands**
 - Syntax: `npm run type-check`
@@ -218,11 +227,14 @@ interface Task {
   status: 'pending' | 'in_progress' | 'completed';
 }
 ```
+
 **Validation:** `npm run type-check` succeeds
 
 ### Phase 2: Core Logic
+
 **Action:** Implement LLM parsing function
 **Pseudocode:**
+
 ```typescript
 async function parseTaskFromText(input: string): Promise<Task> {
   const response = await anthropic.messages.create({
@@ -233,11 +245,14 @@ async function parseTaskFromText(input: string): Promise<Task> {
   return extractTaskFromResponse(response);
 }
 ```
+
 **Validation:** Unit test `tests/parser.test.ts` passes
 
 ### Phase 3: Integration
+
 **Action:** Wire up MCP server endpoints
 **Pseudocode:**
+
 ```typescript
 server.tool("parse-task", async (args) => {
   const task = await parseTaskFromText(args.text);
@@ -245,7 +260,9 @@ server.tool("parse-task", async (args) => {
   return { success: true, task };
 });
 ```
+
 **Validation:** Integration test calls endpoint and verifies response
+
 ```
 
 **Best Practices:**
@@ -274,17 +291,21 @@ server.tool("parse-task", async (args) => {
 ```bash
 npm run lint && npm run type-check && npm run format:check
 ```
+
 **Expected:** All checks pass, no errors
 **On Failure:** Auto-fix formatting, resolve type errors, re-run
 
 ### Level 2: Unit Tests
+
 ```bash
 npm test -- --coverage --verbose
 ```
+
 **Expected:** 100% tests pass, coverage > 80%
 **On Failure:** Analyze test failure message, identify root cause, apply fix, re-test
 
 ### Level 3: Integration Tests
+
 ```bash
 # Start test server
 npm run dev:test &
@@ -298,8 +319,10 @@ curl -X POST http://localhost:3000/parse \
 # Verify database state
 npm run db:verify-test-data
 ```
+
 **Expected:** All API calls return 200, data persists correctly
 **On Failure:** Check logs, verify environment setup, fix integration issues, re-validate
+
 ```
 
 ### 2.2 Optional Sections
@@ -375,6 +398,7 @@ Track implementation confidence:
 #### 3.1.2 No Broad Descriptions
 
 **Bad Example:**
+
 ```markdown
 ## CONTEXT
 This project uses modern JavaScript practices and follows industry standards.
@@ -382,6 +406,7 @@ The architecture is modular and scalable.
 ```
 
 **Good Example:**
+
 ```markdown
 ## CONTEXT
 **File Structure:**
@@ -402,6 +427,7 @@ The architecture is modular and scalable.
 #### 3.2.1 Documentation with Section-Specific References
 
 **Structure:**
+
 ```markdown
 **Library Documentation:**
 - Feature X: https://docs.library.com/features/x#section-3-2
@@ -433,6 +459,7 @@ The architecture is modular and scalable.
 #### 3.2.3 Executable Validation Commands
 
 **Requirements:**
+
 - Must be copy-paste executable
 - Include expected output
 - Specify failure recovery steps
@@ -444,22 +471,28 @@ The architecture is modular and scalable.
    ```bash
    npm run type-check
    ```
+
    Expected: "No type errors found"
    On failure: Review error output, fix type mismatches, re-run
 
 2. Unit tests:
+
    ```bash
    npm test -- --verbose --coverage
    ```
+
    Expected: All tests pass, coverage > 80%
    On failure: Check test output for specific failures, fix logic, re-test
 
 3. Integration test:
+
    ```bash
    curl -X GET http://localhost:3000/api/health
    ```
+
    Expected: {"status": "ok", "timestamp": "..."}
    On failure: Check server logs, verify environment variables, restart server
+
 ```
 
 ### 3.3 Autonomy Enablers
@@ -512,6 +545,7 @@ graph LR
 #### 3.3.4 One-Pass Implementation Success Design
 
 **Design Principles:**
+
 - Provide sufficient context to avoid back-and-forth clarifications
 - Include common pitfalls and how to avoid them
 - Reference similar implementations for pattern consistency
@@ -588,6 +622,7 @@ graph TB
 #### 4.3.1 Required Sections
 
 ##### FEATURE Section
+
 ```markdown
 ## FEATURE:
 Build MCP server for PRP parsing with:
@@ -598,6 +633,7 @@ Build MCP server for PRP parsing with:
 ```
 
 ##### EXAMPLES Section
+
 ```markdown
 ## EXAMPLES:
 - `examples/mcp-servers/task-parser.ts` - Shows async parsing pattern with error handling
@@ -606,6 +642,7 @@ Build MCP server for PRP parsing with:
 ```
 
 ##### DOCUMENTATION Section
+
 ```markdown
 ## DOCUMENTATION:
 - MCP Protocol: https://modelcontextprotocol.io/docs/concepts/architecture
@@ -617,6 +654,7 @@ Build MCP server for PRP parsing with:
 ```
 
 ##### OTHER CONSIDERATIONS Section
+
 ```markdown
 ## OTHER CONSIDERATIONS:
 - Model and API key MUST be environment variables (ANTHROPIC_API_KEY)
@@ -652,6 +690,7 @@ graph TD
 ```
 
 **Research Activities:**
+
 1. **Requirement Analysis:** Parse INITIAL.md, identify key features
 2. **Pattern Search:** Use MCP tools to find similar implementations in codebase
 3. **Documentation Fetch:** Retrieve relevant sections from official docs (Context7 MCP)
@@ -662,6 +701,7 @@ graph TD
 #### 4.4.2 Output Components
 
 **Complete PRP includes:**
+
 - ✓ Architectural blueprint with diagrams
 - ✓ Step-by-step pseudocode for each phase
 - ✓ Error handling patterns for common failures
@@ -676,6 +716,7 @@ graph TD
 #### 4.5.1 Validation Checklist
 
 ##### Architecture Review
+
 ```markdown
 - [ ] Database schema supports all required features
 - [ ] Proposed structure is logical and maintainable
@@ -685,6 +726,7 @@ graph TD
 ```
 
 ##### Security Audit
+
 ```markdown
 - [ ] API keys/secrets handled via environment variables
 - [ ] No direct modification of sensitive files (.env, .dev.vars)
@@ -694,6 +736,7 @@ graph TD
 ```
 
 ##### Requirement Coverage
+
 ```markdown
 - [ ] All features from INITIAL.md are included
 - [ ] Nothing forgotten or misinterpreted
@@ -702,6 +745,7 @@ graph TD
 ```
 
 ##### Implementation Sanity
+
 ```markdown
 - [ ] Not over-engineered for the problem
 - [ ] Library choices are justified
@@ -834,6 +878,7 @@ graph TD
 4. **Repeat until pass OR escalate after 3 attempts**
 
 **Escalation Triggers:**
+
 - Same error persists after 3 fix attempts
 - Error message is ambiguous or unhelpful
 - Fix requires architectural changes
@@ -894,11 +939,13 @@ npm run lint        # ESLint style checks
 ```
 
 **Tests:**
+
 ```bash
 npm test -- --coverage --verbose  # Jest unit tests
 ```
 
 **Integration:**
+
 ```bash
 curl -X POST http://localhost:3000/api/endpoint \
   -H "Content-Type: application/json" \
@@ -908,11 +955,13 @@ curl -X POST http://localhost:3000/api/endpoint \
 ## IMPLEMENTATION BLUEPRINT
 
 ### Phase 1: Type Definitions
+
 **Goal:** Define all interfaces and types
 **Approach:** Symbol-first development
 **Validation:** `npm run type-check` succeeds
 
 **Pseudocode:**
+
 ```typescript
 interface FeatureConfig {
   id: string;
@@ -926,11 +975,13 @@ type FeatureStatus = 'active' | 'inactive' | 'pending';
 **Checkpoint:** After type definitions complete and validated
 
 ### Phase 2: Core Logic
+
 **Goal:** Implement business logic
 **Approach:** TDD with unit tests first
 **Validation:** Unit tests pass with > 80% coverage
 
 **Pseudocode:**
+
 ```typescript
 async function processFeature(config: FeatureConfig): Promise<Result> {
   // 1. Validate input
@@ -943,11 +994,13 @@ async function processFeature(config: FeatureConfig): Promise<Result> {
 **Checkpoint:** After core logic complete and unit tests pass
 
 ### Phase 3: Integration
+
 **Goal:** Wire up components and external dependencies
 **Approach:** Integration tests validate connections
 **Validation:** API endpoints respond correctly
 
 **Pseudocode:**
+
 ```typescript
 app.post('/api/feature', async (req, res) => {
   const config = parseConfig(req.body);
@@ -959,6 +1012,7 @@ app.post('/api/feature', async (req, res) => {
 **Checkpoint:** After integration complete and all tests pass
 
 ### Phase 4: Error Handling & Edge Cases
+
 **Goal:** Robust error handling
 **Approach:** Test failure scenarios
 **Validation:** Error cases handled gracefully
@@ -968,20 +1022,25 @@ app.post('/api/feature', async (req, res) => {
 ## VALIDATION LOOPS
 
 ### Level 1: Syntax & Style
+
 ```bash
 # Fast feedback (< 10 seconds)
 npm run type-check && npm run lint && npm run format:check
 ```
+
 **Expected:** All checks pass with no errors
 **On Failure:** Auto-fix formatting, resolve type errors, re-run
 
 ### Level 2: Unit Tests
+
 ```bash
 # Logic validation (30-60 seconds)
 npm test -- --coverage --verbose
 ```
+
 **Expected:** 100% tests pass, coverage > 80%
 **On Failure:**
+
 1. Analyze test failure message
 2. Use Sequential Thinking to identify root cause
 3. Apply fix to implementation
@@ -989,6 +1048,7 @@ npm test -- --coverage --verbose
 5. Repeat until pass
 
 ### Level 3: Integration Tests
+
 ```bash
 # System validation (1-2 minutes)
 # Start test server
@@ -1003,8 +1063,10 @@ curl -X POST http://localhost:3000/api/feature \
   -H "Content-Type: application/json" \
   -d @test-fixtures/valid-request.json
 ```
+
 **Expected:** All endpoints return expected responses, data persists correctly
 **On Failure:**
+
 1. Check server logs: `tail -f logs/dev.log`
 2. Verify environment: `npm run env:check`
 3. Debug with Serena execute_shell_command
@@ -1014,7 +1076,9 @@ curl -X POST http://localhost:3000/api/feature \
 ## SELF-HEALING GATES
 
 ### Gate 1: After Type Definitions
+
 **Actions:**
+
 1. Run `npm run type-check`
 2. If errors: use `find_symbol()` to locate root cause
 3. Fix at source (interface/type definition level)
@@ -1022,7 +1086,9 @@ curl -X POST http://localhost:3000/api/feature \
 5. Create checkpoint: `write_memory("checkpoint-types", "Type definitions complete and validated")`
 
 ### Gate 2: After Core Logic
+
 **Actions:**
+
 1. Run unit tests: `npm test`
 2. If failures: analyze with Sequential Thinking MCP
 3. Apply fix to implementation (not tests, unless test is wrong)
@@ -1030,7 +1096,9 @@ curl -X POST http://localhost:3000/api/feature \
 5. Create checkpoint: `write_memory("checkpoint-logic", "Core logic implemented with N tests passing")`
 
 ### Gate 3: After Integration
+
 **Actions:**
+
 1. Run full test suite: `npm run test:all`
 2. Run integration tests: `npm run test:integration`
 3. If failures: use Serena execute_shell_command for debugging
@@ -1041,11 +1109,13 @@ curl -X POST http://localhost:3000/api/feature \
 ## CONTEXT SYNCHRONIZATION PROTOCOL
 
 ### During Implementation
+
 - **Every 5 file changes:** Sync context with `sync_context()`
 - **After each validation gate:** Create checkpoint
 - **On any error:** Analyze drift, prune outdated context if needed
 
 ### On Completion
+
 1. Final validation: `npm run check-all`
 2. Create detailed checkpoint with summary
 3. Update Serena memories with learnings: `write_memory("learnings-[feature]", "...")`
@@ -1053,6 +1123,7 @@ curl -X POST http://localhost:3000/api/feature \
 5. Create PR if applicable
 
 ## CONFIDENCE SCORING
+
 **Scale:** 1-10 based on validation passes and error count
 
 - **Initial estimate:** 6/10 (untested, based on design)
@@ -1063,6 +1134,7 @@ curl -X POST http://localhost:3000/api/feature \
 **Current Confidence:** [Update during execution]
 
 ## COMPLETION CHECKLIST
+
 - [ ] All validation gates passed
 - [ ] Compilation successful (no type errors)
 - [ ] Tests passing (coverage > 80%)
@@ -1073,6 +1145,7 @@ curl -X POST http://localhost:3000/api/feature \
 - [ ] Git commit completed
 - [ ] PR created (if applicable)
 - [ ] Documentation updated
+
 ```
 
 ### 5.2 KISS-Optimized PRP Template (Minimal)
@@ -1127,22 +1200,29 @@ curl -X POST http://localhost:3000/api/feature \
 // Pseudocode or example
 interface Feature { ... }
 ```
+
 **Validation:** `npm run type-check`
 
 ### 2. [Step name - e.g., "Implement core function"]
+
 **Action:** [What to do]
+
 ```typescript
 // Pseudocode or example
 function processFeature() { ... }
 ```
+
 **Validation:** `npm test -- tests/feature.test.ts`
 
 ### 3. [Step name - e.g., "Integrate with API"]
+
 **Action:** [What to do]
+
 ```typescript
 // Pseudocode or example
 app.post('/api/feature', handler);
 ```
+
 **Validation:** `curl -X POST http://localhost:3000/api/feature`
 
 ## VALIDATION (Automatic Self-Healing)
@@ -1162,12 +1242,14 @@ curl -X POST http://localhost:3000/api/endpoint -d '{"test": "data"}'
 **Self-Healing:** On any failure, analyze error, apply fix, re-run validation
 
 ## COMPLETION CHECKLIST
+
 - [ ] Implementation complete
 - [ ] All tests passing
 - [ ] Type-check clean
 - [ ] Integration validated
 - [ ] Code reviewed
 - [ ] Committed to git
+
 ```
 
 ### 5.3 Template Selection Guide
@@ -1197,6 +1279,7 @@ curl -X POST http://localhost:3000/api/endpoint -d '{"test": "data"}'
 ```
 
 **Process:**
+
 1. Parse INITIAL.md sections (FEATURE, EXAMPLES, DOCUMENTATION, OTHER CONSIDERATIONS)
 2. Research codebase for existing patterns using MCP tools
 3. Fetch documentation from Context7 MCP for libraries
@@ -1206,6 +1289,7 @@ curl -X POST http://localhost:3000/api/endpoint -d '{"test": "data"}'
 7. Output complete PRP document
 
 **Example:**
+
 ```bash
 /generate-prp PRPs/feature-requests/task-parser.md
 ```
@@ -1217,6 +1301,7 @@ curl -X POST http://localhost:3000/api/endpoint -d '{"test": "data"}'
 **Purpose:** Generate PRP with automatic research from simple description
 
 **Syntax:**
+
 ```bash
 /create-base-prp <feature-description>
 ```
@@ -1224,6 +1309,7 @@ curl -X POST http://localhost:3000/api/endpoint -d '{"test": "data"}'
 **Use Case:** Quick PRP generation when INITIAL.md doesn't exist yet
 
 **Example:**
+
 ```bash
 /create-base-prp "Build MCP server for task parsing with LLM extraction"
 ```
@@ -1235,11 +1321,13 @@ curl -X POST http://localhost:3000/api/endpoint -d '{"test": "data"}'
 **Purpose:** Implement feature from complete PRP document
 
 **Syntax:**
+
 ```bash
 /execute-prp <path-to-PRP.md>
 ```
 
 **Process:**
+
 1. Parse PRP sections
 2. Generate TodoWrite task checklist
 3. Implement components following blueprint
@@ -1248,11 +1336,13 @@ curl -X POST http://localhost:3000/api/endpoint -d '{"test": "data"}'
 6. Deliver production-ready code
 
 **Example:**
+
 ```bash
 /execute-prp PRPs/task-parser-prp.md
 ```
 
 **Features:**
+
 - Real-time task progress tracking
 - Automatic validation and error correction
 - Checkpoint creation at each gate
@@ -1263,6 +1353,7 @@ curl -X POST http://localhost:3000/api/endpoint -d '{"test": "data"}'
 **Purpose:** Execute PRP against existing codebase with context awareness
 
 **Syntax:**
+
 ```bash
 /execute-base-prp <prp-file>
 ```
@@ -1276,11 +1367,13 @@ curl -X POST http://localhost:3000/api/endpoint -d '{"test": "data"}'
 **Purpose:** Prime Claude with essential project context before PRP work
 
 **Syntax:**
+
 ```bash
 /prime-core
 ```
 
 **Actions:**
+
 - Load CLAUDE.md global rules
 - Analyze project structure
 - Load key dependencies and configurations
@@ -1291,6 +1384,7 @@ curl -X POST http://localhost:3000/api/endpoint -d '{"test": "data"}'
 **Purpose:** General code review workflow
 
 **Syntax:**
+
 ```bash
 /review-general [files-or-dirs]
 ```
@@ -1302,6 +1396,7 @@ curl -X POST http://localhost:3000/api/endpoint -d '{"test": "data"}'
 **Purpose:** Review git staged and unstaged changes
 
 **Syntax:**
+
 ```bash
 /review-staged-unstaged
 ```
@@ -1313,6 +1408,7 @@ curl -X POST http://localhost:3000/api/endpoint -d '{"test": "data"}'
 **Purpose:** Simple refactoring tasks following project patterns
 
 **Syntax:**
+
 ```bash
 /refactor-simple <description>
 ```
@@ -1322,6 +1418,7 @@ curl -X POST http://localhost:3000/api/endpoint -d '{"test": "data"}'
 **Purpose:** Debugging workflow for failed validations
 
 **Syntax:**
+
 ```bash
 /debug <error-description>
 ```
@@ -1331,11 +1428,13 @@ curl -X POST http://localhost:3000/api/endpoint -d '{"test": "data"}'
 **Purpose:** Create pull request from implemented PRP
 
 **Syntax:**
+
 ```bash
 /create-pr <prp-reference>
 ```
 
 **Actions:**
+
 - Generate PR description from PRP
 - Include validation results
 - Link to original feature request
@@ -1346,6 +1445,7 @@ curl -X POST http://localhost:3000/api/endpoint -d '{"test": "data"}'
 #### 6.4.1 Variable Expansion
 
 **$ARGUMENTS Variable:**
+
 ```markdown
 # In command file:
 /generate-prp $ARGUMENTS
@@ -1360,12 +1460,14 @@ curl -X POST http://localhost:3000/api/endpoint -d '{"test": "data"}'
 #### 6.4.2 TodoWrite Integration
 
 **Automatic Task Management:**
+
 - PRP execution creates TodoWrite checklist
 - Tasks automatically update status during execution
 - Progress visible in real-time
 - Final checklist serves as execution log
 
 **Example TodoWrite Output:**
+
 ```markdown
 ## PRP Execution: Task Parser
 - [x] Phase 1: Type definitions (2 min)
@@ -1382,6 +1484,7 @@ Status: Complete ✓
 #### 6.4.3 Multi-Phase Implementation
 
 **Phase Structure:**
+
 1. **Skeleton Phase:** Create file structure, types, interfaces
 2. **Production Phase:** Implement business logic, error handling
 3. **Test Phase:** Write comprehensive tests
@@ -1391,12 +1494,14 @@ Status: Complete ✓
 #### 6.4.4 Git Worktree Support
 
 **Parallel Development:**
+
 - Main Claude session: Current feature
 - Worktree Claude session: Research or refactoring
 - Each session has isolated working directory
 - Prevents conflicts during multi-feature development
 
 **Setup:**
+
 ```bash
 git worktree add ../project-feature1 feature1
 git worktree add ../project-research main
@@ -1409,6 +1514,7 @@ git worktree add ../project-research main
 #### 6.5.1 Documentation Scraping
 
 **Automatic Fetching:**
+
 - Context7 MCP fetches version-specific docs
 - Caches documentation locally for offline access
 - Extracts relevant sections based on PRP context
@@ -1416,6 +1522,7 @@ git worktree add ../project-research main
 #### 6.5.2 Multi-Agent Research
 
 **Research Phase:**
+
 - Agent 1: Codebase pattern analysis
 - Agent 2: Documentation gathering
 - Agent 3: Architecture design
@@ -1424,6 +1531,7 @@ git worktree add ../project-research main
 #### 6.5.3 Ultralink Thinking Process
 
 **Integration:**
+
 - Activates for complex problem-solving during execution
 - Provides step-by-step reasoning visibility
 - Helps debug validation failures
@@ -1432,6 +1540,7 @@ git worktree add ../project-research main
 #### 6.5.4 CI/CD Integration
 
 **Headless Mode:**
+
 ```bash
 # Streaming JSON output for CI/CD monitoring
 claude-prp execute --headless --stream-json PRPs/feature.md > execution.log
@@ -1441,6 +1550,7 @@ cat execution.log | jq '.validation.status'
 ```
 
 **Use Cases:**
+
 - Automated feature implementation in CI pipeline
 - Nightly builds with PRP-driven development
 - Integration testing with generated code
@@ -1485,6 +1595,7 @@ project/
 | **Stream-JSON** | Real-time monitoring | JSON stream | None (automated, observable) |
 
 **Interactive Mode:**
+
 ```bash
 /execute-prp PRPs/feature.md
 # Shows real-time progress with TodoWrite
@@ -1492,6 +1603,7 @@ project/
 ```
 
 **Headless Mode:**
+
 ```bash
 claude-prp execute --headless PRPs/feature.md
 # No user input required
@@ -1500,6 +1612,7 @@ claude-prp execute --headless PRPs/feature.md
 ```
 
 **Stream-JSON Mode:**
+
 ```bash
 claude-prp execute --stream-json PRPs/feature.md | jq '.progress'
 # Real-time JSON events
@@ -1530,6 +1643,7 @@ claude-prp execute --stream-json PRPs/feature.md | jq '.progress'
 #### 7.1.2 Value Analysis
 
 **Estimated Developer Time (Manual Implementation):**
+
 - Architecture design: 2 hours
 - Implementation: 8 hours
 - Testing: 3 hours
@@ -1537,6 +1651,7 @@ claude-prp execute --stream-json PRPs/feature.md | jq '.progress'
 - **Total: 15 hours**
 
 **Estimated Cost Savings:**
+
 - Developer hourly rate: $150/hr (senior developer)
 - Manual cost: $2,250
 - PRP execution: $0 (autonomous AI)
@@ -1602,6 +1717,7 @@ claude-prp execute --stream-json PRPs/feature.md | jq '.progress'
 | **Production Readiness** | 94% | 90% |
 
 **Definitions:**
+
 - **First-Pass Success:** Code works without any validation failures
 - **Second-Pass Success:** Code works after first self-healing iteration
 - **Self-Healing Success:** Validation failures fixed automatically
@@ -1633,6 +1749,7 @@ claude-prp execute --stream-json PRPs/feature.md | jq '.progress'
 **Reason for Slowdown:** More patterns to analyze, longer context retrieval
 
 **Mitigation Strategies:**
+
 - Use Serena MCP for efficient symbol navigation
 - Cache common patterns in `examples/` directory
 - Maintain updated `ai_docs/` with key library information
@@ -1640,16 +1757,19 @@ claude-prp execute --stream-json PRPs/feature.md | jq '.progress'
 #### 7.4.2 Team Productivity Impact
 
 **Single Developer:**
+
 - Features per week (manual): 2-3
 - Features per week (PRP-driven): 8-12
 - **Productivity increase: 3-4x**
 
 **Team of 5 Developers:**
+
 - Features per week (manual): 10-15
 - Features per week (PRP-driven): 40-60
 - **Productivity increase: 3-4x**
 
 **Consistency Benefits:**
+
 - Code style: 100% consistent (enforced via CLAUDE.md)
 - Test coverage: 100% consistent (enforced via validation gates)
 - Documentation: 100% consistent (generated from PRPs)
@@ -1673,36 +1793,44 @@ claude-prp execute --stream-json PRPs/feature.md | jq '.progress'
 ### 8.2 Key Concepts by Document
 
 #### 8.2.1 Context Engineering Foundations
+
 - **Relevant to PRP:** Information density principles, context completeness, AI mental models
 - **PRP Sections:** CONTEXT section structure, documentation references, code examples
 
 #### 8.2.2 MCP Orchestration
+
 - **Relevant to PRP:** Tool usage during generation, research automation, documentation fetching
 - **PRP Sections:** SERENA PRE-FLIGHT CHECKS, research phase in `/generate-prp`
 
 #### 8.2.3 Self-Healing Framework
+
 - **Relevant to PRP:** Entire validation loop system, error recovery, confidence scoring
 - **PRP Sections:** VALIDATION LOOPS, SELF-HEALING GATES, confidence scoring
 
 #### 8.2.4 Serena MCP Integration
+
 - **Relevant to PRP:** Codebase pattern analysis, symbol navigation, checkpoint management
 - **PRP Sections:** Context synchronization protocol, Serena-enhanced context
 
 #### 8.2.5 Workflow Patterns
+
 - **Relevant to PRP:** Step-by-step implementation process, integration with other workflows
 - **PRP Sections:** 6-step workflow, execution flow
 
 #### 8.2.6 Commands Reference
+
 - **Relevant to PRP:** All PRP-related commands with detailed specifications
 - **PRP Sections:** Commands & Integration section references detailed command docs
 
 #### 8.2.7 Validation & Testing
+
 - **Relevant to PRP:** Testing strategies, validation gate implementation
 - **PRP Sections:** Three-level validation system, test command definitions
 
 ### 8.3 Glossary Cross-Reference
 
 **Terms defined in this document:**
+
 - PRP (Product Requirements Prompt)
 - Context-as-Compiler
 - Validation Loop
@@ -1711,6 +1839,7 @@ claude-prp execute --stream-json PRPs/feature.md | jq '.progress'
 - Implementation Blueprint
 
 **Terms defined elsewhere:**
+
 - **Serena:** See 05-serena-mcp-integration.md
 - **Context7:** See 03-mcp-orchestration.md
 - **TodoWrite:** See 07-commands-reference.md
@@ -1720,22 +1849,26 @@ claude-prp execute --stream-json PRPs/feature.md | jq '.progress'
 ### 8.4 Navigation Guide
 
 **New to PRPs?** Start here:
+
 1. Section 1: PRP Definition & Role (understand core concepts)
 2. Section 4: PRP Workflow (see step-by-step process)
 3. Section 5.2: KISS Template (simple example)
 
 **Creating your first PRP?** Follow this path:
+
 1. Section 4.2: Step 1 (set up CLAUDE.md)
 2. Section 4.3: Step 2 (write INITIAL.md)
 3. Section 4.4: Step 3 (generate PRP)
 4. Section 5: Templates (choose appropriate template)
 
 **Optimizing existing PRPs?** Focus on:
+
 1. Section 3: Characteristics (information density principles)
 2. Section 2.1.4: CONTEXT Section (improve context quality)
 3. Section 2.1.6: VALIDATION LOOP Section (strengthen validation)
 
 **Troubleshooting PRP execution?** Check:
+
 1. Section 4.7: Step 6 Validation Loop (understand self-healing)
 2. Section 7.3.2: Error Categories (common failures)
 3. Document 04-self-healing-framework.md (detailed error recovery)
@@ -1819,17 +1952,21 @@ See Section 6 and Document 07-commands-reference.md for complete command specifi
 ## Document Metadata
 
 **Revision History:**
+
 - v1.0 (2025-10-10): Initial comprehensive documentation
 
 **Contributors:**
+
 - System Architecture Team
 
 **Related Standards:**
+
 - Context Engineering Methodology
 - Self-Healing Framework
 - MCP Orchestration Patterns
 
 **Maintenance:**
+
 - Review quarterly for accuracy
 - Update with new template patterns
 - Incorporate lessons learned from real-world usage

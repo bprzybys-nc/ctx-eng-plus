@@ -5,12 +5,14 @@
 This document defines the systematic validation and testing framework for context engineering implementations. The framework employs a three-level validation gate system with self-correcting mechanisms to ensure code quality, maintainability, and production readiness.
 
 **Core Principles:**
+
 - **Fast Failure Detection:** Syntax checks complete in 10 seconds, enabling rapid iteration
 - **Automated Self-Healing:** Target 85% auto-recovery (APR research: 30-74% typical[⁴](../00-index.md#references))
 - **Incremental Validation:** Continuous verification every 5 code modifications prevents drift
 - **Read-Before-Write Protocol:** Mandatory pre-modification checks eliminate duplicate code and context corruption
 
 **Framework Benefits (Internal Observations, n=4 PRPs):**
+
 - First-attempt success rate: 60-75% target (baseline: 35-45%[¹](../00-index.md#references))
 - Context drift incidents: 2-5 per project (internal observation)
 - Self-recovery rate: Targeting 85% (APR research shows 30-74% achievable[⁴](../00-index.md#references))
@@ -47,6 +49,7 @@ The validation system implements a hierarchical pyramid structure, with each lev
 ```
 
 **Validation Flow:**
+
 1. All code must pass Level 1 before Level 2 execution
 2. All tests must pass Level 2 before Level 3 execution
 3. All integration tests must pass Level 3 before production deployment
@@ -92,6 +95,7 @@ Execute: npm run lint && npm run type-check
 ```
 
 **Success Criteria:**
+
 - Zero linting errors
 - Zero type errors
 - All imports present and non-duplicate
@@ -153,6 +157,7 @@ Execute: pytest tests/ -v
 | **Assertion Quality** | Specific assertions, not generic `assertTrue` | Test code quality review |
 
 **Success Criteria:**
+
 - All tests pass without flakiness
 - Code coverage meets threshold (≥80%)
 - No skipped tests without documented justification
@@ -218,6 +223,7 @@ Execute: Integration test commands
 | **Performance** | Response times within SLA | Performance assertion checks |
 
 **Success Criteria:**
+
 - All API endpoints return expected status codes
 - Database operations maintain ACID properties
 - Authentication flows complete successfully
@@ -546,12 +552,14 @@ Before modifying file:
 **Example Violation and Correction:**
 
 ❌ **Prohibited Pattern:**
+
 ```python
 # Blindly adding import without checking
 replace_regex(file_path, "^import os", "import os\nimport json")
 ```
 
 ✅ **Correct Pattern:**
+
 ```python
 # Read-before-write protocol
 file_content = read_file(file_path)
@@ -1125,6 +1133,7 @@ All checks passed! Ready to commit.
 | **Serena onboarding** | 10-20 sec | 20-40 sec | 40-90 sec |
 
 **Project Size Definitions:**
+
 - **Small:** <10 files, <2K LOC
 - **Medium:** 10-50 files, 2K-10K LOC
 - **Large:** 50+ files, >10K LOC
@@ -1256,6 +1265,7 @@ graph TB
 **Original Source:** `/Users/bprzybysz/nc-src/ctx-eng-plus/docs/context-mastery-exploration.md`
 
 **Key Sections Extracted:**
+
 - Lines 370-390: Three-level gate system overview
 - Lines 1005-1030: MCP integration with validation
 - Lines 1415-1440: Compilation check protocols

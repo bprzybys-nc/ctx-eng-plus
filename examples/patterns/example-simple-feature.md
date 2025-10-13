@@ -27,11 +27,13 @@ last_updated: "2025-01-15T10:00:00Z"
 **Problem**: Users need a quick way to see git status without verbose output.
 
 **Solution**: Add `ce git summary` command that shows:
+
 - Current branch
 - Clean/dirty status
 - Count of staged/unstaged/untracked files
 
 **Impact**:
+
 - Faster git status checks (formatted output)
 - Easier integration into scripts (JSON output option)
 
@@ -47,6 +49,7 @@ last_updated: "2025-01-15T10:00:00Z"
 Current `ce git status` returns full git status dict. Users want a quick summary view.
 
 **Current State**:
+
 ```python
 status = git_status()
 # Returns: {'clean': False, 'staged': [...], 'unstaged': [...], ...}
@@ -54,6 +57,7 @@ status = git_status()
 ```
 
 **Desired State**:
+
 ```bash
 $ ce git summary
 Branch: main
@@ -65,9 +69,11 @@ Status: Clean working tree
 ## 🎯 Goals & Success Criteria
 
 ### Primary Goal
+
 Add human-readable git status summary command
 
 ### Success Criteria
+
 1. ✅ Command displays branch name
 2. ✅ Command shows clean/dirty status
 3. ✅ Command counts staged/unstaged/untracked files
@@ -104,7 +110,7 @@ def git_summary() -> Dict[str, Any]:
 
 ### Phase 2: Add CLI Command
 
-**File**: [ce/__main__.py](ce/__main__.py)
+**File**: [ce/**main**.py](ce/__main__.py)
 
 ```python
 @git_group.command(name="summary")
@@ -133,21 +139,27 @@ def git_summary_cmd():
 ## 🧪 Validation Strategy
 
 ### Level 1: Unit Tests
+
 ```bash
 cd tools && uv run pytest tests/test_git.py -v
 ```
+
 **Expected**: New test `test_git_summary` passes
 
 ### Level 2: CLI Manual Test
+
 ```bash
 cd tools && uv run ce git summary
 ```
+
 **Expected**: Formatted output displays correctly
 
 ### Level 3: JSON Output
+
 ```bash
 cd tools && uv run ce git summary --json
 ```
+
 **Expected**: Valid JSON output
 
 ---

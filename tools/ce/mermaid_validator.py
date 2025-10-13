@@ -6,7 +6,7 @@ from typing import Dict, Any, List, Tuple
 
 
 def validate_mermaid_diagrams(file_path: str, auto_fix: bool = False) -> Dict[str, Any]:
-    """Validate mermaid diagrams in markdown file.
+    r"""Validate mermaid diagrams in markdown file.
 
     Args:
         file_path: Path to markdown file
@@ -68,7 +68,7 @@ def validate_mermaid_diagrams(file_path: str, auto_fix: bool = False) -> Dict[st
 
 
 def _validate_mermaid_block(block: str, diagram_num: int) -> Tuple[List[str], List[str]]:
-    """Validate single mermaid block.
+    r"""Validate single mermaid block.
 
     Returns:
         (errors, fix_suggestions) tuple
@@ -115,21 +115,35 @@ def _validate_mermaid_block(block: str, diagram_num: int) -> Tuple[List[str], Li
 def _has_unquoted_special_chars(text: str) -> bool:
     """Check if text has special chars that need quoting.
 
-    Special chars that break mermaid rendering:
-    - Parentheses: ()
-    - Brackets: []{}
-    - Operators: <>!?
-    - Separators: /\\:|
-    - Quotes: "'
+    Special chars that ACTUALLY break mermaid rendering:
+    - Parentheses: () - used for node shape syntax
+    - Brackets: [] - used for node shape syntax
+    - Curly braces: {} - used for node shape syntax
+    - Pipes: | - used for subgraph syntax
+    - Unbalanced quotes: "' - break parsing
+
+    Characters that are SAFE in mermaid node text:
+    - Colons: : - commonly used, safe
+    - Question marks: ? - safe
+    - Exclamation marks: ! - safe
+    - Slashes: / \\ - safe
+    - HTML tags: <br/>, <sub>, <sup> - explicitly allowed
+
+    Note: HTML tags like <br/> are allowed unquoted in mermaid.
     """
     # If already quoted, it's fine
     if (text.startswith('"') and text.endswith('"')) or \
        (text.startswith("'") and text.endswith("'")):
         return False
 
-    # Check for special chars
-    special_chars = r'[\[\]\{\}\(\)<>!?/\\:\|\'"]'
-    return bool(re.search(special_chars, text))
+    # Exclude HTML tags from special char check
+    # HTML tags like <br/>, <sub>, <sup> are valid mermaid syntax
+    text_without_html = re.sub(r'<[^>]+>', '', text)
+
+    # Only check for truly problematic chars that break mermaid syntax
+    # Removed: : ? ! / \\ (these are safe in mermaid node text)
+    special_chars = r'[\[\]\{\}\(\)\|\'"]'
+    return bool(re.search(special_chars, text_without_html))
 
 
 def _apply_fixes_to_block(block: str, fixes: List[str]) -> str:

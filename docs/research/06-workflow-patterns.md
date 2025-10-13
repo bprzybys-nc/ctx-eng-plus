@@ -5,6 +5,7 @@
 This document provides comprehensive workflow patterns for systematic software development using context engineering and MCP orchestration. These patterns achieve 85-95% first-attempt success rates through structured protocols, automated validation, and intelligent context management.
 
 **Key Concepts:**
+
 - Session management protocols ensuring consistent baseline state
 - Multi-phase implementation patterns for systematic development
 - Context synchronization strategies preventing drift and errors
@@ -12,6 +13,7 @@ This document provides comprehensive workflow patterns for systematic software d
 - Real-world execution patterns with timeline benchmarks
 
 **Workflow Categories:**
+
 - Session protocols (start, synchronization, end)
 - PRP-based implementation workflows
 - Multi-phase development patterns
@@ -123,6 +125,7 @@ graph TB
 ```
 
 **Workflow Characteristics:**
+
 - Systematic progression through validation gates
 - Automated error detection and correction
 - Context preservation across phases
@@ -183,6 +186,7 @@ graph TD
 ```
 
 **Critical Rules:**
+
 - Never proceed with failing compilation
 - Fix root causes, not symptoms
 - Document any unusual build configurations
@@ -222,6 +226,7 @@ onboarding()
 | Context health score | >85% | <70% | Re-run onboarding |
 
 **Caching Strategy:**
+
 - Index persists within session
 - Re-index on significant structural changes (>10 files)
 - Cached index reduces subsequent operation time by 60-80%
@@ -313,6 +318,7 @@ else:
 ```
 
 **Health Score Formula:**
+
 ```
 health_score = (
     symbol_success_rate * 0.4 +
@@ -1822,6 +1828,7 @@ graph TD
 These workflow patterns establish a systematic approach to software development that achieves 85-95% first-attempt success rates through:
 
 **Core Principles:**
+
 - Systematic session management with health validation
 - Comprehensive validation protocols at multiple levels
 - Intelligent context synchronization preventing drift
@@ -1830,6 +1837,7 @@ These workflow patterns establish a systematic approach to software development 
 - Human oversight at critical decision points
 
 **Key Benefits:**
+
 - Reduced development time by 60-85%
 - Increased success rates by 140%+
 - Decreased context-related errors by 85%
@@ -1837,12 +1845,14 @@ These workflow patterns establish a systematic approach to software development 
 - Self-recovery capability for 85% of errors
 
 **Workflow Duration:**
+
 - Simple features: 15-25 minutes
 - Medium features: 30-60 minutes
 - Complex refactoring: 1-2 hours
 - Compared to 2-4 hours to multiple days without framework
 
 **Success Factors:**
+
 - Never skip compilation check at session start
 - Always complete Serena onboarding for fresh context
 - Validate checkpoints against git state regularly

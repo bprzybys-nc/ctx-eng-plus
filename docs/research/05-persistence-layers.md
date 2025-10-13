@@ -300,6 +300,7 @@ graph LR
 **Trigger:** PRP execution completes, code modified
 
 **Actions:**
+
 ```bash
 # Validate compilation
 npm run build
@@ -320,6 +321,7 @@ npm run type-check
 **Trigger:** Code validation passes
 
 **Actions:**
+
 ```bash
 # Verify only intended files
 git status
@@ -342,6 +344,7 @@ git tag claude-checkpoint-$(date +%s)
 **Trigger:** Git commit successful
 
 **Actions:**
+
 ```bash
 # Detect drift
 changed_files=$(git diff --name-only HEAD~5 | wc -l)
@@ -367,6 +370,7 @@ serena update-cache
 **Trigger:** Serena sync completes
 
 **Actions:**
+
 ```bash
 # Backup memories
 cp -r .serena/memories/ .serena/backups/$(date +%Y%m%d)/
@@ -391,6 +395,7 @@ serena validate --critical-only
 **Trigger:** Developer identifies new pattern
 
 **Actions:**
+
 1. Review code for novel patterns
 2. Extract minimal example to `examples/pattern-name.ts`
 3. Ensure example compiles standalone
@@ -408,6 +413,7 @@ serena validate --critical-only
 **Trigger:** PRP implementation complete, validated
 
 **Actions:**
+
 ```bash
 # Read active PRP
 cat PRPs/active/prp-00N.md
@@ -445,6 +451,7 @@ echo "Git Tag: claude-checkpoint-$(date +%s)" >> PRPs/completed/prp-00N.md
 | **Audience** | Human developers and AI agents |
 
 **Selection Criteria:**
+
 - ✅ Pattern reused 3+ times across project
 - ✅ Represents project convention (not library default)
 - ✅ Mature and validated (not experimental)
@@ -469,6 +476,7 @@ echo "Git Tag: claude-checkpoint-$(date +%s)" >> PRPs/completed/prp-00N.md
 | **Audience** | AI agents (humans rarely access) |
 
 **Content Types:**
+
 1. **Code References** (Automatic via Serena LSP): Symbol locations, function signatures, import paths
 2. **PRP Learnings** (Manual): Post-completion insights and gotchas
 3. **Architectural Decisions** (Manual, CRITICAL): Immutable project knowledge
@@ -588,6 +596,7 @@ graph TD
 **Decision Criteria:**
 
 **Create CE Example When:**
+
 - ✅ Pattern reused 3+ times
 - ✅ Represents project convention
 - ✅ Mature and validated
@@ -596,6 +605,7 @@ graph TD
 **Action:** Create `examples/pattern-name.ts`, git commit, share with team
 
 **Create Serena Memory When:**
+
 - ✅ Learning specific to one PRP or feature
 - ✅ Temporary context for current work session
 - ✅ Reference to actual code locations (not pattern)
@@ -604,6 +614,7 @@ graph TD
 **Action:** Create `.serena/memories/context.md`, gitignore, prune later
 
 **Use Both When:**
+
 - **Scenario:** New pattern becoming standard
 - **Workflow:**
   1. First use → Memory (learning)
@@ -620,6 +631,7 @@ graph TD
 **Problem:** Unused code, obsolete patterns, commented sections
 
 **Strategy:**
+
 - Use Serena `find_referencing_symbols()` for unused detection
 - Dead code elimination during refactoring PRPs
 - Linters: `eslint no-unused-vars`, `mypy unused-ignore`
@@ -627,6 +639,7 @@ graph TD
 **Frequency:** Every refactoring PRP, quarterly cleanup
 
 **Tools:**
+
 ```bash
 # Find unused exports
 serena find-unused-symbols --type export
@@ -643,6 +656,7 @@ git grep -E '^\s*//' | grep -v 'FIXME\|TODO'
 **Problem:** Stale memories, outdated context, memory bloat
 
 **Strategy:**
+
 - Automatic age-based pruning (DEBUG>1d, NORMAL>7d)
 - Access-count tracking (prune if never accessed)
 - Context drift detection (re-sync if >20%)
@@ -660,6 +674,7 @@ git grep -E '^\s*//' | grep -v 'FIXME\|TODO'
 | **CHECKPOINT** | Keep last 5 | Any | Delete older |
 
 **Tools:**
+
 ```bash
 # Automatic pruning
 serena prune --age-policy
@@ -676,6 +691,7 @@ serena backup-memories --timestamp
 **Problem:** Outdated patterns, deprecated APIs, inconsistent examples
 
 **Strategy:**
+
 - Validate examples compile on every CI run
 - Review examples when upgrading dependencies
 - Remove examples when pattern unused (check via Serena)
@@ -684,6 +700,7 @@ serena backup-memories --timestamp
 **Frequency:** On dependency upgrade, quarterly review
 
 **Validation:**
+
 ```bash
 # CI validation
 npm run validate-examples
@@ -702,6 +719,7 @@ fi
 **Problem:** Incomplete PRPs, abandoned features, irrelevant learnings
 
 **Strategy:**
+
 - Active PRPs: If stale>30d, move to `PRPs/abandoned/`
 - Completed PRPs: Never delete (historical record)
 - Queued PRPs: Review quarterly, archive low-priority
@@ -710,6 +728,7 @@ fi
 **Frequency:** Monthly for active, quarterly for queued
 
 **Management:**
+
 ```bash
 # Find stale active PRPs
 find PRPs/active/ -mtime +30 -type f
@@ -724,41 +743,48 @@ ls -lt PRPs/queued/ | head -20
 ## 7. Key Principles
 
 ### Principle 1: Codebase is King
+
 - All other layers derive from or reference codebase
 - In conflicts, codebase always wins
 - **Rationale:** Running code is ground truth
 
 ### Principle 2: Sync Direction is Unidirectional
+
 - Codebase → Serena (never reverse)
 - Examples → PRPs (never reverse)
 - Completed PRPs → Memories (never reverse)
 - **Rationale:** Clear authority prevents circular dependencies
 
 ### Principle 3: Immutability Where Appropriate
+
 - Completed PRPs: Never modify (historical record)
 - CRITICAL memories: Never auto-delete
 - Git commits: Never rewrite (checkpoint integrity)
 - **Rationale:** Preserve audit trail and recovery points
 
 ### Principle 4: Aggressive Denoising
+
 - Better to re-compute than store stale data
 - Memory pruning prevents context bloat
 - Example curation keeps patterns focused
 - **Rationale:** Fresh data > large but stale dataset
 
 ### Principle 5: Human in the Loop for Curation
+
 - Example extraction: Manual
 - PRP archival learnings: Manual
 - CRITICAL memory classification: Manual
 - **Rationale:** Quality over automation for patterns
 
 ### Principle 6: Automated Synchronization
+
 - Serena sync: Automatic on drift detection
 - Memory pruning: Automatic by age/access
 - Checkpoint creation: Automatic before operations
 - **Rationale:** Reduce manual toil, maintain freshness
 
 ### Principle 7: Constitutional Supremacy
+
 - CLAUDE.md rules override all layers
 - No layer can violate constitutional provisions
 - **Rationale:** Maintain system integrity and consistency
@@ -781,11 +807,11 @@ ls -lt PRPs/queued/ | head -20
 
 | Resource | URL | Relevance |
 |----------|-----|-----------|
-| **Context Engineering Introduction** | https://github.com/coleam00/context-engineering-intro | Foundational methodology |
-| **Context Engineering Techniques** | https://ikala.ai/blog/ai-trends/context-engineering-techniques-tools-and-implementation/ | Implementation strategies |
-| **Serena Toolkit** | https://github.com/oraios/serena | LSP integration, memory management |
-| **Serena Memory Management** | https://github.com/oraios/serena/discussions/297 | Memory pruning, drift detection |
-| **Context Pruning Strategies** | https://www.youtube.com/watch?v=TwjKW0WMO78 | Denoising best practices |
+| **Context Engineering Introduction** | <https://github.com/coleam00/context-engineering-intro> | Foundational methodology |
+| **Context Engineering Techniques** | <https://ikala.ai/blog/ai-trends/context-engineering-techniques-tools-and-implementation/> | Implementation strategies |
+| **Serena Toolkit** | <https://github.com/oraios/serena> | LSP integration, memory management |
+| **Serena Memory Management** | <https://github.com/oraios/serena/discussions/297> | Memory pruning, drift detection |
+| **Context Pruning Strategies** | <https://www.youtube.com/watch?v=TwjKW0WMO78> | Denoising best practices |
 
 ### 8.3 Integration Points
 

@@ -28,8 +28,7 @@ PRP-4 execution resulted in only 40% test coverage for `tools/ce/execute.py`, si
 
 **Effort**: Medium (3-5 hours estimated based on complexity)
 
-**Dependencies**: 
-
+**Dependencies**:
 
 ## 2. Context
 
@@ -60,6 +59,7 @@ def test_escalation_triggers():
 ```
 
 **Coverage Gap**: 252 lines untested (421 statements, 169 covered)
+
 - ❌ `run_validation_loop()` - Self-healing retry logic (lines 666-889)
 - ❌ `apply_self_healing_fix()` - Error fixing logic (lines 1176-1233)
 - ❌ `check_escalation_triggers()` - Escalation detection (lines 1086-1174)
@@ -69,6 +69,7 @@ def test_escalation_triggers():
 ### Solution
 
 Create comprehensive test suite covering:
+
 1. **Validation loop with retry**: L1-L2 failures with self-healing attempts
 2. **Self-healing integration**: Import error detection and fixing
 3. **Escalation triggers**: All 5 trigger conditions with proper exception raising
@@ -86,6 +87,7 @@ Create comprehensive test suite covering:
 ## CONTEXT
 
 ### Current State
+
 - Blueprint parser: 100% coverage (all tests passing)
 - Execution orchestration: Partially tested (execute_phase only)
 - Validation loop: 0% coverage (placeholder tests)
@@ -93,12 +95,14 @@ Create comprehensive test suite covering:
 - Overall: 40% coverage vs 80% target
 
 ### Dependencies
+
 - **PRP-4**: Implementation complete, needs testing
 - **pytest**: Already installed
 - **pytest-cov**: Already installed (added during peer review)
 - **Test fixtures**: Need mock validation results, error outputs
 
 ### Success Criteria
+
 - [ ] Test coverage ≥80% for `ce/execute.py`
 - [ ] All validation loop paths tested (pass, retry, escalate)
 - [ ] All 5 escalation triggers have dedicated tests
@@ -113,6 +117,7 @@ Create comprehensive test suite covering:
 ### Test Categories
 
 **1. Validation Loop Tests** (2 hours)
+
 ```python
 def test_run_validation_loop_all_pass_first_attempt():
     """Test validation loop when all levels pass immediately."""
@@ -131,6 +136,7 @@ def test_run_validation_loop_l3_failure_escalates_architectural():
 ```
 
 **2. Self-Healing Tests** (2 hours)
+
 ```python
 def test_apply_self_healing_fix_import_error():
     """Test automatic import statement addition for import errors."""
@@ -152,6 +158,7 @@ def test_add_import_statement_after_existing_imports():
 ```
 
 **3. Escalation Trigger Tests** (1.5 hours)
+
 ```python
 def test_check_escalation_triggers_persistent_error():
     """Test trigger 1: Same error after 3 attempts."""
@@ -176,6 +183,7 @@ def test_escalation_required_exception_format():
 ```
 
 **4. Error Parsing Tests** (1 hour)
+
 ```python
 def test_parse_validation_error_import_error():
     """Test parsing ImportError with module name extraction."""
@@ -200,6 +208,7 @@ def test_parse_validation_error_function_context_extraction():
 ```
 
 **5. End-to-End Orchestration Tests** (1.5 hours)
+
 ```python
 def test_execute_prp_dry_run():
     """Test dry run mode returns parsed blueprint without execution."""
@@ -223,12 +232,14 @@ def test_execute_prp_with_start_end_phase_filtering():
 ### Testing Strategy
 
 **Mocking Approach**:
+
 - Mock `validate_level_1/2/3/4` to return controlled success/failure
 - Mock `run_cmd` for L2 validation command execution
 - Use `tempfile` for file operations (create/modify test files)
 - Mock `start_prp`, `end_prp`, `update_prp_phase`, `create_checkpoint`
 
 **Test Fixtures**:
+
 ```python
 @pytest.fixture
 def mock_validation_success():
@@ -256,30 +267,35 @@ def temp_test_file(tmp_path):
 ## IMPLEMENTATION PLAN
 
 ### Phase 1: Test Infrastructure (1 hour)
+
 - Create test fixtures for mock validations
 - Set up temporary file handling utilities
 - Create error output samples for parsing tests
 - Document test patterns and conventions
 
 ### Phase 2: Error Parsing Tests (1 hour)
+
 - Test all error type detection (import, assertion, syntax, type, name)
 - Test file:line extraction from various formats
 - Test function context extraction
 - Test suggested fix generation
 
 ### Phase 3: Self-Healing Tests (2 hours)
+
 - Test import error detection and fixing
 - Test import statement insertion logic
 - Test file not found error handling
 - Test unsupported error type fallback
 
 ### Phase 4: Escalation Tests (1.5 hours)
+
 - Test all 5 escalation triggers with real examples
 - Test EscalationRequired exception format
 - Test troubleshooting guidance generation
 - Test escalation during validation loops
 
 ### Phase 5: Validation Loop Tests (2 hours)
+
 - Test L1-L4 validation with all-pass scenario
 - Test retry logic with self-healing success
 - Test retry logic with persistent failure
@@ -287,6 +303,7 @@ def temp_test_file(tmp_path):
 - Test skipped validations (L3/L4)
 
 ### Phase 6: Orchestration Tests (1.5 hours)
+
 - Test dry run mode
 - Test multi-phase execution with checkpoints
 - Test phase filtering (start/end phase)
@@ -294,6 +311,7 @@ def temp_test_file(tmp_path):
 - Test execution time tracking
 
 ### Phase 7: Coverage Verification (0.5 hours)
+
 - Run coverage report
 - Identify remaining gaps
 - Add targeted tests for missed lines
@@ -317,11 +335,13 @@ def temp_test_file(tmp_path):
 **Risk**: LOW
 
 **Challenges**:
+
 1. Complex mocking required for validation functions
 2. File operation testing needs proper cleanup
 3. Error output parsing depends on exact format matching
 
 **Mitigation**:
+
 - Use pytest fixtures for consistent mock setup
 - Use `tmp_path` fixture for automatic cleanup
 - Include multiple error format examples in tests
@@ -340,8 +360,6 @@ def temp_test_file(tmp_path):
 See INITIAL.md for additional considerations
 
 ### Documentation References
-
-
 
 ## 3. Implementation Steps
 
@@ -363,7 +381,6 @@ See INITIAL.md for additional considerations
 3. Run validation gates
 4. Update documentation
 
-
 ## 4. Validation Gates
 
 ### Gate 1: Unit Tests Pass
@@ -371,6 +388,7 @@ See INITIAL.md for additional considerations
 **Command**: `uv run pytest tests/unit/ -v`
 
 **Success Criteria**:
+
 - All new unit tests pass
 - Existing tests not broken
 - Code coverage ≥ 80%
@@ -380,6 +398,7 @@ See INITIAL.md for additional considerations
 **Command**: `uv run pytest tests/integration/ -v`
 
 **Success Criteria**:
+
 - Integration tests verify end-to-end functionality
 - No regressions in existing features
 
@@ -390,7 +409,6 @@ See INITIAL.md for additional considerations
 **Success Criteria**:
 
 - Requirements from INITIAL.md validated
-
 
 ## 5. Testing Strategy
 
@@ -409,7 +427,6 @@ uv run pytest tests/ -v
 - Unit test coverage: ≥ 80%
 - Integration tests for critical paths
 - Edge cases from INITIAL.md covered
-
 
 ## 6. Rollout Plan
 
@@ -431,17 +448,18 @@ uv run pytest tests/ -v
 2. Monitor for issues
 3. Update stakeholders
 
-
 ---
 
 ## Research Findings
 
 ### Serena Codebase Analysis
+
 - **Patterns Found**: 0
 - **Test Patterns**: 1
 - **Serena Available**: False
 
 ### Documentation Sources
+
 - **Library Docs**: 0
 - **External Links**: 0
 - **Context7 Available**: False

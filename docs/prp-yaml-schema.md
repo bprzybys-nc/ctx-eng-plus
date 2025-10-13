@@ -15,6 +15,7 @@ All PRPs use a standardized YAML header for metadata tracking. The header is com
 ## Required Fields
 
 ### Core Identification
+
 ```yaml
 name: "Feature Title (Clear, Action-Oriented)"
 description: "1-sentence description of what this PRP implements"
@@ -23,12 +24,14 @@ status: "ready"  # ready|in_progress|executed|validated|archived
 ```
 
 **Field Descriptions**:
+
 - `name`: Human-readable feature title, action-oriented (e.g., "Add Git Status Command")
 - `description`: Single sentence summarizing what the PRP accomplishes
 - `prp_id`: Unique identifier following PRP-X.Y format (X=major, Y=minor)
 - `status`: Current lifecycle state of the PRP
 
 **Valid Status Values**:
+
 - `ready`: PRP is ready for execution
 - `in_progress`: Currently being implemented
 - `executed`: Implementation complete, validation passed
@@ -36,6 +39,7 @@ status: "ready"  # ready|in_progress|executed|validated|archived
 - `archived`: Superseded or no longer relevant
 
 ### Planning Metadata
+
 ```yaml
 priority: "MEDIUM"  # HIGH|MEDIUM|LOW
 confidence: "8/10"  # 1-10 scale for one-pass success probability
@@ -44,12 +48,14 @@ risk: "LOW"  # LOW|MEDIUM|HIGH
 ```
 
 **Field Descriptions**:
+
 - `priority`: Business priority for implementation
 - `confidence`: Estimated probability of one-pass success (1=low, 10=high)
 - `effort_hours`: Total estimated effort in hours (decimal for fractional hours)
 - `risk`: Technical risk level
 
 ### Tracking
+
 ```yaml
 version: 1
 created_date: "2025-MM-DDTHH:MM:SSZ"
@@ -57,6 +63,7 @@ last_updated: "2025-MM-DDTHH:MM:SSZ"
 ```
 
 **Field Descriptions**:
+
 - `version`: Integer version number (increment on major revisions)
 - `created_date`: ISO-8601 timestamp of PRP creation
 - `last_updated`: ISO-8601 timestamp of last modification
@@ -66,6 +73,7 @@ last_updated: "2025-MM-DDTHH:MM:SSZ"
 ## Optional Fields
 
 ### Task Integration
+
 ```yaml
 task_id: ""  # Optional: Linear/Jira/GitHub issue (e.g., "ENG-123", "#456")
 ```
@@ -73,16 +81,19 @@ task_id: ""  # Optional: Linear/Jira/GitHub issue (e.g., "ENG-123", "#456")
 Link to external task tracker for project management integration.
 
 ### Dependency Management
+
 ```yaml
 dependencies: []  # ["PRP-X.0"] if depends on other PRPs
 parent_prp: null  # PRP-X.0 if part of series
 ```
 
 **Field Descriptions**:
+
 - `dependencies`: Array of PRP IDs that must be completed first
 - `parent_prp`: Parent PRP ID if this is part of a series (e.g., PRP-2.1's parent is PRP-2.0)
 
 **Example - Series PRP**:
+
 ```yaml
 prp_id: "PRP-8.7"
 parent_prp: "PRP-8.0"  # Part of PRP-8.x series
@@ -90,6 +101,7 @@ dependencies: ["PRP-8.3", "PRP-8.5"]  # Builds on these PRPs
 ```
 
 ### Context Engineering Integration
+
 ```yaml
 context_memories: []  # Optional: ["memory_name"] Serena memories (if using Serena MCP)
 context_sync:  # Optional: if using Context Engineering framework
@@ -98,16 +110,19 @@ context_sync:  # Optional: if using Context Engineering framework
 ```
 
 **Field Descriptions**:
+
 - `context_memories`: Array of Serena MCP memory names to load before execution
 - `context_sync`: Tracks whether CE and Serena contexts are synchronized
   - `ce_updated`: Boolean - CE examples/docs updated with learnings from this PRP
   - `serena_updated`: Boolean - Serena memories updated with patterns from this PRP
 
 **When to Use**:
+
 - Skip these fields for projects not using Context Engineering framework or Serena MCP
 - Set to empty arrays `[]` and `false` values if using CE but not updating contexts
 
 ### Meeting Evidence
+
 ```yaml
 meeting_evidence:  # Optional: for requirements validation
   - source: "docs/meetings/file.md"
@@ -117,17 +132,20 @@ meeting_evidence:  # Optional: for requirements validation
 ```
 
 **Field Descriptions**:
+
 - `source`: Path to meeting notes or requirements document
 - `lines`: Line range containing the relevant quote
 - `timestamp`: Optional video/audio timestamp (HH:MM-HH:MM format)
 - `quote`: Direct quote validating the requirement or design decision
 
 **When to Use**:
+
 - Complex PRPs where requirements traceability is important
 - PRPs implementing features from stakeholder meetings
 - PRPs where design decisions need to reference specific discussions
 
 **Multiple Evidence Example**:
+
 ```yaml
 meeting_evidence:
   - source: "docs/meetings/2025-01-10-planning.md"
@@ -144,6 +162,7 @@ meeting_evidence:
 ## Complete Examples
 
 ### Example 1: Simple KISS PRP
+
 ```yaml
 ---
 name: "Add JSON Output Flag to Git Status Command"
@@ -169,6 +188,7 @@ last_updated: "2025-01-15T14:30:00Z"
 ```
 
 ### Example 2: Standard PRP with Dependencies
+
 ```yaml
 ---
 name: "Implement Batch Upload Worker Queue"
@@ -197,6 +217,7 @@ last_updated: "2025-01-12T18:45:00Z"
 ```
 
 ### Example 3: Self-Healing PRP with Context Integration
+
 ```yaml
 ---
 name: "Universal /prune-prps Command - Cross-Project PRP Consolidation"
@@ -229,12 +250,14 @@ last_updated: "2025-10-08T19:35:00Z"
 ## Field Validation Rules
 
 ### PRP ID Format
+
 - **Pattern**: `PRP-X.Y` or `PRP-X.Y.Z` for series
 - **X**: Major feature number (1-999)
 - **Y**: Minor feature number or iteration (0-99)
 - **Z**: Sub-iteration (optional, 0-99)
 
 **Examples**:
+
 - ✅ `PRP-1` - Valid (major feature)
 - ✅ `PRP-2.5` - Valid (feature iteration)
 - ✅ `PRP-8.7.2` - Valid (series sub-iteration)
@@ -242,15 +265,18 @@ last_updated: "2025-10-08T19:35:00Z"
 - ❌ `PRP-X` - Invalid (non-numeric)
 
 ### Date Format
+
 - **Pattern**: ISO-8601 format `YYYY-MM-DDTHH:MM:SSZ`
 - **Timezone**: Always UTC (Z suffix)
 
 **Examples**:
+
 - ✅ `2025-01-15T14:30:00Z`
 - ❌ `2025-01-15` (missing time)
 - ❌ `2025-01-15 14:30:00` (missing T separator)
 
 ### Confidence Score
+
 - **Range**: 1-10 (integer or X/10 string format)
 - **Interpretation**:
   - 1-3: Low confidence, significant unknowns
@@ -265,21 +291,25 @@ last_updated: "2025-10-08T19:35:00Z"
 ### For Different Project Types
 
 **Python Projects (using this template)**:
+
 - Keep all fields as-is
 - Set `context_memories` to `[]` if not using Serena MCP
 - Set `context_sync` values to `false` if not using CE framework
 
 **TypeScript/JavaScript Projects**:
+
 - Keep YAML structure identical
 - Adjust code examples in PRP body to use npm/node/jest
 - Keep validation gate commands relevant to project
 
 **Projects Without Context Engineering**:
+
 - Remove `context_memories` field entirely
 - Remove `context_sync` field entirely
 - Keep all other fields for project management
 
 **Projects Without Issue Tracker**:
+
 - Set `task_id: ""` (empty string, not null)
 - Use PRP ID as primary tracking mechanism
 
@@ -288,6 +318,7 @@ last_updated: "2025-10-08T19:35:00Z"
 ## Version History
 
 **Version 3.0** (2025-01-15):
+
 - Unified KISS + Self-Healing templates
 - Added `task_id` field for issue tracker integration
 - Standardized `meeting_evidence` structure with source/lines/timestamp/quote
@@ -296,11 +327,13 @@ last_updated: "2025-10-08T19:35:00Z"
 - Comprehensive examples for KISS/Standard/Self-Healing modes
 
 **Version 2.0** (2025-10-11):
+
 - Added YAML header to all PRPs
 - Introduced `context_sync` tracking
 - Added validation gates structure
 
 **Version 1.0** (2025-10-10):
+
 - Initial PRP template structure
 - Basic metadata fields
 
@@ -309,12 +342,15 @@ last_updated: "2025-10-08T19:35:00Z"
 ## Tools & Integration
 
 ### Generating PRPs
+
 Use the `/generate-prp` command (if available) to auto-generate YAML headers with:
+
 - Current timestamp
 - Auto-incremented PRP ID
 - Project-specific defaults
 
 ### Validating YAML
+
 ```bash
 # Python validation
 python -c "import yaml; yaml.safe_load(open('PRPs/PRP-X.Y.md').read().split('---')[1])"
@@ -324,6 +360,7 @@ yq eval PRPs/PRP-X.Y.md
 ```
 
 ### Querying PRPs by Metadata
+
 ```bash
 # Find all HIGH priority PRPs
 grep -l "priority: \"HIGH\"" PRPs/PRP-*.md
@@ -370,6 +407,7 @@ A: `parent_prp` indicates series membership (PRP-8.5 is part of PRP-8.x series),
 ---
 
 **For more details, see**:
+
 - [PRP Base Template](../PRPs/templates/prp-base-template.md)
 - [CLAUDE.md](../CLAUDE.md) - Project guidelines
 - [Certinia Template Reference](../certinia/context-engineering/templates/prp-template-optimized.md)

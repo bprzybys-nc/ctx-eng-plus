@@ -18,3 +18,5 @@ PRPs/.cache/
 examples/.tmp/
 tools/.coverage
 tools/uv.lock
+
+node_modules/

@@ -21,8 +21,7 @@ dependencies:
 
 **Effort**: Medium (3-5 hours estimated based on complexity)
 
-**Dependencies**: 
-
+**Dependencies**:
 
 ## 2. Context
 
@@ -50,6 +49,7 @@ file_path.write_text(content)  # FIXME: Hardcoded local file write
 ```
 
 **Issues with Current Approach**:
+
 1. ❌ **No code analysis**: Bypasses Serena's semantic understanding
 2. ❌ **No symbol awareness**: Naive append instead of intelligent insertion
 3. ❌ **Context-dependent**: Won't work in MCP-only environments
@@ -59,6 +59,7 @@ file_path.write_text(content)  # FIXME: Hardcoded local file write
 ### Solution
 
 **Research-driven integration strategy**:
+
 1. Investigate Serena MCP availability detection
 2. Define graceful fallback behavior when MCP unavailable
 3. Implement MCP-based file operations with fallback
@@ -66,6 +67,7 @@ file_path.write_text(content)  # FIXME: Hardcoded local file write
 5. Document architectural decision and migration path
 
 **Key Decision Points**:
+
 - When is Serena MCP available? (MCP-only vs standalone CLI)
 - Should we auto-detect and fall back to filesystem?
 - What's the performance impact of MCP operations?
@@ -84,12 +86,14 @@ file_path.write_text(content)  # FIXME: Hardcoded local file write
 ## CONTEXT
 
 ### Current State
+
 - **execute_phase()**: Uses `Path().write_text()` directly
 - **_add_functions_to_file()**: Naive append to end of file
 - **Testing**: Works with local filesystem only
 - **Status**: All FIXME comments in place, documented as MVP limitation
 
 ### Serena MCP Tools Available
+
 ```python
 # File Operations
 mcp__serena__create_text_file(relative_path: str, content: str)
@@ -108,26 +112,31 @@ mcp__serena__get_symbols_overview(relative_path: str) -> Dict
 ### Research Questions
 
 **1. MCP Availability Detection**
+
 - How to detect if Serena MCP is available at runtime?
 - Is there a standard MCP capability check?
 - What happens when MCP call fails? (exception type, error message)
 
 **2. Fallback Strategy**
+
 - Should we fall back to filesystem automatically?
 - Or fail fast and require MCP for execution?
 - What about mixed mode (some MCP, some filesystem)?
 
 **3. Performance Implications**
+
 - Overhead of MCP calls vs direct file operations?
 - Batch operations possible? (multiple edits in one call)
 - Impact on large file operations?
 
 **4. Testing Strategy**
+
 - How to mock Serena MCP in tests?
 - Should we create a Serena MCP stub/fake for testing?
 - Can we test real MCP integration in CI?
 
 **5. Error Handling**
+
 - MCP-specific errors vs filesystem errors
 - Retry logic for transient MCP failures?
 - User-facing error messages for MCP issues
@@ -137,13 +146,16 @@ mcp__serena__get_symbols_overview(relative_path: str) -> Dict
 ### Phase 1: Research & Architecture (3 hours)
 
 **Deliverables**:
+
 - `docs/decisions/ADR-001-serena-mcp-integration.md`
 - MCP availability detection POC
 - Fallback strategy decision
 - Testing approach specification
 
 **Investigation Tasks**:
+
 1. **MCP Availability Check**:
+
    ```python
    def is_serena_mcp_available() -> bool:
        """Check if Serena MCP is available in current context."""
@@ -158,6 +170,7 @@ mcp__serena__get_symbols_overview(relative_path: str) -> Dict
    ```
 
 2. **Fallback Decision Matrix**:
+
    | Context | Serena Available? | Behavior |
    |---------|-------------------|----------|
    | Claude Code (MCP) | Yes | Use Serena MCP |
@@ -182,10 +195,12 @@ mcp__serena__get_symbols_overview(relative_path: str) -> Dict
 **Goal**: Implement runtime detection and graceful fallback
 
 **Files to Modify**:
+
 - `tools/ce/execute.py` - Add MCP detection functions
 - `tools/ce/mcp_adapter.py` - Create MCP abstraction layer (NEW)
 
 **Key Functions**:
+
 ```python
 # tools/ce/mcp_adapter.py (NEW)
 def is_mcp_available() -> bool:
@@ -206,6 +221,7 @@ def get_mcp_status() -> Dict[str, Any]:
 ```
 
 **Fallback Logic**:
+
 ```python
 def create_file_with_mcp(filepath: str, content: str) -> Dict[str, Any]:
     if is_mcp_available():
@@ -229,6 +245,7 @@ def create_file_with_mcp(filepath: str, content: str) -> Dict[str, Any]:
 **Goal**: Replace `execute_phase()` file creation with MCP adapter
 
 **Changes**:
+
 ```python
 # BEFORE (execute.py:527-536)
 content = _generate_file_content(filepath, description, phase)
@@ -255,6 +272,7 @@ print(f"  📝 Created via {result['method']}: {filepath}")
 **Strategy**: Use `mcp__serena__insert_after_symbol` for intelligent insertion
 
 **Changes**:
+
 ```python
 # BEFORE (_add_functions_to_file, execute.py:648-651)
 for func_entry in functions:
@@ -278,6 +296,7 @@ for func_entry in functions:
 ```
 
 **Symbol Detection Logic**:
+
 ```python
 def insert_code_with_mcp(filepath: str, code: str, mode: str) -> Dict[str, Any]:
     if not is_mcp_available():
@@ -345,6 +364,7 @@ def serena_fake():
 ```
 
 **Tests to Add**:
+
 ```python
 def test_execute_phase_with_mcp_available(serena_fake):
     """Test execute_phase uses MCP when available."""
@@ -362,6 +382,7 @@ def test_mcp_failure_graceful_fallback(serena_fake):
 ### Phase 6: Documentation & Rollout (1.5 hours)
 
 **Deliverables**:
+
 - ADR-001 finalized with decision rationale
 - Update execute.py docstrings with MCP behavior
 - Update CLAUDE.md with MCP integration patterns
@@ -398,6 +419,7 @@ def test_mcp_failure_graceful_fallback(serena_fake):
 **Risk**: MEDIUM
 
 **Challenges**:
+
 1. **MCP availability detection**: May not work in all environments
 2. **Fallback complexity**: Managing two code paths increases maintenance
 3. **Testing**: MCP fake may not match real MCP behavior exactly
@@ -405,6 +427,7 @@ def test_mcp_failure_graceful_fallback(serena_fake):
 5. **Error handling**: Different failure modes for MCP vs filesystem
 
 **Mitigation**:
+
 - Start with simple detection (try/catch import)
 - Document fallback behavior clearly
 - Compare MCP fake behavior with real MCP in E2E tests
@@ -442,8 +465,6 @@ See INITIAL.md for additional considerations
 
 ### Documentation References
 
-
-
 ## 3. Implementation Steps
 
 ### Phase 1: Setup and Research (30 min)
@@ -465,7 +486,6 @@ See INITIAL.md for additional considerations
 3. Run validation gates
 4. Update documentation
 
-
 ## 4. Validation Gates
 
 ### Gate 1: Unit Tests Pass
@@ -473,6 +493,7 @@ See INITIAL.md for additional considerations
 **Command**: `uv run pytest tests/unit/ -v`
 
 **Success Criteria**:
+
 - All new unit tests pass
 - Existing tests not broken
 - Code coverage ≥ 80%
@@ -482,6 +503,7 @@ See INITIAL.md for additional considerations
 **Command**: `uv run pytest tests/integration/ -v`
 
 **Success Criteria**:
+
 - Integration tests verify end-to-end functionality
 - No regressions in existing features
 
@@ -492,7 +514,6 @@ See INITIAL.md for additional considerations
 **Success Criteria**:
 
 - Requirements from INITIAL.md validated
-
 
 ## 5. Testing Strategy
 
@@ -511,7 +532,6 @@ uv run pytest tests/ -v
 - Unit test coverage: ≥ 80%
 - Integration tests for critical paths
 - Edge cases from INITIAL.md covered
-
 
 ## 6. Rollout Plan
 
@@ -533,17 +553,18 @@ uv run pytest tests/ -v
 2. Monitor for issues
 3. Update stakeholders
 
-
 ---
 
 ## Research Findings
 
 ### Serena Codebase Analysis
+
 - **Patterns Found**: 0
 - **Test Patterns**: 1
 - **Serena Available**: False
 
 ### Documentation Sources
+
 - **Library Docs**: 0
 - **External Links**: 0
 - **Context7 Available**: False

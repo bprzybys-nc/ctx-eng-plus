@@ -38,6 +38,7 @@ updated_by: "update-context-command"
 **Effort**: 18.0h (Blueprint Parser: 3h, Execution Engine: 5h, Validation Loop: 4h, Self-Healing: 4h, Testing: 2h)
 
 **Non-Goals**:
+
 - ❌ Human-in-the-loop confirmation for every fix (autonomous until escalation)
 - ❌ Architectural refactoring (escalates to human)
 - ❌ External dependency installation (warns user)
@@ -75,6 +76,7 @@ updated_by: "update-context-command"
 ## 📖 Context
 
 **Related Work**:
+
 - **PRP-1 dependency**: L4 pattern conformance validation
 - **PRP-2 dependency**: Checkpoint creation at each validation gate
 - **PRP-3 dependency**: Well-formed PRP blueprints as input
@@ -82,6 +84,7 @@ updated_by: "update-context-command"
 - **Model.md spec**: Section 5 defines execution workflow
 
 **Current State**:
+
 - ✅ L1-L3 validation exists: `tools/ce/validate.py`
 - ✅ Checkpoint management: PRP-2 provides `create_checkpoint()`
 - ✅ PRP generation: PRP-3 creates structured blueprints
@@ -94,6 +97,7 @@ updated_by: "update-context-command"
 - ❌ No CLI integration: Cannot run `ce execute <prp-id>`
 
 **Desired State**:
+
 - ✅ Blueprint parser: Extracts phases, goals, files, functions from PRP
 - ✅ Execution orchestration: Automated phase-by-phase implementation
 - ✅ Validation loop: Automatic L1-L4 validation after each phase
@@ -116,6 +120,7 @@ updated_by: "update-context-command"
 **Approach**: Structured parsing of markdown phases with regex-based extraction
 
 **Files to Create**:
+
 - `tools/ce/execute.py` - Execution orchestration logic
 - `tools/ce/exceptions.py` - Custom exceptions (EscalationRequired)
 - `tools/tests/test_execute.py` - Parser and execution tests
@@ -148,6 +153,7 @@ def function_name(args) -> ReturnType:
 **Validation Command**: `pytest tests/test_module.py -v`
 
 **Checkpoint**: `git add ... && git commit -m "..."`
+
 ```
 
 **Key Functions**:
@@ -273,6 +279,7 @@ def extract_function_signatures(phase_text: str) -> List[Dict[str, str]]:
 **Approach**: State machine with phase execution → validation → checkpoint cycle
 
 **Files to Modify**:
+
 - `tools/ce/execute.py` - Add orchestration functions
 
 **Execution State Machine**:
@@ -457,6 +464,7 @@ def calculate_confidence_score(validation_results: Dict[str, Any]) -> str:
 **Approach**: Call existing validate.py functions, add self-healing layer
 
 **Files to Modify**:
+
 - `tools/ce/execute.py` - Add validation integration
 - `tools/ce/validate.py` - Enhance with error parsing
 
@@ -604,6 +612,7 @@ def parse_validation_error(output: str, level: str) -> Dict[str, Any]:
 **Approach**: Error pattern matching → Serena location → targeted fix
 
 **Files to Modify**:
+
 - `tools/ce/execute.py` - Add self-healing functions
 
 **Self-Healing Strategy**:
@@ -796,10 +805,12 @@ def escalate_to_human(error: Dict[str, Any], reason: str) -> None:
 **Approach**: Extend `ce` CLI with `execute` subcommand, add E2E tests
 
 **Files to Modify**:
+
 - `tools/ce/__main__.py` - Add `execute` subcommand
 - `.claude/commands/execute-prp.md` - Update slash command
 
 **Files to Create**:
+
 - `tools/tests/test_execute_e2e.py` - End-to-end execution tests
 
 **CLI Commands**:
@@ -913,40 +924,52 @@ def test_blueprint_parser():
 ## 🔍 Validation Gates
 
 ### Gate 1: Parser Tests (After Phase 1)
+
 ```bash
 cd tools && uv run pytest tests/test_execute.py::test_parse_blueprint -v
 ```
+
 **Expected**: Blueprint parsing extracts all required fields
 
 ### Gate 2: Orchestration Tests (After Phase 2)
+
 ```bash
 cd tools && uv run pytest tests/test_execute.py::test_execute_phase -v
 ```
+
 **Expected**: Phase execution creates files, implements functions
 
 ### Gate 3: Validation Tests (After Phase 3)
+
 ```bash
 cd tools && uv run pytest tests/test_execute.py::test_validation_loop -v
 ```
+
 **Expected**: L1-L4 validation integration works
 
 ### Gate 4: Self-Healing Tests (After Phase 4)
+
 ```bash
 cd tools && uv run pytest tests/test_execute.py::test_self_healing -v
 cd tools && uv run pytest tests/test_execute.py::test_escalation_triggers -v
 ```
+
 **Expected**: Self-healing fixes errors, escalation triggers fire correctly
 
 ### Gate 5: E2E Tests (After Phase 5)
+
 ```bash
 cd tools && uv run pytest tests/test_execute_e2e.py -v
 ```
+
 **Expected**: Complete PRP execution works end-to-end
 
 ### Gate 6: Coverage Check (After Phase 5)
+
 ```bash
 cd tools && uv run pytest tests/ --cov=ce.execute --cov-report=term-missing --cov-fail-under=80
 ```
+
 **Expected**: ≥80% test coverage for execute.py
 
 ---
@@ -954,26 +977,31 @@ cd tools && uv run pytest tests/ --cov=ce.execute --cov-report=term-missing --co
 ## 📚 References
 
 **Model.md Sections**:
+
 - Section 5: Workflow implementation (Steps 5-6: Execute & Validate)
 - Section 7.1: Validation Gates (L1-L4 specifications)
 - Section 4.2: Self-Healing Framework (error patterns, fix strategies)
 
 **GRAND-PLAN.md**:
+
 - Lines 242-320: PRP-4 specification (this PRP)
 - Lines 64-116: PRP-1 (L4 validation dependency)
 - Lines 117-171: PRP-2 (checkpoint management dependency)
 - Lines 173-240: PRP-3 (PRP input dependency)
 
 **Existing Code**:
+
 - `tools/ce/validate.py`: L1-L3 validation logic
 - `tools/ce/prp.py`: Checkpoint management (create_checkpoint, update_prp_phase)
 - `.claude/commands/execute-prp.md`: Slash command stub
 
 **Research Docs**:
+
 - `docs/research/04-self-healing-framework.md`: Self-healing patterns and error types
 - `docs/research/08-validation-testing.md`: Validation framework details
 
 **MCP Documentation**:
+
 - Serena MCP: Code editing (replace_symbol_body, insert_after_symbol, create_text_file)
 - Sequential Thinking MCP: Complex logic synthesis
 
@@ -1006,6 +1034,7 @@ cd tools && uv run pytest tests/ --cov=ce.execute --cov-report=term-missing --co
 ### Implementation Status: 7/11 Criteria Met (64%)
 
 #### ✅ Successfully Implemented
+
 1. **Blueprint Parser** (Phase 1) - 100% complete, all tests passing
 2. **Execution Orchestration** (Phase 2) - Core loop functional, state management working
 3. **L1-L4 Validation Integration** (Phase 3) - All levels integrated
@@ -1017,11 +1046,13 @@ cd tools && uv run pytest tests/ --cov=ce.execute --cov-report=term-missing --co
 9. **Error Reporting** - Actionable troubleshooting guidance
 
 #### ⚠️ Partial Implementation
+
 10. **File Operations** - Using local filesystem stubs (marked with FIXME)
     - **Impact**: Works for testing, won't work in MCP-only context
     - **Decision**: Acceptable for MVP, marked for future enhancement
 
 #### ❌ Not Met
+
 11. **Test Coverage** - 40% vs 80% target
     - **Reason**: Validation loop tests are placeholders
     - **Decision**: Accept as partial delivery, real tests in follow-up PRP
@@ -1029,17 +1060,20 @@ cd tools && uv run pytest tests/ --cov=ce.execute --cov-report=term-missing --co
 ### Applied Fixes (Post-Review)
 
 **Priority 1 - Critical Functionality:**
+
 - ✅ Integrated self-healing into L1-L2 validation loops with 3-attempt retry
 - ✅ Connected escalation flow - raises EscalationRequired on triggers
 - ✅ CLI already implemented in `__main__.py:235-291`
 
 **Priority 2 - Code Quality:**
+
 - ✅ Fixed fishy fallback in execute_phase - now raises RuntimeError
 - ✅ Removed silent exception swallowing - proper error propagation
 - ✅ Marked all Serena MCP stubs with FIXME comments
 - ✅ Fixed diagnostic warnings (unused variables, imports)
 
 **Priority 3 - Deferred to Follow-Up:**
+
 - ⏸️ Real validation loop tests - PRP-7 ([BLA-12](https://linear.app/blaise78/issue/BLA-12))
 - ⏸️ Increase coverage to 80% - PRP-7 ([BLA-12](https://linear.app/blaise78/issue/BLA-12))
 - ⏸️ Replace filesystem stubs with Serena MCP - PRP-9 ([BLA-14](https://linear.app/blaise78/issue/BLA-14))
@@ -1048,6 +1082,7 @@ cd tools && uv run pytest tests/ --cov=ce.execute --cov-report=term-missing --co
 ### Quality Assessment
 
 **Execution Quality**: 8/10 (upgraded from 5/10)
+
 - ✅ Self-healing integrated and functional
 - ✅ Escalation flow connected
 - ✅ All policy violations fixed
@@ -1055,6 +1090,7 @@ cd tools && uv run pytest tests/ --cov=ce.execute --cov-report=term-missing --co
 - ⚠️ Test coverage below target (acceptable for MVP)
 
 **Recommendation**: Mark PRP-4 as **COMPLETE** with documented limitations. Created follow-up PRPs:
+
 1. **PRP-7** ([BLA-12](https://linear.app/blaise78/issue/BLA-12)): Comprehensive validation loop tests (increase coverage to 80%)
 2. **PRP-8** ([BLA-13](https://linear.app/blaise78/issue/BLA-13)): PRP sizing constraint analysis and optimal breakdown strategy
 3. **PRP-9** ([BLA-14](https://linear.app/blaise78/issue/BLA-14)): Serena MCP integration for file operations
@@ -1072,7 +1108,9 @@ cd tools && uv run pytest tests/ --cov=ce.execute --cov-report=term-missing --co
 **What was added**:
 
 #### `tools/ce/generate.py` - Step 2.5 Pre-Generation Sync Hook
+
 **Location**: Lines 738-751 (inside `generate_prp()` function)
+
 ```python
 # Step 2.5: Pre-generation sync (if auto-sync enabled)
 from .context import is_auto_sync_enabled, pre_generation_sync
@@ -1093,7 +1131,9 @@ if is_auto_sync_enabled():
 **Behavior**: Blocking - aborts generation if drift > 30% or sync fails
 
 #### `tools/ce/execute.py` - Step 6.5 Post-Execution Sync Hook
+
 **Location**: Lines 461-476 (after confidence score, before ending PRP context)
+
 ```python
 # Step 6.5: Post-execution sync (if auto-sync enabled)
 from .context import is_auto_sync_enabled, post_execution_sync
@@ -1134,6 +1174,7 @@ if is_auto_sync_enabled():
 **Created**: 2025-10-13T10:15:00Z
 
 **Key sections**:
+
 - Usage syntax and examples
 - 8-step execution process breakdown
 - Self-healing capabilities (L1-L2 auto-fixable errors)
@@ -1149,6 +1190,7 @@ if is_auto_sync_enabled():
 - Next steps after execution
 
 **Example usage**:
+
 ```bash
 /execute-prp PRP-6
 
@@ -1182,6 +1224,7 @@ if is_auto_sync_enabled():
 **Root cause**: PRP-4's scope definition treated workflow integration as "nice-to-have" rather than core functionality. The Implementation Blueprint focused heavily on internal mechanics (parsing, orchestration, validation, self-healing) but underspecified the user-facing integration points.
 
 **What should have been different**:
+
 1. **Phase 5 should have been split**:
    - Phase 5A: Workflow Integration (generate.py/execute.py hooks) - 1 hour
    - Phase 5B: Claude Code Slash Command (comprehensive docs) - 1 hour
@@ -1198,12 +1241,14 @@ if is_auto_sync_enabled():
    - Gate 6 should have verified slash command completeness
 
 **Lessons learned**:
+
 - Integration points are not "extras" - they're core deliverables
 - User-facing documentation is not "cleanup" - it's part of Phase 5
 - PRP scope must explicitly enumerate all integration touchpoints
 - Success criteria must be measurable (line counts, feature completeness checklists)
 
 **Future PRPs**:
+
 - Use checklist-style success criteria: `[ ] Slash command includes: usage, examples, options, escalation triggers, integration details, troubleshooting`
 - Explicitly list integration points in Implementation Blueprint: "Step 2.5 hook in generate.py, Step 6.5 hook in execute.py"
 - Add validation gate: "Verify all workflow integration points functional"

@@ -18,17 +18,20 @@ Direct, token-efficient. No fluff.
 ## Core Principles (From Global)
 
 ### No Fishy Fallbacks - MANDATORY
+
 - ✅ Fast Failure: Let exceptions bubble up
 - ✅ Actionable Errors: Include 🔧 troubleshooting guidance
 - ✅ No Silent Corruption: Make failures visible
 
 ### KISS (Keep It Simple, Stupid)
+
 - Simple solutions first
 - Clear code over clever code
 - Minimal dependencies (stdlib only for this project)
 - Single responsibility per function
 
 ### UV Package Management - STRICT
+
 ```bash
 # ✅ REQUIRED
 uv add package-name              # Add production dependency
@@ -40,11 +43,13 @@ uv sync                          # Install dependencies
 ```
 
 # ❌ FORBIDDEN - Ad-Hoc Code Policy
-* **Long ad-hoc scripts proposed** - Max 3 LOC for inline code
-* **Proposing code without execution** - Must execute via run_py
-* **Violating 3 LOC limit** - Longer code MUST be in tmp/ file
+
+- **Long ad-hoc scripts proposed** - Max 3 LOC for inline code
+- **Proposing code without execution** - Must execute via run_py
+- **Violating 3 LOC limit** - Longer code MUST be in tmp/ file
 
 **STRICT RULE:** Ad-hoc code max 3 lines of code (LOC). No exceptions.
+
 - ✅ ALLOWED: Ad-hoc ≤3 LOC: `"x = [1,2,3]; print(sum(x))"`
 - ❌ FORBIDDEN: Proposing 5+ line scripts without running
 - ✅ REQUIRED: Longer code → tmp/ file and execute
@@ -64,6 +69,7 @@ uv sync                          # Install dependencies
 **For tools/ commands:** Always prefix with `cd tools &&` or use full paths from root.
 
 **Note:** Claude Code doesn't have a persistent working directory setting per project. Always specify context explicitly:
+
 ```bash
 # Correct patterns
 cd tools && uv run ce --help
@@ -79,6 +85,7 @@ uv run ce --help  # Will fail if not in tools/
 ## Tool Usage Workflow
 
 ### Quick Commands
+
 ```bash
 # Navigate to tools
 cd tools
@@ -107,6 +114,7 @@ cd tools && uv run ce run_py --file ../tmp/script.py
 ```
 
 ### Testing Workflow
+
 ```bash
 # Run all tests
 uv run pytest tests/ -v
@@ -122,6 +130,7 @@ uv run ptw tests/
 ```
 
 ### Development Workflow
+
 ```bash
 # Make changes to ce/*.py files
 # Write/update tests in tests/
@@ -159,6 +168,7 @@ tools/
 ## When Making Changes
 
 ### Adding New Function
+
 1. Write function with docstring
 2. Add exception handling with troubleshooting guidance
 3. Write test that calls REAL function (no mocks)
@@ -166,12 +176,14 @@ tools/
 5. Update README if user-facing
 
 ### Fixing Bug
+
 1. Write test that reproduces bug (should fail)
 2. Fix the bug
 3. Run tests (should pass now)
 4. Verify no regressions: `uv run pytest tests/ -v`
 
 ### Adding Dependency
+
 ```bash
 # Production dependency
 uv add package-name
@@ -187,6 +199,7 @@ uv add --dev package-name
 ## Testing Standards
 
 ### Real Functionality Testing
+
 ```python
 # ✅ GOOD - Tests real function
 def test_git_status():
@@ -201,6 +214,7 @@ def test_git_status():
 ```
 
 ### Exception Handling
+
 ```python
 # ✅ GOOD - Clear troubleshooting
 def git_checkpoint(message: str) -> str:
@@ -226,11 +240,13 @@ def git_checkpoint(message: str) -> str:
 ## Code Quality Guidelines
 
 ### File Limits (Guidelines, not strict)
+
 - Functions: ~50 lines max
 - Files: ~300-500 lines max
 - Classes: ~100 lines max
 
 ### Function Design
+
 ```python
 # ✅ GOOD - Single responsibility, clear purpose
 def git_status() -> Dict[str, Any]:
@@ -246,6 +262,7 @@ def git_stuff(action: str) -> Any:
 ```
 
 ### Docstrings
+
 ```python
 def run_cmd(cmd: str, timeout: int = 60) -> Dict[str, Any]:
     """Execute shell command with timeout.
@@ -270,6 +287,7 @@ def run_cmd(cmd: str, timeout: int = 60) -> Dict[str, Any]:
 ## What's Different From Global CLAUDE.md
 
 **Removed/Simplified:**
+
 - ❌ Context Engineering integration (not used here)
 - ❌ PRP methodology (overkill for simple tools)
 - ❌ Serena MCP optimization (not applicable)
@@ -277,6 +295,7 @@ def run_cmd(cmd: str, timeout: int = 60) -> Dict[str, Any]:
 - ❌ TDD enforcement (tools already tested, pragmatic approach)
 
 **Kept:**
+
 - ✅ No Fishy Fallbacks policy
 - ✅ UV package management
 - ✅ KISS principles
@@ -284,6 +303,7 @@ def run_cmd(cmd: str, timeout: int = 60) -> Dict[str, Any]:
 - ✅ Direct communication style
 
 **Added:**
+
 - ✅ Tool-specific workflows
 - ✅ Quick command reference
 - ✅ Testing patterns for this project
@@ -294,6 +314,7 @@ def run_cmd(cmd: str, timeout: int = 60) -> Dict[str, Any]:
 ## Quick Reference
 
 ### Daily Usage
+
 ```bash
 cd tools
 uv run ce validate --level all    # Validate everything
@@ -303,6 +324,7 @@ uv run pytest tests/ -v            # Run tests
 ```
 
 ### Troubleshooting
+
 ```bash
 # Tool not found
 cd tools && uv pip install -e .
@@ -316,16 +338,37 @@ chmod +x bootstrap.sh             # Make executable
 ```
 
 ### JSON Output (for scripting)
+
 ```bash
 uv run ce git status --json | jq '.clean'
 uv run ce context health --json | jq '.drift_score'
 ```
+
+### Markdown & Mermaid Linting
+
+```bash
+# Lint all markdown files
+npm run lint:md
+
+# Auto-fix markdown issues
+npm run lint:md:fix
+
+# Validate mermaid diagrams (auto-fix enabled in L1)
+cd tools && python -m ce.mermaid_validator --fix .
+
+# Level 1 validation includes both
+cd tools && uv run ce validate --level 1
+```
+
+**Configuration**: `.markdownlint.json` in project root
+**Mermaid Rules**: Style statements must include color for theme compatibility
 
 ---
 
 ## Documentation Standards
 
 ### Mermaid Diagrams - MANDATORY
+
 **Always specify text color in node style statements for theme compatibility**
 
 - **Reason:** Ensures readability in both light and dark themes
@@ -333,6 +376,7 @@ uv run ce context health --json | jq '.drift_score'
 - **Pattern:** `style X fill:#bgcolor,color:#textcolor`
 
 **Examples:**
+
 ```
 # Light backgrounds (use black text)
 style A fill:#ff6b6b,color:#000    # Light red
@@ -357,6 +401,7 @@ style E fill:#34495e,color:#fff    # Dark gray
 ### Review Workflow
 
 **Phase 1: Structural Validation** (Grep-based, ~1-2k tokens)
+
 ```bash
 # Run parallel Grep patterns across docs/*.md
 # 1. Headers: verify numbering sequence
@@ -366,6 +411,7 @@ style E fill:#34495e,color:#fff    # Dark gray
 ```
 
 **Phase 2: Code Quality Checks** (Grep patterns, ~500 tokens)
+
 ```bash
 # Anti-pattern scans
 # - pip install → should be uv add
@@ -374,6 +420,7 @@ style E fill:#34495e,color:#fff    # Dark gray
 ```
 
 **Phase 3: Targeted Reads** (2-3 files only, ~3-5k tokens)
+
 ```bash
 # Always read navigation/index file
 # Read 1-2 complex docs based on Grep findings
@@ -383,11 +430,13 @@ style E fill:#34495e,color:#fff    # Dark gray
 **Total: ~5-7k tokens vs 200k+ for read-all approach**
 
 ### When NOT to Use This Pattern
+
 - Single document reviews (just read it)
 - Small doc sets (<5 files)
 - Content-heavy review requiring full text analysis
 
 ### Example: Reviewing 12-doc suite
+
 ```
 ❌ BAD: Read all 12 files → 200k+ tokens, prompt overflow
 ✅ GOOD: Grep validation + 2 targeted reads → 5-7k tokens
@@ -396,5 +445,6 @@ style E fill:#34495e,color:#fff    # Dark gray
 ---
 
 **Remember**: This is a simple tool project. Keep it simple. No over-engineering.
+
 - PRPs are in ./PRPs/[executed,feature-requests]
 - Create new PRPs in PRPs/feature-requests

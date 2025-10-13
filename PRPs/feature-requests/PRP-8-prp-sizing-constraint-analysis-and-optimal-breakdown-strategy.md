@@ -21,8 +21,7 @@ dependencies:
 
 **Effort**: Medium (3-5 hours estimated based on complexity)
 
-**Dependencies**: 
-
+**Dependencies**:
 
 ## 2. Context
 
@@ -53,6 +52,7 @@ PRP-4 ("/execute-prp Command Orchestration") was generated as a monolithic 1060-
 ## 🔍 Investigation Goals
 
 ### Primary Objective
+
 Determine optimal PRP size constraints and establish automated breakdown criteria for PRP generation.
 
 ### Research Questions
@@ -76,6 +76,7 @@ Determine optimal PRP size constraints and establish automated breakdown criteri
    - Is there a PRP composition analyzer?
 
 4. **Optimal Structure**: What would PRP-4 decomposition look like?
+
    ```
    PRP-4.0: Execution Framework Foundation (Meta-PRP)
    ├─ PRP-4.1: Blueprint Parser (3h, LOW risk)
@@ -118,13 +119,16 @@ Determine optimal PRP size constraints and establish automated breakdown criteri
 ## 💡 Proposed Approach
 
 ### Phase 1: Data Collection (2 hours)
+
 - Analyze all existing PRPs (PRP-1 through PRP-4)
 - Extract metrics: lines, hours, phases, functions, risk level
 - Correlate with execution outcomes (confidence score, test coverage, issues found)
 
 ### Phase 2: Constraint Definition (2 hours)
+
 - Define optimal PRP size ranges based on data
 - Establish thresholds for automatic breakdown triggers:
+
   ```
   GREEN: ≤500 lines, ≤8h, ≤3 phases, LOW-MEDIUM risk
   YELLOW: 500-800 lines, 8-12h, 3-4 phases, MEDIUM risk
@@ -132,18 +136,21 @@ Determine optimal PRP size constraints and establish automated breakdown criteri
   ```
 
 ### Phase 3: Decomposition Algorithm (4 hours)
+
 - Implement size validator in `generate.py`
 - Create decomposition proposal generator
 - Design parent-child PRP relationship model
 - Validate with PRP-4 as test case
 
 ### Phase 4: Tooling Integration (3 hours)
+
 - Update `/generate-prp` with size checks
 - Add `ce prp analyze <prp-file>` command
 - Integrate with PRP generation workflow
 - Test with new PRP generation
 
 ### Phase 5: Documentation & Rollout (2 hours)
+
 - Update Model.md with sizing guidelines
 - Create decomposition examples
 - Update CLAUDE.md with best practices
@@ -156,12 +163,14 @@ Determine optimal PRP size constraints and establish automated breakdown criteri
 **Risk**: MEDIUM
 
 **Challenges**:
+
 1. **Subjectivity**: Size thresholds may vary by complexity - algorithm needs calibration
 2. **Over-decomposition**: Too many small PRPs increases coordination overhead
 3. **False Positives**: Some large PRPs may be legitimately monolithic (e.g., database migrations)
 4. **Backward Compatibility**: Existing PRPs not affected, only new generations
 
 **Mitigation**:
+
 - Start with conservative thresholds, tune based on feedback
 - Provide override flag for intentional monolithic PRPs
 - Human review step before applying decomposition
@@ -209,8 +218,6 @@ See INITIAL.md for additional considerations
 
 ### Documentation References
 
-
-
 ## 3. Implementation Steps
 
 ### Phase 1: Setup and Research (30 min)
@@ -231,7 +238,6 @@ See INITIAL.md for additional considerations
 3. Run validation gates
 4. Update documentation
 
-
 ## 4. Validation Gates
 
 ### Gate 1: Unit Tests Pass
@@ -239,6 +245,7 @@ See INITIAL.md for additional considerations
 **Command**: `uv run pytest tests/unit/ -v`
 
 **Success Criteria**:
+
 - All new unit tests pass
 - Existing tests not broken
 - Code coverage ≥ 80%
@@ -248,6 +255,7 @@ See INITIAL.md for additional considerations
 **Command**: `uv run pytest tests/integration/ -v`
 
 **Success Criteria**:
+
 - Integration tests verify end-to-end functionality
 - No regressions in existing features
 
@@ -259,7 +267,6 @@ See INITIAL.md for additional considerations
 
 - All examples from INITIAL.md working
 - Feature behaves as described
-
 
 ## 5. Testing Strategy
 
@@ -278,7 +285,6 @@ uv run pytest tests/ -v
 - Unit test coverage: ≥ 80%
 - Integration tests for critical paths
 - Edge cases from INITIAL.md covered
-
 
 ## 6. Rollout Plan
 
@@ -300,17 +306,18 @@ uv run pytest tests/ -v
 2. Monitor for issues
 3. Update stakeholders
 
-
 ---
 
 ## Research Findings
 
 ### Serena Codebase Analysis
+
 - **Patterns Found**: 0
 - **Test Patterns**: 1
 - **Serena Available**: False
 
 ### Documentation Sources
+
 - **Library Docs**: 0
 - **External Links**: 0
 - **Context7 Available**: False

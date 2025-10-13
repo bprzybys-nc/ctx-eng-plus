@@ -37,6 +37,7 @@ updated_by: "execute-prp-command"
 **Effort**: 25.0h (Research: 5h, Core Implementation: 12h, CLI Integration: 4h, Testing: 4h)
 
 **Non-Goals**:
+
 - ❌ Style-level validation (covered by L1: linters)
 - ❌ Functional correctness testing (covered by L2: unit tests, L3: integration tests)
 - ❌ Historical drift aggregation across PRPs (handled by PRP-6)
@@ -70,11 +71,13 @@ updated_by: "execute-prp-command"
 ## 📖 Context
 
 **Related Work**:
+
 - **Existing validation**: L1-L3 implemented in `tools/ce/validate.py` (syntax, unit tests, integration tests)
 - **Confidence scoring**: Model.md Section 7.3.1 currently achieves 9/10 max; L4 enables 10/10
 - **Parent system**: Context Engineering Management System (Model.md)
 
 **Current State**:
+
 - ✅ L1 validation exists: `validate_level_1()` runs linters and type-checkers
 - ✅ L2 validation exists: `validate_level_2()` runs unit tests
 - ✅ L3 validation exists: `validate_level_3()` runs integration tests
@@ -83,9 +86,11 @@ updated_by: "execute-prp-command"
 - ❌ Confidence ceiling at 9/10: L4 required for production-ready status
 
 **INITIAL.md Format** (Expected Input for L4):
+
 - PRPs reference `INITIAL.md` files containing feature specifications
 - **Location**: `context-engineering/feature-requests/INITIAL.md` (per-feature) or embedded in PRP under `## EXAMPLES` section
 - **Structure**:
+
   ```markdown
   ## FEATURE
   [What to build - 2-3 sentences]
@@ -105,14 +110,18 @@ updated_by: "execute-prp-command"
   ```
 
   ## DOCUMENTATION
+
   [Links to library docs, API references]
 
   ## OTHER CONSIDERATIONS
+
   [Gotchas, constraints, edge cases]
+
   ```
 - **L4 Parses**: `## EXAMPLES` section to extract patterns from code blocks
 
 **Desired State**:
+
 - ✅ L4 validation functional: `validate_level_4(prp_path)` analyzes pattern conformance
 - ✅ Drift score calculation: Quantifies divergence (0-100%) with clear methodology
 - ✅ Threshold-based escalation: Auto-accept (0-10%), auto-fix (10-30%), user decision (30%+)
@@ -133,6 +142,7 @@ updated_by: "execute-prp-command"
 **Approach**: Regex + AST-based pattern extraction from markdown code blocks (Python: `ast` module, others: regex fallback)
 
 **Files to Create**:
+
 - `tools/ce/pattern_extractor.py` - Pattern extraction logic
 
 **Key Functions**:
@@ -221,6 +231,7 @@ def parse_code_structure(code: str, language: str) -> List[str]:
 **Approach**: Use Serena MCP `find_symbol`, `get_symbols_overview`, `read_file` to analyze implementation structure
 
 **Files to Create**:
+
 - `tools/ce/drift_analyzer.py` - Drift calculation logic
 
 **Key Functions**:
@@ -326,11 +337,13 @@ drift_score = (50% + 0% + 60%) / 3 = 36.7%
 ```
 
 **Threshold Logic**:
+
 - **0-10% drift**: `auto_accept` - Continue execution, log info message
 - **10-30% drift**: `auto_fix` - Log warning with recommended fixes (manual application in MVP; automated refactoring deferred to future enhancement)
 - **30%+ drift**: `escalate` - HALT execution, prompt user for decision
 
 **Auto-Fix Strategy** (MVP: Suggestions Only):
+
 ```python
 def get_auto_fix_suggestions(mismatches: List[Dict]) -> List[str]:
     """Generate fix suggestions for 10-30% drift (MVP: display only, no auto-apply).
@@ -362,6 +375,7 @@ def get_auto_fix_suggestions(mismatches: List[Dict]) -> List[str]:
 **Approach**: Rich CLI with diff display, colored output, and persistent decision logging
 
 **Files to Modify**:
+
 - `tools/ce/validate.py` - Add `validate_level_4()` function
 - `tools/ce/__main__.py` - Add CLI command `ce validate --level 4`
 
@@ -466,6 +480,7 @@ def validate_level_4(
 **Approach**: Modify existing `calculate_confidence()` function (if exists) or create new scoring module
 
 **Files to Modify**:
+
 - `tools/ce/validate.py` - Add confidence scoring logic
 - `tools/ce/__main__.py` - Display confidence score in validation output
 
@@ -562,11 +577,13 @@ Total Duration: 4m 12s
 **Goal**: Comprehensive test coverage and usage documentation
 
 **Test Coverage Requirements**:
+
 - Unit tests: Pattern extraction, drift calculation, threshold logic
 - Integration tests: Full L4 validation with sample PRPs
 - E2E test: User escalation flow simulation
 
 **Files to Create**:
+
 - `tools/tests/test_pattern_extractor.py`
 - `tools/tests/test_drift_analyzer.py`
 - `tools/tests/fixtures/sample_prp_high_drift.md` (PRP with 45%+ drift examples)
@@ -608,6 +625,7 @@ def test_validate_level_4_success():
 ```
 
 **Documentation Updates**:
+
 - `tools/README.md`: Add L4 validation usage examples
 - `PRPs/Model.md`: Update Section 4.1.2 (ce CLI) with L4 command
 - `docs/research/08-validation-testing.md`: Add L4 validation details
@@ -637,27 +655,35 @@ def test_validate_level_4_success():
 ## 🔍 Validation Gates
 
 ### Gate 1: Unit Tests (After Each Phase)
+
 ```bash
 cd tools && uv run pytest tests/ -v -k "pattern_extractor or drift_analyzer"
 ```
+
 **Expected**: All tests pass, no failures
 
 ### Gate 2: Integration Tests (After Phase 3)
+
 ```bash
 cd tools && uv run pytest tests/test_validate.py::test_level_4_integration -v
 ```
+
 **Expected**: Full L4 validation flow works with sample PRP
 
 ### Gate 3: E2E Test (After Phase 4)
+
 ```bash
 cd tools && uv run ce validate --level 4 --prp tests/fixtures/sample_prp_high_drift.md
 ```
+
 **Expected**: User escalation flow triggers, accepts input, persists decision
 
 ### Gate 4: Coverage Check (After Phase 5)
+
 ```bash
 cd tools && uv run pytest tests/ --cov=ce --cov-report=term-missing --cov-fail-under=80
 ```
+
 **Expected**: ≥80% coverage across all new modules
 
 ---
@@ -665,27 +691,32 @@ cd tools && uv run pytest tests/ --cov=ce --cov-report=term-missing --cov-fail-u
 ## 📚 References
 
 **Model.md Sections**:
+
 - Section 3.3.3: Pattern Conformance Validation (drift detection, thresholds)
 - Section 7.1.4: Level 4 Validation Gate (L4 specification)
 - Section 7.3.1: Confidence Scoring (10/10 calculation with L4)
 - Section 5.2: Workflow Step 6 (L1-L4 validation loop)
 
 **GRAND-PLAN.md**:
+
 - Lines 64-113: PRP-1 specification (this PRP)
 - Lines 117-169: PRP-2 (checkpoint integration for L4 gates)
 - Lines 241-317: PRP-4 (L4 validation loop integration)
 
 **Research Docs**:
+
 - `docs/research/01-prp-system.md`: PRP structure, EXAMPLES format
 - `docs/research/08-validation-testing.md`: Validation framework overview
 - `docs/research/04-self-healing-framework.md`: Auto-fix patterns for 10-30% drift
 
 **Existing Code**:
+
 - `tools/ce/validate.py`: L1-L3 validation implementations (lines 7-149)
 - `tools/ce/core.py`: `run_cmd()` utility for subprocess execution
 - `tools/ce/__main__.py`: CLI entry point and command routing
 
 **External References**:
+
 - Serena MCP documentation: Symbol analysis, pattern detection
 - Context7 MCP: Library documentation fetching (not used in L4)
 - GitHub Copilot research: 35-45% baseline for comparison

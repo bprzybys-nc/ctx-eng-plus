@@ -35,6 +35,7 @@ last_updated: "2025-01-15T21:30:00Z"
 **Effort**: 3.0h (Dependency + Module: 1h, Validation Logic: 1.5h, CLI + Tests: 0.5h)
 
 **Non-Goals**:
+
 - ❌ Validating PRP content quality (focus on YAML structure only)
 - ❌ Auto-fixing YAML errors (validation only, user fixes)
 - ❌ Batch validation across directories (single file validation)
@@ -49,8 +50,8 @@ last_updated: "2025-01-15T21:30:00Z"
 - [x] **Load context**: Parent PRP-001 (executed) - CE structure initialization
 - [x] **Verify codebase state**:
   - Directory exists: [tools/ce/](../tools/ce/)
-  - File exists: [tools/ce/__main__.py](../tools/ce/__main__.py#L1) (CLI entry point)
-  - Pattern exists: [tools/ce/__main__.py:44-61](../tools/ce/__main__.py#L44-L61) (`cmd_validate` pattern)
+  - File exists: [tools/ce/**main**.py](../tools/ce/__main__.py#L1) (CLI entry point)
+  - Pattern exists: [tools/ce/**main**.py:44-61](../tools/ce/__main__.py#L44-L61) (`cmd_validate` pattern)
   - Tests directory: [tools/tests/](../tools/tests/)
 - [x] **Git baseline**: Clean working tree
 
@@ -59,11 +60,13 @@ last_updated: "2025-01-15T21:30:00Z"
 ## 📖 Context
 
 **Related Work**:
+
 - **Parent PRP**: PRP-001 (executed) - Initialized CE structure with YAML schema
 - **Documentation**: [docs/prp-yaml-schema.md](../docs/prp-yaml-schema.md) - Complete schema reference
 - **Template**: [PRPs/templates/prp-base-template.md](../PRPs/templates/prp-base-template.md) - Template with YAML header
 
 **Current State**:
+
 - CE CLI has validate, git, context, run_py commands
 - No PRP-specific validation capability
 - PyYAML not installed (tools/pyproject.toml dependencies: [])
@@ -71,6 +74,7 @@ last_updated: "2025-01-15T21:30:00Z"
 - Manual YAML validation error-prone
 
 **Desired State**:
+
 - `ce prp validate <file>` command available
 - PyYAML dependency managed via UV
 - Validation checks: required fields, data types, PRP ID format, date format
@@ -85,6 +89,7 @@ last_updated: "2025-01-15T21:30:00Z"
 ## 🔍 Logic Flow
 
 ### Validation Pipeline
+
 ```mermaid
 graph LR
     A[PRP File Path] --> B{File Exists?}
@@ -108,6 +113,7 @@ graph LR
 ```
 
 ### Decision Logic
+
 ```mermaid
 flowchart TD
     A[Load File] --> B{Valid YAML?}
@@ -145,13 +151,16 @@ flowchart TD
 ### Phase 1: Add PyYAML Dependency + Create Module (1.0h)
 
 **Task 1.1**: Add PyYAML via UV (0.2h)
+
 - [x] **Directory**: [tools/](../tools/)
 - [x] **Action**: Run `cd tools && uv add pyyaml`
 - [x] **Validation**: `cd tools && uv run python -c "import yaml; print(yaml.__version__)"`
 
 **Task 1.2**: Create prp.py module (0.8h)
+
 - [ ] **File**: [tools/ce/prp.py](../tools/ce/prp.py) (new file)
 - [ ] **Action**: Create module with validation functions
+
   ```python
   """PRP YAML validation module."""
   from typing import Dict, Any, List, Optional
@@ -205,6 +214,7 @@ flowchart TD
           return f"Invalid date format for '{field_name}': '{date_str}' (expected: YYYY-MM-DDTHH:MM:SSZ)"
       return None
   ```
+
 - [ ] **Validation**: `cd tools && uv run python -c "from ce.prp import REQUIRED_FIELDS; print(len(REQUIRED_FIELDS))"`
 
 ---
@@ -212,8 +222,10 @@ flowchart TD
 ### Phase 2: Implement Validation Logic (1.5h)
 
 **Task 2.1**: Parse YAML header (0.5h)
+
 - [ ] **File**: [tools/ce/prp.py](../tools/ce/prp.py)
 - [ ] **Action**: Implement `validate_prp_yaml` function
+
   ```python
   def validate_prp_yaml(file_path: str) -> Dict[str, Any]:
       """Validate PRP YAML header against schema."""
@@ -254,11 +266,14 @@ flowchart TD
       # Validate schema (Phase 2 Task 2.2)
       return validate_schema(header, errors, warnings)
   ```
+
 - [ ] **Validation**: `cd tools && uv run python -c "from ce.prp import validate_prp_yaml; print(validate_prp_yaml.__doc__)"`
 
 **Task 2.2**: Validate schema (0.7h)
+
 - [ ] **File**: [tools/ce/prp.py](../tools/ce/prp.py)
 - [ ] **Action**: Add `validate_schema` helper function
+
   ```python
   def validate_schema(header: Dict[str, Any], errors: List[str], warnings: List[str]) -> Dict[str, Any]:
       """Validate YAML header against schema."""
@@ -329,11 +344,14 @@ flowchart TD
           "header": header
       }
   ```
+
 - [ ] **Validation**: Unit test with valid/invalid YAML samples
 
 **Task 2.3**: Add format_validation_result helper (0.3h)
+
 - [ ] **File**: [tools/ce/prp.py](../tools/ce/prp.py)
 - [ ] **Action**: Add output formatting function
+
   ```python
   def format_validation_result(result: Dict[str, Any]) -> str:
       """Format validation result for human-readable output."""
@@ -363,6 +381,7 @@ flowchart TD
 
       return output
   ```
+
 - [ ] **Validation**: Manual test with sample output
 
 ---
@@ -370,8 +389,10 @@ flowchart TD
 ### Phase 3: Add CLI Command + Tests (0.5h)
 
 **Task 3.1**: Wire into CLI (0.2h)
-- [ ] **File**: [tools/ce/__main__.py](../tools/ce/__main__.py#L171)
+
+- [ ] **File**: [tools/ce/**main**.py](../tools/ce/__main__.py#L171)
 - [ ] **Action**: Add `prp` subcommand group
+
   ```python
   # Add after line 314 (after context subparser setup)
 
@@ -392,7 +413,9 @@ flowchart TD
       "--json", action="store_true", help="Output as JSON"
   )
   ```
+
 - [ ] **Action**: Add `cmd_prp_validate` handler function
+
   ```python
   # Add handler function (similar pattern to cmd_validate at line 44)
 
@@ -416,16 +439,20 @@ flowchart TD
           print(f"❌ PRP validation failed: {str(e)}", file=sys.stderr)
           return 1
   ```
+
 - [ ] **Action**: Update main() dispatcher
+
   ```python
   # Add to main() function dispatch logic
   elif args.command == "prp":
       if args.prp_command == "validate":
           return cmd_prp_validate(args)
   ```
+
 - [ ] **Validation**: `cd tools && uv run ce prp validate --help`
 
 **Task 3.2**: Add tests (0.3h)
+
 - [ ] **File**: [tools/tests/test_prp.py](../tools/tests/test_prp.py) (new file)
 - [ ] **Test Cases**:
   - [ ] Happy path: `test_validate_prp_valid_yaml()`
@@ -443,18 +470,21 @@ flowchart TD
 ## ✅ Success Criteria
 
 ### Code Quality
+
 - [ ] No syntax errors (code runs without failures)
 - [ ] Type hints on all functions
 - [ ] Docstrings with Args/Returns/Raises
 - [ ] Functions <50 lines (helpers for complex logic)
 
 ### Test Coverage
+
 - [ ] All 7 test cases passing
 - [ ] Coverage ≥80% for ce/prp.py
 - [ ] No test regressions in existing tests
 - [ ] Edge cases covered (empty file, malformed YAML)
 
 ### Integration Validation
+
 - [ ] `ce prp validate <file>` command works
 - [ ] Valid YAML passes with success message
 - [ ] Invalid YAML fails with actionable errors
@@ -462,6 +492,7 @@ flowchart TD
 - [ ] Error messages include troubleshooting guidance
 
 ### Documentation
+
 - [ ] Function docstrings complete
 - [ ] Error messages actionable (🔧 troubleshooting included)
 - [ ] CLI help text clear (`ce prp validate --help`)
@@ -473,39 +504,45 @@ flowchart TD
 ### Technical Risks
 
 **Risk 1**: PyYAML parsing edge cases not covered
+
 - **Likelihood**: MEDIUM
 - **Impact**: MEDIUM
 - **Mitigation**: Comprehensive test suite with malformed YAML samples, safe_load() prevents code execution
 - **Rollback**: Remove PyYAML dependency, delete ce/prp.py module
 
 **Risk 2**: CLI argument parsing conflicts with existing commands
+
 - **Likelihood**: LOW
 - **Impact**: LOW
 - **Mitigation**: New `prp` subcommand group isolated from existing commands, follows established pattern
-- **Rollback**: Remove prp subparser from __main__.py
+- **Rollback**: Remove prp subparser from **main**.py
 
 ---
 
 ## 📚 References
 
 ### Documentation
+
 - **Schema Reference**: [docs/prp-yaml-schema.md](../docs/prp-yaml-schema.md) - Complete YAML schema with examples
 - **Template**: [PRPs/templates/prp-base-template.md](../PRPs/templates/prp-base-template.md#L17-L41) - YAML header structure
 - **Project Guidelines**: [CLAUDE.md](../CLAUDE.md) - UV package management, testing standards
 
 ### Code References
-- **CLI Pattern**: [tools/ce/__main__.py:44-61](../tools/ce/__main__.py#L44-L61) (`cmd_validate` handler pattern)
-- **Argparse Setup**: [tools/ce/__main__.py:171-314](../tools/ce/__main__.py#L171-L314) (subcommand structure)
-- **format_output**: [tools/ce/__main__.py:33-41](../tools/ce/__main__.py#L33-L41) (JSON formatting helper)
+
+- **CLI Pattern**: [tools/ce/**main**.py:44-61](../tools/ce/__main__.py#L44-L61) (`cmd_validate` handler pattern)
+- **Argparse Setup**: [tools/ce/**main**.py:171-314](../tools/ce/__main__.py#L171-L314) (subcommand structure)
+- **format_output**: [tools/ce/**main**.py:33-41](../tools/ce/__main__.py#L33-L41) (JSON formatting helper)
 - **Test Pattern**: [tools/tests/test_core.py](../tools/tests/test_core.py) (existing test structure)
 
 ### Related PRPs
+
 - **Parent**: PRP-001 (executed) - CE structure initialization
 - **Similar Pattern**: PRP-001 Phase 2 - File creation and validation approach
 
 ### External Libraries
+
 - **PyYAML v6.0.2**
-  - Docs: https://pyyaml.org/wiki/PyYAMLDocumentation
+  - Docs: <https://pyyaml.org/wiki/PyYAMLDocumentation>
   - Focus: safe_load() for secure YAML parsing
   - API: yaml.safe_load(str) → dict, yaml.YAMLError for parse errors
 
@@ -518,16 +555,19 @@ flowchart TD
 **Actual Effort**: 2.5h vs estimated 3.0h (0.5h ahead)
 
 **Issues Discovered**:
+
 - PRP ID validation initially allowed leading zeros (PRP-001)
 - Test fixtures used `null` instead of Python `None`
 - pytest-cov not installed (coverage checks skipped)
 
 **Issues Resolved**:
+
 - Enhanced PRP ID regex to reject leading zeros: `r'^PRP-([1-9]\d*)(\.(0|[1-9]\d*))?(\.(0|[1-9]\d*))?$'`
 - Fixed test fixtures with Python `None` values
 - All 14 tests passing, 55 total tests passing (no regressions)
 
 **Lessons Learned**:
+
 - Regex validation patterns need careful testing for edge cases (leading zeros)
 - Python test fixtures must use `None` not YAML `null`
 - Comprehensive test cases (14) caught validation logic bugs early
@@ -535,11 +575,13 @@ flowchart TD
 - JSON output reused existing `format_output()` helper (DRY principle)
 
 **Deviations from Plan**:
+
 - No coverage plugin installed, skipped coverage percentage check (manual review confirms high coverage)
 - Completed ahead of schedule (2.5h vs 3.0h) due to clean existing CLI architecture
 - PRP ID validation enhanced beyond original spec (no leading zeros rule added)
 
 **Follow-up PRPs**:
+
 - PRP-1.3 (future): Add batch validation command for entire PRPs/ directory
 - PRP-1.4 (future): Add auto-fix command for common YAML errors
 - PRP-1.5 (future): Add `ce prp init` command to scaffold new PRP files

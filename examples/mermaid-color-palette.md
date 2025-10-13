@@ -82,6 +82,7 @@ graph LR
 ### 3. Hierarchical Color Scheme
 
 **Parent → Child relationship:**
+
 - Parent node: Primary palette color
 - Child nodes: Secondary palette color (lighter shade)
 
@@ -309,4 +310,4 @@ style FAIL fill:#ef9a9a,color:#000      # Failure Red
 
 - Source: [PRPs/Model.md](../PRPs/Model.md)
 - Documentation Standard: [CLAUDE.md](../CLAUDE.md) (Mermaid color requirements)
-- Mermaid Documentation: https://mermaid.js.org/syntax/flowchart.html#styling-and-classes
+- Mermaid Documentation: <https://mermaid.js.org/syntax/flowchart.html#styling-and-classes>

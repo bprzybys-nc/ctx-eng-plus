@@ -1,25 +1,30 @@
 # Mock Marking Pattern
 
 ## Purpose
+
 Ensure temporary mock implementations are visible, trackable, and easily removable during refactoring.
 
 ## Policy
+
 **MANDATORY**: All mocked functionality in non-test code must be explicitly marked.
 
 ## Marking Requirements
 
 ### 1. Decorator
+
 ```python
 @mocked  # Required for all mock functions/methods
 ```
 
 ### 2. Inline Comments
+
 ```python
 # FIXME: Mock implementation - replace with real functionality
 # MOCKED: Hardcoded return value
 ```
 
 ### 3. Logging Statement
+
 ```python
 logger.warning("MOCK: Using hardcoded response")
 ```
@@ -27,6 +32,7 @@ logger.warning("MOCK: Using hardcoded response")
 ## Examples
 
 ### ✅ Correct Mock Marking
+
 ```python
 @mocked
 def fetch_api_data(endpoint: str) -> dict:
@@ -37,6 +43,7 @@ def fetch_api_data(endpoint: str) -> dict:
 ```
 
 ### ❌ Incorrect - Unmarked Mock
+
 ```python
 def fetch_api_data(endpoint: str) -> dict:
     """Fetch data from API endpoint."""
@@ -55,6 +62,7 @@ def fetch_api_data(endpoint: str) -> dict:
 ### Example Refactoring
 
 **Before (Mock):**
+
 ```python
 @mocked
 def fetch_api_data(endpoint: str) -> dict:
@@ -65,6 +73,7 @@ def fetch_api_data(endpoint: str) -> dict:
 ```
 
 **After (Real):**
+
 ```python
 def fetch_api_data(endpoint: str) -> dict:
     """Fetch data from API endpoint."""

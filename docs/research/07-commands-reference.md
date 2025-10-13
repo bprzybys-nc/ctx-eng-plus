@@ -9,6 +9,7 @@
 This document provides a comprehensive reference for all commands available in the Context Engineering framework. The framework implements a systematic approach to AI-assisted software development through structured commands, MCP (Model Context Protocol) integrations, and automated workflows.
 
 **Key Capabilities:**
+
 - Structured feature implementation via Product Requirements Plans (PRPs)
 - Semantic code understanding through Language Server Protocol integration
 - Automated context management and self-healing mechanisms
@@ -16,6 +17,7 @@ This document provides a comprehensive reference for all commands available in t
 - Technology-agnostic patterns applicable to any software project
 
 **Target Audience:**
+
 - Software engineers implementing Context Engineering workflows
 - AI agents executing structured development tasks
 - Technical leads evaluating AI-assisted development frameworks
@@ -36,6 +38,7 @@ The Context Engineering framework organizes commands into five primary categorie
 | **Macro Features** | Cross-cutting capabilities | 5 | Embedded in command execution |
 
 **Architectural Principles:**
+
 - Commands follow consistent Input → Process → Output → Validation pattern
 - Higher-level commands orchestrate lower-level MCP tools
 - Automatic triggers reduce manual intervention for maintenance tasks
@@ -57,6 +60,7 @@ Product Requirements Plans (PRPs) serve as implementation blueprints that bridge
 | **`/spec-create-adv`** | Complex feature specification with multiple subsystems | (1) Decompose specification into components<br>(2) Multi-phase research:<br>&nbsp;&nbsp;- Phase A: Technical feasibility<br>&nbsp;&nbsp;- Phase B: Integration points<br>&nbsp;&nbsp;- Phase C: Performance considerations<br>(3) Stakeholder requirement mapping<br>(4) Generate detailed specification with acceptance criteria | Advanced specification document:<br>- Multi-component breakdown<br>- API contracts<br>- Performance benchmarks<br>- Security considerations<br>- Rollback procedures | **Manual:** Enterprise-level features requiring formal specification | `/spec-create-adv` for payment processing system → Multi-subsystem specification with compliance requirements |
 
 **PRP Structure (YAML Header Example):**
+
 ```yaml
 ---
 title: "Authentication System Implementation"
@@ -94,6 +98,7 @@ Execution commands transform validated PRPs into production-ready implementation
 | **Stream-JSON** | Long-running tasks, remote execution | Structured JSON events over stdout | Real-time monitoring tools |
 
 **Validation Loop (Embedded in Execution):**
+
 ```
 Execute Phase → Run Tests → If FAIL → /heal-errors (max 3 attempts) → Revalidate
                          → If PASS → Checkpoint → Next Phase
@@ -113,6 +118,7 @@ Context management commands maintain system health, synchronize knowledge bases,
 | **`/validate-state`** | None (comprehensive scan) | (1) Compilation validation:<br>&nbsp;&nbsp;- `npm run check-all`<br>&nbsp;&nbsp;- Parse exit codes and errors<br>(2) Git state verification:<br>&nbsp;&nbsp;- `git status --porcelain`<br>&nbsp;&nbsp;- `git diff --stat`<br>&nbsp;&nbsp;- Check for large uncommitted diffs<br>(3) Serena index health:<br>&nbsp;&nbsp;- Test known symbols<br>&nbsp;&nbsp;- Verify symbol counts<br>(4) Memory consistency check:<br>&nbsp;&nbsp;- Validate file references<br>&nbsp;&nbsp;- Check memory age/access patterns<br>(5) Context drift detection:<br>&nbsp;&nbsp;- Compare current vs checkpoint symbols<br>&nbsp;&nbsp;- Calculate drift score<br>(6) Test coverage validation:<br>&nbsp;&nbsp;- Run coverage report<br>&nbsp;&nbsp;- Check against thresholds | Health report with scores:<br>- Compilation: PASS/FAIL<br>- Git cleanliness: CLEAN/DIRTY (% uncommitted)<br>- Serena index: HEALTHY/NEEDS_REINDEX<br>- Memory consistency: OK/PRUNING_NEEDED<br>- Context drift: LOW/MEDIUM/HIGH (percentage)<br>- Test coverage: percentage<br>- Recommended actions list | **Automatic:**<br>- Every session start<br>- Every 30 minutes during development<br>- Before PRP execution<br>- After refactoring > 20 files<br>**Manual:**<br>- User invokes `/validate-state` | Health check shows: Compilation PASS, Git 15% uncommitted, Index HEALTHY, Drift LOW (8%), Coverage 87% |
 
 **Context Drift Calculation:**
+
 ```
 drift_score = (new_symbols + deleted_symbols) / baseline_symbols
 - LOW: < 0.15 (15% change)
@@ -136,6 +142,7 @@ Development workflow commands support code quality, debugging, and Git operation
 | **`/create-pr`** | Branch name and changes (auto-detected from git) | (1) Execute `git diff main...current-branch`<br>(2) Analyze changes comprehensively<br>(3) Load PRP context if branch linked to PRP<br>(4) Generate PR description:<br>&nbsp;&nbsp;- Summary of changes<br>&nbsp;&nbsp;- Motivation and context<br>&nbsp;&nbsp;- Testing performed<br>&nbsp;&nbsp;- Checklist for reviewers<br>(5) Create PR via GitHub MCP | GitHub/GitLab Pull Request:<br>- Comprehensive PR description<br>- Linked issues (if applicable)<br>- Reviewer suggestions<br>- PR URL<br>- CI/CD pipeline triggered | **Manual:**<br>- Feature branch ready for review<br>- After `/execute-prp` completion | `/create-pr` → Creates PR "Implement OAuth2 authentication" with detailed description, links to issue #123 |
 
 **Review Priority Levels:**
+
 - **Critical:** Security vulnerabilities, data corruption risks, production-breaking changes
 - **High:** Logic errors, missing error handling, significant performance issues
 - **Medium:** Code style violations, missing documentation, minor performance concerns
@@ -163,6 +170,7 @@ Serena provides semantic code understanding through Language Server Protocol (LS
 | **`onboarding`** | None (uses current project context) | Comprehensive project initialization:<br>- Scan all source files<br>- Build complete symbol index<br>- Extract type definitions<br>- Analyze dependencies | Onboarding report:<br>- Files scanned<br>- Symbols indexed<br>- Project metadata | First-time project setup or re-indexing | `onboarding()` → Scanned 156 files, indexed 1,247 symbols, ready for queries |
 
 **Serena Performance Characteristics:**
+
 - Symbol lookup: < 100ms (indexed queries)
 - Reference finding: < 500ms (typical codebase < 100k LOC)
 - Onboarding: 1-5 minutes (depends on project size)
@@ -180,12 +188,14 @@ Context7 provides up-to-date documentation retrieval for libraries and framework
 | **`c7_info`** | `project_name` (string) | Retrieve metadata for specified project | Project metadata:<br>- Source repository URL<br>- Last documentation update<br>- Version coverage<br>- Popularity metrics | Verify documentation freshness before querying | `c7_info("nextjs")` → Repository: vercel/next.js, Last update: 2025-10-05, Versions: 13.x, 14.x |
 
 **Context7 Coverage (Typical):**
+
 - JavaScript/TypeScript: 500+ libraries
 - Python: 300+ libraries
 - Go: 150+ libraries
 - Rust: 100+ libraries
 
 **Query Optimization:**
+
 - Use specific queries: "React useEffect cleanup" (good) vs "React hooks" (too broad)
 - Specify version in project_name if critical: "nextjs@14" vs "nextjs"
 - Set token_limit conservatively (2000-4000 tokens optimal for focused queries)
@@ -209,11 +219,13 @@ GitHub MCP enables repository automation, issue tracking, and CI/CD integration 
 | **`merge_pull_request`** | `repo` (string), `pull_number` (integer), `merge_method` ("merge", "squash", "rebase") | Validate PR mergeable, execute merge via API | Merge commit SHA + status | Automated PR merging after validation passes | `merge_pull_request("myorg/myrepo", 789, "squash")` → Merged successfully, commit def456 |
 
 **GitHub API Rate Limits:**
+
 - Authenticated: 5,000 requests/hour
 - Unauthenticated: 60 requests/hour
 - Recommendation: Use personal access token (PAT) for automation
 
 **Search Syntax Examples:**
+
 ```
 search_code("class:User language:typescript", "myorg/myrepo", "typescript")
 search_code("function authenticate path:src/auth", "myorg/myrepo", "javascript")
@@ -241,12 +253,14 @@ Filesystem MCP provides secure file operations with built-in validation to preve
 | **`list_allowed_directories`** | None | Query MCP configuration for allowed paths | List of allowed directory paths (security boundaries) | Verify filesystem access scope | `list_allowed_directories()` → ["/project", "/home/user/workspace"] |
 
 **Security Features:**
+
 - Sensitive data detection (API keys, passwords, secrets)
 - Path traversal prevention (no access outside allowed directories)
 - Atomic writes (prevents partial file corruption)
 - Symlink validation (prevents escape from allowed paths)
 
 **File Search Patterns:**
+
 ```
 search("/project", "TODO|FIXME", "**/*.ts")          # Find TODOs in TypeScript files
 search("/project", "class \w+Controller", "**/*.js")  # Find controller classes
@@ -265,6 +279,7 @@ Sequential Thinking MCP enables complex problem decomposition through structured
 **Sequential Thinking Patterns:**
 
 **Linear Reasoning (No Branches):**
+
 ```
 Thought 1: Define problem scope
 Thought 2: Identify constraints
@@ -274,6 +289,7 @@ Thought 5: Select optimal solution
 ```
 
 **Revision Pattern (Correcting Earlier Thoughts):**
+
 ```
 Thought 1: Hypothesis - Database connection issue
 Thought 2: Check connection logs - no errors found
@@ -282,6 +298,7 @@ Thought 4: Analyze query structure - found SQL injection vulnerability
 ```
 
 **Branching Pattern (Exploring Alternatives):**
+
 ```
 Thought 1: Need to implement caching
 Thought 2 (Branch A): Redis-based caching approach
@@ -292,6 +309,7 @@ Thought 4 (Merge): Select Redis for distributed system requirements
 ```
 
 **Usage in Commands:**
+
 - `/heal-errors`: Root cause analysis (5-10 thoughts typical)
 - `/debug`: Bug hypothesis generation (3-7 thoughts typical)
 - `/planning-create`: Architecture exploration (10-20 thoughts typical)
@@ -347,6 +365,7 @@ Phase 4: Documentation
 ```
 
 **Git Worktree Setup Example:**
+
 ```bash
 # Main repository
 cd /project/main-repo
@@ -383,6 +402,7 @@ Automated scripts provide command-line integration for context management and va
 | **`context:health`** | `node scripts/context-health-check.js` | Execute `/validate-state` workflow programmatically | 30-90 seconds | Session start, periodic checks |
 
 **Example package.json:**
+
 ```json
 {
   "name": "context-engineering-project",
@@ -411,6 +431,7 @@ Automated scripts provide command-line integration for context management and va
 ```
 
 **Integration with Commands:**
+
 - `/execute-prp` calls `npm run check-all` after each phase
 - `/validate-state` calls `npm run context:health`
 - `/heal-errors` calls `npm run type-check` or `npm run lint` for targeted validation
@@ -463,6 +484,7 @@ project-root/
 ```
 
 **Critical Files:**
+
 - **CLAUDE.md:** Project-specific rules, coding standards, architectural decisions
 - **PRPs/templates/:** Reusable templates ensure consistent PRP structure
 - **examples/:** Reference implementations for code generation consistency
@@ -479,6 +501,7 @@ Three execution modes support different environments and use cases:
 | **Stream-JSON** | Remote execution, long-running tasks | Real-time monitoring of long executions (e.g., 30+ minute implementations) | Newline-delimited JSON events streamed to stdout:<br>`{"type": "phase_start", "phase": 1, "timestamp": "..."}`<br>`{"type": "validation", "status": "pass", ...}` | Real-time monitoring dashboards consuming JSON stream |
 
 **Interactive Mode Example:**
+
 ```
 $ /execute-prp PRPs/auth-system.md
 
@@ -494,6 +517,7 @@ Phase 2: Production Logic                       [▓▓▓▓▓▓----] 60%
 ```
 
 **Headless Mode Example:**
+
 ```bash
 $ node PRPs/scripts/prp-runner.js PRPs/auth-system.md --mode=headless
 $ echo $?  # Check exit code
@@ -506,6 +530,7 @@ $ cat execution.log
 ```
 
 **Stream-JSON Mode Example:**
+
 ```bash
 $ node PRPs/scripts/prp-runner.js PRPs/auth-system.md --mode=stream-json | tee execution.ndjson
 {"event":"phase_start","phase":1,"name":"Skeleton Generation","timestamp":"2025-10-10T14:32:15Z"}
@@ -523,10 +548,12 @@ $ node PRPs/scripts/prp-runner.js PRPs/auth-system.md --mode=stream-json | tee e
 Prefer context retrieval over model fine-tuning for operational flexibility and cost efficiency.
 
 **Operational Expenditure (OpEx) vs Capital Expenditure (CapEx):**
+
 - **RAG (OpEx):** Update documentation/examples dynamically, no model retraining, instant context updates
 - **Fine-tuning (CapEx):** Expensive training runs, longer update cycles, version management overhead
 
 **Implementation Pattern:**
+
 ```
 Generate PRP → Query Context7 for library docs → Query Serena for existing patterns → Merge contexts → Generate code
 (No fine-tuned model required, all context retrieved at runtime)
@@ -537,12 +564,14 @@ Generate PRP → Query Context7 for library docs → Query Serena for existing p
 Never assume the model knows project conventions. Provide complete specifications.
 
 **Anti-Pattern (Implicit Context):**
+
 ```yaml
 # Vague PRP
 task: "Add authentication"
 ```
 
 **Best Practice (Explicit Context):**
+
 ```yaml
 # Comprehensive PRP
 task: "Add OAuth2 authentication"
@@ -567,6 +596,7 @@ context:
 Define success criteria as executable tests before implementation.
 
 **Pattern:**
+
 ```markdown
 ## Phase 2: Production Logic
 
@@ -586,9 +616,11 @@ npm run security-audit  # Must show 0 high/critical vulnerabilities
 ```
 
 If ANY validation fails:
+
 1. Trigger `/heal-errors` (max 3 attempts)
 2. If still failing, STOP and escalate to human
 3. Do NOT proceed to Phase 3 with failing validations
+
 ```
 
 **4. Incremental Complexity**
@@ -623,6 +655,7 @@ Build and validate small components before composing into complex systems.
 Organize context into layers with clear precedence rules.
 
 **Hierarchy (Highest to Lowest Precedence):**
+
 ```
 1. Task-specific (PRP) - Overrides all others for specific implementation
    Example: "For this feature, use MongoDB instead of Postgres"
@@ -638,6 +671,7 @@ Organize context into layers with clear precedence rules.
 ```
 
 **Resolution Example:**
+
 ```
 Question: Which password hashing library to use?
 
@@ -653,6 +687,7 @@ Resolution: bcrypt (module-specific overrides project-wide)
 Treat every modification as a mini-PRP that references existing patterns.
 
 **Pattern:**
+
 ```markdown
 ## Modification Request: "Add rate limiting to /api/login endpoint"
 
@@ -757,6 +792,7 @@ onFileModified(() => {
 | **docs/INITIAL-*.md** | Feature request documents for `/generate-prp` input | Input documents for PRP creation workflow |
 
 **Cross-Reference Navigation:**
+
 ```
 User Feature Request (docs/INITIAL-auth.md)
   ↓ input to
@@ -802,6 +838,7 @@ Production code + tests + documentation
 | **Sequential Thinking** | Complex problem decomposition, reasoning chains | `sequential_thinking` | - Root cause analysis in `/heal-errors`<br>- Bug hypothesis generation in `/debug`<br>- Architecture exploration in `/planning-create` |
 
 **MCP Integration Hierarchy:**
+
 ```
 High-Level Commands (User-Facing)
   ├─ /generate-prp → Serena + Context7
@@ -938,6 +975,7 @@ jobs:
 ## End of Document
 
 **Document Statistics:**
+
 - **Total Commands Documented:** 33+ (7 PRP, 4 Context Management, 5 Development Workflow, 17+ MCP)
 - **Total Sections:** 10 major sections with 25+ subsections
 - **Comprehensive Tables:** 15+ detailed command reference tables
@@ -945,16 +983,19 @@ jobs:
 - **Cross-References:** 25+ internal references for navigation
 
 **Usage Guidance:**
+
 1. **For AI Agents:** Follow command specifications exactly as documented; respect trigger conditions and validation gates
 2. **For Developers:** Use command reference tables for quick lookup; review integration patterns for workflow design
 3. **For Technical Leads:** Review architectural principles and anti-patterns for framework evaluation
 
 **Maintenance:**
+
 - Update this document when adding new commands or modifying existing workflows
 - Maintain synchronization with CLAUDE.md, SERENA-INSTRUCTIONS.md, and example files
 - Version control this document alongside codebase changes
 
 **Related Documentation:**
+
 - Previous: [06-systematic-patterns.md](./06-systematic-patterns.md)
 - Next: [08-implementation-guide.md](./08-implementation-guide.md) (if exists)
 - Parent: [context-mastery-exploration.md](./context-mastery-exploration.md)

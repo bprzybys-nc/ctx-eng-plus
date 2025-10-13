@@ -58,6 +58,7 @@
 ### 1.2 KISS in Context Engineering
 
 **Complexity-Driven Approach**:
+
 - **Simple Tasks (1-2 files)**: Minimal tooling, direct execution (~5 minutes)
 - **Medium Tasks (3-10 files)**: Core tooling + planning (~15 minutes)
 - **Complex Tasks (10+ files)**: Full tooling stack + multi-phase planning (~30 minutes)
@@ -831,6 +832,7 @@ graph TD
 #### 5.3.1 Semantic Code Navigation Tools
 
 **Use When:**
+
 - Working with files >300 lines of code
 - Refactoring across 5+ files simultaneously
 - Need symbol-level precision (functions, classes, interfaces)
@@ -838,12 +840,14 @@ graph TD
 - Performing impact analysis (find all references)
 
 **Key Operations:**
+
 - `find_symbol()` - Locate functions, classes, interfaces
 - `find_referencing_symbols()` - Impact analysis
 - `get_symbol_definition()` - Read specific symbols only
 - `insert_after_symbol()` - Precise code insertions
 
 **Benefits:**
+
 - 95% token reduction vs reading full files
 - Symbol-level precision prevents errors
 - Impact analysis before refactoring
@@ -851,18 +855,21 @@ graph TD
 #### 5.3.2 Documentation Retrieval Tools
 
 **Use When:**
+
 - Integrating new library (version-specific docs needed)
 - Library version upgrade (breaking changes)
 - API documentation needed for implementation
 - Preventing hallucination on unfamiliar technology
 
 **Key Operations:**
+
 - Fetch version-specific documentation
 - Retrieve API examples and patterns
 - Get migration guides for upgrades
 - Access release notes and changelogs
 
 **Benefits:**
+
 - 87% token reduction vs full library docs
 - Version-specific accuracy (no hallucination)
 - Up-to-date API patterns
@@ -870,18 +877,21 @@ graph TD
 #### 5.3.3 Structured Reasoning Tools
 
 **Use When:**
+
 - Problem requires 3+ reasoning steps
 - Multiple implementation approaches possible
 - Architecture decisions needed
 - Risk of over-engineering (need structured analysis)
 
 **Key Operations:**
+
 - Multi-step problem breakdown
 - Architecture decision analysis
 - Approach comparison and selection
 - Trade-off evaluation
 
 **Benefits:**
+
 - 42% improvement in problem solving
 - Transparent reasoning (explainable decisions)
 - Avoids over-engineering
@@ -889,18 +899,21 @@ graph TD
 #### 5.3.4 Version Control Integration Tools
 
 **Use When:**
+
 - Analyzing codebase history and evolution
 - Creating automated PR workflows
 - CI/CD integration required
 - Code review automation
 
 **Key Operations:**
+
 - Create and manage pull requests
 - Analyze commit history and patterns
 - Search code across repositories
 - Automate code review processes
 
 **Benefits:**
+
 - 70% faster PR workflows
 - Automated code review
 - Historical context for decisions
@@ -908,18 +921,21 @@ graph TD
 #### 5.3.5 Secure File Operations Tools
 
 **Use When:**
+
 - File operations in sandboxed environment
 - Security-critical file access (prevent traversal)
 - Batch file processing operations
 - Path validation required
 
 **Key Operations:**
+
 - Secure file read/write operations
 - Directory listing with permissions
 - Path validation and sanitization
 - Batch file operations
 
 **Benefits:**
+
 - 100% path traversal attack prevention
 - Audit trail for file operations
 - Sandboxed execution environment
@@ -1981,6 +1997,7 @@ If Total LOC:
 | Does this change authentication/security? | +1 | 0 |
 
 **Score Interpretation:**
+
 - 0-1 points → Simple
 - 2-3 points → Medium
 - 4+ points → Complex
@@ -2067,18 +2084,21 @@ Total Time: ~17 minutes (within 15-min estimate)
 #### 11.2.1 Blind Find/Replace Operations
 
 **Prohibited Pattern:**
+
 ```bash
 # DANGER: Blind replace without understanding impact
 sed -i 's/oldFunction/newFunction/g' **/*.ts
 ```
 
 **Why Prohibited:**
+
 - No context awareness
 - Can break unrelated code with similar patterns
 - Ripple effects not considered
 - No validation of changes
 
 **Safe Alternative:**
+
 ```
 1. Use semantic navigation: find_referencing_symbols("oldFunction")
 2. Review each reference to understand context
@@ -2089,6 +2109,7 @@ sed -i 's/oldFunction/newFunction/g' **/*.ts
 ```
 
 **Example: Safe Refactoring**
+
 ```typescript
 // STEP 1: Find all references
 // Semantic navigation: find_referencing_symbols("calculatePrice")
@@ -2124,6 +2145,7 @@ const price = calculatePriceWithDiscount(
 #### 11.2.2 Adding Imports Without Checking
 
 **Prohibited Pattern:**
+
 ```typescript
 // DANGER: Adding import without checking if it exists
 import { User } from './models/user';
@@ -2132,12 +2154,14 @@ import { validateUser } from './utils/validation';
 ```
 
 **Why Prohibited:**
+
 - Creates duplicate imports
 - Causes compilation errors
 - Clutters codebase
 - Shows lack of code awareness
 
 **Safe Alternative:**
+
 ```
 1. Read target file completely
 2. Search for existing import statements
@@ -2147,6 +2171,7 @@ import { validateUser } from './utils/validation';
 ```
 
 **Example: Safe Import Addition**
+
 ```typescript
 // STEP 1: Read file
 const fileContent = read_file("checkout.ts");
@@ -2174,6 +2199,7 @@ import { validateUser } from './utils/validation';
 #### 11.2.3 Modifying Files Based on Assumptions
 
 **Prohibited Pattern:**
+
 ```typescript
 // DANGER: Assuming function signature without reading
 // Assumption: updateUser takes (id, data)
@@ -2184,12 +2210,14 @@ await updateUser(userId, userData);
 ```
 
 **Why Prohibited:**
+
 - Breaks working code
 - Assumptions may be incorrect
 - No validation of current state
 - Can cause data corruption
 
 **Safe Alternative:**
+
 ```
 1. Always read complete file first
 2. Verify function signatures
@@ -2199,6 +2227,7 @@ await updateUser(userId, userData);
 ```
 
 **Example: Safe Modification**
+
 ```typescript
 // STEP 1: Read file to understand current implementation
 // Semantic navigation: get_symbol_definition("updateUser")
@@ -2224,6 +2253,7 @@ await updateUser(
 #### 11.2.4 Fixing Files That Aren't Broken
 
 **Prohibited Pattern:**
+
 ```typescript
 // DANGER: "Improving" code that works fine
 // Original (working):
@@ -2239,12 +2269,14 @@ function getUserName(user: User): string {
 ```
 
 **Why Prohibited:**
+
 - Introduces bugs where none existed
 - Wastes development time
 - Creates unnecessary git changes
 - Can break dependent code
 
 **Safe Alternative:**
+
 ```
 1. Only fix if validation fails
 2. Confirm issue exists (run tests)
@@ -2254,6 +2286,7 @@ function getUserName(user: User): string {
 ```
 
 **Example: Validation-Driven Fixes**
+
 ```
 SCENARIO: Tests are failing
 
@@ -2286,6 +2319,7 @@ STEP 5: Don't modify further
 #### 11.2.5 Creating Duplicate Code
 
 **Prohibited Pattern:**
+
 ```typescript
 // DANGER: Creating new function without checking for existing
 // New function (duplicate):
@@ -2301,12 +2335,14 @@ export function formatPrice(amount: number): string {
 ```
 
 **Why Prohibited:**
+
 - Technical debt accumulates
 - Maintenance nightmare (fix bug in two places)
 - Inconsistency (implementations may diverge)
 - Wastes development time
 
 **Safe Alternative:**
+
 ```
 1. Search for existing implementations
 2. Reuse existing code
@@ -2315,6 +2351,7 @@ export function formatPrice(amount: number): string {
 ```
 
 **Example: Reuse Existing Code**
+
 ```typescript
 // STEP 1: Search for existing implementations
 // Semantic navigation: find_symbol("format*currency*")
@@ -2441,16 +2478,19 @@ exit 0
 ### 12.2 Related Context Engineering Documents
 
 **Core Documentation:**
+
 - **CLAUDE.md**: Project-wide conventions and rules (referenced in 2.5, 3.5)
 - **PRP (Plan-Research-Plan) Documents**: Task-specific context (referenced in 2.5, 2.6, 3.2)
 - **Module Context Documents**: Feature-specific patterns (referenced in 2.5, 2.6)
 
 **Methodology Documents:**
+
 - **PRP Methodology**: Systematic feature implementation (referenced in 2.3, 3.2, 7.2)
 - **Validation Gates Specification**: Three-level validation details (referenced in 2.3, 7.3)
 - **Context Engineering Introduction**: Foundational concepts (referenced in 1, 2.1)
 
 **Tool-Specific Documentation:**
+
 - **Semantic Code Navigation Guide**: Symbol-level operations (referenced in 5.3.1, 8.1, 8.3)
 - **Documentation Retrieval Best Practices**: Efficient doc fetching (referenced in 5.3.2, 6.2)
 - **Structured Reasoning Patterns**: Multi-step problem solving (referenced in 5.3.3, 8.2)
@@ -2458,16 +2498,19 @@ exit 0
 ### 12.3 External References
 
 **Context Engineering Resources:**
+
 - [1] Context Engineering: The New AI Strategy for Scalable LLMs
 - [2] RAG vs Fine-Tuning: When to Use Which Strategy
 - [3] Token Budget Management in Large Context Windows
 
 **Development Methodology:**
+
 - [4] Test-Driven Development Best Practices
 - [5] Incremental Development and Validation
 - [6] KISS Principle in Software Engineering
 
 **Tool Integration:**
+
 - [7] Model Context Protocol (MCP) Specification
 - [8] Semantic Code Navigation Patterns
 - [9] AI-Assisted Development Workflows
@@ -2477,12 +2520,14 @@ exit 0
 #### 12.4.1 With PRP System
 
 **Where Best Practices Apply:**
+
 - **PRP Generation**: Use 2.2 (Explicit Context) when creating INITIAL.md
 - **PRP Validation**: Apply 2.3 (Validation-First Design) for validation gates
 - **PRP Execution**: Follow 8. (Optimization Patterns) during implementation
 - **PRP Review**: Use 4. (Best Practices vs Anti-Patterns) in peer reviews
 
 **Where Anti-Patterns Apply:**
+
 - **PRP Creation**: Avoid 3.3 (Vague Brain Dump) in requirements
 - **PRP Approval**: Prevent 3.2 (Trust Fall Execution) via human review
 - **PRP Execution**: Avoid 3.4 (Context-Free Updates) by reading existing code
@@ -2490,11 +2535,13 @@ exit 0
 #### 12.4.2 With Semantic Code Navigation Tools
 
 **Where Best Practices Apply:**
+
 - **Symbol-First Development** (8.1): Use semantic navigation to define and track types
 - **Read Before Write** (11.2.3): Use semantic navigation to understand before modifying
 - **Context Hierarchy** (2.5): Use semantic navigation to maintain structure
 
 **Where Anti-Patterns Are Prevented:**
+
 - **Blind Find/Replace** (11.2.1): Semantic navigation provides context awareness
 - **Creating Duplicate Code** (11.2.5): Semantic search finds existing implementations
 - **Context-Free Updates** (3.4): Semantic navigation ensures pattern consistency
@@ -2502,22 +2549,26 @@ exit 0
 #### 12.4.3 With Context Budget Management
 
 **Where Best Practices Apply:**
+
 - **RAG-First Strategy** (2.1): Efficient retrieval vs full context loading
 - **Focused Context** (2.1): Only decision-critical information (6.1)
 - **Hierarchical Context** (2.5): Load only necessary layers (6.1)
 
 **Where Anti-Patterns Are Prevented:**
+
 - **Context Dumping** (3.1): Token allocation strategy (6.1) prevents overload
 - **Context Explosion** (6.4): Budget monitoring prevents uncontrolled growth
 
 #### 12.4.4 With Validation Systems
 
 **Where Best Practices Apply:**
+
 - **Validation-First Design** (2.3): Three-level validation gates
 - **Incremental Validation Loop** (8.3): Validate every 5 changes
 - **Test-Driven Context** (8.2): Tests define expected behavior
 
 **Where Anti-Patterns Are Prevented:**
+
 - **Trust Fall Execution** (3.2): Validation gates prevent blind execution
 - **Fixing Files That Aren't Broken** (11.2.4): Validation confirms real issues
 
@@ -2577,12 +2628,14 @@ Feature Implementation Flow:
 **Maintenance**: Review quarterly, update as patterns evolve
 
 **Source Materials**:
+
 - Context Mastery Exploration Document
 - Context Engineering Field Research
 - Real-World Implementation Case Studies
 - MCP Tool Documentation and Best Practices
 
 **Change Log**:
+
 - 2025-10-10: Initial comprehensive document created from extracted practices
 
 ---

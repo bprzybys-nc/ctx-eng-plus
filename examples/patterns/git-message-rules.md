@@ -37,16 +37,19 @@
 ### Structure Rules
 
 **Header** (required):
+
 - Type: lowercase, from table above
 - Scope: optional, parentheses, component/module name
 - Description: lowercase, imperative mood, no period, <50 chars
 
 **Body** (optional):
+
 - Blank line after header
 - Explain what/why, not how
 - Hard wrap at 72 chars
 
 **Footer** (optional):
+
 - Blank line after body
 - `BREAKING CHANGE: <description>` for breaking changes
 - `Fixes: #123` or `Refs: #456` for issue links
@@ -64,16 +67,19 @@ graph LR
 ```
 
 ### Simple Feature
+
 ```
 feat: add user authentication
 ```
 
 ### With Scope
+
 ```
 feat(api): add coupon creation endpoint
 ```
 
 ### Bug Fix with Details
+
 ```
 fix(ui): resolve dropdown menu alignment
 
@@ -84,11 +90,13 @@ Fixes: #789
 ```
 
 ### Breaking Change (Method 1)
+
 ```
 feat(api)!: redesign authentication endpoints
 ```
 
 ### Breaking Change (Method 2)
+
 ```
 feat(api): redesign authentication endpoints
 
@@ -98,6 +106,7 @@ Migration guide: docs/v2-auth.md
 ```
 
 ### Performance Improvement
+
 ```
 perf(database): optimize user query
 
@@ -163,6 +172,7 @@ flowchart TD
 ## Quick Reference
 
 ### Commit Template
+
 ```
 <type>(<scope>): <description>
 
@@ -172,12 +182,14 @@ flowchart TD
 ```
 
 ### Version Bumps
+
 - `feat:` → 1.2.0 → 1.3.0 (MINOR)
 - `fix:` → 1.2.0 → 1.2.1 (PATCH)
 - `!` or `BREAKING CHANGE:` → 1.2.0 → 2.0.0 (MAJOR)
 - Other types → No bump
 
 ### Breaking Change Notation
+
 ```
 # Either:
 feat!: description

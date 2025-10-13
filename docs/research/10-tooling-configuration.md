@@ -9,6 +9,7 @@
 This document provides comprehensive tooling and configuration specifications for the Context Engineering Framework. It covers MCP server installation, configuration file structures, permission matrices, project structure requirements, and automation scripts. All configurations are copy-paste ready and production-tested.
 
 **Key Objectives:**
+
 - Enable zero-prompt autonomous execution
 - Minimize framework overhead (target: <2%)
 - Provide complete audit trail through structured logging
@@ -24,13 +25,16 @@ This document provides comprehensive tooling and configuration specifications fo
 The framework eliminates permission interruptions through pre-approved operation lists:
 
 **Without Allow/Deny Lists:**
+
 - 50+ prompts per PRP × 10 seconds = **8+ minutes of interruptions**
 
 **With Allow/Deny Lists:**
+
 - 0-2 prompts per PRP × 5 seconds = **0-10 seconds**
 - **Savings: 96% reduction in friction**
 
 **Time to Value:**
+
 - Traditional PRP: 180 min implementation + 30 min prompts = 210 min
 - Framework PRP: 180 min implementation + 0 min prompts = 180 min
 - **Improvement: 14% faster execution**
@@ -38,12 +42,14 @@ The framework eliminates permission interruptions through pre-approved operation
 ### 1.2 Permission Strategy
 
 **Allowed Operations:**
+
 - Read: All files in allowed directories
 - Write: Source code, tests, examples, .serena/, PRPs/
 - Delete: .serena/memories/, logs/, backups/
 - Execute: npm scripts, git commands, bash utilities
 
 **Denied Operations:**
+
 - Read/Write: .env, .dev.vars, secrets/, private_keys/
 - Delete: Outside allowed patterns
 - Execute: sudo, rm -rf, curl | bash
@@ -51,6 +57,7 @@ The framework eliminates permission interruptions through pre-approved operation
 ### 1.3 Autonomous Execution Model
 
 **Core Principles:**
+
 - Pre-approve all safe operations
 - Checkpoint before destructive operations
 - Auto-rollback on validation failure
@@ -58,6 +65,7 @@ The framework eliminates permission interruptions through pre-approved operation
 - Hook-based automatic validation
 
 **Human Intervention Required Only For:**
+
 - Security-sensitive file operations
 - Irreversible operations (git push to main)
 - Repeated validation failures (>3 attempts)
@@ -194,6 +202,7 @@ npx c7-mcp-server --version
 ```
 
 **Configuration:**
+
 - Requires API key (set in environment variables)
 - Rate limits: 10 queries/minute, 4000 tokens/response
 
@@ -213,6 +222,7 @@ npx @modelcontextprotocol/server-sequential-thinking --version
 ```
 
 **Configuration:**
+
 - Zero configuration required
 - Pure reasoning only (no filesystem/network access)
 
@@ -232,6 +242,7 @@ docker images | grep github-mcp-server
 ```
 
 **Configuration:**
+
 - Requires Personal Access Token (PAT)
 - Required scopes: `repo`, `workflow`
 - Rate limits: 5000 requests/hour
@@ -967,6 +978,7 @@ ecommerce-api/                                    # Non-trivial e-commerce backe
 | every_30_minutes | Create checkpoint | Yes |
 
 **Background Tasks (Non-blocking):**
+
 - Dev server: `npm run dev` (auto-start, auto-restart)
 - Test watcher: `npm run test:watch` (conditional)
 - Type checker: `npm run type-check --watch` (auto-start)
@@ -980,34 +992,40 @@ ecommerce-api/                                    # Non-trivial e-commerce backe
 **Phase 0: Foundation**
 
 - [ ] Install essential MCPs (Serena, Filesystem)
+
   ```bash
   pipx install git+https://github.com/oraios/serena
   npx -y @modelcontextprotocol/server-filesystem
   ```
 
 - [ ] Configure Claude Desktop MCP servers
+
   ```bash
   # Edit: ~/.config/claude/claude_desktop_config.json
   ```
 
 - [ ] Create project configuration files
+
   ```bash
   mkdir -p .claude .serena PRPs/templates PRPs/active scripts
   touch .claude/config.json .serena/project.yml
   ```
 
 - [ ] Initialize Serena indexing
+
   ```bash
   serena project init --language typescript --root .
   serena onboarding
   ```
 
 - [ ] Add framework scripts to package.json
+
   ```bash
   # Copy scripts from Section 4.4.2
   ```
 
 - [ ] Create bash utility scripts
+
   ```bash
   touch scripts/mcp-tools.sh
   chmod +x scripts/mcp-tools.sh
@@ -1015,6 +1033,7 @@ ecommerce-api/                                    # Non-trivial e-commerce backe
   ```
 
 - [ ] Update .gitignore
+
   ```bash
   echo ".serena/memories/" >> .gitignore
   echo ".serena/cache/" >> .gitignore
@@ -1024,16 +1043,19 @@ ecommerce-api/                                    # Non-trivial e-commerce backe
 **Phase 1: Verification**
 
 - [ ] Verify MCP installation
+
   ```bash
   bash scripts/verify-mcp-installation.sh
   ```
 
 - [ ] Test Serena indexing
+
   ```bash
   npm run serena:index
   ```
 
 - [ ] Run health check
+
   ```bash
   npm run mcp:health
   ```
@@ -1045,6 +1067,7 @@ ecommerce-api/                                    # Non-trivial e-commerce backe
 - [ ] Open Claude Code (Serena indexes automatically)
 - [ ] Background tasks start (dev server, type checker)
 - [ ] Review health report
+
   ```bash
   npm run mcp:health
   ```
@@ -1060,11 +1083,13 @@ ecommerce-api/                                    # Non-trivial e-commerce backe
 **Session End:**
 
 - [ ] Sync context with codebase
+
   ```bash
   npm run mcp:sync
   ```
 
 - [ ] Create checkpoint
+
   ```bash
   npm run mcp:checkpoint
   ```
@@ -1074,11 +1099,13 @@ ecommerce-api/                                    # Non-trivial e-commerce backe
 **Weekly Maintenance:**
 
 - [ ] Prune old memories
+
   ```bash
   npm run context:prune
   ```
 
 - [ ] Review logs
+
   ```bash
   tail -n 100 .serena/logs/errors.log
   ```
@@ -1392,12 +1419,14 @@ echo "=== Verification Complete ==="
 ### 11.2 Key Concepts
 
 **Context Engineering Framework:**
+
 - PRPs (Product Requirements Prompts) as implementation blueprints
 - Three-level validation with auto-healing
 - Session checkpoints and recovery workflows
 - Memory classification and pruning rules
 
 **MCP Tool Ecosystem:**
+
 - Serena: Semantic code navigation via LSP
 - Context7: Real-time documentation injection
 - Filesystem: Secure file operations with allow/deny lists
@@ -1405,12 +1434,14 @@ echo "=== Verification Complete ==="
 - GitHub: Repository automation and PR workflows
 
 **Zero-Prompt Philosophy:**
+
 - Pre-approved operations through configuration
 - Autonomous execution within defined boundaries
 - Human intervention only for security-sensitive operations
 - 96% reduction in permission interruptions
 
 **Self-Healing Mechanisms:**
+
 - Auto-healing on validation failure (3 attempts)
 - Automatic checkpoint restoration on critical errors
 - Escalation to human on repeated failures
@@ -1419,18 +1450,21 @@ echo "=== Verification Complete ==="
 ### 11.3 Implementation Workflow
 
 **Setup Phase (One-time):**
+
 1. Install MCP servers
 2. Configure `claude_desktop_config.json`
 3. Create `.claude/config.json`
 4. Initialize Serena
 
 **Session Start:**
+
 1. Claude Code opens
 2. Serena indexes project
 3. Background tasks start
 4. Health check runs
 
 **Implementation:**
+
 1. Read PRP
 2. Gather context (Serena + Context7)
 3. Implement changes
@@ -1438,12 +1472,14 @@ echo "=== Verification Complete ==="
 5. Auto-healing if needed
 
 **Completion:**
+
 1. Git commit
 2. Move PRP to completed
 3. Sync context
 4. Create checkpoint
 
 **Recovery (If needed):**
+
 1. Error detected
 2. Auto-healing (3 attempts)
 3. Restore checkpoint

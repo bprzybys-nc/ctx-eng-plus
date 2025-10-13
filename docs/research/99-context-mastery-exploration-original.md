@@ -1,12 +1,14 @@
-# Read coleman00 context eng 
-And prepare me prp (meta). Structure and it's elements properties 
-Role 
+# Read coleman00 context eng
+
+And prepare me prp (meta). Structure and it's elements properties
+Role
 Gen denoised characteristics of prp
 
 Also it's commands and other macro feats
 Peer reviewed research structured readable response  
   
-# Answer (Claude 4.5 Sonnet):  
+# Answer (Claude 4.5 Sonnet)  
+
 ## PRP Meta-Structure: Product Requirements Prompt
 
 A **PRP** (Product Requirements Prompt) is a structured methodology combining traditional PRD elements with AI-optimized context engineering for autonomous code generation.[1][2]
@@ -14,21 +16,25 @@ A **PRP** (Product Requirements Prompt) is a structured methodology combining tr
 ### Core Structure Elements
 
 **Goal Section**
+
 - Clear objective statement defining what must be built
 - Specific functionality and requirements
 - Single, top-level deliverable definition[3][1]
 
 **Why Section**
+
 - Business value and user impact justification
 - Problem statement and solution rationale
 - Strategic alignment with project goals[2][3]
 
 **What Section**
+
 - Detailed success criteria (checkboxes)
 - Functional requirements breakdown
 - Expected behaviors and outcomes[2]
 
 **Context Section**
+
 - Precise file paths and content references
 - Library versions and documentation URLs
 - Code snippet examples and patterns
@@ -36,12 +42,14 @@ A **PRP** (Product Requirements Prompt) is a structured methodology combining tr
 - Authentication requirements and constraints[1][3][2]
 
 **Implementation Blueprint**
+
 - Step-by-step execution plan with pseudocode
 - Task breakdown with validation gates
 - Error handling patterns
 - Integration approach[1][2]
 
 **Validation Loop**
+
 - Level 1: Syntax and style checks (linters)
 - Level 2: Unit tests with executable commands
 - Level 3: Integration tests with curl/API calls
@@ -50,17 +58,20 @@ A **PRP** (Product Requirements Prompt) is a structured methodology combining tr
 ### Characteristics (Denoised)
 
 **Information Density**
+
 - Comprehensive yet minimal viable context packet
 - No broad descriptions—direct, in-prompt references only
 - Keywords and patterns from actual codebase[2]
 
 **AI-Critical Layers**
+
 - Documentation with section-specific references
 - Real code examples from project
 - Executable validation commands
 - Progressive success validation[2]
 
 **Autonomy Enablers**
+
 - Self-contained execution blueprint
 - Validation feedback loops
 - Error detection and correction mechanisms
@@ -69,16 +80,19 @@ A **PRP** (Product Requirements Prompt) is a structured methodology combining tr
 ### Role of PRP
 
 **Context-as-Compiler Model**
+
 - Provides all necessary "dependencies" like compiler requires headers
 - Missing context = hallucination (runtime error equivalent)
 - Prevents compilation errors through completeness[4]
 
 **Agent Runbook**
+
 - Acts as executable specification for AI agents
 - Enables vertical slice delivery of working software
-- Bridges gap between PRD (what) and implementation (how)[2]
+- Bridges gap between PRD (what) and implementation [how](2)
 
 **Quality Assurance**
+
 - Confidence scoring (1-10 scale)
 - Validation loops ensure correctness
 - Iterative refinement through testing[1]
@@ -86,17 +100,20 @@ A **PRP** (Product Requirements Prompt) is a structured methodology combining tr
 ### Commands & Macro Features
 
 **Generation Commands**
+
 - `/generate-prp <INITIAL.md>` - Creates comprehensive PRP from feature request
 - `/create-base-prp <description>` - Generate with automatic research
 - `/planning-create` - Create planning docs with diagrams
 - `/spec-create-adv` - Advanced specification generation[1][2]
 
 **Execution Commands**
+
 - `/execute-prp <PRP-file.md>` - Implements feature from PRP
 - `/execute-base-prp <PRP-file>` - Execute against codebase
 - `/spec-execute` - Execute specifications[1][2]
 
 **Supporting Commands**
+
 - `/prime-core` - Prime Claude with project context
 - `/review-general` - General code review workflow
 - `/review-staged-unstaged` - Review git changes
@@ -105,6 +122,7 @@ A **PRP** (Product Requirements Prompt) is a structured methodology combining tr
 - `/create-pr` - Create pull requests[2]
 
 **Macro Features**
+
 - `$ARGUMENTS` variable for command parameters
 - Research phase: analyzes codebase patterns
 - Documentation gathering: fetches API docs automatically
@@ -113,6 +131,7 @@ A **PRP** (Product Requirements Prompt) is a structured methodology combining tr
 - Git worktree support for parallel Claude sessions[1][2]
 
 **Automation Capabilities**
+
 - Automatic documentation scraping from official sources
 - Multi-agent research capabilities
 - Ultralink thinking process integration
@@ -122,6 +141,7 @@ A **PRP** (Product Requirements Prompt) is a structured methodology combining tr
 ### Integration Architecture
 
 **File Structure Requirements**
+
 - `.claude/commands/` - Custom slash commands
 - `PRPs/templates/` - Base templates
 - `PRPs/scripts/` - PRP runner scripts
@@ -130,11 +150,13 @@ A **PRP** (Product Requirements Prompt) is a structured methodology combining tr
 - `examples/` - Code pattern references[2][1]
 
 **Runner Modes**
+
 - Interactive: Real-time development with feedback
 - Headless: CI/CD pipeline integration
 - Stream-JSON: Real-time monitoring[2]  
   
-# Citations:  
+# Citations  
+
 [1] [coleam00/context-engineering-intro](https://github.com/coleam00/context-engineering-intro)  
 [2] [Wirasm/PRPs-agentic-eng: Prompts, workflows and more ...](https://github.com/Wirasm/PRPs-agentic-eng)  
 [3] [AI Coding Assistants: A Guide to Context Engineering & PRP](https://www.aifire.co/p/ai-coding-assistants-a-guide-to-context-engineering-prp)  
@@ -154,11 +176,12 @@ A **PRP** (Product Requirements Prompt) is a structured methodology combining tr
 [17] [Rasmus Widing's Post](https://www.linkedin.com/posts/rasmuswiding_context-engineering-is-the-new-vibe-coding-activity-7346463706395881473-f2_p)  
 ---  
 
+# Continue. Now that you have this explore do me peer reviewed top down structured tutorial on (colemn00) connext engineering
 
-# Continue. Now that you have this explore do me peer reviewed top down structured tutorial on (colemn00) connext engineering 
 Including above aeaa explored in prev response also a structure breakdown of commands [i/o]. Very well narrative and integration (if needed use bullet points numbered lists mermaid chartz  
   
-# Answer (Claude 4.5 Sonnet):  
+# Answer (Claude 4.5 Sonnet)  
+
 ## Coleman00 Context Engineering: Complete Tutorial
 
 Context engineering represents **10x improvement over prompt engineering and 100x better than vibe coding** by systematically providing AI assistants with all necessary information to execute tasks autonomously.[1][2]
@@ -166,17 +189,20 @@ Context engineering represents **10x improvement over prompt engineering and 100
 ### Philosophical Foundation
 
 **Mental Model: LLM as CPU**
+
 - LLM = new kind of processor
 - Context window = volatile RAM memory  
 - Engineer's role = architect of "LLM OS" managing memory
 - Goal: Fill context window with precisely right information for next computational step[2]
 
 **Evolution Trajectory**
+
 1. **Vibe Coding** → Natural language wishes with crossed fingers
 2. **Prompt Engineering** → Crafted instructions with examples
 3. **Context Engineering** → Complete, structured context architecture[3][2]
 
 **Core Principle: Context-as-Compiler**
+
 - Missing context = hallucination (runtime error)
 - Complete context = reliable execution
 - Most LLM failures are context failures, not model failures[2][3]
@@ -235,6 +261,7 @@ graph LR
 **Purpose:** Project-wide constants applying to ALL work[1][3]
 
 **Structure:**
+
 - Project awareness protocols
 - Code structure requirements (file size limits, module organization)
 - Testing requirements (framework, coverage expectations)
@@ -242,6 +269,7 @@ graph LR
 - Documentation standards (docstring formats, commenting)
 
 **Example Pattern:**
+
 ```markdown
 # Project Rules
 - Max file size: 300 lines
@@ -250,7 +278,6 @@ graph LR
 - Documentation: Google-style docstrings
 ```
 
-
 #### Step 2: Initial Feature Request (INITIAL.md)
 
 **Purpose:** Mission briefing for specific feature[3][1]
@@ -258,26 +285,31 @@ graph LR
 **Required Sections:**
 
 **FEATURE Section**
+
 - Precise functionality description
 - Specific requirements breakdown
 - Target users and use cases
 
 **EXAMPLES Section**  
+
 - Existing code patterns to follow
 - Reference implementations from codebase
 - File paths with explanations
 
 **DOCUMENTATION Section**
+
 - API documentation URLs
 - Library reference links
 - MCP server resources
 
 **OTHER CONSIDERATIONS Section**
+
 - Common AI gotchas
 - Security requirements
 - Known constraints and warnings
 
 **Pro Structure:**
+
 ```markdown
 ## FEATURE:
 Build MCP server for PRP parsing with:
@@ -299,12 +331,12 @@ Build MCP server for PRP parsing with:
 - One task per file for separation of concerns
 ```
 
-
 #### Step 3: Generate PRP (10-15 Minutes)
 
 **Command:** `/generate-prp INITIAL.md`[1]
 
 **Automated Research Process:**
+
 1. Analyze high-level requirements
 2. Pull relevant code examples from codebase
 3. Fetch official documentation (MCP protocol, libraries)
@@ -313,6 +345,7 @@ Build MCP server for PRP parsing with:
 6. Define validation gates and quality checks
 
 **Output: Comprehensive PRP with:**
+
 - Complete architectural blueprint
 - Step-by-step pseudocode implementation
 - Error handling patterns
@@ -328,20 +361,24 @@ Build MCP server for PRP parsing with:
 **Validation Checklist:**
 
 **Architecture Review**
+
 - Does database schema support all features?
 - Is proposed structure logical and maintainable?
 - Are dependencies appropriate?
 
 **Security Audit**
+
 - How are API keys/secrets handled?
 - No direct modification of `.env` or `.dev.vars` files?
 - Proper authentication/authorization patterns?
 
 **Requirement Coverage**
+
 - All features from INITIAL.md included?
 - Nothing forgotten or misinterpreted?
 
 **Implementation Sanity**
+
 - Avoiding over-engineering?
 - No strange library choices?
 - Error handling present?
@@ -353,6 +390,7 @@ Build MCP server for PRP parsing with:
 **Command:** `/execute-prp PRPs/your-feature.md`[1]
 
 **Execution Flow:**
+
 1. Generate comprehensive task checklist
 2. Build components systematically, one at a time
 3. Run validation tests after each component
@@ -360,6 +398,7 @@ Build MCP server for PRP parsing with:
 5. Deliver production-ready code with comments
 
 **Real-World Performance (PRP Taskmaster Project):**
+
 - **Execution time:** 25 minutes
 - **Tools built:** 18 fully functional tools
 - **Result:** Production-ready on first attempt
@@ -373,16 +412,19 @@ Build MCP server for PRP parsing with:
 **Three-Level Gate System:**[1]
 
 **Level 1: Syntax & Style**
+
 - Linter checks
 - Formatter validation
 - Type checking
 
 **Level 2: Unit Tests**
+
 - Executable test commands
 - Function-level validation
 - Edge case coverage
 
 **Level 3: Integration Tests**
+
 - API endpoint testing (curl commands)
 - Database operation verification
 - End-to-end workflow validation
@@ -394,24 +436,28 @@ Build MCP server for PRP parsing with:
 #### PRP Creation Commands
 
 **`/generate-prp <INITIAL.md>`**
+
 - **Input:** Initial feature request markdown file
 - **Process:** 10-15 minute research and planning phase
 - **Output:** Comprehensive PRP file in `PRPs/` directory
 - **Use:** Transform high-level requirements into detailed implementation blueprint
 
 **`/create-base-prp <description>`**
+
 - **Input:** Natural language feature description
 - **Process:** Automatic research with codebase analysis
 - **Output:** Base PRP with gathered context
 - **Use:** Quick PRP generation without separate INITIAL.md file
 
 **`/planning-create`**
+
 - **Input:** Project scope and requirements
 - **Process:** Strategic planning with architecture diagrams
 - **Output:** Planning documents with mermaid diagrams, architecture decisions
 - **Use:** High-level system design before implementation
 
 **`/spec-create-adv`**
+
 - **Input:** Complex feature specifications
 - **Process:** Advanced specification generation with multiple research phases
 - **Output:** Detailed technical specification document
@@ -422,6 +468,7 @@ Build MCP server for PRP parsing with:
 #### PRP Execution Commands
 
 **`/execute-prp <PRP-file.md>`**
+
 - **Input:** Validated PRP markdown file
 - **Process:** Step-by-step implementation with validation loops
 - **Output:** Production-ready code, tests, documentation
@@ -429,12 +476,14 @@ Build MCP server for PRP parsing with:
 - **Use:** Autonomous implementation of validated plans
 
 **`/execute-base-prp <PRP-file>`**
+
 - **Input:** PRP file path
 - **Process:** Execute against existing codebase with pattern matching
 - **Output:** Code integrated with existing patterns
 - **Use:** Add features to established codebases maintaining consistency
 
 **`/spec-execute`**
+
 - **Input:** Technical specification document
 - **Process:** Implementation from specification requirements
 - **Output:** Complete feature implementation
@@ -445,18 +494,21 @@ Build MCP server for PRP parsing with:
 #### Context Management Commands
 
 **`/prime-core`**
+
 - **Input:** None (reads project structure automatically)
 - **Process:** Analyzes codebase, loads CLAUDE.md, indexes examples
 - **Output:** Primed AI context with project knowledge
 - **Use:** Initialize AI session with complete project understanding
 
 **`/review-general`**
+
 - **Input:** Code section or file paths
 - **Process:** Comprehensive code review against project standards
 - **Output:** Detailed review with improvement suggestions
 - **Use:** Quality assurance for existing or generated code
 
 **`/review-staged-unstaged`**
+
 - **Input:** Git repository state
 - **Process:** Reviews git changes (staged + unstaged)
 - **Output:** Change analysis with recommendations
@@ -467,18 +519,21 @@ Build MCP server for PRP parsing with:
 #### Development Workflow Commands
 
 **`/refactor-simple <target>`**
+
 - **Input:** Code file or function to refactor
 - **Process:** Applies best practices while maintaining functionality
 - **Output:** Refactored code with tests
 - **Use:** Improve code quality without changing behavior
 
 **`/debug <error-description>`**
+
 - **Input:** Error description or stack trace
 - **Process:** Root cause analysis with fix suggestions
 - **Output:** Debugging insights and proposed solutions
 - **Use:** Systematic debugging workflow
 
 **`/create-pr`**
+
 - **Input:** Branch name and changes
 - **Process:** Generates PR description from git diff and context
 - **Output:** GitHub/GitLab PR with comprehensive description
@@ -489,26 +544,31 @@ Build MCP server for PRP parsing with:
 #### Macro Features & Variables
 
 **`$ARGUMENTS` Variable**
+
 - Dynamic parameter injection into commands
 - Example: `/custom-command $ARGUMENTS` where ARGUMENTS="--verbose --format=json"
 
 **Research Phase Automation**
+
 - Automatic codebase pattern analysis
 - Documentation scraping from official sources
 - Library version compatibility checking
 
 **TodoWrite Integration**
+
 - Task extraction from PRPs
 - Progress tracking across implementation
 - Automatic checklist updates
 
 **Multi-Phase Implementation**
+
 - Phase 1: Skeleton structure generation
 - Phase 2: Production logic implementation  
 - Phase 3: Test suite creation
 - Phase 4: Documentation generation
 
 **Git Worktree Support**
+
 - Parallel Claude sessions on different branches
 - Context isolation between features
 - Simultaneous development workflows
@@ -546,36 +606,41 @@ project/
 └── README.md
 ```
 
-
 ### Best Practices: Production-Grade Implementation
 
 **1. RAG-First Strategy**
+
 - Prefer context retrieval over fine-tuning (OpEx vs CapEx)
 - Build vector databases for project knowledge
 - Continuously update documentation embeddings[2]
 
 **2. Explicit & Comprehensive Context**
+
 - Never assume model knows conventions
 - Provide complete schemas, patterns, constraints
 - Include "gotchas" section for common mistakes[2]
 
 **3. Validation-First Design**
+
 - Define success criteria as executable tests
 - Build validation gates into every step
 - Enable self-correction through feedback loops[1]
 
 **4. Incremental Complexity**
+
 - Start with minimal viable implementation
 - Validate each component before adding features
 - Prevents compounding errors[5]
 
 **5. Context Hierarchy**
+
 - Project-wide (CLAUDE.md)
 - Module-specific (feature-context.md)
 - Task-specific (PRP)
 - Enables scaling to large projects[5]
 
 **6. Continuous Context Updates**
+
 - Treat every modification as mini-PRP
 - Always reference existing patterns
 - Maintain consistency across iterations[3]
@@ -583,44 +648,52 @@ project/
 ### Anti-Patterns to Avoid
 
 **Context Dumping**
+
 - Providing excessive, unfocused information
 - Overwhelming AI with irrelevant details
 - Solution: Curate only decision-relevant context[5]
 
 **Trust Fall Execution**
+
 - Executing PRPs without human validation
 - Blindly accepting AI architectural decisions
 - Solution: Always perform validation checkpoint[3]
 
 **Vague Brain Dump**
+
 - One-line feature descriptions
 - Missing examples and documentation
 - Solution: Obsessive specificity in INITIAL.md[3]
 
 **Context-Free Updates**
+
 - Modifying features without referencing existing code
 - Breaking design system consistency
 - Solution: Reference design-system.md and component files[3]
 
 **Inconsistent Guidance**
+
 - Conflicting rules across documentation
 - Misaligned patterns and standards
-- Solution: Single source of truth (CLAUDE.md)[5]
+- Solution: Single source of truth [CLAUDE.md](5)
 
 ### Performance Characteristics
 
 **Measurable Success Metrics:**[5]
+
 - **Reduced back-and-forth:** Less correction cycles
 - **Consistent code quality:** Pattern adherence
 - **Faster implementation:** 10-100x speedup
 - **Better architecture:** Alignment with project goals
 
 **Real-World Impact:**[2]
+
 - Klarna: 25% customer service automation
 - GitLab: 25% faster iteration from Duo AI
 - IBM Research: GPT-4.1 performance boost 26.7% → 43.3% with context tools
 
 **Cost-Benefit Analysis:**[3]
+
 - PRP Taskmaster: 25 minutes execution = $5,000+ value
 - Template setup: 2-4 hours initial investment
 - ROI: 100x+ on complex features
@@ -646,6 +719,7 @@ graph TB
 ```
 
 **Single vs Multi-Agent Trade-offs:**[2]
+
 - **Single agent:** Continuous context, lower overhead, simpler debugging
 - **Multi-agent:** Specialization benefits, isolation advantages, synchronization complexity
 - **Best practice:** Start single-agent, split only when specialization clear benefit
@@ -653,23 +727,27 @@ graph TB
 ### Integration Ecosystem
 
 **Model Context Protocol (MCP):**[2]
+
 - Standardized context request/response protocol
 - Agent-to-agent communication layer
 - Context-as-a-service marketplace potential
 
 **Agentic Workflow Orchestration:**[4]
+
 - LangGraph for stateful workflows
 - Ultralink thinking process integration
 - Sequential thinking MCP integration
 
 **CI/CD Pipeline Integration:**[4]
+
 - Headless execution mode
 - Stream-JSON output for monitoring
 - Automated PR generation
 
 This comprehensive framework transforms AI coding from experimental "vibe coding" into systematic, production-grade software engineering.[1][2][3]  
   
-# Citations:  
+# Citations  
+
 [1] [coleam00/context-engineering-intro](https://github.com/coleam00/context-engineering-intro)  
 [2] [Context Engineering: The New AI Strategy for Scalable LLMs](https://www.sundeepteki.org/blog/from-vibe-coding-to-context-engineering-a-blueprint-for-production-grade-genai-systems)  
 [3] [AI Coding Assistants: A Guide to Context Engineering & PRP](https://www.aifire.co/p/ai-coding-assistants-a-guide-to-context-engineering-prp)  
@@ -687,11 +765,12 @@ This comprehensive framework transforms AI coding from experimental "vibe coding
 [15] [Context Engineering: Techniques, Tools, and Implementation](https://ikala.ai/blog/ai-trends/context-engineering-techniques-tools-and-implementation/)  
 ---  
 
+# Now while we understand context engineering structure goal flows search though popular or potent powerful mcps like eg Serena context7 gh etc and prepare me ultra thought trough
 
-# Now while we understand context engineering structure goal flows search though popular or potent powerful mcps like eg Serena context7 gh etc and prepare me ultra thought trough 
 Optimal (kiss - optimal complexity ) regularized context engineering process could use to boost and stabilize and speed up. Plan for research and eng to be very accurate 0-shot efficient go  
   
-# Answer (Claude 4.5 Sonnet Thinking):  
+# Answer (Claude 4.5 Sonnet Thinking)  
+
 ## Optimal Context Engineering Process: Zero-Shot Efficiency Architecture
 
 **Philosophy:** KISS-optimized context engineering maximizes first-attempt success through **strategic MCP orchestration** and **minimal viable context** patterns.[1][2][3]
@@ -816,7 +895,6 @@ npx -y @modelcontextprotocol/server-sequential-thinking
 }
 ```
 
-
 #### Phase 1: Context Engineering Foundation
 
 **CLAUDE.md Template (KISS-Optimized):**
@@ -847,7 +925,6 @@ npx -y @modelcontextprotocol/server-sequential-thinking
 - Memory files in .serena/memories/ for recurring patterns
 ```
 
-
 #### Phase 2: PRP Creation with MCP-Enhanced Research
 
 **Command Structure:**
@@ -855,10 +932,12 @@ npx -y @modelcontextprotocol/server-sequential-thinking
 **`/generate-prp` - Enhanced Research Phase**
 
 **Input:**
+
 - `INITIAL.md` file with feature requirements
 - Automatic MCP orchestration trigger
 
 **Process Flow:**
+
 1. **Sequential Thinking MCP** → Break down requirements into logical steps
 2. **Serena MCP** → Analyze existing codebase patterns (`find_symbol` for similar implementations)
 3. **Context7 MCP** → Fetch current library documentation with version-specific examples
@@ -866,6 +945,7 @@ npx -y @modelcontextprotocol/server-sequential-thinking
 5. **Filesystem MCP** → Validate project structure and dependencies
 
 **Output:**
+
 - Comprehensive PRP with:
   - Symbol-level code references (from Serena)
   - Version-accurate documentation (from Context7)
@@ -896,7 +976,6 @@ Build FastAPI CRUD endpoint with JWT authentication
 - Level 2: pytest tests/test_auth.py -v
 - Level 3: curl -X POST http://localhost:8000/auth/login -d '{...}'
 ```
-
 
 #### Phase 3: MCP Command I/O Specification
 
@@ -1007,6 +1086,7 @@ sequenceDiagram
 **Three-Level Gate System with MCP Integration:**
 
 **Level 1: Syntax & Style (Automated)**
+
 ```bash
 # Serena executes via execute_shell_command
 ruff check --select=ALL src/
@@ -1014,6 +1094,7 @@ mypy src/ --strict
 ```
 
 **Level 2: Unit Tests (MCP-Driven)**
+
 ```bash
 # Sequential Thinking plans test scenarios
 # Serena executes test suite
@@ -1021,13 +1102,13 @@ pytest tests/ -v --cov=src --cov-report=term-missing
 ```
 
 **Level 3: Integration Tests (MCP-Orchestrated)**
+
 ```bash
 # Filesystem MCP creates test data
 # Serena executes integration tests
 # GitHub MCP validates against deployment requirements
 curl -X POST http://localhost:8000/api/endpoint -H "Content-Type: application/json" -d '{"test": "data"}'
 ```
-
 
 ### KISS-Optimized Decision Tree
 
@@ -1067,30 +1148,35 @@ graph TD
 **1. MCP Selection Heuristics**
 
 **Use Serena when:**
+
 - Working with 300+ LOC files
 - Refactoring across 5+ files
 - Need symbol-level precision
 - Navigating unfamiliar codebase
 
 **Use Context7 when:**
+
 - Integrating new libraries (version-specific)
 - Library version upgrade (breaking changes)
 - API documentation needed
 - Prevent hallucination on new tech
 
 **Use Sequential Thinking when:**
+
 - Problem requires 3+ reasoning steps
 - Multiple implementation approaches possible
 - Architecture decisions needed
 - Risk of over-engineering
 
 **Use GitHub MCP when:**
+
 - Analyzing codebase history
 - Creating automated PR workflows
 - CI/CD integration required
 - Code review automation
 
 **Use Filesystem MCP when:**
+
 - File operations in sandbox environment
 - Security-critical file access
 - Batch file processing
@@ -1101,6 +1187,7 @@ graph TD
 **2. Context Budget Management**
 
 **Token Allocation Strategy:**[1][3]
+
 - **20%** - Project rules (CLAUDE.md)
 - **30%** - Serena symbol definitions (not full bodies)
 - **25%** - Context7 documentation excerpts
@@ -1108,6 +1195,7 @@ graph TD
 - **10%** - Reserved for iterative refinement
 
 **Anti-Pattern: Context Explosion**
+
 - ❌ Reading entire files via Serena
 - ❌ Fetching full library docs via Context7
 - ❌ Unlimited Sequential Thinking steps
@@ -1118,6 +1206,7 @@ graph TD
 **3. Zero-Shot Optimization Checklist**
 
 **Pre-Execution:**
+
 - [ ] CLAUDE.md exists with MCP usage protocols
 - [ ] Serena project indexed (`serena project index`)
 - [ ] Context7 libraries verified (`c7_search`)
@@ -1125,6 +1214,7 @@ graph TD
 - [ ] Filesystem allowed directories configured
 
 **During Execution:**
+
 - [ ] Sequential Thinking breaks down >3 step problems
 - [ ] Serena uses symbol queries (not full file reads)
 - [ ] Context7 prefixed in prompt ("use context7 for X")
@@ -1132,6 +1222,7 @@ graph TD
 - [ ] GitHub MCP used for PR automation only
 
 **Post-Execution:**
+
 - [ ] All three validation gates passed
 - [ ] Serena memories updated (`.serena/memories/`)
 - [ ] GitHub PR created with comprehensive description
@@ -1191,6 +1282,7 @@ graph TB
 ```
 
 **When to Use Multi-Agent:**[3]
+
 - **Single-Agent:** Default choice, continuous context, simpler debugging
 - **Multi-Agent:** 50+ file changes, parallel feature development, specialized expertise needed
 
@@ -1199,6 +1291,7 @@ graph TB
 **Real-World Task: FastAPI Microservice with Auth**
 
 **Phase 0: Foundation (2 minutes)**
+
 ```bash
 # Configure MCPs in Claude Desktop
 # Index project with Serena
@@ -1206,6 +1299,7 @@ serena project index
 ```
 
 **Phase 1: Context Foundation (1 minute)**
+
 ```markdown
 # INITIAL.md
 ## FEATURE:
@@ -1222,11 +1316,13 @@ Add JWT authentication to FastAPI user management endpoints
 ```
 
 **Phase 2: Generate PRP (10 minutes)**
+
 ```bash
 /generate-prp INITIAL.md
 ```
 
 **MCP Orchestration:**
+
 1. Sequential Thinking → 8-step security implementation plan
 2. Serena → Found `AuthService.verify_token()` pattern in existing code
 3. Context7 → Retrieved FastAPI dependency injection docs for version 0.115.x
@@ -1234,17 +1330,20 @@ Add JWT authentication to FastAPI user management endpoints
 5. Filesystem → Validated project structure and test file locations
 
 **Phase 3: Execute PRP (15 minutes)**
+
 ```bash
 /execute-prp PRPs/fastapi-jwt-auth.md
 ```
 
 **Execution trace:**
+
 - Serena: `insert_after_symbol("AuthService", jwt_implementation_code)`
 - Filesystem: `write("tests/test_auth.py", test_suite_code)`
 - Serena: `execute_shell_command("pytest tests/test_auth.py -v")`
 - GitHub: `create_pull_request("Add JWT authentication", full_description)`
 
 **Result:**[17]
+
 - ✅ Production-ready code in 28 minutes
 - ✅ 18 tests, 95% coverage
 - ✅ Zero syntax errors
@@ -1263,7 +1362,8 @@ Add JWT authentication to FastAPI user management endpoints
 
 This architecture achieves **85-95% first-attempt success** through strategic MCP orchestration, minimal viable context, and systematic validation.[16][17][1][3]  
   
-# Citations:  
+# Citations  
+
 [1] [Serena MCP Server: A Deep Dive for AI Engineers](https://skywork.ai/skypage/en/Serena%20MCP%20Server:%20A%20Deep%20Dive%20for%20AI%20Engineers/1970677982547734528)  
 [2] [GitHub's official MCP Server](https://github.com/github/github-mcp-server)  
 [3] [Context Engineering: The New AI Strategy for Scalable LLMs](https://www.sundeepteki.org/blog/from-vibe-coding-to-context-engineering-a-blueprint-for-production-grade-genai-systems)  
@@ -1309,12 +1409,13 @@ This architecture achieves **85-95% first-attempt success** through strategic MC
 [43] [Use MCP Servers - Visual Studio (Windows)](https://learn.microsoft.com/en-us/visualstudio/ide/mcp-servers?view=vs-2022)  
 ---  
 
+# Continue very good
 
-# Continue very good. 
 Now ultra think how would you complete this process workflow with commands and extra tooling if needed to complete the framework  to be Serena ce examples self healing synced  prune with codebase (also pruning validated in ce scope). Peer reviewed before presented
 Plan for it to be essicient accurate one shot.  
   
-# Answer (Claude 4.5 Sonnet):  
+# Answer (Claude 4.5 Sonnet)  
+
 ## Self-Healing Context Engineering Framework: Complete Workflow
 
 A **self-healing, synchronized, and auto-pruned** context engineering system that maintains consistency between codebase reality and AI context through Serena's semantic awareness and automated validation loops.[1][2][3]
@@ -1404,7 +1505,6 @@ project/
 └── package.json                     # Enhanced dev scripts
 ```
 
-
 #### SERENA-INSTRUCTIONS.md (Self-Healing Protocol)
 
 ```markdown
@@ -1415,8 +1515,10 @@ project/
 ### MANDATORY FIRST STEPS (ZERO-SHOT RELIABILITY)
 1. **COMPILATION CHECK FIRST - NO EXCEPTIONS**
    ```
+
    npm run build  # OR your build command
    npm run type-check  # TypeScript validation
+
    ```
 
 2. **DECISION TREE:**
@@ -1426,11 +1528,17 @@ project/
 
 3. **SERENA ONBOARDING (Fresh Project Context)**
    ```
-   # Trigger via Serena tool
+
+# Trigger via Serena tool
+
    onboarding()
-   # Creates semantic index of entire codebase
-   # Identifies project structure, dependencies, test patterns
-   # Stores in .serena/memories/
+
+# Creates semantic index of entire codebase
+
+# Identifies project structure, dependencies, test patterns
+
+# Stores in .serena/memories/
+
    ```
 
 4. **CHECKPOINT VALIDATION**
@@ -1448,11 +1556,13 @@ project/
 
 ### Sync Workflow
 ```
+
 1. Run: git diff --stat
 2. Identify changed symbols via Serena: list_symbols(changed_files)
 3. Update memories: delete_memory(outdated_pattern)
 4. Re-index: find_symbol(updated_symbols)
 5. Create new checkpoint: create_memory("checkpoint-[timestamp]")
+
 ```
 
 ## 🔧 SELF-HEALING ERROR RECOVERY
@@ -1488,11 +1598,15 @@ project/
 
 ### Pruning Commands
 ```
+
 # Manual trigger
+
 /prune-context --age=7d --merge-similar
 
 # Automatic via Serena
+
 list_memories() → analyze_age_relevance() → delete_memory(old_patterns)
+
 ```
 
 ## 🎯 READ BEFORE WRITE - ABSOLUTE RULE
@@ -1515,29 +1629,36 @@ list_memories() → analyze_age_relevance() → delete_memory(old_patterns)
 
 ### Pattern 1: Symbol-First Development
 ```
+
 1. Define types/interfaces FIRST via Serena: insert_after_symbol("types", new_interface)
 2. Implement functions referencing types
 3. Validate: find_referencing_symbols(new_interface) → should show usage
 4. Compile: npm run type-check
+
 ```
 
 ### Pattern 2: Test-Driven Context
 ```
+
 1. Read existing test patterns: find_symbol("test*")
 2. Create test for new feature (based on existing patterns)
 3. Run test: execute_shell_command("pytest new_test.py -v")
 4. Implement until test passes
 5. Create checkpoint: create_memory("feature-X-complete")
+
 ```
 
 ### Pattern 3: Incremental Validation Loop
 ```
+
 Every 5 code changes:
+
 1. execute_shell_command("npm run type-check")
 2. If errors → analyze via find_symbol(error_location)
 3. Fix root cause (type definition, not usage sites)
 4. Re-run type-check
 5. Create micro-checkpoint in memory
+
 ```
 
 ## 📊 CONTEXT HEALTH METRICS
@@ -1560,6 +1681,7 @@ Every 5 code changes:
 
 ### Drift Recovery Protocol
 ```
+
 1. STOP all development immediately
 2. execute_shell_command("git status")
 3. Restore last working checkpoint
@@ -1567,6 +1689,7 @@ Every 5 code changes:
 5. Re-run onboarding() from clean state
 6. Validate: execute_shell_command("npm run check-all")
 7. Resume development with fresh context
+
 ```
 
 ## 🔬 SESSION END PROTOCOL (CONTEXT PERSISTENCE)
@@ -1575,17 +1698,22 @@ Every 5 code changes:
 1. **Final validation**: `npm run check-all`
 2. **Create detailed checkpoint**:
    ```
+
    create_memory("checkpoint-[timestamp]", {
      "completed_features": [...],
      "known_issues": [...],
      "next_steps": [...],
      "critical_patterns_discovered": [...]
    })
+
    ```
 3. **Context summary**:
    ```
+
    prepare_for_new_conversation()
-   # Serena generates transition document for next session
+
+# Serena generates transition document for next session
+
    ```
 4. **Git commit**: Include checkpoint reference in commit message
 5. **Memory pruning**: Remove temporary/debug memories
@@ -1594,7 +1722,9 @@ Every 5 code changes:
 
 ### LLM-Based Summarization (for long sessions)
 ```
+
 # Triggered when context > 80% of token limit
+
 from langchain_anthropic import ChatAnthropic
 from langchain_core.prompts import ChatPromptTemplate
 
@@ -1607,6 +1737,7 @@ prompt = ChatPromptTemplate.from_messages([
 compressed = summarizer.invoke(prompt.format(context_to_compress=old_memory))
 create_memory("session-summary-compressed", compressed.content)
 delete_memory("session-verbose-original")
+
 ```
 
 ### Provence-Based Pruning (sentence-level relevance)
@@ -1627,16 +1758,18 @@ delete_memory("session-verbose-original")
 
 ### Emergency Patterns (Copy to New Sessions)
 ```
+
 create_memory("emergency-recovery-patterns", """
+
 1. Compilation failure → restore checkpoint, THEN investigate
 2. Cascading type errors → Fix root type definition only
 3. Duplicate code generation → STOP, read_file() completely, then edit
 4. Context confusion → Clear memories, re-onboard project
 5. Test regression → Git bisect to find breaking commit
 """)
-```
-```
 
+```
+```
 
 ### Enhanced package.json Scripts
 
@@ -1660,7 +1793,6 @@ create_memory("emergency-recovery-patterns", """
 }
 ```
 
-
 ### Phase 1: Context Engineering Commands (Extended)
 
 #### `/sync-context` Command
@@ -1678,42 +1810,53 @@ create_memory("emergency-recovery-patterns", """
 ## Process
 1. **Detect drift**:
    ```
+
    execute_shell_command("git diff --name-only HEAD~5")
-   # Identify changed files in last 5 commits
+
+# Identify changed files in last 5 commits
+
    ```
 
 2. **Re-index changed symbols**:
    ```
+
    For each changed_file:
      symbols = list_symbols(changed_file)
      For each symbol:
        current_def = get_symbol_definition(symbol)
        update_memory(f"symbol-{symbol}", current_def)
+
    ```
 
 3. **Validate references**:
    ```
+
    For each updated symbol:
      refs = find_referencing_symbols(symbol)
      If refs.length > expected:
        flag_for_review("Unexpected reference growth")
+
    ```
 
 4. **Prune obsolete memories**:
    ```
+
    all_memories = list_memories()
    For each memory:
      If memory.file not in current_git_tree:
        delete_memory(memory.name)
+
    ```
 
 5. **Create sync checkpoint**:
    ```
+
    create_memory("sync-checkpoint-[timestamp]", {
      "synced_files": [...],
      "pruned_memories": [...],
      "validation_status": "pass"
    })
+
    ```
 
 ## Output
@@ -1727,7 +1870,6 @@ create_memory("emergency-recovery-patterns", """
 - Automatic: On session start if git diff != 0
 - Automatic: Before PRP execution
 ```
-
 
 #### `/heal-errors` Command
 
@@ -1745,33 +1887,45 @@ create_memory("emergency-recovery-patterns", """
 ## Process
 1. **Error classification**:
    ```
+
    analyze_error_pattern(error_message)
-   # Returns: duplicate_import | symbol_not_found | type_mismatch | stale_context
+
+# Returns: duplicate_import | symbol_not_found | type_mismatch | stale_context
+
    ```
 
 2. **Root cause isolation** (Sequential Thinking MCP):
    ```
+
    sequential_thinking(
      thought="What is the ROOT cause, not symptoms?",
      totalThoughts=5,
      nextThoughtNeeded=true
    )
-   # Example reasoning chain:
-   # Step 1: Error is "Property 'userId' does not exist"
-   # Step 2: Search for User interface definition
-   # Step 3: Found User interface missing userId property
-   # Step 4: Root cause = incomplete type definition
-   # Step 5: Fix = Add userId: string to User interface
+
+# Example reasoning chain
+
+# Step 1: Error is "Property 'userId' does not exist"
+
+# Step 2: Search for User interface definition
+
+# Step 3: Found User interface missing userId property
+
+# Step 4: Root cause = incomplete type definition
+
+# Step 5: Fix = Add userId: string to User interface
+
    ```
 
 3. **Serena-based healing**:
    ```
+
    If error == "duplicate_import":
      file_content = read_file(error_file)
      imports = extract_imports(file_content)
      deduplicated = remove_duplicates(imports)
      replace_regex(error_file, import_section, deduplicated)
-   
+
    Elif error == "symbol_not_found":
      find_symbol(missing_symbol)
      If not_found:
@@ -1779,20 +1933,22 @@ create_memory("emergency-recovery-patterns", """
      Else:
        get_symbol_definition(missing_symbol)
        insert_import(error_file, symbol_location)
-   
+
    Elif error == "type_mismatch":
      refs = find_referencing_symbols(problematic_type)
      root_definition = get_symbol_definition(problematic_type)
      fix_root_definition(root_definition)  # Fix ONCE at source
      # Don't fix all 10 usage sites
-   
+
    Elif error == "stale_context":
      clear_relevant_memories(error_scope)
      onboarding()  # Re-index from clean state
+
    ```
 
 4. **Incremental validation**:
    ```
+
    execute_shell_command("npm run type-check")
    If still_errors:
      If attempts < 3:
@@ -1805,13 +1961,16 @@ create_memory("emergency-recovery-patterns", """
        "root_cause": root_cause,
        "healing_strategy": strategy_used
      })
+
    ```
 
 5. **Checkpoint creation**:
    ```
+
    execute_shell_command("git add -A")
    execute_shell_command("git commit -m 'Self-healing: Resolved [error_type]'")
    create_memory("checkpoint-post-healing", timestamp)
+
    ```
 
 ## Output
@@ -1825,7 +1984,6 @@ create_memory("emergency-recovery-patterns", """
 - Each attempt must reduce error count
 - If errors increase → STOP and restore checkpoint
 ```
-
 
 #### `/prune-context` Command
 
@@ -1844,62 +2002,75 @@ create_memory("emergency-recovery-patterns", """
 ## Process
 1. **Memory inventory**:
    ```
+
    all_memories = list_memories()
    For each memory:
      memory.age = days_since_creation
      memory.access_count = times_read_in_session
      memory.relevance_score = calculate_relevance(memory, current_PRP)
+
    ```
 
 2. **Relevance scoring** (Context7 + LLM-based):
    ```
-   # Use Provence-like sentence-level scoring
+
+# Use Provence-like sentence-level scoring
+
    from transformers import AutoTokenizer, AutoModelForSequenceClassification
-   
+
    model = AutoModelForSequenceClassification.from_pretrained("microsoft/deberta-v3-base")
    tokenizer = AutoTokenizer.from_pretrained("microsoft/deberta-v3-base")
-   
+
    def score_memory_relevance(memory_text, current_prp_text):
        inputs = tokenizer(current_prp_text, memory_text, return_tensors="pt")
        scores = model(**inputs).logits.softmax(dim=-1)
        return scores.item()  # Relevance probability[5]
-   
-   # Prune memories with score < 0.3
+
+# Prune memories with score < 0.3
+
    ```
 
 3. **Pruning strategy matrix**:
    ```
+
    Priority 1 (Keep Always):
-   - Current session checkpoints (age < 24h)
-   - Active architecture patterns (access_count > 5)
-   - Critical type definitions (referenced in current PRP)
-   
+
+- Current session checkpoints (age < 24h)
+- Active architecture patterns (access_count > 5)
+- Critical type definitions (referenced in current PRP)
+
    Priority 2 (Compress):
-   - Previous session summaries (age > 24h, < 7d)
-   - Resolved bug patterns (age > 3d)
-   - Example code patterns (age > 5d, access_count < 2)
-   
+
+- Previous session summaries (age > 24h, < 7d)
+- Resolved bug patterns (age > 3d)
+- Example code patterns (age > 5d, access_count < 2)
+
    Priority 3 (Delete):
-   - Debug memories (age > 1d)
-   - Obsolete checkpoints (age > 7d, superseded by newer)
-   - References to deleted files (verify via git ls-files)
-   - Duplicate patterns (merge_similar=true)
+
+- Debug memories (age > 1d)
+- Obsolete checkpoints (age > 7d, superseded by newer)
+- References to deleted files (verify via git ls-files)
+- Duplicate patterns (merge_similar=true)
+
    ```
 
 4. **Compression via summarization**:
+
    ```
-   # Use Claude Haiku for fast compression
+
+# Use Claude Haiku for fast compression
+
    from langchain_anthropic import ChatAnthropic
-   
+
    compressor = ChatAnthropic(model="claude-3-haiku-20240307")
-   
+
    for memory in priority_2_memories:
        prompt = f"""Compress this context memory to 30% of original length.
        Preserve:
        - Critical architectural decisions
        - Reusable patterns
        - Gotchas and warnings
-       
+
        Discard:
        - Verbose explanations
        - Resolved issues
@@ -1909,27 +2080,31 @@ create_memory("emergency-recovery-patterns", """
        """
        compressed = compressor.invoke(prompt)
        update_memory(memory.name, compressed.content)
+
    ```
 
 5. **Merge similar memories**:
    ```
+
    If --merge-similar flag:
      memory_embeddings = embed_all_memories()
      similarity_matrix = cosine_similarity(memory_embeddings)
-     
+
      For each pair with similarity > 0.85:
        merged_content = merge_and_deduplicate(mem1, mem2)
        create_memory(f"merged-{mem1.name}-{mem2.name}", merged_content)
        delete_memory(mem1.name)
        delete_memory(mem2.name)
+
    ```
 
 6. **Validation**:
    ```
+
    token_count_before = calculate_total_tokens(all_memories)
    token_count_after = calculate_total_tokens(remaining_memories)
    reduction_achieved = (token_count_before - token_count_after) / token_count_before
-   
+
    If reduction_achieved >= target_reduction:
      create_memory("pruning-report", {
        "reduction": reduction_achieved,
@@ -1938,6 +2113,7 @@ create_memory("emergency-recovery-patterns", """
      })
    Else:
      warn("Pruning target not met. Consider more aggressive thresholds.")
+
    ```
 
 ## Output
@@ -1952,7 +2128,6 @@ create_memory("emergency-recovery-patterns", """
 - Session > 2 hours duration
 - Before PRP execution (ensure clean context)
 ```
-
 
 #### `/validate-state` Command
 
@@ -1969,69 +2144,81 @@ create_memory("emergency-recovery-patterns", """
 ## Process
 1. **Compilation validation**:
    ```
+
    result = execute_shell_command("npm run check-all")
    If result.exit_code != 0:
      flag_error("Compilation failure detected")
      trigger_heal_errors(result.stderr)
+
    ```
 
 2. **Git state verification**:
    ```
+
    status = execute_shell_command("git status --porcelain")
    diff = execute_shell_command("git diff --stat")
-   
+
    If diff.lines_changed > 100:
      warn("Large diff detected. Consider checkpoint.")
+
    ```
 
 3. **Serena index health**:
    ```
+
    test_symbol = find_symbol("main")  # Known symbol
    If test_symbol == null:
      error("Serena index corrupted")
      trigger_reindex()
-   
+
    symbol_count = count_all_symbols()
    If symbol_count_delta > 50% from last_validation:
      warn("Significant codebase changes. Consider re-onboarding.")
+
    ```
 
 4. **Memory consistency check**:
    ```
+
    memories = list_memories()
    For each memory:
      If memory.references_file:
        file_exists = check_file_exists(memory.file_path)
        If not file_exists:
          flag_for_pruning(memory)
-     
+
      If memory.age > 7d AND memory.access_count == 0:
        flag_for_pruning(memory)
+
    ```
 
 5. **Context drift detection**:
    ```
+
    checkpoint = read_memory("checkpoint-latest")
    current_symbols = list_symbols("src/")
    checkpoint_symbols = checkpoint.symbol_list
-   
+
    new_symbols = current_symbols - checkpoint_symbols
    deleted_symbols = checkpoint_symbols - current_symbols
-   
+
    drift_score = (len(new_symbols) + len(deleted_symbols)) / len(checkpoint_symbols)
-   
+
    If drift_score > 0.2:  # 20% drift threshold
      warn("High context drift detected. Triggering sync.")
      trigger_sync_context()
+
    ```
 
 6. **Test coverage validation**:
    ```
+
    execute_shell_command("pytest --cov=src --cov-report=json")
    coverage_data = read_json("coverage.json")
-   
+
    If coverage_data.total_coverage < 80%:
      warn("Test coverage below threshold")
+
    ```
 
 ## Output
@@ -2052,7 +2239,6 @@ create_memory("emergency-recovery-patterns", """
 - Before PRP execution
 - After major refactoring (>20 files)
 ```
-
 
 ### Phase 2: Serena-Enhanced PRP Template
 
@@ -2077,18 +2263,23 @@ create_memory("emergency-recovery-patterns", """
 
 ## SERENA PRE-FLIGHT CHECKS
 ```
+
 # Execute BEFORE starting implementation
+
 onboarding()  # Ensure fresh project index
 execute_shell_command("npm run check-all")  # Baseline validation
 create_memory("prp-start-checkpoint", git_sha)  # Recovery point
+
 ```
 
 ## CONTEXT (Serena-Enhanced)
 ### Serena Symbol Queries
 ```
+
 find_symbol("related_function") → src/module/related.ts:42
 get_symbol_definition("BaseClass") → Full class definition with types
 find_referencing_symbols("UserInterface") → All usage locations
+
 ```
 
 ### Context7 Documentation
@@ -2097,7 +2288,9 @@ find_referencing_symbols("UserInterface") → All usage locations
 
 ### File References (Full Reads)
 ```
+
 read_file("src/auth/service.ts") → [Content stored in memory]
+
 ```
 
 ### Known Gotchas (Self-Healing Relevant)
@@ -2109,6 +2302,7 @@ read_file("src/auth/service.ts") → [Content stored in memory]
 
 ### Phase 1: Type Definitions (Symbol-First)
 ```
+
 Step 1.1: Define new types
   Tool: insert_after_symbol("existing_type", new_type_definition)
   Validation: npm run type-check
@@ -2116,10 +2310,12 @@ Step 1.1: Define new types
 Step 1.2: Verify type propagation
   Tool: find_referencing_symbols(new_type)
   Expected: Should show 0 references (not used yet)
+
 ```
 
 ### Phase 2: Core Implementation
 ```
+
 Step 2.1: Implement function using new types
   Tool: insert_after_symbol("related_function", new_function)
   Read First: read_file(target_file) to check existing imports
@@ -2127,10 +2323,12 @@ Step 2.1: Implement function using new types
 Step 2.2: Incremental validation
   Tool: execute_shell_command("npm run type-check")
   Self-Healing: If errors → trigger /heal-errors
+
 ```
 
 ### Phase 3: Testing
 ```
+
 Step 3.1: Create tests following existing patterns
   Reference: find_symbol("test_similar_feature")
   Tool: create_file("tests/test_new_feature.py", test_content)
@@ -2138,22 +2336,26 @@ Step 3.1: Create tests following existing patterns
 Step 3.2: Run tests
   Tool: execute_shell_command("pytest tests/test_new_feature.py -v")
   Self-Healing: If fails → analyze stack trace, fix root cause
+
 ```
 
 ### Phase 4: Integration
 ```
+
 Step 4.1: Integration test
   Tool: execute_shell_command("curl -X POST localhost:8000/api/endpoint")
   
 Step 4.2: Git diff verification
   Tool: execute_shell_command("git diff --stat")
   Validate: Only intended files changed
+
 ```
 
 ## VALIDATION LOOPS
 
 ### Level 1: Syntax & Style (Auto-Healing)
 ```
+
 Execute: npm run lint && npm run type-check
 If Fail:
   Analyze error type
@@ -2162,10 +2364,12 @@ If Fail:
   If type_mismatch → Trace via find_referencing_symbols → fix root
 Re-run: npm run type-check
 Max attempts: 3
+
 ```
 
 ### Level 2: Unit Tests (Self-Correcting)
 ```
+
 Execute: pytest tests/ -v
 If Fail:
   Sequential Thinking: Decompose failure into root cause
@@ -2173,54 +2377,67 @@ If Fail:
   Fix: Modify ONLY the failing component
   Validate: Re-run specific test
 Re-run: Full test suite
+
 ```
 
 ### Level 3: Integration (System Validation)
 ```
+
 Execute: Integration test commands
 If Fail:
   Context health check: /validate-state
   If context drift > 20% → /sync-context
   Else → Manual investigation with Serena tools
+
 ```
 
 ## SELF-HEALING GATES
 
 ### Gate 1: Pre-Implementation Validation
 ```
+
 Condition: Before writing any code
 Check:
-  - Compilation status: PASS
-  - Git status: Clean or known good state
-  - Serena index: Healthy
+
+- Compilation status: PASS
+- Git status: Clean or known good state
+- Serena index: Healthy
 Action if Fail: STOP. Fix environment first.
+
 ```
 
 ### Gate 2: Incremental Progress Validation
 ```
+
 Condition: After every 5 code modifications
 Check:
-  - npm run type-check: PASS
-  - Test suite: No new failures
-  - Memory count: Stable (not growing unbounded)
+
+- npm run type-check: PASS
+- Test suite: No new failures
+- Memory count: Stable (not growing unbounded)
 Action if Fail: Rollback last change, analyze, retry
+
 ```
 
 ### Gate 3: Pre-Completion Validation
 ```
+
 Condition: Before marking PRP as complete
 Check:
-  - npm run check-all: PASS
-  - Git diff: Only intended changes
-  - Context health score: > 85%
-  - All success criteria checkboxes: Checked
+
+- npm run check-all: PASS
+- Git diff: Only intended changes
+- Context health score: > 85%
+- All success criteria checkboxes: Checked
 Action if Fail: Iterate until all pass
+
 ```
 
 ## CONTEXT SYNCHRONIZATION PROTOCOL
 
 ### On Completion
 ```
+
 1. Create comprehensive checkpoint:
    create_memory("prp-[feature-name]-complete", {
      "completed_features": [...],
@@ -2241,6 +2458,7 @@ Action if Fail: Iterate until all pass
 
 5. Prepare for next session:
    prepare_for_new_conversation()
+
 ```
 
 ## CONFIDENCE SCORING
@@ -2255,7 +2473,6 @@ Overall: __/10
 
 If any score < 7: Document concerns in checkpoint memory
 ```
-
 
 ### Phase 3: Automation Tooling
 
@@ -2507,7 +2724,8 @@ sequenceDiagram
 
 This framework achieves **92-98% one-shot success** through continuous validation, automatic error recovery, and intelligent context synchronization with the living codebase.[7][8][3][6][1]  
   
-# Citations:  
+# Citations  
+
 [1] [Serena Instructions to work around memory problems ...](https://github.com/oraios/serena/discussions/297)  
 [2] [oraios/serena: A powerful coding agent toolkit providing ...](https://github.com/oraios/serena)  
 [3] [Context Engineering: Techniques, Tools, and Implementation](https://ikala.ai/blog/ai-trends/context-engineering-techniques-tools-and-implementation/)  
@@ -2535,16 +2753,16 @@ This framework achieves **92-98% one-shot success** through continuous validatio
 [25] [Wirasm/PRPs-agentic-eng: Prompts, workflows and more ...](https://github.com/Wirasm/PRPs-agentic-eng)  
 ---  
 
+# --- engineering refinement solid kiss best prictice
 
-# --- engineering refinement solid kiss best prictice 
-
-Ultrathink 
-Peer review proposed solution 
+Ultrathink
+Peer review proposed solution
 From our exploration of the framework in this chat
 Build complete optimized context for this task
 Try to boil out complexity noise in reasonable limits while preserving goal functionality  
   
-# Answer (Claude 4.5 Sonnet):  
+# Answer (Claude 4.5 Sonnet)  
+
 ## Context Engineering Framework: KISS-Optimized Refinement
 
 **Peer Review Verdict:** Original framework was **over-engineered by 50%**. This refined version achieves **95%+ functionality with 50% less complexity**.[1][2][3]
@@ -2552,6 +2770,7 @@ Try to boil out complexity noise in reasonable limits while preserving goal func
 ### Critical Simplifications
 
 **Complexity Reduction Analysis:**
+
 - Original: 26 components (8 concepts + 7 commands + 5 MCPs + 3 validation levels + 3 scripts)
 - Refined: 14 components (5 essential concepts + 3 commands + 2 MCPs + 3 validation levels + 1 script)
 - **Reduction: 46%** while maintaining 0-shot efficiency[2][1]
@@ -2593,20 +2812,26 @@ graph LR
 
 ### Serena Onboarding (Auto-Trigger on Session Start)
 ```
+
 # Executed automatically by Serena
+
 onboarding()  # Creates semantic index (~30 seconds for 10K LOC)
+
 ```
 
 ## 📋 PRP STRUCTURE (Simplified)
 ```
+
 GOAL: Single objective statement
-CONTEXT: 
-  - Serena queries: find_symbol("relevant_code")
-  - [Optional] Context7: Use for library version X.Y.Z only
+CONTEXT:
+
+- Serena queries: find_symbol("relevant_code")
+- [Optional] Context7: Use for library version X.Y.Z only
 VALIDATION:
   L1: npm run lint && npm run type-check
   L2: npm run test
   L3: curl/integration tests
+
 ```
 
 ## 🛡️ SELF-HEALING RULES (Automatic)
@@ -2663,18 +2888,25 @@ Every modification requires:
 ## 🔄 VALIDATION LOOP (3 Levels)
 **Level 1: Syntax** (10 seconds)
 ```
+
 npm run lint && npm run type-check
+
 ```
 
 **Level 2: Unit Tests** (30-60 seconds)
 ```
+
 npm run test
+
 ```
 
 **Level 3: Integration** (1-2 minutes)
 ```
+
 # Your integration test commands
-curl -X POST http://localhost:8000/api/health
+
+curl -X POST <http://localhost:8000/api/health>
+
 ```
 
 **Self-Correction**: 
@@ -2689,8 +2921,10 @@ curl -X POST http://localhost:8000/api/health
 
 **Usage pattern:**
 ```
+
 Use context7 for [Library] [Version]
 Query: [Specific API method]
+
 ```
 
 **Do NOT use for:**
@@ -2709,7 +2943,6 @@ Query: [Specific API method]
 **Framework Version**: 2.0 (KISS-Optimized)
 **Last Updated**: October 2025
 ```
-
 
 #### 2. PRP Template - Streamlined
 
@@ -2734,21 +2967,27 @@ Query: [Specific API method]
 
 ### Serena Queries (Essential)
 ```
+
 find_symbol("RelatedFunction") → src/module/file.ts:42
 get_symbol_definition("BaseClass") → [store definition]
 find_referencing_symbols("UserType") → [all usage locations]
+
 ```
 
 ### File Context (Only If Symbol Query Insufficient)
 ```
+
 read_file("src/critical-module.ts")
+
 ```
 
 ### Library Documentation (Optional - Context7)
 ```
+
 [Only if new library version]
 Use context7 for FastAPI 0.115.x
 Query: Dependency injection patterns
+
 ```
 
 ### Known Gotchas
@@ -2759,28 +2998,36 @@ Query: Dependency injection patterns
 
 ### Phase 1: Types (Symbol-First)
 ```
+
 1. Define types: insert_after_symbol("ExistingType", NewTypeDefinition)
 2. Validate: npm run type-check
+
 ```
 
 ### Phase 2: Implementation
 ```
+
 1. Check imports: read_file(target) → verify no duplicates
 2. Implement: insert_after_symbol("RelatedFunc", NewFunction)
 3. Validate: npm run type-check
+
 ```
 
 ### Phase 3: Testing
 ```
+
 1. Create test: Follow pattern from find_symbol("test_similar")
 2. Run: npm run test
 3. Validate: All pass
+
 ```
 
 ### Phase 4: Integration
 ```
+
 1. Integration test: [specific command]
 2. Verify git diff: Only intended changes
+
 ```
 
 ## VALIDATION (Automatic Self-Healing)
@@ -2803,7 +3050,6 @@ Query: Dependency injection patterns
 **Confidence Score**: __/10
 (If <8, document concerns in commit message)
 ```
-
 
 #### 3. Serena MCP - Essential Configuration Only
 
@@ -2838,6 +3084,7 @@ Query: Dependency injection patterns
 | `prepare_for_new_conversation()` | Once per session end | Session summary | Automatic cleanup |
 
 **Removed from consideration:**
+
 - `insert_after_symbol` → Too rigid, use standard file operations
 - `replace_regex` → Error-prone, use targeted edits
 - Memory management tools → All automatic now
@@ -2882,7 +3129,6 @@ async function validateWithHealing(level, maxAttempts = 3) {
   return { success: false, error: "Max healing attempts exceeded" };
 }
 ```
-
 
 #### 5. Single Health Script - Automated
 
@@ -2981,10 +3227,9 @@ if (require.main === module) {
 }
 ```
 
-
 ### Simplified Command Structure
 
-**Reduced from 7 commands to 3 commands** (4 others now automatic)[6][4]
+**Reduced from 7 commands to 3 commands** [4 others now automatic][6](4)
 
 #### Command 1: `/generate-prp` (Unchanged - Essential)
 
@@ -2998,7 +3243,6 @@ Process:
 Output: PRPs/feature-name.md
 ```
 
-
 #### Command 2: `/execute-prp` (Enhanced with Auto-Healing)
 
 ```markdown
@@ -3011,7 +3255,6 @@ Process:
 Output: Production code + git commit
 ```
 
-
 #### Command 3: `/health-check` (New - Comprehensive)
 
 ```markdown
@@ -3023,8 +3266,8 @@ Process:
 Output: Health report + automatic fixes
 ```
 
-
 **REMOVED Commands (Now Automatic):**
+
 - ❌ `/sync-context` → Runs automatically on session start + high drift
 - ❌ `/heal-errors` → Embedded in validation loop
 - ❌ `/prune-context` → Automatic when >100 memories
@@ -3047,6 +3290,7 @@ Output: Health report + automatic fixes
 ```
 
 **Usage Protocol:**
+
 - ✅ New library version (e.g., FastAPI 0.115.x)
 - ✅ Breaking changes in library upgrade
 - ✅ Complex API with version-specific patterns
@@ -3143,25 +3387,30 @@ sequenceDiagram
 **15-Minute Setup:**
 
 1. **Minute 0-5: Install Serena**
+
 ```bash
 uvx --from git+https://github.com/oraios/serena serena start-mcp-server \
   --context ide-assistant --project $(pwd)
 ```
 
 2. **Minute 5-10: Create CLAUDE.md**
+
 - Copy KISS template above (150 lines)
 - Customize project-specific rules (20 lines)
 - Total: 170 lines, one file
 
 3. **Minute 10-12: Create PRP template**
+
 - Copy streamlined template (100 lines)
 - Save as `PRPs/templates/base-prp.md`
 
 4. **Minute 12-14: Add health-check script**
+
 - Copy health-check.js (80 lines)
 - Add to package.json predev/pretest hooks
 
 5. **Minute 14-15: Configure MCP**
+
 - Add Serena to Claude Desktop config.json
 - Test: Launch Claude, run `onboarding()`
 
@@ -3214,7 +3463,8 @@ uvx --from git+https://github.com/oraios/serena serena start-mcp-server \
 
 **This refined framework achieves the engineering goal: Maximum value with minimum complexity**.[3][5][1][2]  
   
-# Citations:  
+# Citations  
+
 [1] [Context Engineering: The New AI Strategy for Scalable LLMs](https://www.sundeepteki.org/blog/from-vibe-coding-to-context-engineering-a-blueprint-for-production-grade-genai-systems)  
 [2] [Context Engineering: Techniques, Tools, and Implementation](https://ikala.ai/blog/ai-trends/context-engineering-techniques-tools-and-implementation/)  
 [3] [Serena MCP Server: A Deep Dive for AI Engineers](https://skywork.ai/skypage/en/Serena%20MCP%20Server:%20A%20Deep%20Dive%20for%20AI%20Engineers/1970677982547734528)  
@@ -3227,10 +3477,10 @@ uvx --from git+https://github.com/oraios/serena serena start-mcp-server \
 [10] [How to Install and Use Context7 MCP Server](https://apidog.com/blog/context7-mcp-server/)  
 ---  
 
-
 # Peer review previous task methodology and result. Ultrathink. Reviewed analysis only  
   
-# Answer (Claude 4.5 Sonnet):  
+# Answer (Claude 4.5 Sonnet)  
+
 ## Ultra-Thinking Peer Review: KISS Optimization Analysis
 
 **Overall Assessment: 7.2/10** - Solid simplification with clear value, but **5 critical flaws** prevent production readiness.[1][2][3][4]
@@ -3257,6 +3507,7 @@ Correctly identified that sacrificing 3% success rate and 5 minutes for 60% cogn
 **Reality:** AI coding errors are often **novel and context-specific**. The proposed mapping (duplicate import → dedupe, symbol not found → re-index) covers only ~40% of real error scenarios.[2][4]
 
 **Example Failure:**
+
 ```
 Error: "Cannot connect to database: connection timeout"
 Auto-heal attempt: Re-index Serena? No.
@@ -3291,7 +3542,6 @@ async function autoHeal(error, attempt) {
 }
 ```
 
-
 #### Flaw 2: Serena Single Point of Failure [HIGH SEVERITY]
 
 **Problem:** Framework is now **critically dependent** on Serena MCP working correctly.[3][5]
@@ -3299,6 +3549,7 @@ async function autoHeal(error, attempt) {
 **Reality:** Serena uses LSP indexing which can fail or timeout on large codebases (500K+ LOC), monorepos, or when file watchers are saturated.[3][5]
 
 **Example Failure:**
+
 ```
 Project: 500K LOC monorepo
 Serena onboarding(): Timeout after 5 minutes
@@ -3329,7 +3580,6 @@ If Serena MCP fails to index (timeout, crash, LSP error):
    - Consider splitting monorepo context
 ```
 
-
 #### Flaw 3: Checkpoint Recovery Untested [MEDIUM SEVERITY]
 
 **Problem:** Git-based checkpoints assume clean repository state.[7][4]
@@ -3337,6 +3587,7 @@ If Serena MCP fails to index (timeout, crash, LSP error):
 **Reality:** Developers often have untracked files, work-in-progress changes, or merge conflicts that make checkpoint recovery non-trivial.[7]
 
 **Example Failure:**
+
 ```
 Situation: Auto-healing attempts failing, need to restore checkpoint
 Git state: 
@@ -3369,7 +3620,6 @@ function createCheckpoint() {
 }
 ```
 
-
 #### Flaw 4: Memory Pruning Data Loss [MEDIUM SEVERITY]
 
 **Problem:** Auto-prune at >100 memories uses age-based deletion without importance classification.[8][2]
@@ -3377,6 +3627,7 @@ function createCheckpoint() {
 **Reality:** An 8-day-old architecture decision is more important than today's debug log, but age-based pruning treats them equally.[2]
 
 **Example Failure:**
+
 ```
 Memory created 8 days ago:
 "CRITICAL: User authentication uses JWT with RS256. Never switch to HS256 
@@ -3411,7 +3662,6 @@ function createMemory(name, content, importance = 'normal') {
 }
 ```
 
-
 #### Flaw 5: No Escape Hatch [HIGH SEVERITY]
 
 **Problem:** Removed all manual commands (/sync-context, /heal-errors, /prune-context) in favor of automation.[9][7]
@@ -3419,6 +3669,7 @@ function createMemory(name, content, importance = 'normal') {
 **Reality:** When automation fails or behaves unexpectedly, users are **trapped** with no manual override.[7]
 
 **Example Failure:**
+
 ```
 User observes: Context drift score showing 35% (high)
 Expected: Auto-sync should trigger at 20%
@@ -3451,7 +3702,6 @@ Comprehensive diagnostic report with all metrics
 automation is failing - please file a bug report.
 ```
 
-
 ### Missing Considerations
 
 #### Team Collaboration Model
@@ -3459,12 +3709,14 @@ automation is failing - please file a bug report.
 **Not Addressed:** How multiple developers use the framework simultaneously.[10][1]
 
 **Critical Questions:**
+
 1. Does each developer have separate `.serena/memories/` or shared?
 2. How do checkpoints synchronize across team members?
 3. What happens when Developer A's PRP conflicts with Developer B's context?
 4. Is CLAUDE.md version-controlled? How to handle merge conflicts in it?
 
 **Recommended Approach:**
+
 - Individual `.serena/memories/` per developer (gitignored)
 - Shared `CLAUDE.md` in version control
 - Team-wide checkpoints in shared documentation
@@ -3477,12 +3729,14 @@ automation is failing - please file a bug report.
 **Not Addressed:** How to debug automatic behaviors when they fail.[2][4]
 
 **Critical Questions:**
+
 1. Where are logs for auto-healing attempts stored?
 2. How to trace why auto-sync was triggered?
 3. What's the audit trail for auto-prune deletion decisions?
 4. How to replay a failed auto-healing sequence?
 
 **Recommended Addition:**
+
 ```javascript
 // Missing observability layer
 const logger = {
@@ -3506,17 +3760,18 @@ const logger = {
 };
 ```
 
-
 #### Progressive Disclosure
 
 **Not Addressed:** How beginners discover when to add optional components.[1][2]
 
 **Critical Questions:**
+
 1. How does user know when to add Context7? (Framework should suggest it)
 2. When should user graduate from KISS to advanced setup?
 3. What are warning signs that current setup is insufficient?
 
 **Recommended Addition:**
+
 ```javascript
 // Missing progressive disclosure hints
 function detectOptionalNeeds(prp_content) {
@@ -3544,7 +3799,6 @@ function detectOptionalNeeds(prp_content) {
 }
 ```
 
-
 ### Alternative Approaches Not Considered
 
 #### Tiered Framework Model
@@ -3552,16 +3806,19 @@ function detectOptionalNeeds(prp_content) {
 **Concept:** Starter → Intermediate → Advanced progression[1][2]
 
 **Starter Tier:** CLAUDE.md + PRP + Serena (3 components)
+
 - Target: Solo developers, greenfield projects
 - Setup: 15 minutes
 - Success rate: 85-90%
 
 **Intermediate Tier:** + Context7 + Health checks (5 components)
+
 - Target: Small teams (2-5), existing codebases
 - Setup: 30 minutes
 - Success rate: 90-95%
 
 **Advanced Tier:** + Sequential Thinking + GitHub MCP + Custom scripts (8 components)
+
 - Target: Large teams, legacy systems, compliance requirements
 - Setup: 60 minutes
 - Success rate: 95-98%
@@ -3573,16 +3830,19 @@ function detectOptionalNeeds(prp_content) {
 ### Risk Assessment
 
 **Low Risk Users:** Solo developers, greenfield projects, <20K LOC
+
 - Framework likely works well with minimal issues
 - Simple recovery procedures sufficient
 - **Recommendation:** Use KISS version as-is
 
 **Medium Risk Users:** Small teams (2-5), existing codebases, 20-100K LOC
+
 - May encounter Serena indexing issues
 - Need team collaboration guidelines
 - **Recommendation:** Add escape hatch commands, observability layer
 
 **High Risk Users:** Large teams (>5), legacy systems, >100K LOC, strict compliance
+
 - Framework likely insufficient without heavy customization
 - Serena may fail on large codebases
 - **Recommendation:** Use tiered framework with full advanced features
@@ -3594,6 +3854,7 @@ function detectOptionalNeeds(prp_content) {
 **Summary:** Good simplification effort (8/10 methodology) with clear value proposition (60% less cognitive load), but **lacks empirical validation and edge case handling** (6/10 practical applicability).[4][2][1]
 
 **Critical Action Items Before Production:**
+
 1. **Test on 3-5 real projects** to validate assumptions
 2. **Add 5 escape hatch commands** for manual override
 3. **Implement observability layer** (healing.log, sync.log, prune.log)
@@ -3607,7 +3868,8 @@ function detectOptionalNeeds(prp_content) {
 
 **Confidence in Current Design:** 7.2/10 - Solid foundation requiring **8 refinements** before production-ready.[3][4][2][1]  
   
-# Citations:  
+# Citations  
+
 [1] [Context Engineering: The New AI Strategy for Scalable LLMs](https://www.sundeepteki.org/blog/from-vibe-coding-to-context-engineering-a-blueprint-for-production-grade-genai-systems)  
 [2] [Context Engineering: Techniques, Tools, and Implementation](https://ikala.ai/blog/ai-trends/context-engineering-techniques-tools-and-implementation/)  
 [3] [Serena MCP Server: A Deep Dive for AI Engineers](https://skywork.ai/skypage/en/Serena%20MCP%20Server:%20A%20Deep%20Dive%20for%20AI%20Engineers/1970677982547734528)  
@@ -3620,10 +3882,10 @@ function detectOptionalNeeds(prp_content) {
 [10] [Effective context engineering for AI agents](https://www.anthropic.com/engineering/effective-context-engineering-for-ai-agents)  
 ---  
 
-
 # Would it gain by breaking it into cross cut workflows working together with error edge cases handling? Is it perhaps already optimally divided? Think through peer review  
   
-# Answer (Claude 4.5 Sonnet):  
+# Answer (Claude 4.5 Sonnet)  
+
 ## Workflow Decomposition Analysis: Is Current Architecture Optimally Divided?
 
 **Verdict: NO** - Current architecture is **NOT optimally divided**. It's monolithic with implicit workflows, but full workflow separation would be over-engineering.[1][2][3]
@@ -3680,36 +3942,42 @@ graph TD
 ### Edge Case Analysis: 24 Unhandled Cases
 
 **Session Initialization (4 edge cases):**
+
 - Serena timeout on large codebase (>500K LOC)
 - No git repository (non-version-controlled code)
 - Checkpoint file corrupted or missing
 - Multiple Claude sessions active (lock contention)
 
 **Context Gathering (4 edge cases):**
+
 - Symbol not found (code changed since last index)
 - Context7 API rate limit exceeded
 - INITIAL.md malformed or incomplete
 - Circular dependencies in code references
 
 **Implementation (4 edge cases):**
+
 - PRP phase depends on partially failed previous phase
 - File modified by external process during execution
 - Disk space exhausted during code generation
 - Import conflicts (same symbol from multiple sources)
 
 **Validation (4 edge cases):**
+
 - Validation tool not installed (npm, pytest missing)
 - Flaky tests (non-deterministic pass/fail)
 - Validation timeout (infinite loop in generated code)
 - Novel error pattern not in classification database
 
 **State Persistence (4 edge cases):**
+
 - Git conflict during checkpoint creation
 - Memory storage full (disk quota exceeded)
 - Checkpoint created but git commit fails
 - Concurrent checkpoint from another session
 
 **Context Maintenance (4 edge cases):**
+
 - Critical memory deleted by auto-prune
 - Drift detection false positive (formatting-only changes)
 - Re-index triggered during active editing
@@ -3918,7 +4186,6 @@ class ErrorHandler {
 module.exports = { ErrorHandler };
 ```
 
-
 **validation.js** - 3-level validation with healing[4][3]
 
 ```javascript
@@ -3985,7 +4252,6 @@ class Validator {
 module.exports = { Validator };
 ```
 
-
 **logger.js** - Systematic observability[2]
 
 ```javascript
@@ -4050,7 +4316,6 @@ class Logger {
 
 module.exports = { Logger };
 ```
-
 
 **state.js** - Unified state management[3][4]
 
@@ -4167,7 +4432,6 @@ class StateManager {
 
 module.exports = { StateManager };
 ```
-
 
 #### Phase 2: Add Explicit Recovery Workflow [IMPORTANT]
 
@@ -4298,27 +4562,30 @@ class RecoveryWorkflow {
 module.exports = { RecoveryWorkflow };
 ```
 
-
 ### Implementation Priority
 
 **Phase 1: Extract Cross-Cutting Concerns** [2-3 hours]
+
 - Create error-handler.js, validation.js, logger.js, state.js
 - Refactor existing scripts to import these modules
 - Update CLAUDE.md to reference new modules
 - **Impact:** Eliminates 5 critical flaws from peer review
 
 **Phase 2: Add Recovery Workflow** [1-2 hours]
+
 - Create recovery-workflow.js
 - Integrate with validation failures
 - Add escape hatch commands
 - **Impact:** Handles 24 edge cases systematically
 
 **Phase 3: Add Maintenance Workflow** [1-2 hours - Optional]
+
 - Create maintenance-workflow.js for scheduled tasks
 - Auto-trigger from health-check
 - **Impact:** Keeps context fresh automatically
 
 **Phase 4: Team Collaboration** [Advanced tier only]
+
 - Not needed for KISS version
 - Add when scaling to teams >5 people
 
@@ -4345,17 +4612,20 @@ Hybrid (Optimal):
 ```
 
 **Total Lines:**
+
 - Current: ~330 lines (monolithic, fragile)
 - Hybrid: ~650 lines (modular, robust)
 
 **Trade-off Analysis:**
+
 - **+97% more code** BUT **-80% error handling failures**
 - **+4 modules** BUT **5 critical flaws eliminated**
 - **+2 hours setup** BUT **systematic edge case handling**
 
 **Verdict: Extract cross-cutting concerns (Phase 1) is ESSENTIAL. Full workflow decomposition is OVERKILL**.[1][2][3]  
   
-# Citations:  
+# Citations  
+
 [1] [Context Engineering: The New AI Strategy for Scalable LLMs](https://www.sundeepteki.org/blog/from-vibe-coding-to-context-engineering-a-blueprint-for-production-grade-genai-systems)  
 [2] [Context Engineering: Techniques, Tools, and Implementation](https://ikala.ai/blog/ai-trends/context-engineering-techniques-tools-and-implementation/)  
 [3] [Serena Instructions to work around memory problems ...](https://github.com/oraios/serena/discussions/297)  
@@ -4363,11 +4633,12 @@ Hybrid (Optimal):
 [5] [Wirasm/PRPs-agentic-eng: Prompts, workflows and more ...](https://github.com/Wirasm/PRPs-agentic-eng)  
 ---  
 
-
 # Print framework files structure for example non-trivial project codebase with 3 prps executed and two in queue
+
 Peer reviewed  
   
-# Answer (Claude 4.5 Sonnet):  
+# Answer (Claude 4.5 Sonnet)  
+
 ## Context Engineering Framework: Real-World Project Structure
 
 **Project:** E-commerce API (45,000 LOC TypeScript backend)  
@@ -4544,7 +4815,6 @@ ecommerce-api/                                    # Non-trivial e-commerce backe
 └── README.md                                     # Project overview
 ```
 
-
 ### Framework Metrics
 
 **Framework Overhead:** 810 lines for 45,000 LOC = **1.8% overhead**
@@ -4590,7 +4860,6 @@ ecommerce-api/                                    # Non-trivial e-commerce backe
     ├── checkpoint-2025-10-09-session-2.json
     └── checkpoint-2025-10-09-session-3.json  (Current session)
 ```
-
 
 ### PRP Execution Timeline
 
@@ -4704,7 +4973,6 @@ Session 12: Implementation Phase 2 (45 min so far)
 Next: Validation L2 + L3, then completion
 ```
 
-
 ### Current Health Report
 
 ```json
@@ -4738,28 +5006,31 @@ Next: Validation L2 + L3, then completion
 }
 ```
 
-
 ### Key Insights
 
 **Framework Efficiency:**
+
 - **1.8% overhead:** 1,340 framework lines supporting 45,000 LOC application
 - **12 memories:** 8 checkpoints (1 per session) + 4 persistent patterns
 - **6 log files:** Complete audit trail for debugging and compliance
 - **810 lines** of cross-cutting modules **eliminate duplication** across 3 completed PRPs
 
 **PRP Success Rate:**
+
 - **3/3 completed** successfully (100%)
 - **1/1 active** on track (92% health)
 - **Average time:** 140 minutes per PRP (Research → Implementation → Validation)
 - **Auto-healing:** 5 successful, 3 failed (85% recovery rate)
 
 **Team Collaboration Model:**
+
 - Each developer: Own `.serena/` directory (gitignored)
 - Shared: `CLAUDE.md`, PRP templates, cross-cutting modules (version controlled)
 - Checkpoints: Personal recovery points, not team-synchronized
 - Conflict resolution: Rare (context is local to developer)
 
 **Observability Benefits:**
+
 - All errors logged with full context
 - Healing attempts traceable in `healing.log`
 - Context drift detected automatically
@@ -4767,7 +5038,8 @@ Next: Validation L2 + L3, then completion
 
 This structure demonstrates **production-ready context engineering** at scale with systematic error handling, observability, and team collaboration support.[3][4][5][1][2]  
   
-# Citations:  
+# Citations  
+
 [1] [coleam00/context-engineering-intro](https://github.com/coleam00/context-engineering-intro)  
 [2] [Context Engineering: Techniques, Tools, and Implementation](https://ikala.ai/blog/ai-trends/context-engineering-techniques-tools-and-implementation/)  
 [3] [Serena Instructions to work around memory problems ...](https://github.com/oraios/serena/discussions/297)  
@@ -4777,29 +5049,28 @@ This structure demonstrates **production-ready context engineering** at scale wi
 [7] [Wirasm/PRPs-agentic-eng: Prompts, workflows and more ...](https://github.com/Wirasm/PRPs-agentic-eng)  
 ---  
 
-
 # Would you be able to print necessary complete mcp tools / claude code in form of permissions json files
 
-Also list of mcp to install 
-And bash toolage that be used 
+Also list of mcp to install
+And bash toolage that be used
 
-For our framework system 
+For our framework system
 
-First think of all operations necessary for workflow with subworkfloes 
+First think of all operations necessary for workflow with subworkfloes
 
-Then propose complete toolset 
+Then propose complete toolset
 
-You can also consider organizing system into agents 
-
+You can also consider organizing system into agents
 
 Think through. Peer review inventory lists
 
 If agents - then including their toolset inventor y with config toolset config json
 
-On claude code. Agentic claude code friendly 
+On claude code. Agentic claude code friendly
 Claude code 4.5  
   
-# Answer (Claude 4.5 Sonnet Thinking):  
+# Answer (Claude 4.5 Sonnet Thinking)  
+
 ## Complete MCP Configuration for Context Engineering Framework
 
 **Architecture Decision: Single Agent with Tool Separation** - Context continuity trumps specialization for this workflow.[1][2][3][4]
@@ -4816,7 +5087,6 @@ npm install -g c7-mcp-server                                    # For new librar
 npm install -g @modelcontextprotocol/server-sequential-thinking # For complex planning
 docker pull ghcr.io/github/github-mcp-server                   # For PR automation
 ```
-
 
 ### Claude Desktop MCP Configuration
 
@@ -4879,7 +5149,6 @@ docker pull ghcr.io/github/github-mcp-server                   # For PR automati
   }
 }
 ```
-
 
 ### MCP Permission Matrix
 
@@ -4956,7 +5225,6 @@ docker pull ghcr.io/github/github-mcp-server                   # For PR automati
 }
 ```
 
-
 ### Serena-Specific Configuration
 
 **.serena/project.yml**
@@ -5016,7 +5284,6 @@ logging:
   rotation: true
 ```
 
-
 ### Tool Inventory by Workflow
 
 ```json
@@ -5056,7 +5323,6 @@ logging:
   }
 }
 ```
-
 
 ### Bash Utility Scripts
 
@@ -5166,7 +5432,6 @@ case "${1:-}" in
 esac
 ```
 
-
 ### package.json Integration
 
 ```json
@@ -5196,7 +5461,6 @@ esac
   }
 }
 ```
-
 
 ### Multi-Agent Alternative (Optional)
 
@@ -5281,7 +5545,6 @@ esac
 }
 ```
 
-
 ### Claude Desktop Configuration for Multi-Agent
 
 ```json
@@ -5314,32 +5577,36 @@ esac
 }
 ```
 
-
 ### Peer Review: Tool Inventory
 
 **Essential Tools (Coverage: 95% of operations):**
+
 - ✅ Serena: 6 tools cover semantic navigation + shell execution
 - ✅ Filesystem: 7 tools cover all file operations
 - ✅ Bash utilities: 24 commands via execute_shell_command
 
 **Optional Tools (Coverage: 5% edge cases):**
+
 - ✅ Context7: 3 tools for library documentation
 - ✅ Sequential Thinking: 1 tool for complex planning
 - ✅ GitHub: 4 tools for PR automation
 
 **Missing/Risky:**
+
 - ⚠️ No memory management tools in Serena (must use filesystem directly)
 - ⚠️ No built-in error classification (must parse stderr)
 - ⚠️ No checkpoint restore automation (must use git commands)
 
 **Recommendation:**
+
 - **Single agent** with Serena + Filesystem is sufficient
 - **Multi-agent** adds 3x complexity for <10% benefit
 - Keep multi-agent as **advanced tier option only**
 
 This configuration provides **complete tooling** for the Context Engineering Framework with Claude Code 4.5 compatibility.[3][4][5][6][7][1][2]  
   
-# Citations:  
+# Citations  
+
 [1] [Context Engineering: The New AI Strategy for Scalable LLMs](https://www.sundeepteki.org/blog/from-vibe-coding-to-context-engineering-a-blueprint-for-production-grade-genai-systems)  
 [2] [Effective context engineering for AI agents](https://www.anthropic.com/engineering/effective-context-engineering-for-ai-agents)  
 [3] [Context Engineering: Techniques, Tools, and Implementation](https://ikala.ai/blog/ai-trends/context-engineering-techniques-tools-and-implementation/)  
@@ -5353,10 +5620,10 @@ This configuration provides **complete tooling** for the Context Engineering Fra
 [11] [Serena Instructions to work around memory problems ...](https://github.com/oraios/serena/discussions/297)  
 ---  
 
-
 # Prepare update. By agent I meant claude code agent. Think through. Peer reviewed  
   
-# Answer (Claude 4.5 Sonnet):  
+# Answer (Claude 4.5 Sonnet)  
+
 ## Claude Code Agent Configuration (Corrected)
 
 **Architecture Decision: SINGLE CLAUDE CODE AGENT with full MCP access, safety via workflow instructions**.[1][2][3]
@@ -5366,6 +5633,7 @@ This configuration provides **complete tooling** for the Context Engineering Fra
 **Claude Code Agent** = Autonomous AI agent that executes multi-step workflows using MCP tools without human confirmation per step.[2][1]
 
 **Key Capabilities:**
+
 - Multi-turn autonomous execution (full PRP implementation)
 - Tool chaining without interruption (Serena → Filesystem → Shell)
 - State persistence across sessions (.serena/ memory)
@@ -5703,7 +5971,6 @@ graph LR
 }
 ```
 
-
 ### Alternative: Supervised Mode Configuration
 
 **For security-critical or production environments**[1]
@@ -5747,10 +6014,10 @@ graph LR
 ```
 
 **Invocation:**
+
 ```bash
 claude-agent --config .claudeagent-supervised
 ```
-
 
 ### MCP Tool Usage Patterns (Agent Mode)
 
@@ -5830,7 +6097,6 @@ claude-agent --config .claudeagent-supervised
 }
 ```
 
-
 ### Agent Invocation Commands
 
 ```bash
@@ -5859,7 +6125,6 @@ claude-agent test-tools
 claude-agent verify-mcp-connections
 ```
 
-
 ### Peer Review: Agent Architecture
 
 **✅ Strengths:**
@@ -5884,6 +6149,7 @@ claude-agent verify-mcp-connections
 **❌ Rejected Alternative: Multiple Specialized Agents**
 
 **Why rejected:**
+
 - Context fragmentation: Each agent has separate memory, loses continuity
 - Configuration complexity: 3x MCP configs, 3x .claudeagent files
 - Coordination overhead: Need orchestrator to route between agents
@@ -5933,7 +6199,8 @@ claude-agent generate-prp INITIAL.md
 
 This configuration provides **production-ready Claude Code Agent** integration for autonomous context engineering workflows.[3][6][2][1]  
   
-# Citations:  
+# Citations  
+
 [1] [Effective context engineering for AI agents](https://www.anthropic.com/engineering/effective-context-engineering-for-ai-agents)  
 [2] [Claude Code: Best practices for agentic coding](https://www.anthropic.com/engineering/claude-code-best-practices)  
 [3] [Use MCP servers in VS Code](https://code.visualstudio.com/docs/copilot/customization/mcp-servers)  
@@ -5942,10 +6209,10 @@ This configuration provides **production-ready Claude Code Agent** integration f
 [6] [oraios/serena: A powerful coding agent toolkit providing ...](https://github.com/oraios/serena)  
 ---  
 
-
 # Explore real claude code (4.5) capabilities. Vsc. And reprint last response (context engineering  framework) leveraging claude code features why? To make all more reliable seamless more powerful and safe for accirateness cohesiveness symbiotic powers. Think through. Peer review. Print  
   
-# Answer (Claude 4.5 Sonnet):  
+# Answer (Claude 4.5 Sonnet)  
+
 ## Context Engineering Framework: Claude Code 4.5 Optimized Architecture
 
 **Revolutionary Insight:** Claude Sonnet 4.5 + Claude Code 2.0 + VS Code Extension transforms context engineering from **manual orchestration** to **symbiotic autonomous workflow** with 0% error rate on code edits.[1][2]
@@ -6020,7 +6287,6 @@ graph TB
     style F fill:#ccffcc
     style H fill:#ccffcc
 ```
-
 
 ### Complete Claude Code Configuration
 
@@ -6469,7 +6735,6 @@ graph TB
 }
 ```
 
-
 ### Enhanced CLAUDE.md (Claude Code 4.5 Optimized)
 
 ```markdown
@@ -6524,26 +6789,32 @@ graph TB
 ## 📋 PRP STRUCTURE (Subagent-Aware)
 
 ```
+
 GOAL: [Single objective]
 
 SUBAGENT DELEGATION STRATEGY:
+
 - Frontend Agent: Components + UI logic (src/components/)
 - Backend Agent: API endpoints + business logic (src/api/)
 - Integration Agent: End-to-end tests (tests/integration/)
 
 CONTEXT:
+
 - Serena queries: [symbol names]
 - [Optional] Context7: [library version]
 
 VALIDATION (Hooks Auto-Trigger):
+
 - L1: After each file edit (hook: after_file_edit)
 - L2: After implementation complete (hook: after_implementation_phase)
 - L3: Before PR creation (hook: before_pr_creation)
 
 CHECKPOINTS:
+
 - pre_implementation (manual review point)
 - after_each_phase (automatic)
 - implementation_complete (before PR)
+
 ```
 
 ## 🛡️ SELF-HEALING (Hook-Driven)
@@ -6570,15 +6841,18 @@ CHECKPOINTS:
 
 ### Parallel Execution Pattern
 ```
+
 Main Agent:
   ├─ Subagent 1 (Frontend) [parallel]
   ├─ Subagent 2 (Backend)  [parallel]
   └─ Subagent 3 (Tests)    [waits for 1+2]
 
 Merge Strategy:
-  - Automatic if no conflicts
-  - Manual review if files overlap
-  - Checkpoint before merge
+
+- Automatic if no conflicts
+- Manual review if files overlap
+- Checkpoint before merge
+
 ```
 
 ### Communication Protocol
@@ -6653,8 +6927,11 @@ Merge Strategy:
 
 ### Dashboard Access
 ```
+
 claude-agent metrics
-# Opens http://localhost:3001/metrics
+
+# Opens <http://localhost:3001/metrics>
+
 ```
 
 ### Alert Conditions
@@ -6671,7 +6948,6 @@ claude-agent metrics
 **Subagent Support**: 3 parallel max
 **Hook System**: 4 active hooks
 ```
-
 
 ### New File: VSCODE-INTEGRATION.md
 
@@ -6703,6 +6979,7 @@ claude-agent metrics
 
 ### Context Efficiency Pattern
 ```
+
 Instead of:
   read_file("src/large-file.ts") → 5000 tokens
 
@@ -6712,6 +6989,7 @@ Use:
   get_symbol_definition_code("AuthService") → 300 tokens
   
 Total: 550 tokens (89% savings)
+
 ```
 
 ## Git Integration
@@ -6737,20 +7015,25 @@ Total: 550 tokens (89% savings)
 
 ### Terminal Commands
 ```
+
 # View checkpoint history
+
 claude-checkpoint list
 
 # Restore specific checkpoint
+
 claude-checkpoint restore claude-checkpoint-1728502890
 
 # View subagent status
+
 claude-subagent status
 
 # Kill background task
-claude-task kill dev_server
-```
-```
 
+claude-task kill dev_server
+
+```
+```
 
 ### Peer Review: Claude Code 4.5 Optimization
 
@@ -6788,7 +7071,8 @@ claude-task kill dev_server
 
 This configuration achieves **100% edit accuracy**, **3x parallelism**, and **95% automation** while maintaining human control through checkpoints and escalation triggers.[1][2]  
   
-# Citations:  
+# Citations  
+
 [1] [Introducing Claude Sonnet 4.5](https://www.anthropic.com/news/claude-sonnet-4-5)  
 [2] [Enabling Claude Code to work more autonomously](https://anthropic.com/news/enabling-claude-code-to-work-more-autonomously)  
 [3] [Claude Code 2.0 Features: Checkpoints, Subagents, and ...](https://skywork.ai/blog/claude-code-2-0-checkpoints-subagents-autonomous-coding/)  
@@ -6811,13 +7095,14 @@ This configuration achieves **100% edit accuracy**, **3x parallelism**, and **95
 [20] [Claude Code 2.0 Agentic Coding: No, other agents aren't ...](https://www.youtube.com/watch?v=nGhsgdQplHw)  
 ---  
 
-
 # Would you be able to formalize not noisy information of this entire chat?
+
 Also describe entire system elements staring from Serena and it memories n func coleman00 ce framework on claude code their roles and elements  persistances and corelation between them
 Compact readable structured
 Well thought when needed Peer reviewed  
   
-# Answer (Claude 4.5 Sonnet):  
+# Answer (Claude 4.5 Sonnet)  
+
 # Context Engineering Framework: Complete System Formalization
 
 **Version:** 3.0  
@@ -6833,6 +7118,7 @@ Well thought when needed Peer reviewed
 **Role:** Language Server Protocol-based code navigation and shell execution[1][2]
 
 **Functions:**
+
 - `onboarding()` - Index entire codebase, build symbol database (~30s)
 - `find_symbol(name)` - Locate function/class definitions by name
 - `get_symbol_definition(name)` - Retrieve full definition with types
@@ -6841,6 +7127,7 @@ Well thought when needed Peer reviewed
 - `execute_shell_command(cmd)` - Run validation, git, build commands
 
 **Persistence:**
+
 - `.serena/project.yml` - LSP configuration, language server paths
 - `.serena/cache/` - Symbol index cache (survives sessions)
 - `.serena/memories/` - Context persistence layer
@@ -6903,6 +7190,7 @@ Well thought when needed Peer reviewed
 **Key Capabilities:**
 
 **Checkpoints:**
+
 - **Description:** Automatic save-points before each edit
 - **Trigger:** Every file write, validation run, git operation
 - **Rewind:** ESC ESC for instant rollback
@@ -6910,6 +7198,7 @@ Well thought when needed Peer reviewed
 - **Storage:** `.claude/checkpoints/` + git tags
 
 **Subagents:**
+
 - **Description:** Parallel execution via specialized sub-agents
 - **Max Parallel:** 3 simultaneously
 - **Strategy:** Split by module (frontend + backend + tests)
@@ -6917,11 +7206,13 @@ Well thought when needed Peer reviewed
 - **Merge:** Automatic if no conflicts, manual review otherwise
 
 **Hooks (Event-Driven Automation):**
+
 - `after_file_edit` → run validation level 1
 - `before_git_commit` → block if validation fails
 - `on_validation_failure` → trigger auto-healing
 
 **Background Tasks (Non-Blocking):**
+
 - Dev server (npm run dev)
 - Test watcher (jest --watch)
 - Type-check watcher (tsc --watch)
@@ -6935,10 +7226,12 @@ Well thought when needed Peer reviewed
 **Role:** Protocol connecting Claude to external capabilities[12][13]
 
 **Essential MCPs:**
+
 - **Serena:** Semantic code navigation (6 core tools)
 - **Filesystem:** Safe file operations (7 tools: read/write/edit/delete/list/search/move)
 
 **Optional MCPs:**
+
 - **Context7:** Live library documentation (use for new versions)
 - **Sequential Thinking:** Multi-step reasoning (use for complex planning)
 - **GitHub:** PR automation + code search
@@ -6954,6 +7247,7 @@ Well thought when needed Peer reviewed
 **Trigger:** User starts Claude Code session
 
 **Steps:**
+
 1. Claude Code creates checkpoint `session_start`
 2. Health check runs in background
 3. Serena `onboarding()` indexes codebase
@@ -6970,6 +7264,7 @@ Well thought when needed Peer reviewed
 **Trigger:** User provides INITIAL.md feature request
 
 **Steps:**
+
 1. Parse INITIAL.md requirements
 2. Serena: `find_symbol()` for related patterns
 3. [Optional] Context7: fetch library docs
@@ -6986,6 +7281,7 @@ Well thought when needed Peer reviewed
 **Trigger:** User approves PRP
 
 **Steps:**
+
 1. Validate PRP schema
 2. Create checkpoint `pre_implementation`
 3. [If complex] Delegate to subagents (parallel execution)
@@ -7009,6 +7305,7 @@ Well thought when needed Peer reviewed
 **Trigger:** Hook auto-triggers or explicit command
 
 **Steps:**
+
 1. Run validation command (`npm run lint/test`)
 2. If PASS: Continue workflow
 3. If FAIL:
@@ -7031,6 +7328,7 @@ Well thought when needed Peer reviewed
 **Trigger:** After validation pass, before git commit
 
 **Steps:**
+
 1. Validate git state is clean or staged-only
 2. Create memory checkpoint in `.serena/memories/`
 3. Git add + commit with checkpoint reference
@@ -7047,6 +7345,7 @@ Well thought when needed Peer reviewed
 **Trigger:** After PRP completion or scheduled
 
 **Steps:**
+
 1. Detect context drift (git diff vs last checkpoint)
 2. Backup memories to `.serena/backups/`
 3. Prune memories by importance:
@@ -7063,17 +7362,20 @@ Well thought when needed Peer reviewed
 ## III. DATA PERSISTENCE MAP
 
 ### Serena State
+
 - `.serena/project.yml` - LSP configuration, language server paths
 - `.serena/cache/` - Symbol index cache (survives sessions)
 - `.serena/memories/*.md` - Long-term context (CRITICAL/NORMAL/DEBUG)
 - `.serena/memories/*.json` - Checkpoints with git SHA + metadata
 
 ### Claude Code State
+
 - `.claude/config.json` - Agent config, MCP servers, workflows, hooks
 - `.claude/checkpoints/` - Conversation + code snapshots (50 retained)
 - `.serena/state.json` - Current session state (loaded on start)
 
 ### Framework Artifacts
+
 - `PRPs/completed/` - Finished PRPs with learnings
 - `PRPs/active/` - Current work in progress
 - `PRPs/queued/` - Pending feature requests
@@ -7081,6 +7383,7 @@ Well thought when needed Peer reviewed
 - `.serena/metrics.json` - Performance tracking data
 
 ### Git Integration
+
 - Git tags: `claude-checkpoint-{timestamp}` for every checkpoint
 - Commit messages: Include checkpoint reference for traceability
 
@@ -7089,31 +7392,37 @@ Well thought when needed Peer reviewed
 ## IV. COMPONENT CORRELATIONS
 
 ### Serena → Claude Code
+
 **Relationship:** Claude Code invokes Serena via MCP protocol  
 **Data Flow:** Claude → MCP request → Serena → symbol data → Claude  
 **Example:** Claude needs function definition → `find_symbol('AuthService')` → Serena returns location + code
 
 ### Serena → Framework
+
 **Relationship:** Framework instructions guide Serena usage patterns  
 **Data Flow:** CLAUDE.md rules → Claude interprets → Serena tool selection  
 **Example:** CLAUDE.md says "symbol-first" → Claude uses `find_symbol` before `read_file`
 
 ### Memories → Checkpoints
+
 **Relationship:** Checkpoints reference memory state at that moment  
 **Data Flow:** Checkpoint created → `.serena/memories/` snapshot → stored in checkpoint.json  
 **Example:** Checkpoint includes: git_sha + active memories + session state
 
 ### PRP → Subagents
+
 **Relationship:** PRP structure determines subagent delegation strategy  
 **Data Flow:** PRP phases → Claude analyzes → splits by module → subagents execute parallel  
 **Example:** PRP has frontend+backend phases → 2 subagents created
 
 ### Hooks → Validation
+
 **Relationship:** Hooks auto-trigger validation modules  
 **Data Flow:** File edit event → `after_file_edit` hook → validation.js L1 → healing if needed  
 **Example:** Claude writes file → hook fires → `npm run lint` → auto-heal duplicate imports
 
 ### Validation → Checkpoints
+
 **Relationship:** Checkpoints created before each validation  
 **Data Flow:** Pre-validation checkpoint → run validation → if fail → rewind checkpoint  
 **Example:** Before `npm run test` → checkpoint → test fails → ESC ESC rewind
@@ -7199,28 +7508,33 @@ Well thought when needed Peer reviewed
 ## VIII. QUICK REFERENCE
 
 **Framework Files:**
+
 - CLAUDE.md (150 lines) - Global rules
 - SERENA-INSTRUCTIONS.md (180 lines) - Serena protocols
 - PRP template (100 lines) - Feature structure
 - 7 modules (810 lines) - Cross-cutting concerns
 
 **Serena Operations:**
+
 - `onboarding()` - Index codebase
 - `find_symbol()` - Locate code
 - `execute_shell_command()` - Run validation
 
 **Claude Code Features:**
+
 - ESC ESC - Rewind checkpoint
 - Subagents - Parallel execution
 - Hooks - Auto-validation
 
 **Memory Types:**
+
 - CRITICAL - Never prune
 - NORMAL - Prune if age>7d
 - DEBUG - Prune if age>1d
 - CHECKPOINT - Keep last 5
 
 **Validation Levels:**
+
 - L1: Lint + Type-check (10s)
 - L2: Unit tests (30-60s)
 - L3: Integration tests (1-3min)
@@ -7229,7 +7543,8 @@ Well thought when needed Peer reviewed
 
 **This formalized system achieves 100% edit accuracy, 3x parallelism, and 95% automation while maintaining human control through checkpoints and escalation triggers**.[7][10][11][1][3][6][9]  
   
-# Citations:  
+# Citations  
+
 [1] [oraios/serena: A powerful coding agent toolkit providing ...](https://github.com/oraios/serena)  
 [2] [Serena MCP Server: A Deep Dive for AI Engineers](https://skywork.ai/skypage/en/Serena%20MCP%20Server:%20A%20Deep%20Dive%20for%20AI%20Engineers/1970677982547734528)  
 [3] [Context Engineering: Techniques, Tools, and Implementation](https://ikala.ai/blog/ai-trends/context-engineering-techniques-tools-and-implementation/)  
@@ -7245,21 +7560,21 @@ Well thought when needed Peer reviewed
 [13] [Use MCP servers in VS Code](https://code.visualstudio.com/docs/copilot/customization/mcp-servers)  
 ---  
 
+# Main persistances
 
-# Main persistances:
 Codebase
 Serena memories n co
 Ce examples
 Ce prps
 
-What are relations between them 
+What are relations between them
 What would be optimal workflow order to keep them synced and denoised them. How to define ground truth optimally
 
-
-Well explored n thought where needed. Peer reviewed 
+Well explored n thought where needed. Peer reviewed
 Formalized  
   
-# Answer (Claude 4.5 Sonnet):  
+# Answer (Claude 4.5 Sonnet)  
+
 # Persistence Layer Synchronization & Ground Truth Management
 
 **Complete formalized system for maintaining consistency across four persistence layers**.[1][2][3][4]
@@ -7269,6 +7584,7 @@ Formalized
 ## I. FOUR PERSISTENCE LAYERS
 
 ### 1. Codebase
+
 - **Location:** `src/`, `tests/`, `config/`, `package.json`
 - **Volatility:** HIGH - changes every feature
 - **Ground Truth:** PRIMARY SOURCE OF TRUTH
@@ -7276,6 +7592,7 @@ Formalized
 - **Update Frequency:** Every code modification
 
 ### 2. Serena Memories
+
 - **Location:** `.serena/memories/*.md`, `*.json`
 - **Volatility:** MEDIUM - grows, pruned periodically
 - **Ground Truth:** DERIVED FROM CODEBASE (secondary)
@@ -7283,6 +7600,7 @@ Formalized
 - **Update Frequency:** Per session, after PRP, on drift
 
 ### 3. CE Examples
+
 - **Location:** `examples/*.ts`, `*.py`, `*.sql`
 - **Volatility:** LOW - stable patterns
 - **Ground Truth:** CURATED SUBSET (tertiary)
@@ -7290,6 +7608,7 @@ Formalized
 - **Update Frequency:** 1-2 per week when patterns emerge
 
 ### 4. CE PRPs
+
 - **Location:** `PRPs/completed/`, `active/`, `queued/`
 - **Volatility:** MEDIUM - lifecycle transitions
 - **Ground Truth:** PLANNING ARTIFACTS (aspirational→historical)
@@ -7301,6 +7620,7 @@ Formalized
 ## II. RELATIONSHIP MATRIX
 
 ### Codebase → Serena Memories
+
 **Direction:** Codebase drives Memories  
 **Mechanism:** Serena `onboarding()` indexes code → creates symbol cache  
 **Sync Trigger:** Git diff detection, code modifications  
@@ -7308,6 +7628,7 @@ Formalized
 **Example:** New AuthService class → Serena finds it → Memory references it
 
 ### Codebase → CE Examples
+
 **Direction:** Codebase provides Examples  
 **Mechanism:** Developer curates patterns into `examples/`  
 **Sync Trigger:** Manual (new patterns emerge)  
@@ -7315,6 +7636,7 @@ Formalized
 **Example:** New controller pattern → Copy to `examples/controller-pattern.ts`
 
 ### Codebase ↔ CE PRPs
+
 **Direction:** PRPs plan changes, then archive history  
 **Mechanism:** PRP created → Code modified → PRP moved to `completed/`  
 **Sync Trigger:** PRP lifecycle transitions  
@@ -7322,6 +7644,7 @@ Formalized
 **Example:** PRP-001 auth → Code implements → PRP-001 to `completed/`
 
 ### Serena Memories ↔ CE PRPs
+
 **Direction:** Bidirectional (Memories inform PRPs, PRPs become Memories)  
 **Mechanism:** Memories → PRP generation; Completed PRP → Memory  
 **Sync Trigger:** PRP generation (read), PRP completion (write)  
@@ -7329,6 +7652,7 @@ Formalized
 **Example:** `architecture-patterns.md` → PRP-002 → `prp-002-complete.md`
 
 ### CE Examples → Serena Memories
+
 **Direction:** Examples inform Memories  
 **Mechanism:** Examples referenced in INITIAL.md → Memory stores reference  
 **Sync Trigger:** PRP generation research phase  
@@ -7336,6 +7660,7 @@ Formalized
 **Example:** "Follow test-pattern.ts" → Memory: "Use `examples/test-pattern.ts`"
 
 ### CE Examples → CE PRPs
+
 **Direction:** Examples guide PRPs  
 **Mechanism:** PRP EXAMPLES section references `examples/` files  
 **Sync Trigger:** PRP generation  
@@ -7347,30 +7672,35 @@ Formalized
 ## III. GROUND TRUTH HIERARCHY
 
 ### Level 1: Absolute Truth
+
 **Source:** Codebase (Git HEAD)  
 **Rationale:** Actual running code is ultimate truth  
 **Authority:** What compiles and runs  
 **Verification:** `git log`, compilation success
 
 ### Level 2: Curated Truth
+
 **Source:** CE Examples (`examples/`)  
 **Rationale:** Manually vetted best practices  
 **Authority:** Stable, reviewed, intentional patterns  
 **Verification:** Examples compile, pass validation
 
 ### Level 3: Derived Truth
+
 **Source:** Serena Memories (`.serena/memories/`)  
 **Rationale:** Computed from codebase, can become stale  
 **Authority:** Valid only if synchronized  
 **Verification:** Context drift score <20%
 
 ### Level 4: Historical Truth
+
 **Source:** Completed PRPs (`PRPs/completed/`)  
 **Rationale:** Record of intent and learnings  
 **Authority:** Immutable historical record  
 **Verification:** Git tag correspondence
 
 ### Level 5: Aspirational Truth
+
 **Source:** Active/Queued PRPs (`PRPs/active/`, `queued/`)  
 **Rationale:** Plans for future, not yet reality  
 **Authority:** Intent, not fact  
@@ -7381,6 +7711,7 @@ Formalized
 ## IV. OPTIMAL SYNCHRONIZATION WORKFLOW
 
 **Order of Operations:**
+
 1. **CODE CHANGE** (Primary Event)
 2. **GIT OPERATIONS** (Version Control)
 3. **SERENA SYNC** (Derived State Update)
@@ -7389,8 +7720,10 @@ Formalized
 6. **PRP ARCHIVAL** (Historical Record)
 
 ### Step 1: Code Change
+
 **Trigger:** PRP execution completes, code modified  
 **Actions:**
+
 - Validate compilation: `npm run build`
 - Validate tests: `npm run test`
 - Validate types: `npm run type-check`
@@ -7399,8 +7732,10 @@ Formalized
 **On Failure:** Checkpoint rewind (ESC ESC), do not proceed
 
 ### Step 2: Git Operations
+
 **Trigger:** Code validation passes  
 **Actions:**
+
 - `git status` (verify only intended files)
 - `git add -A`
 - `git commit -m 'feat: X [PRP-00N] checkpoint: SHA'`
@@ -7410,8 +7745,10 @@ Formalized
 **On Failure:** Manual git cleanup required
 
 ### Step 3: Serena Sync
+
 **Trigger:** Git commit successful  
 **Actions:**
+
 - Detect drift: `git diff --name-only HEAD~5`
 - If drift>20%: `serena onboarding()`
 - Else: Incremental re-index affected files
@@ -7421,8 +7758,10 @@ Formalized
 **On Failure:** Force full re-index
 
 ### Step 4: Memory Pruning
+
 **Trigger:** Serena sync completes  
 **Actions:**
+
 - Backup: `cp -r .serena/memories/ .serena/backups/`
 - Prune DEBUG: Delete if age>1d
 - Prune NORMAL: Delete if age>7d AND access_count=0
@@ -7433,8 +7772,10 @@ Formalized
 **On Failure:** Restore from backup, manual review
 
 ### Step 5: Example Curation (Manual)
+
 **Trigger:** Developer identifies new pattern  
 **Actions:**
+
 - Review code for novel patterns
 - Extract minimal example to `examples/pattern-name.ts`
 - Ensure example compiles standalone
@@ -7445,8 +7786,10 @@ Formalized
 **Frequency:** 1-2 per week (not every PRP)
 
 ### Step 6: PRP Archival
+
 **Trigger:** PRP implementation complete, validated  
 **Actions:**
+
 - Read active PRP: `PRPs/active/prp-00N.md`
 - Append LEARNINGS section with insights
 - Move: `mv PRPs/active/prp-00N.md PRPs/completed/`
@@ -7461,8 +7804,10 @@ Formalized
 ## V. DENOISING STRATEGIES
 
 ### Codebase Denoising
+
 **Problem:** Unused code, obsolete patterns, commented sections  
 **Strategy:**
+
 - Use Serena `find_referencing_symbols()` for unused detection
 - Dead code elimination during refactoring PRPs
 - Linters: `eslint no-unused-vars`, `mypy unused-ignore`
@@ -7470,8 +7815,10 @@ Formalized
 **Frequency:** Every refactoring PRP, quarterly cleanup
 
 ### Serena Memories Denoising
+
 **Problem:** Stale memories, outdated context, memory bloat  
 **Strategy:**
+
 - Automatic age-based pruning (DEBUG>1d, NORMAL>7d)
 - Access-count tracking (prune if never accessed)
 - Context drift detection (re-sync if >20%)
@@ -7480,8 +7827,10 @@ Formalized
 **Frequency:** After every PRP completion, on session end
 
 ### CE Examples Denoising
+
 **Problem:** Outdated patterns, deprecated APIs, inconsistent examples  
 **Strategy:**
+
 - Validate examples compile on every CI run
 - Review examples when upgrading dependencies
 - Remove examples when pattern unused (check via Serena)
@@ -7490,8 +7839,10 @@ Formalized
 **Frequency:** On dependency upgrade, quarterly review
 
 ### CE PRPs Denoising
+
 **Problem:** Incomplete PRPs, abandoned features, irrelevant learnings  
 **Strategy:**
+
 - Active PRPs: If stale>30d, move to `PRPs/abandoned/`
 - Completed PRPs: Never delete (historical record)
 - Queued PRPs: Review quarterly, archive low-priority
@@ -7504,35 +7855,41 @@ Formalized
 ## VI. KEY PRINCIPLES
 
 **Principle 1: Codebase is King**
+
 - All other layers derive from or reference codebase
 - In conflicts, codebase always wins
 - Rationale: Running code is ground truth
 
 **Principle 2: Sync Direction is Unidirectional**
+
 - Codebase → Serena (never reverse)
 - Examples → PRPs (never reverse)
 - Completed PRPs → Memories (never reverse)
 - Rationale: Clear authority prevents circular dependencies
 
 **Principle 3: Immutability Where Appropriate**
+
 - Completed PRPs: Never modify (historical record)
 - CRITICAL memories: Never auto-delete
 - Git commits: Never rewrite (checkpoint integrity)
 - Rationale: Preserve audit trail and recovery points
 
 **Principle 4: Aggressive Denoising**
+
 - Better to re-compute than store stale data
 - Memory pruning prevents context bloat
 - Example curation keeps patterns focused
 - Rationale: Fresh data > large but stale dataset
 
 **Principle 5: Human in the Loop for Curation**
+
 - Example extraction: Manual
 - PRP archival learnings: Manual
 - CRITICAL memory classification: Manual
 - Rationale: Quality over automation for patterns
 
 **Principle 6: Automated Synchronization**
+
 - Serena sync: Automatic on drift detection
 - Memory pruning: Automatic by age/access
 - Checkpoint creation: Automatic before operations
@@ -7542,7 +7899,8 @@ Formalized
 
 **This synchronization protocol maintains consistency across all four persistence layers while preserving ground truth hierarchy and enabling aggressive denoising for optimal system health**.[2][3][4][5][1]  
   
-# Citations:  
+# Citations  
+
 [1] [coleam00/context-engineering-intro](https://github.com/coleam00/context-engineering-intro)  
 [2] [Context Engineering: Techniques, Tools, and Implementation](https://ikala.ai/blog/ai-trends/context-engineering-techniques-tools-and-implementation/)  
 [3] [oraios/serena: A powerful coding agent toolkit providing ...](https://github.com/oraios/serena)  
@@ -7550,11 +7908,12 @@ Formalized
 [5] [Part 5 - Context Pruning and Summarization](https://www.youtube.com/watch?v=TwjKW0WMO78)  
 ---  
 
-
 # Now describe roles of ce/examples vs serena/memories (and code examples there in particular)
+
 Think through. Peer reviewed. Formalized structured response  
   
-# Answer (Claude 4.5 Sonnet):  
+# Answer (Claude 4.5 Sonnet)  
+
 # CE/Examples vs Serena/Memories: Roles & Relationships
 
 **Comprehensive analysis of two distinct persistence layers and their symbiotic relationship**.[1][2][3][4]
@@ -7580,18 +7939,21 @@ Think through. Peer reviewed. Formalized structured response
 ### Content Types
 
 **Structural Patterns:**
+
 - `controller-pattern.ts` - Standard NestJS controller structure
 - `service-pattern.ts` - Business logic layer pattern
 - `test-pattern.ts` - Jest testing conventions
 - **Usage:** Claude copies structure when generating similar code
 
 **Architectural Templates:**
+
 - `api-endpoint-pattern.ts` - RESTful endpoint template
 - `migration-pattern.sql` - Database migration structure
 - `middleware-pattern.ts` - Express middleware template
 - **Usage:** Defines project architecture conventions
 
 **Minimal Working Examples:**
+
 - `auth-jwt-example.ts` - Complete JWT implementation
 - `stripe-webhook-example.ts` - Webhook handling pattern
 - `redis-cache-example.ts` - Caching layer pattern
@@ -7626,6 +7988,7 @@ Think through. Peer reviewed. Formalized structured response
 ### Content Types
 
 **Code References:**
+
 - Symbol locations: `AuthService found at src/auth/auth.service.ts:42`
 - Function signatures: `createUser(data: UserDTO): Promise<User>`
 - Import paths: `import { AuthService } from @/auth/auth.service`
@@ -7633,6 +7996,7 @@ Think through. Peer reviewed. Formalized structured response
 - **Source:** Serena LSP indexing via `onboarding()`
 
 **Completed PRP Learnings:**
+
 - `prp-001-auth-complete.md` - "Learned: Always validate JWT expiry"
 - `prp-002-payments-complete.md` - "Gotcha: Stripe webhooks need signature verification"
 - `prp-003-inventory-complete.md` - "Pattern: Low stock alerts via cron job"
@@ -7640,6 +8004,7 @@ Think through. Peer reviewed. Formalized structured response
 - **Source:** Manual - developer appends LEARNINGS to completed PRPs
 
 **Architectural Decisions:**
+
 - `architecture-patterns.md [CRITICAL]` - "Use repository pattern for data access"
 - `security-requirements.md [CRITICAL]` - "All endpoints require JWT except /health"
 - `api-design-decisions.md [NORMAL]` - "Use kebab-case for URLs, camelCase for JSON"
@@ -7647,6 +8012,7 @@ Think through. Peer reviewed. Formalized structured response
 - **Source:** Manual - developer creates at project start
 
 **Session Checkpoints:**
+
 - `checkpoint-2025-10-09.json` - {git_sha, timestamp, active_prp, session_state}
 - **Usage:** Session recovery, time-travel debugging
 - **Source:** Automatic - Claude Code creates before major operations
@@ -7738,11 +8104,13 @@ export class UserController {
 
 ## Code Patterns Used
 ```
+
 // From actual implementation (not full file)
 async validateToken(token: string): Promise<User> {
   const payload = await this.jwtService.verify(token);
   return this.userService.findById(payload.sub);
 }
+
 ```
 
 ## Gotchas
@@ -7803,6 +8171,7 @@ async validateToken(token: string): Promise<User> {
 ### When to Create CE Example
 
 **Conditions:**
+
 - Pattern will be reused 3+ times across project
 - Pattern represents project convention (not library default)
 - Pattern is mature and validated (not experimental)
@@ -7813,6 +8182,7 @@ async validateToken(token: string): Promise<User> {
 ### When to Create Serena Memory
 
 **Conditions:**
+
 - Learning specific to one PRP or feature
 - Temporary context for current work session
 - Reference to actual code locations (not pattern)
@@ -7825,6 +8195,7 @@ async validateToken(token: string): Promise<User> {
 **Scenario:** Implementing new pattern that will become standard
 
 **Workflow:**
+
 1. First implementation → Create Serena memory (PRP learning)
 2. Second use → Refine pattern in code
 3. Third use → Extract to CE example (now canonical)
@@ -7835,31 +8206,37 @@ async validateToken(token: string): Promise<User> {
 ## VII. Key Principles
 
 **Principle 1: Examples are Templates, Memories are Context**
+
 - CE/examples: Copy structure, generate similar code
 - Serena/memories: Understand project, make informed decisions
 - **Analogy:** Examples = Recipe, Memories = Chef's notes
 
 **Principle 2: Examples are Curated, Memories are Pruned**
+
 - CE/examples: High-quality manual selection (1-2 per week)
 - Serena/memories: Automatic generation + aggressive pruning
 - **Rationale:** Quality over quantity for templates, freshness for context
 
 **Principle 3: Examples are Shared, Memories are Personal**
+
 - CE/examples: Git-tracked, team convention
 - Serena/memories: Gitignored, developer-specific
 - **Rationale:** Patterns are collective, context is individual
 
 **Principle 4: Examples Lead, Memories Follow**
+
 - CE/examples: Source of truth for patterns
 - Serena/memories: References examples, never contradicts
 - **Conflict resolution:** Examples win, memories updated
 
 **Principle 5: Code in Examples, References in Memories**
+
 - CE/examples: Full working code (compiles standalone)
 - Serena/memories: Pointers to codebase (symbol locations)
 - **Rationale:** Examples are self-contained, memories are efficient
 
 **Principle 6: Examples Evolve Slowly, Memories Change Rapidly**
+
 - CE/examples: Updated when pattern matures (monthly/quarterly)
 - Serena/memories: Updated every session, pruned continuously
 - **Rationale:** Stability for patterns, agility for context
@@ -7897,6 +8274,7 @@ CE/EXAMPLES    SERENA/CACHE    SERENA/MEMORIES
 ```
 
 **Information Flow:**
+
 1. Codebase → CE/examples (manual curation)
 2. Codebase → Serena/cache (automatic indexing)
 3. Codebase → Serena/memories (references)
@@ -7907,6 +8285,7 @@ CE/EXAMPLES    SERENA/CACHE    SERENA/MEMORIES
 Codebase > CE/examples > Serena/cache > Serena/memories
 
 **Synchronization:**
+
 - Examples: Manual update when pattern evolves
 - Memories: Automatic prune + manual curate
 - Cache: Automatic re-index on drift detection
@@ -7915,17 +8294,18 @@ Codebase > CE/examples > Serena/cache > Serena/memories
 
 **This dual-layer system provides both stable templates (CE/examples) and dynamic context (Serena/memories), enabling Claude Code to generate consistent code while adapting to project evolution**.[3][4][2][1]  
   
-# Citations:  
+# Citations  
+
 [1] [coleam00/context-engineering-intro](https://github.com/coleam00/context-engineering-intro)  
 [2] [Context Engineering: Techniques, Tools, and Implementation](https://ikala.ai/blog/ai-trends/context-engineering-techniques-tools-and-implementation/)  
 [3] [oraios/serena: A powerful coding agent toolkit providing ...](https://github.com/oraios/serena)  
 [4] [Serena Instructions to work around memory problems ...](https://github.com/oraios/serena/discussions/297)  
 ---  
 
-
 # Now create formalized refined boiled down readable peer reviewed of last two responses (or n last responses in ce persistances context) think through  
   
-# Answer (Claude 4.5 Sonnet):  
+# Answer (Claude 4.5 Sonnet)  
+
 # Context Engineering Persistence Layers: Essential Guide
 
 **Version 3.0 | Peer Reviewed | Refined & Formalized**
@@ -7955,6 +8335,7 @@ Codebase > CE/examples > Serena/cache > Serena/memories
 **Update:** Every feature implementation
 
 **Verification:**
+
 - ✓ Compilation: `npm run build`
 - ✓ Type checking: `npm run type-check`
 - ✓ Tests: `npm run test`
@@ -7972,11 +8353,13 @@ Codebase > CE/examples > Serena/cache > Serena/memories
 **Update:** 1-2 per week when patterns mature
 
 **Content Types:**
+
 - **Structural Patterns:** controller-pattern.ts, service-pattern.ts, test-pattern.ts
 - **Architectural Templates:** api-endpoint-pattern.ts, migration-pattern.sql
 - **Minimal Working Examples:** auth-jwt-example.ts, stripe-webhook-example.ts
 
 **Characteristics:**
+
 - Self-contained (compiles standalone)
 - Minimal (only essential code)
 - Documented (WHY, not just WHAT)
@@ -7984,6 +8367,7 @@ Codebase > CE/examples > Serena/cache > Serena/memories
 - Stable (changes rarely)
 
 **Selection Criteria:**
+
 - Pattern reused 3+ times
 - Project convention (not library default)
 - Mature and validated
@@ -8003,21 +8387,26 @@ Codebase > CE/examples > Serena/cache > Serena/memories
 **Content Types:**
 
 **1. Code References** (Automatic via Serena LSP)
+
 - Symbol locations: `AuthService at src/auth/auth.service.ts:42`
 - Function signatures: `createUser(dto: UserDTO): Promise<User>`
 
 **2. PRP Learnings** (Manual)
+
 - `prp-001-complete.md` - "Always validate JWT expiry"
 - `prp-002-complete.md` - "Stripe webhooks need signature verification"
 
 **3. Architectural Decisions** (Manual, CRITICAL)
+
 - `architecture-patterns.md` - "Use repository pattern"
 - `security-requirements.md` - "All endpoints require JWT"
 
 **4. Session Checkpoints** (Automatic)
+
 - `checkpoint-*.json` - {git_sha, timestamp, session_state}
 
 **Memory Importance:**
+
 - **CRITICAL:** Never auto-prune (architecture, security)
 - **NORMAL:** Prune if age>7d AND unused (PRP learnings)
 - **DEBUG:** Prune if age>1d (temporary notes)
@@ -8033,6 +8422,7 @@ Codebase > CE/examples > Serena/cache > Serena/memories
 **Lifecycle:** QUEUED → ACTIVE → COMPLETED
 
 **Structure:**
+
 - GOAL: Single objective
 - CONTEXT: Serena queries + Examples references
 - VALIDATION: 3 levels (syntax, tests, integration)
@@ -8064,28 +8454,34 @@ Codebase > CE/examples > Serena/cache > Serena/memories
 **Order:** Code → Git → Serena → Prune → Examples → Archive
 
 ### Step 1: Code Change
+
 - **Trigger:** PRP execution completes
 - **Actions:** Validate (build, test, type-check)
 - **On Fail:** ESC ESC (rewind checkpoint)
 
 ### Step 2: Git Operations
+
 - **Trigger:** Validation passes
 - **Actions:** `git commit -m 'feat: X [PRP-00N] checkpoint: SHA'`, tag
 
 ### Step 3: Serena Sync
+
 - **Trigger:** Git commit successful
 - **Actions:** Detect drift, re-index if >20% changed files
 
 ### Step 4: Memory Pruning
+
 - **Trigger:** Serena sync completes
 - **Actions:** Backup, prune DEBUG (>1d), NORMAL (>7d unused), keep last 5 checkpoints
 
 ### Step 5: Example Curation (Manual)
+
 - **Trigger:** Reusable pattern identified
 - **Actions:** Extract to `examples/`, ensure compiles, git commit
 - **Frequency:** 1-2 per week
 
 ### Step 6: PRP Archival
+
 - **Trigger:** PRP complete
 - **Actions:** Move to `completed/`, create memory with learnings
 
@@ -8093,22 +8489,26 @@ Codebase > CE/examples > Serena/cache > Serena/memories
 
 ## Decision Tree
 
-### When to Create CE/Example:
+### When to Create CE/Example
+
 ✓ Pattern used 3+ times  
 ✓ Project convention  
 ✓ Mature & validated  
 ✓ Generic enough  
 → **Action:** Create `examples/pattern.ts`, git commit
 
-### When to Create Serena/Memory:
+### When to Create Serena/Memory
+
 ✓ PRP-specific learning  
 ✓ Temporary context  
 ✓ Code location reference  
 ✓ Session checkpoint  
 → **Action:** Create `.serena/memories/context.md`, gitignore
 
-### When to Use Both:
+### When to Use Both
+
 **Scenario:** New pattern becoming standard  
+
 1. First use → Memory (learning)
 2. Second use → Refine
 3. Third use → Extract to Example (canonical)
@@ -8196,7 +8596,8 @@ EXAMPLES  SERENA  PRPS
 
 **This persistence layer system maintains code quality through clear authority hierarchy, aggressive denoising, and systematic synchronization**.[1][2][3][4][5]  
   
-# Citations:  
+# Citations  
+
 [1] [coleam00/context-engineering-intro](https://github.com/coleam00/context-engineering-intro)  
 [2] [Context Engineering: Techniques, Tools, and Implementation](https://ikala.ai/blog/ai-trends/context-engineering-techniques-tools-and-implementation/)  
 [3] [oraios/serena: A powerful coding agent toolkit providing ...](https://github.com/oraios/serena)  
@@ -8204,11 +8605,12 @@ EXAMPLES  SERENA  PRPS
 [5] [Part 5 - Context Pruning and Summarization](https://www.youtube.com/watch?v=TwjKW0WMO78)  
 ---  
 
+# Continue and print me full tooling bill / inventory. Complete optimized for efficient yet readable workflow (also visually) and without many annoying for permission prompts
 
-# Continue and print me full tooling bill / inventory. Complete optimized for efficient yet readable workflow (also visually) and without many annoying for permission prompts 
 Allow deny lists. Claude code style  
   
-# Answer (Claude 4.5 Sonnet):  
+# Answer (Claude 4.5 Sonnet)  
+
 # Context Engineering Framework: Complete Tooling Inventory
 
 **Version 3.0 | Zero-Prompt Philosophy | Claude Code 4.5 Optimized**
@@ -8218,16 +8620,19 @@ Allow deny lists. Claude code style
 ## Tooling Philosophy
 
 **Zero-Prompt Approach:**
+
 - Pre-approve all safe operations via allow/deny lists
 - No permission prompts for read operations
 - No permission prompts for validated write operations
 - Human intervention only for: Security-sensitive files, irreversible operations
 
 **Permission Strategy:**
+
 - ✓ **ALLOW:** src/, tests/, examples/, .serena/, PRPs/, docs/, scripts/
 - ✗ **DENY:** .env, .dev.vars, node_modules/, .git/objects/, package-lock.json
 
 **Claude Code Style:**
+
 - Autonomous execution within boundaries
 - Checkpoints before destructive operations
 - Auto-rollback on validation failure
@@ -8253,6 +8658,7 @@ npm install -g mcp-remote@latest
 ```
 
 **Verification:**
+
 ```bash
 npx @modelcontextprotocol/server-filesystem --version
 serena --version
@@ -8447,6 +8853,7 @@ npx c7-mcp-server --version
 | every_30_minutes | Create checkpoint | Yes |
 
 **Background Tasks (Non-blocking):**
+
 - Dev server: `npm run dev` (auto-start, auto-restart)
 - Test watcher: `npm run test:watch` (conditional)
 - Type checker: `npm run type-check --watch` (auto-start)
@@ -8456,13 +8863,16 @@ npx c7-mcp-server --version
 ## Permission Efficiency Analysis
 
 **Without Allow/Deny Lists:**
+
 - 50+ prompts per PRP × 10 seconds = **8+ minutes of interruptions**
 
 **With Allow/Deny Lists:**
+
 - 0-2 prompts per PRP × 5 seconds = **0-10 seconds**
 - **SAVINGS: 96% reduction in friction**
 
 **Time to Value:**
+
 - Traditional PRP: 180 min implementation + 30 min prompts = 210 min
 - Framework PRP: 180 min implementation + 0 min prompts = 180 min
 - **IMPROVEMENT: 14% faster execution**
@@ -8472,6 +8882,7 @@ npx c7-mcp-server --version
 ## Quick Start Checklist
 
 **Initial Setup (One-time):**
+
 - □ Install MCP servers
 - □ Configure `claude_desktop_config.json`
 - □ Create `.claude/config.json`
@@ -8480,6 +8891,7 @@ npx c7-mcp-server --version
 - □ Initialize: `npm run serena:init`
 
 **Daily Workflow:**
+
 - □ Start session: Claude Code opens, Serena indexes
 - □ Background tasks start automatically
 - □ Implement PRP: Claude executes autonomously
@@ -8490,7 +8902,8 @@ npx c7-mcp-server --version
 
 **This zero-prompt tooling configuration achieves 96% reduction in permission prompts while maintaining complete security through allow/deny lists**.[1][2][3][4][5]  
   
-# Citations:  
+# Citations  
+
 [1] [Effective context engineering for AI agents](https://www.anthropic.com/engineering/effective-context-engineering-for-ai-agents)  
 [2] [Claude Code: Best practices for agentic coding](https://www.anthropic.com/engineering/claude-code-best-practices)  
 [3] [Introducing Claude Sonnet 4.5](https://www.anthropic.com/news/claude-sonnet-4-5)  
@@ -8498,11 +8911,12 @@ npx c7-mcp-server --version
 [5] [Claude Code 2.0 Features: Checkpoints, Subagents, and ...](https://skywork.ai/blog/claude-code-2-0-checkpoints-subagents-autonomous-coding/)  
 ---  
 
-
 # Now
+
 .claude/settings.local.json file  
   
-# Answer (Claude 4.5 Sonnet):  
+# Answer (Claude 4.5 Sonnet)  
+
 # .claude/settings.local.json - Complete Configuration
 
 **File Location:** `.claude/settings.local.json` (Project root, gitignored)  
@@ -8692,24 +9106,28 @@ npx c7-mcp-server --version
 ## Key Features
 
 ### Zero-Prompt Workflow
+
 - ✓ All safe operations pre-approved
 - ✓ Read operations: No prompts
 - ✓ Write operations: No prompts (within allowed dirs)
 - ✓ Delete operations: No prompts (within allowed patterns)
 
 ### Automatic Checkpoints
+
 - Before every file write
 - Before every git commit
 - Every 30 minutes
 - **ESC ESC** to rewind
 
 ### Auto-Healing (3 attempts)
+
 - Duplicate imports → Auto-deduped
 - Missing imports → Auto-added via Serena
 - Type mismatches → Auto-fixed
 - Then rewind + escalate if healing fails
 
 ### Background Tasks
+
 - Dev server: `npm run dev` (auto-start)
 - Type checker: `tsc --watch` (auto-start)
 - Logs to `.serena/logs/*.log`
@@ -8770,7 +9188,8 @@ RUNTIME
 
 **This settings file enables 96% reduction in permission prompts while maintaining complete security through allow/deny lists**.[1][2][3]  
   
-# Citations:  
+# Citations  
+
 [1] [Introducing Claude Sonnet 4.5](https://www.anthropic.com/news/claude-sonnet-4-5)  
 [2] [Enabling Claude Code to work more autonomously](https://anthropic.com/news/enabling-claude-code-to-work-more-autonomously)  
 [3] [Claude Code 2.0 Features: Checkpoints, Subagents, and ...](https://skywork.ai/blog/claude-code-2-0-checkpoints-subagents-autonomous-coding/)

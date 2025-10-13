@@ -36,6 +36,7 @@ last_updated: "2025-10-12T16:20:00Z"
 **Effort**: 17.5h (Core State: 6h, CLI Commands: 5h, Cleanup Protocol: 4h, Testing: 2.5h)
 
 **Non-Goals**:
+
 - ❌ Historical state aggregation across PRPs (handled by PRP-6)
 - ❌ Distributed/multi-machine state synchronization
 - ❌ Automatic conflict resolution between PRPs
@@ -71,12 +72,14 @@ last_updated: "2025-10-12T16:20:00Z"
 ## 📖 Context
 
 **Related Work**:
+
 - **PRP-1 dependency**: L4 validation gates will use checkpoints for incremental progress
 - **Existing prp.py**: Currently has YAML validation (197 lines) - will add state management functions
 - **Git integration**: `tools/ce/core.py` has `run_cmd()` for git operations
 - **Context management**: `tools/ce/context.py` has health/sync functions
 
 **Current State**:
+
 - ✅ YAML validation exists: `validate_prp_yaml()` in `prp.py`
 - ✅ Git operations available: `run_cmd()` in `core.py`
 - ✅ Context health checks: `context_health()` in `context.py`
@@ -87,6 +90,7 @@ last_updated: "2025-10-12T16:20:00Z"
 - ❌ No state restore: Cannot rollback to checkpoints reliably
 
 **Desired State**:
+
 - ✅ PRP state tracking: `.ce/active_prp_session` JSON file with current PRP context
 - ✅ Checkpoint namespacing: `checkpoint-{prp_id}-{phase}-{timestamp}` convention
 - ✅ Memory isolation: Serena memories prefixed with `{prp_id}-`
@@ -117,9 +121,11 @@ last_updated: "2025-10-12T16:20:00Z"
 **Approach**: JSON-based state file with atomic writes (temp file + rename pattern), state transitions validated
 
 **Files to Modify**:
+
 - `tools/ce/prp.py` - Add state management functions (extend existing YAML validation)
 
 **Files to Create**:
+
 - `.ce/` directory (gitignored) - Contains active session state
 - `.ce/active_prp_session` - JSON file tracking current PRP
 
@@ -266,6 +272,7 @@ def update_prp_phase(phase: str) -> Dict[str, Any]:
 **Approach**: Git tag integration with standardized naming convention
 
 **Files to Modify**:
+
 - `tools/ce/prp.py` - Add checkpoint functions
 - `tools/ce/core.py` - Enhance git operations if needed
 
@@ -418,6 +425,7 @@ def delete_intermediate_checkpoints(prp_id: str, keep_final: bool = True) -> Dic
 **Approach**: Prefix-based memory isolation with cleanup logic
 
 **Files to Modify**:
+
 - `tools/ce/prp.py` - Add memory isolation and cleanup functions
 
 **Memory Namespacing Convention**:
@@ -573,6 +581,7 @@ graph TD
 **Approach**: Extend `tools/ce/__main__.py` with prp subcommand parser
 
 **Files to Modify**:
+
 - `tools/ce/__main__.py` - Add `prp` subcommand group
 
 **CLI Commands**:
@@ -600,6 +609,7 @@ ce prp list [--prp PRP-003]
 **CLI Output Examples**:
 
 **`ce prp start PRP-003`**:
+
 ```
 ✅ PRP-003 context initialized
 
@@ -613,6 +623,7 @@ Next steps:
 ```
 
 **`ce prp status`**:
+
 ```
 📊 ACTIVE PRP: PRP-003 (User Authentication System)
 
@@ -634,6 +645,7 @@ Serena memories: 3
 ```
 
 **`ce prp list`**:
+
 ```
 📋 CHECKPOINTS (All PRPs)
 
@@ -664,11 +676,13 @@ Total: 7 checkpoints across 3 PRPs
 **Goal**: Comprehensive test coverage and documentation
 
 **Test Coverage Requirements**:
+
 - Unit tests: State tracking, checkpoint operations, memory isolation
 - Integration tests: Multi-PRP lifecycle with cleanup
 - E2E test: Full workflow (start → checkpoint → restore → cleanup)
 
 **Files to Create**:
+
 - `tools/tests/test_prp_state.py` - State management tests
 - `tools/tests/test_prp_cleanup.py` - Cleanup protocol tests
 - `tools/tests/fixtures/sample_prp_state.json` - Mock state file
@@ -722,6 +736,7 @@ def test_multi_prp_isolation():
 ```
 
 **Documentation Updates**:
+
 - `tools/README.md`: Add PRP state management commands
 - `PRPs/Model.md`: Update Section 4.1.2 (ce CLI) with `prp` subcommand
 - `docs/research/06-workflow-patterns.md`: Reference PRP-2 implementation
@@ -751,33 +766,43 @@ def test_multi_prp_isolation():
 ## 🔍 Validation Gates
 
 ### Gate 1: State Tracking Tests (After Phase 1)
+
 ```bash
 cd tools && uv run pytest tests/test_prp_state.py -v
 ```
+
 **Expected**: State file creation, active PRP tracking, phase updates work
 
 ### Gate 2: Checkpoint Management Tests (After Phase 2)
+
 ```bash
 cd tools && uv run pytest tests/test_prp.py::test_checkpoint_management -v
 ```
+
 **Expected**: Create, list, restore checkpoints functional
 
 ### Gate 3: Cleanup Protocol Test (After Phase 3)
+
 ```bash
 cd tools && uv run pytest tests/test_prp_cleanup.py::test_full_cleanup -v
 ```
+
 **Expected**: Cleanup removes ephemeral state, archives learnings, keeps final
 
 ### Gate 4: CLI Integration Test (After Phase 4)
+
 ```bash
 cd tools && uv run ce prp start TEST-001 && uv run ce prp status && uv run ce prp cleanup TEST-001
 ```
+
 **Expected**: Full lifecycle via CLI works
 
 ### Gate 5: Coverage Check (After Phase 5)
+
 ```bash
 cd tools && uv run pytest tests/ --cov=ce.prp --cov-report=term-missing --cov-fail-under=80
 ```
+
 **Expected**: ≥80% coverage for prp.py
 
 ---
@@ -785,25 +810,30 @@ cd tools && uv run pytest tests/ --cov=ce.prp --cov-report=term-missing --cov-fa
 ## 📚 References
 
 **Model.md Sections**:
+
 - Section 3.1.1: WRITE Pillar - State management specification
 - Section 5.6: PRP State Cleanup Protocol (detailed 4-step process)
 - Section 5.2: Workflow Steps 2.5, 6.5 (context sync integration points)
 
 **GRAND-PLAN.md**:
+
 - Lines 117-171: PRP-2 specification (this PRP)
 - Lines 64-113: PRP-1 (dependency for checkpoint validation)
 - Lines 241-317: PRP-4 (will use state management for execution)
 
 **Research Docs**:
+
 - `docs/research/06-workflow-patterns.md`: Workflow state boundaries
 - `docs/research/01-prp-system.md`: PRP lifecycle and state requirements
 
 **Existing Code**:
+
 - `tools/ce/prp.py`: YAML validation (lines 1-197) - will extend
 - `tools/ce/core.py`: `run_cmd()` for git operations
 - `tools/ce/context.py`: `context_health()`, `context_sync()`
 
 **External References**:
+
 - Git documentation: Annotated tags (`git tag -a`)
 - Serena MCP: Memory operations (write_memory, read_memory, delete_memory)
 

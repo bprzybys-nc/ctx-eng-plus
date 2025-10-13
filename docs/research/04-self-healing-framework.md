@@ -5,6 +5,7 @@
 The self-healing framework provides automated context synchronization, error recovery, and drift detection mechanisms for AI-assisted development workflows. This framework ensures context accuracy through continuous monitoring, intelligent pruning, and automatic remediation protocols.
 
 **Core Capabilities:**
+
 - Closed-loop system architecture with continuous validation
 - Automatic context drift detection and synchronization
 - Intelligent error classification and root cause isolation
@@ -91,6 +92,7 @@ graph TB
 ```
 
 **Architecture Components:**
+
 - **Context Engineering Layer**: Global rules, templates, and feature specifications
 - **Semantic Analysis Core**: Project indexing, symbol resolution, and memory persistence
 - **Execution & Synchronization**: Planning, implementation, and validation workflows
@@ -135,6 +137,7 @@ project/
 ```
 
 **Key Directories:**
+
 - `.serena/memories/`: Persistent context storage with semantic indexing
 - `.claude/commands/`: Self-healing command implementations
 - `PRPs/`: Implementation blueprints with validation gates
@@ -199,6 +202,7 @@ flowchart TB
 5. **Checkpoint Creation**: Create timestamped recovery point with sync metadata
 
 **Validation Checks:**
+
 - Symbol references match current definitions
 - Memory entries correspond to existing files
 - Type definitions align with usage sites
@@ -251,6 +255,7 @@ flowchart TB
 ```
 
 **Prohibited Actions:**
+
 - Blind find/replace operations without reading complete files
 - Adding imports without checking for existing statements
 - Modifying files based on assumptions rather than analysis
@@ -290,6 +295,7 @@ flowchart TB
 ### 5.3 Pruning Commands
 
 **Manual Trigger:**
+
 ```bash
 # Prune memories older than 7 days with similarity merging
 /prune-context --age=7d --merge-similar
@@ -302,6 +308,7 @@ flowchart TB
 ```
 
 **Automatic Execution via Semantic Analysis:**
+
 ```
 1. list_memories() → Enumerate all stored context
 2. analyze_age_relevance() → Score each memory by age and access patterns
@@ -312,6 +319,7 @@ flowchart TB
 ```
 
 **Relevance Scoring Algorithm:**
+
 ```
 relevance_score = (
     0.4 * recency_factor +        # Age penalty: newer = higher score
@@ -383,6 +391,7 @@ flowchart TB
 7. **Resumption**: Resume development with fresh, accurate context
 
 **Critical Thresholds:**
+
 - **20% Symbol Drift**: Triggers automatic re-onboarding
 - **30% Memory Growth**: Triggers aggressive pruning
 - **3 Consecutive Healing Failures**: Triggers drift recovery protocol
@@ -396,6 +405,7 @@ flowchart TB
 **Purpose:** Synchronize semantic memories with current codebase state
 
 **Usage:**
+
 ```bash
 /sync-context                    # Automatic detection and sync
 /sync-context --force            # Force sync even if no drift detected
@@ -403,6 +413,7 @@ flowchart TB
 ```
 
 **Process:**
+
 1. Execute `git diff --name-only HEAD~5` to identify recent changes
 2. For each changed file, list affected symbols via semantic analysis
 3. Retrieve current symbol definitions and update memory entries
@@ -411,11 +422,13 @@ flowchart TB
 6. Create timestamped sync checkpoint with metadata
 
 **Output:**
+
 - Synchronization report with drift metrics (files changed, symbols updated)
 - Updated memory index reflecting current codebase state
 - Validation confirmation with reference integrity check
 
 **Automatic Trigger Conditions:**
+
 - Manual invocation by user
 - After 10+ file modifications detected
 - On session start if `git diff != 0`
@@ -428,6 +441,7 @@ flowchart TB
 **Purpose:** Self-healing error recovery with root cause analysis
 
 **Usage:**
+
 ```bash
 /heal-errors                           # Analyze current compilation errors
 /heal-errors --type=compilation        # Focus on specific error type
@@ -435,6 +449,7 @@ flowchart TB
 ```
 
 **Process:**
+
 1. **Error Classification**: Analyze error message to determine type (duplicate imports, symbol not found, type mismatch, stale context)
 2. **Root Cause Isolation**: Use sequential thinking to trace error to source definition
 3. **Healing Strategy Application**:
@@ -447,12 +462,14 @@ flowchart TB
 6. **Checkpoint Creation**: On success, commit changes with healing metadata
 
 **Output:**
+
 - Healing success/failure status
 - Root cause analysis report with reasoning chain
 - Updated memory with error pattern and resolution strategy
 - Git commit reference for healing changes
 
 **Validation Loop:**
+
 - Maximum 3 healing attempts per error type
 - Each attempt must reduce error count
 - If errors increase, stop and restore checkpoint
@@ -465,6 +482,7 @@ flowchart TB
 **Purpose:** Intelligent context pruning to prevent token overflow
 
 **Usage:**
+
 ```bash
 /prune-context --age=7d              # Prune memories older than 7 days
 /prune-context --merge-similar       # Merge semantically similar entries
@@ -472,6 +490,7 @@ flowchart TB
 ```
 
 **Process:**
+
 1. **Memory Inventory**: List all memories with metadata (age, access count, file references)
 2. **Relevance Scoring**: Calculate score based on recency, access frequency, and semantic similarity to current PRP
 3. **Priority Classification**: Categorize memories into Keep/Compress/Delete based on priority matrix
@@ -481,18 +500,21 @@ flowchart TB
 7. **Validation**: Calculate token reduction achieved and verify target met
 
 **Output:**
+
 - Pruning report with metrics (memories deleted, compressed, merged)
 - Token reduction percentage achieved
 - List of pruned/compressed memory names
 - Updated memory index
 
 **Automatic Triggers:**
+
 - Token usage exceeds 80% of context window
 - Memory count exceeds 100 entries
 - Session duration exceeds 2 hours
 - Before PRP execution to ensure clean context
 
 **Relevance Scoring Formula:**
+
 ```
 relevance_score = 0.4 * recency_factor + 0.3 * access_frequency + 0.3 * semantic_similarity
 
@@ -508,6 +530,7 @@ relevance_score = 0.4 * recency_factor + 0.3 * access_frequency + 0.3 * semantic
 **Purpose:** Comprehensive context health check and drift detection
 
 **Usage:**
+
 ```bash
 /validate-state                  # Full health check
 /validate-state --quick          # Skip test coverage and drift analysis
@@ -515,6 +538,7 @@ relevance_score = 0.4 * recency_factor + 0.3 * access_frequency + 0.3 * semantic
 ```
 
 **Process:**
+
 1. **Compilation Validation**: Execute `npm run check-all` to verify build, type-check, lint, and tests
 2. **Git State Verification**: Run `git status --porcelain` and `git diff --stat` to check for uncommitted changes
 3. **Semantic Index Health**: Query known symbols to verify index accuracy, count symbols and check for >50% delta
@@ -523,6 +547,7 @@ relevance_score = 0.4 * recency_factor + 0.3 * access_frequency + 0.3 * semantic
 6. **Test Coverage Validation**: Execute test suite with coverage reporting, verify >80% threshold
 
 **Output:**
+
 - Health report with scores for each dimension:
   - Compilation status: PASS/FAIL
   - Git cleanliness: CLEAN/DIRTY (based on uncommitted changes)
@@ -534,12 +559,14 @@ relevance_score = 0.4 * recency_factor + 0.3 * access_frequency + 0.3 * semantic
 - Automatic remediation triggers if thresholds exceeded
 
 **Automatic Execution:**
+
 - On every session start (pre-flight check)
 - Every 30 minutes during development
 - Before PRP execution
 - After major refactoring (>20 files changed)
 
 **Health Score Calculation:**
+
 ```
 overall_health = (
     compilation_score * 0.3 +

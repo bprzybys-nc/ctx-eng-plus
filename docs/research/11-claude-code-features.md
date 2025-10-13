@@ -11,6 +11,7 @@ This document captures Claude Code 2.0-specific features that enable autonomous,
 ## Document Purpose
 
 **What's Covered:**
+
 - ESC ESC checkpoint rewind system
 - Subagent parallel execution
 - Claude Code-specific hooks (after_file_edit, before_git_commit, etc.)
@@ -18,6 +19,7 @@ This document captures Claude Code 2.0-specific features that enable autonomous,
 - Lessons learned database with emergency patterns
 
 **What's NOT Covered:**
+
 - General context engineering principles (see [02-context-engineering-foundations.md](02-context-engineering-foundations.md))
 - Technology-agnostic PRP methodology (see [01-prp-system.md](01-prp-system.md))
 - MCP tool specifications (see [03-mcp-orchestration.md](03-mcp-orchestration.md))
@@ -81,6 +83,7 @@ This document captures Claude Code 2.0-specific features that enable autonomous,
 ### 1.5 Checkpoint Labels
 
 **Standard Labels:**
+
 - `pre_implementation` - Before starting PRP execution (manual review gate)
 - `phase_1_complete` - After types/interfaces phase
 - `phase_2_complete` - After implementation phase
@@ -90,6 +93,7 @@ This document captures Claude Code 2.0-specific features that enable autonomous,
 ### 1.6 Integration with Validation
 
 **Validation → Checkpoint Flow:**
+
 1. Pre-validation checkpoint created automatically
 2. Run validation command (npm run test, etc.)
 3. **If PASS:** Continue workflow
@@ -99,6 +103,7 @@ This document captures Claude Code 2.0-specific features that enable autonomous,
    - Escalate to human with diagnostic
 
 **Example:**
+
 ```
 Before npm run test → checkpoint created
 Test fails → Auto-heal attempt 1 → FAIL
@@ -121,6 +126,7 @@ git tag -a claude-checkpoint-1728502890 -m '{"phase": "implementation", "prp": "
 ```
 
 **Benefits:**
+
 - Git-level time travel
 - Traceability in commit history
 - Easy correlation with code states
@@ -128,12 +134,14 @@ git tag -a claude-checkpoint-1728502890 -m '{"phase": "implementation", "prp": "
 ### 1.8 Best Practices
 
 **✅ DO:**
+
 - Rely on automatic checkpoints (don't create manual ones)
 - Use ESC ESC aggressively for experimentation
 - Try multiple approaches in sequence via rewind
 - Preserve working states before risky refactors
 
 **❌ DON'T:**
+
 - Disable automatic checkpointing
 - Create manual checkpoints (automatic system handles this)
 - Fear experimentation (instant rewind available)
@@ -197,6 +205,7 @@ Merge Strategy:
 ### 2.5 Communication Protocol
 
 **Shared State:**
+
 ```json
 // .serena/subagent-state.json
 {
@@ -221,10 +230,12 @@ Merge Strategy:
 ```
 
 **Progress Updates:**
+
 - Logged to `.serena/logs/subagents.log`
 - Real-time status available via `claude-subagent status`
 
 **Conflict Detection:**
+
 - Git diff before merge
 - Automatic detection of overlapping file edits
 - Human escalation if subagents disagree on approach
@@ -232,6 +243,7 @@ Merge Strategy:
 ### 2.6 PRP Delegation Strategy
 
 **In PRP YAML Header:**
+
 ```yaml
 SUBAGENT DELEGATION STRATEGY:
   - Subagent 1: Frontend components (src/components/*)
@@ -245,6 +257,7 @@ Dependencies:
 ### 2.7 Execution Workflow
 
 **PRP Execution with Subagents:**
+
 1. Validate PRP schema
 2. Create checkpoint `pre_implementation`
 3. **[If complex]** Delegate to subagents (parallel execution)
@@ -262,12 +275,14 @@ Dependencies:
 ### 2.8 When to Use Subagents
 
 **✅ Use Subagents When:**
+
 - **>3 modules** affected by PRP
 - **Clear separation** of concerns (frontend/backend/tests)
 - **No circular dependencies** between modules
 - **Independent functionality** can be implemented in parallel
 
 **❌ Don't Use Subagents When:**
+
 - Single module implementation
 - Tight coupling between components
 - Shared files require sequential edits
@@ -276,10 +291,12 @@ Dependencies:
 ### 2.9 Troubleshooting
 
 **High Subagent Conflict Rate (>2 per PRP):**
+
 - **Diagnosis:** Poor module boundaries in PRP
 - **Fix:** Refine delegation strategy, ensure clearer separation
 
 **Subagent Coordination Failure:**
+
 - **Diagnosis:** Communication breakdown between agents
 - **Fix:** Review `.serena/logs/subagents.log`
 - **Escalation:** Human intervention required
@@ -347,6 +364,7 @@ Dependencies:
 ### 3.4 Validation Hook Flow
 
 **after_file_edit Hook:**
+
 ```
 File edit event
   → after_file_edit hook fires
@@ -376,12 +394,14 @@ File edit event
 ### 3.6 Hook Safety Rules
 
 **✅ Critical Rules:**
+
 - **Never disable** `after_file_edit` hook (safety critical)
 - **Block commits** on validation failure (before_git_commit hook)
 - **Auto-heal** for known error patterns only
 - **Escalate** unknown patterns immediately with full diagnostic
 
 **Hook Escalation Triggers:**
+
 - Validation failure after max healing attempts (3)
 - Checkpoint rewind after 3 auto-heal failures
 - Security-sensitive file modification
@@ -424,6 +444,7 @@ This section documents **actual PRP executions** from October 2025, showing real
 ```
 
 **Actions:**
+
 - Serena: `find_symbol("AuthService", "auth")` → Found existing auth patterns
 - Context7: NOT used (Passport.js patterns in Claude's training data)
 - Sequential Thinking: NOT used (straightforward implementation)
@@ -433,11 +454,13 @@ This section documents **actual PRP executions** from October 2025, showing real
 #### Session 2: Implementation Phase 1-2 (45 min)
 
 **Implemented:**
+
 - Scaffold auth module structure (`src/auth/`)
 - Implement JWT strategy with Passport.js
 - Auth middleware skeleton
 
 **Validation:**
+
 - L1: PASS (no errors)
 
 **Checkpoint:** `checkpoint-2025-10-05-session-2`
@@ -445,10 +468,12 @@ This section documents **actual PRP executions** from October 2025, showing real
 #### Session 3: Implementation Phase 3 + Testing (60 min)
 
 **Implemented:**
+
 - Complete auth middleware implementation
 - 15 unit tests created
 
 **Validation:**
+
 - L1: FAIL (duplicate import detected)
   - **Auto-heal:** Read file → Dedupe imports → PASS
 - L2: PASS (all 15 unit tests passing)
@@ -458,6 +483,7 @@ This section documents **actual PRP executions** from October 2025, showing real
 #### Session 4: Integration & Completion (30 min)
 
 **Actions:**
+
 - Integration tests: 5 tests created, all passing
 - Validation L3: PASS
 - Git commit: `feat(auth): JWT authentication [PRP-001]`
@@ -466,12 +492,14 @@ This section documents **actual PRP executions** from October 2025, showing real
 **Checkpoint:** `checkpoint-2025-10-05-prp-001-complete`
 
 **Results:**
+
 - **Total time:** 165 minutes
 - **Auto-healing events:** 2 (both successful)
 - **Manual interventions:** 0
 - **Validation passes:** 100% after auto-heal
 
 **Key Learnings:**
+
 - Always set JWT expiry (default 1 hour)
 - Refresh tokens stored in Redis, not database
 - Follow `examples/controller-pattern.ts` for structure
@@ -489,6 +517,7 @@ This section documents **actual PRP executions** from October 2025, showing real
 ```
 
 **Actions:**
+
 - **Context7: ENABLED** for Stripe API v2023-10-16
   - `c7_query("stripe", "webhook signature verification")`
   - Retrieved up-to-date Stripe webhook security patterns
@@ -500,11 +529,13 @@ This section documents **actual PRP executions** from October 2025, showing real
 #### Session 6: Implementation (50 min)
 
 **Implemented:**
+
 - Stripe webhook handler (`src/payments/stripe-webhook.ts`)
 - Webhook signature verification logic
 - Payment processing service
 
 **Validation:**
+
 - L1: PASS
 - L2: PASS (unit tests)
 
@@ -515,15 +546,18 @@ This section documents **actual PRP executions** from October 2025, showing real
 **Problem:** Flaky webhook test
 
 **Auto-Heal Attempts:**
+
 1. **Attempt 1:** Re-run test → FAIL
 2. **Attempt 2:** Increase timeout → FAIL
 3. **Attempt 3:** FAIL → **Escalate to human**
 
 **Human Analysis:**
+
 - Diagnosis: Test environment issue (not code issue)
 - Root cause: Mock webhook not configured correctly
 
 **Recovery Workflow:**
+
 1. ESC ESC rewind to `checkpoint-2025-10-07-session-6`
 2. Fix test environment (add Stripe CLI mock)
 3. Manual test fix: Mock webhook in test environment
@@ -531,6 +565,7 @@ This section documents **actual PRP executions** from October 2025, showing real
 #### Session 8: Re-validation & Completion (25 min)
 
 **Actions:**
+
 - L2: PASS (unit tests now stable)
 - L3: PASS (Stripe CLI webhook testing)
 - Git commit: `feat(payments): Stripe integration [PRP-002]`
@@ -539,12 +574,14 @@ This section documents **actual PRP executions** from October 2025, showing real
 **Checkpoint:** `checkpoint-2025-10-07-prp-002-complete`
 
 **Results:**
+
 - **Total time:** 135 minutes
 - **Auto-healing attempts:** 3 (all failed - environment issue)
 - **Manual interventions:** 1 (test environment fix)
 - **ESC ESC rewinds:** 1 (successful recovery)
 
 **Key Learnings:**
+
 - **Gotcha:** Stripe webhooks need signature verification (from Context7)
 - **Pattern:** Use Stripe CLI for webhook testing
 - **Lesson:** Environment issues require human judgment (auto-heal can't fix infrastructure)
@@ -562,6 +599,7 @@ This section documents **actual PRP executions** from October 2025, showing real
 ```
 
 **Actions:**
+
 - **Sequential Thinking: ENABLED** for complex planning
   - Generated 8-step implementation plan
   - Broke down complex inventory logic into phases
@@ -573,11 +611,13 @@ This section documents **actual PRP executions** from October 2025, showing real
 #### Session 10: Implementation Phases 1-3 (55 min)
 
 **Implemented:**
+
 - CRUD endpoints for inventory (`src/inventory/inventory.controller.ts`)
 - Stock alert service (low stock notifications via cron)
 - Database schema migrations
 
 **Validation:**
+
 - L1: PASS
 - L2: PASS (12 unit tests)
 
@@ -586,6 +626,7 @@ This section documents **actual PRP executions** from October 2025, showing real
 #### Session 11: Testing & Completion (30 min)
 
 **Actions:**
+
 - Integration tests: 8 tests created, all passing
 - Validation L3: PASS
 - Git commit: `feat(inventory): Inventory management [PRP-003]`
@@ -594,12 +635,14 @@ This section documents **actual PRP executions** from October 2025, showing real
 **Checkpoint:** `checkpoint-2025-10-09-prp-003-complete`
 
 **Results:**
+
 - **Total time:** 120 minutes
 - **Auto-healing events:** 0 (perfect execution)
 - **Manual interventions:** 0
 - **Sequential Thinking planning:** SUCCESS (prevented errors via thorough planning)
 
 **Key Learnings:**
+
 - **Pattern:** Low stock alerts via cron job (not webhook)
 - **Success Factor:** Sequential Thinking planning paid off (zero errors)
 - **Performance:** Fastest PRP execution (no healing needed)
@@ -613,11 +656,13 @@ This section documents **actual PRP executions** from October 2025, showing real
 #### Session 12: Implementation Phase 2 (In Progress)
 
 **Implemented So Far:**
+
 - Webhook endpoint creation
 - Order status update logic
 - Currently: Writing unit tests
 
 **Health Metrics:**
+
 - Health score: 92% ✅
 - Context drift: 8% (low)
 - Validation runs: 12 (all passing so far)
@@ -625,6 +670,7 @@ This section documents **actual PRP executions** from October 2025, showing real
 **ETA:** 20 minutes remaining
 
 **Next Steps:**
+
 - Validation L2 + L3
 - Completion and move to `completed/`
 
@@ -640,6 +686,7 @@ This section documents **actual PRP executions** from October 2025, showing real
 | **004** | Webhooks | 1 | 45 (ongoing) | TBD | TBD | TBD | TBD |
 
 **Key Insights:**
+
 - **Average time per PRP:** 140 minutes (2.3 hours)
 - **Zero-shot success rate:** 66% (2 out of 3 completed without intervention)
 - **Auto-healing success rate:** 100% when applicable (code issues only)
@@ -711,16 +758,19 @@ create_memory("emergency-recovery-patterns", `
 ### 5.3 Gotchas from Completed PRPs
 
 **PRP-001 (JWT Auth):**
+
 - Always set JWT expiry (default 1 hour)
 - Refresh tokens stored in Redis, not database
 - Follow `examples/controller-pattern.ts` for structure
 
 **PRP-002 (Stripe Payments):**
+
 - **CRITICAL:** Stripe webhooks need signature verification (Context7 saved us here)
 - Use Stripe CLI for local webhook testing
 - Environment issues require human judgment (auto-heal can't fix infrastructure)
 
 **PRP-003 (Inventory):**
+
 - Low stock alerts via cron job (not webhook - more reliable)
 - Sequential Thinking planning prevents errors (zero healing needed)
 - Stock count updates must be atomic (use database transactions)
@@ -772,6 +822,7 @@ create_memory("emergency-recovery-patterns", `
 ### 6.3 Real-World Success Metrics
 
 **From PRP-001 through PRP-003:**
+
 - **First-attempt success rate:** 85-95% (vs. 35-45% without framework)
 - **Token usage per PRP:** 40K-60K (vs. 150K-200K without framework)
 - **Zero-shot perfection:** 66% (2 out of 3 PRPs perfect execution)
@@ -863,6 +914,7 @@ create_memory("emergency-recovery-patterns", `
 ```
 
 **Keep in Git:**
+
 ```
 # Framework configuration (shared)
 .claude/config.json
@@ -878,6 +930,7 @@ create_memory("emergency-recovery-patterns", `
 **Problem:** ESC ESC not working
 
 **Solutions:**
+
 1. Verify checkpoints enabled in `.claude/config.json`
 2. Check if retention limit (50) reached → older checkpoints auto-pruned
 3. Ensure file write completed before checkpoint creation
@@ -887,6 +940,7 @@ create_memory("emergency-recovery-patterns", `
 **Problem:** Checkpoint bloat (too many checkpoints)
 
 **Solutions:**
+
 - Auto-prune retains last 50 checkpoints only
 - Manual cleanup: `rm -rf .claude/checkpoints/checkpoint-old-*`
 - Checkpoints auto-compress after 7 days
@@ -900,6 +954,7 @@ create_memory("emergency-recovery-patterns", `
 **Diagnosis:** Poor module boundaries in PRP delegation strategy
 
 **Solutions:**
+
 1. Review PRP structure - ensure clear module separation
 2. Refine SUBAGENT DELEGATION STRATEGY section
 3. Reduce subagent count if modules overlap
@@ -912,6 +967,7 @@ create_memory("emergency-recovery-patterns", `
 **Diagnosis:** Communication breakdown between agents
 
 **Solutions:**
+
 1. Review `.serena/logs/subagents.log` for errors
 2. Check `.serena/subagent-state.json` for state corruption
 3. ESC ESC rewind to `pre_implementation` checkpoint
@@ -925,6 +981,7 @@ create_memory("emergency-recovery-patterns", `
 **Problem:** after_file_edit hook not triggering
 
 **Solutions:**
+
 1. Verify hooks enabled in `.claude/config.json`
 2. Check `.serena/logs/hooks.log` for errors
 3. Ensure validation scripts exist (`npm run lint`, etc.)
@@ -935,6 +992,7 @@ create_memory("emergency-recovery-patterns", `
 **Problem:** Hook failures blocking workflow
 
 **Solutions:**
+
 1. Review diagnostic in escalation message
 2. Fix root cause (missing dependency, etc.)
 3. ESC ESC rewind to before hook failure
@@ -945,6 +1003,7 @@ create_memory("emergency-recovery-patterns", `
 **Problem:** Validation automation not working
 
 **Solutions:**
+
 1. Ensure `package.json` has validation scripts
 2. Verify hook configuration references correct script names
 3. Check that validation commands don't require interactive input
@@ -955,9 +1014,11 @@ create_memory("emergency-recovery-patterns", `
 ## 9. References
 
 **Source Material:**
+
 - [context-mastery-exploration.md](context-mastery-exploration.md) - Original conversational exploration
 
 **Related Documentation:**
+
 - [01-prp-system.md](01-prp-system.md) - PRP methodology (technology-agnostic)
 - [02-context-engineering-foundations.md](02-context-engineering-foundations.md) - Framework principles
 - [04-self-healing-framework.md](04-self-healing-framework.md) - Error recovery and context sync
@@ -966,6 +1027,7 @@ create_memory("emergency-recovery-patterns", `
 - [09-best-practices-antipatterns.md](09-best-practices-antipatterns.md) - Optimization patterns
 
 **External Resources:**
+
 - [Introducing Claude Sonnet 4.5](https://www.anthropic.com/news/claude-sonnet-4-5)
 - [Enabling Claude Code to work more autonomously](https://anthropic.com/news/enabling-claude-code-to-work-more-autonomously)
 - [Claude Code 2.0 Features: Checkpoints, Subagents, and Autonomous Coding](https://skywork.ai/blog/claude-code-2-0-checkpoints-subagents-autonomous-coding/)

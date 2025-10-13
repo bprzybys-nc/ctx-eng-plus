@@ -44,24 +44,28 @@ graph LR
 ```
 
 **Stage 1: Vibe Coding**
+
 - **Approach:** Natural language requests without structured guidance
 - **Success Rate:** Unpredictable, dependent on model interpretation
 - **Characteristics:** Trial and error, frequent corrections, inconsistent output
 - **Metaphor:** Hoping the AI "gets it"
 
 **Stage 2: Prompt Engineering**
+
 - **Approach:** Carefully crafted instructions with examples
 - **Success Rate:** Improved but still requires significant iteration
 - **Characteristics:** Few-shot learning, prompt templates, format instructions
 - **Limitation:** Each request requires complete re-specification
 
 **Stage 3: Context Engineering**
+
 - **Approach:** Comprehensive, structured context architecture
 - **Success Rate:** Consistently high with autonomous execution capability
 - **Characteristics:** Persistent knowledge base, validation frameworks, self-correction
 - **Advantage:** System-level thinking replaces request-level thinking
 
 **Performance Metrics:**
+
 - Vibe Coding → Prompt Engineering: **~10x improvement**
 - Prompt Engineering → Context Engineering: **~10x improvement**
 - Net improvement: **~100x over baseline vibe coding**
@@ -80,6 +84,7 @@ The foundational insight of context engineering draws a parallel to software com
 **Key Insight:** Most AI failures are context failures, not model capability failures.
 
 **Operational Definition:**
+
 - **Complete Context** = Reliable, predictable execution
 - **Incomplete Context** = Hallucination, errors, or unpredictable behavior
 - **Malformed Context** = Contradictory instructions, confusion, failure
@@ -150,6 +155,7 @@ graph LR
 | **Learning Capture** | Automated insight extraction | Continuous improvement | Common bug fixes, gotchas |
 
 **Benefits:**
+
 - Eliminates redundant work across sessions
 - Builds compounding knowledge base
 - Enables progressive refinement of patterns
@@ -170,6 +176,7 @@ graph LR
 | **Hybrid Search** | Keyword + vector combination | Precise retrieval | Find specific functions or patterns |
 
 **Benefits:**
+
 - Grounds responses in factual information
 - Reduces hallucination risk
 - Enables access to information beyond training data
@@ -190,6 +197,7 @@ graph LR
 | **Selective Loading** | Load only required context | Targeted information provision | Relevant modules only |
 
 **Benefits:**
+
 - Maximizes information density
 - Enables inclusion of more relevant context
 - Reduces computational costs
@@ -210,6 +218,7 @@ graph LR
 | **Task Windowing** | Time-boxed contexts | Clear start/end boundaries | Feature implementation scope |
 
 **Benefits:**
+
 - Reduces noise and confusion
 - Improves task-specific performance
 - Enables parallel specialized processing
@@ -262,6 +271,7 @@ graph TB
 | **Authority Level** | Highest (overrides all other layers) |
 
 **Content Examples:**
+
 - Code structure requirements (file size limits, naming conventions)
 - Testing requirements (coverage thresholds, test patterns)
 - Style conventions (formatting, documentation standards)
@@ -269,6 +279,7 @@ graph TB
 - Communication protocols (MCP specifications, API standards)
 
 **Implementation Pattern:**
+
 ```
 CLAUDE.md or similar project constitution file
 Located at repository root
@@ -290,6 +301,7 @@ Requires team approval for changes
 | **Authority Level** | High (preferred approaches) |
 
 **Content Examples:**
+
 - Authentication flow implementations
 - Database query patterns
 - API request/response structures
@@ -298,6 +310,7 @@ Requires team approval for changes
 - UI component examples
 
 **Implementation Pattern:**
+
 ```
 CE/Examples/ or similar pattern directory
 Organized by domain (auth/, database/, api/)
@@ -319,6 +332,7 @@ Referenced in task specifications
 | **Authority Level** | Medium (task-specific directives) |
 
 **Content Examples:**
+
 - Feature goals and acceptance criteria
 - Implementation context (existing code, constraints)
 - Step-by-step implementation plan
@@ -326,6 +340,7 @@ Referenced in task specifications
 - Dependencies and integration points
 
 **Implementation Pattern:**
+
 ```
 PRPs/ directory with structured templates
 YAML frontmatter + markdown body
@@ -347,6 +362,7 @@ Archived after completion
 | **Authority Level** | Low (informational, not prescriptive) |
 
 **Content Examples:**
+
 - Architecture decisions made in recent sessions
 - Bug fixes and workarounds discovered
 - Session checkpoints and progress tracking
@@ -354,6 +370,7 @@ Archived after completion
 - Recent learnings and insights
 
 **Implementation Pattern:**
+
 ```
 .serena/memories/ or similar memory directory
 Timestamped files
@@ -392,6 +409,7 @@ The layers interact with defined precedence and information flow:
 | **Transparency** | High (see what was retrieved) | Low (black box weights) |
 
 **Implementation Guidelines:**
+
 1. Build vector databases for project knowledge
 2. Continuously update documentation embeddings
 3. Use semantic search for context retrieval
@@ -413,6 +431,7 @@ The layers interact with defined precedence and information flow:
 | **Examples** | Reference implementations | Working code samples |
 
 **Checklist for Comprehensive Context:**
+
 - [ ] All relevant schemas and data structures defined
 - [ ] Project conventions explicitly stated
 - [ ] Common mistakes documented in "gotchas" section
@@ -453,6 +472,7 @@ graph LR
 | **Quality Gates** | Verify code standards | Linters, formatters | Style compliance |
 
 **Benefits:**
+
 - Enables autonomous self-correction through feedback loops
 - Provides objective success measurement
 - Prevents compounding errors
@@ -487,11 +507,13 @@ Phase 4: Polish
 ```
 
 **Anti-Pattern to Avoid:**
+
 - Attempting complete implementation in single step
 - Adding features before core validation
 - Skipping intermediate validation gates
 
 **Benefits:**
+
 - Prevents compounding errors
 - Enables early detection of architectural issues
 - Provides frequent validation feedback
@@ -510,6 +532,7 @@ Phase 4: Polish
 | **Large (>100k LOC)** | All 4 layers | Full hierarchy essential for consistency |
 
 **Scaling Guidelines:**
+
 1. Start with Constitution only (small projects)
 2. Add Patterns when repetition emerges (medium projects)
 3. Add Blueprints for complex features (any size)
@@ -536,6 +559,7 @@ Update Memory with Learnings
 ```
 
 **Consistency Checklist:**
+
 - [ ] Change aligns with project constitution
 - [ ] Pattern references included where applicable
 - [ ] Similar code elsewhere identified and updated
@@ -551,18 +575,21 @@ Update Memory with Learnings
 **Definition:** Providing excessive, unfocused information that overwhelms the AI with irrelevant details.
 
 **Symptoms:**
+
 - Including entire codebase in context
 - Providing documentation without filtering
 - Loading all possible information "just in case"
 - Failure to prioritize relevance
 
 **Consequences:**
+
 - Reduced effectiveness due to noise
 - Important information buried in irrelevant data
 - Wasted context window capacity
 - Increased latency and cost
 
 **Solution:**
+
 - Curate only decision-relevant context
 - Use semantic search to filter information
 - Prioritize recent and relevant over comprehensive
@@ -581,18 +608,21 @@ Update Memory with Learnings
 **Definition:** Executing AI-generated plans without human validation, blindly accepting architectural decisions.
 
 **Symptoms:**
+
 - Skipping review of generated code
 - Executing multi-step plans without checkpoints
 - Accepting first solution without evaluation
 - No validation gate review
 
 **Consequences:**
+
 - Architectural mistakes compounded
 - Suboptimal solutions implemented
 - Missed opportunities for improvement
 - Loss of learning opportunity
 
 **Solution:**
+
 - Always perform validation checkpoint at key milestones
 - Review architectural decisions before implementation
 - Validate each step in multi-step plans
@@ -612,18 +642,21 @@ Update Memory with Learnings
 **Definition:** Providing one-line feature descriptions without examples, constraints, or sufficient context.
 
 **Symptoms:**
+
 - "Add login feature" without specifying authentication method
 - "Improve performance" without metrics or targets
 - "Fix bug" without reproduction steps
 - Missing acceptance criteria
 
 **Consequences:**
+
 - Multiple correction iterations required
 - Implementation misaligned with expectations
 - Wasted time on wrong approach
 - Frustration and reduced trust
 
 **Solution:**
+
 - Obsessive specificity in initial specifications
 - Include examples of desired behavior
 - Specify constraints and requirements
@@ -642,24 +675,28 @@ Update Memory with Learnings
 **Definition:** Modifying features without referencing existing code, breaking design system consistency.
 
 **Symptoms:**
+
 - Changes that ignore established patterns
 - Inconsistent naming or structure
 - Duplicate functionality created
 - Breaking changes to interfaces
 
 **Consequences:**
+
 - Inconsistent codebase
 - Technical debt accumulation
 - Integration breakage
 - Maintenance burden increase
 
 **Solution:**
+
 - Always reference design system and relevant component files
 - Check for existing implementations before creating new ones
 - Validate consistency with project patterns
 - Use pattern library as source of truth
 
 **Context Reference Checklist:**
+
 - [ ] Reviewed relevant existing implementations
 - [ ] Checked design system for applicable patterns
 - [ ] Identified similar code elsewhere in codebase
@@ -671,18 +708,21 @@ Update Memory with Learnings
 **Definition:** Conflicting rules across documentation, misaligned patterns and standards.
 
 **Symptoms:**
+
 - Different documents specify contradictory approaches
 - Patterns don't align with constitution
 - Recent updates override established rules without documentation
 - No clear precedence hierarchy
 
 **Consequences:**
+
 - Confusion about correct approach
 - Inconsistent implementation across codebase
 - Time wasted resolving contradictions
 - Erosion of trust in documentation
 
 **Solution:**
+
 - Establish single source of truth (Constitution)
 - Define clear precedence hierarchy
 - Regular documentation audits for consistency
@@ -718,18 +758,21 @@ Context engineering delivers quantifiable improvements across multiple dimension
 Documented case studies demonstrate significant performance gains:
 
 **Case Study 1: Klarna**
+
 - **Context:** Customer service automation
 - **Result:** 25% of customer service workload automated
 - **Method:** Context-rich AI agent deployment
 - **Impact:** Equivalent to 700 full-time agents
 
 **Case Study 2: GitLab**
+
 - **Context:** Development workflow acceleration
 - **Result:** 25% faster iteration cycles
 - **Method:** AI Duo with comprehensive codebase context
 - **Impact:** Measurable velocity increase across engineering org
 
 **Case Study 3: IBM Research**
+
 - **Context:** AI coding assistant evaluation
 - **Result:** Performance boost from 26.7% to 43.3% (62% relative improvement)
 - **Method:** Enhanced context tools and structured prompts
@@ -756,12 +799,14 @@ Documented case studies demonstrate significant performance gains:
 | **Consistency Gains** | Code review time reduction | 30% faster reviews |
 
 **ROI Example: PRP Taskmaster**
+
 - **Manual Implementation:** 40+ hours (design + code + test)
 - **Context Engineering Approach:** 25 minutes execution time
 - **Value Equivalence:** $5,000+ (assuming $125/hour developer rate)
 - **ROI:** 96x return on 4-hour setup investment
 
 **Break-Even Analysis:**
+
 - Context engineering overhead pays for itself after 2-3 complex features
 - Subsequent features realize full benefits
 - Compounding returns as knowledge base grows
@@ -814,21 +859,25 @@ graph TB
 ### 7.3 Multi-Agent Context Synchronization Challenges
 
 **Challenge 1: State Consistency**
+
 - **Problem:** Agents may have divergent views of project state
 - **Solution:** Centralized state management with event-driven updates
 - **Implementation:** LangGraph state management, shared context store
 
 **Challenge 2: Context Redundancy**
+
 - **Problem:** Multiple agents loading overlapping context wastes resources
 - **Solution:** Shared context layer with lazy loading
 - **Implementation:** Reference-based context sharing, deduplication
 
 **Challenge 3: Coordination Overhead**
+
 - **Problem:** Inter-agent communication adds latency
 - **Solution:** Minimize coordination points, use asynchronous updates
 - **Implementation:** Event buses, message queues
 
 **Challenge 4: Conflict Resolution**
+
 - **Problem:** Agents may propose contradictory changes
 - **Solution:** Master agent validation layer, conflict detection
 - **Implementation:** Merge strategies, precedence rules
@@ -836,6 +885,7 @@ graph TB
 ### 7.4 Decision Framework: When to Use Multi-Agent
 
 **Use Single Agent When:**
+
 - Task is straightforward and bounded
 - Context continuity is critical
 - Rapid iteration is priority
@@ -843,6 +893,7 @@ graph TB
 - Coordination overhead > specialization benefit
 
 **Use Multi-Agent When:**
+
 - Task requires distinct specialized skills (e.g., data analysis + code generation)
 - Subtasks can execute in parallel
 - Isolation benefits outweigh synchronization costs
@@ -854,6 +905,7 @@ graph TB
 ### 7.5 Implementation Patterns
 
 **Pattern 1: Sequential Handoff**
+
 ```
 Agent 1 (Analysis) → Complete Analysis
     ↓
@@ -861,19 +913,23 @@ Agent 2 (Implementation) → Generate Code
     ↓
 Agent 3 (Testing) → Validate & Report
 ```
+
 - **Use Case:** Pipeline workflows with clear stage boundaries
 - **Synchronization:** Explicit handoff with complete context transfer
 
 **Pattern 2: Parallel Execution with Merge**
+
 ```
 Agent 1 (Frontend) ──┐
 Agent 2 (Backend) ───┼──→ Merge Agent → Integration
 Agent 3 (Database) ──┘
 ```
+
 - **Use Case:** Independent modules developed concurrently
 - **Synchronization:** Shared context store, merge coordination
 
 **Pattern 3: Hub-and-Spoke**
+
 ```
               Master Agent
                    |
@@ -882,6 +938,7 @@ Agent 3 (Database) ──┘
     Specialist  Specialist  Specialist
       Agent 1    Agent 2    Agent 3
 ```
+
 - **Use Case:** Master coordinates, specialists handle domains
 - **Synchronization:** Master maintains authoritative state
 
@@ -966,6 +1023,7 @@ graph TB
 ```
 
 **Workflow State Management:**
+
 - **Checkpointing:** Save state at each node for resume/replay
 - **State Updates:** Track changes across workflow execution
 - **Context Injection:** Load relevant context per node

@@ -45,6 +45,7 @@ None (foundation for validation pipeline)""",
 ```
 
 **Returns:**
+
 ```json
 {
   "id": "eb0bd8b1-f5a5-4436-9297-9b40e64b411e",
@@ -111,13 +112,16 @@ mcp__linear__get_issue(
 ## Common Parameters
 
 ### Priority Values
+
 - `1` = Urgent (critical path, blockers)
 - `2` = High (MVP features)
 - `3` = Medium (nice-to-have)
 - `4` = Low (future enhancements)
 
 ### Labels
+
 Standard PRP labels:
+
 - `"prp"` - All PRP issues
 - `"mvp"` - MVP superstage
 - `"validation"` - Validation-related
@@ -185,14 +189,17 @@ Created in session 2025-10-12:
 ## Troubleshooting
 
 ### Error: "Argument Validation Error"
+
 - Check `team` parameter - use team name (e.g., "Blaise78"), not project name
 - Verify `project` exists: `mcp__linear__list_projects()`
 
 ### Error: Team not found
+
 - List available teams: `mcp__linear__list_teams()`
 - Use exact team name from list
 
 ### Missing Issue After Creation
+
 - Check issue `status` - may be in "Backlog" not "Todo"
 - Filter by project: `mcp__linear__list_issues(project="Context Engineering")`
 

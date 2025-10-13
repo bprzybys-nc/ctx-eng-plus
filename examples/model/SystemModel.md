@@ -9,6 +9,7 @@
 > This document describes the **target architecture** and **design specification** for the Context Engineering Management system. Features marked with 🔜 indicate planned capabilities not yet fully implemented. Refer to individual tool documentation ([tools/README.md](../tools/README.md)) for current implementation status.
 >
 > **Implementation Status:**
+>
 > - ✅ **Implemented:** Core validation (L1-L3), git operations, context management, run_py tool
 > - 🔜 **Planned:** PRP-aware state management, L4 pattern conformance automation, drift tracking commands
 >
@@ -107,6 +108,7 @@ graph TB
 ### 2.2 Context-as-Compiler Mental Model
 
 **Traditional Programming:**
+
 ```mermaid
 graph LR
     A["Source Code + Headers + Libraries"] --> B["Compiler"]
@@ -122,6 +124,7 @@ graph LR
 ```
 
 **Context Engineering:**
+
 ```mermaid
 graph LR
     A["Requirements + Context + Patterns"] --> B["AI Agent"]
@@ -218,6 +221,7 @@ graph LR
 **Purpose:** Maintain state across sessions and context windows
 
 **Mechanisms:**
+
 - **Serena Memories:** Project knowledge (structure, conventions, patterns)
 - **Git Checkpoints:** Code state at validation gates
 - **Validation Logs:** Test results, error history
@@ -227,12 +231,14 @@ graph LR
 To prevent information leakage and desynchronization across multiple PRP executions:
 
 1. **Checkpoint Naming Convention:**
+
    ```
    checkpoint-{prp_id}-{phase}-{timestamp}
    Example: checkpoint-PRP-003-implementation-1728934567
    ```
 
 2. **Memory Namespacing:**
+
    ```python
    # PRP-scoped memory operations (prevents state leakage)
    prp_id = "PRP-003"
@@ -247,6 +253,7 @@ To prevent information leakage and desynchronization across multiple PRP executi
    - **Cleanup:** Delete temporary checkpoints after PRP completion (retain final checkpoint only)
 
 **Operations:**
+
 ```python
 # Create PRP-scoped checkpoint
 write_memory(f"{prp_id}-checkpoint-types", "Type definitions complete, 0 errors")
@@ -267,6 +274,7 @@ delete_memory(f"{prp_id}-learnings-*")   # Archive or remove PRP-specific learni
 The `prp_id` is injected and persisted through multiple mechanisms:
 
 1. **Session Initialization:**
+
    ```bash
    # User starts PRP execution with explicit ID
    ce prp start PRP-005
@@ -274,6 +282,7 @@ The `prp_id` is injected and persisted through multiple mechanisms:
    ```
 
 2. **Session State Persistence:**
+
    ```python
    # .ce/active_prp_session (JSON)
    {
@@ -290,6 +299,7 @@ The `prp_id` is injected and persisted through multiple mechanisms:
    - Git checkpoint creation includes PRP ID from session state
 
 4. **Session Cleanup:**
+
    ```bash
    # Explicit completion
    ce prp cleanup PRP-005
@@ -306,11 +316,13 @@ The `prp_id` is injected and persisted through multiple mechanisms:
 **Purpose:** Retrieve relevant context on-demand
 
 **Mechanisms:**
+
 - **Symbol Navigation:** `find_symbol("Class/method", include_body=True)`
 - **Pattern Search:** `search_for_pattern("async function.*Error")`
 - **Documentation:** Context7 MCP for library-specific docs
 
 **Strategy:**
+
 1. Overview first: `get_symbols_overview(file)`
 2. Targeted search: `find_symbol` for specific symbols
 3. Context expansion: `find_referencing_symbols` for relationships
@@ -320,12 +332,14 @@ The `prp_id` is injected and persisted through multiple mechanisms:
 **Purpose:** Minimize token consumption while maintaining completeness
 
 **Techniques:**
+
 - **Overview-first:** Structure before implementation details
 - **Symbolic editing:** Edit by symbol path, not full file reads
 - **Targeted reads:** Read specific lines/symbols, not entire files
 - **Batch operations:** Group related changes
 
 **Example:**
+
 ```
 ❌ Wasteful: Read(file) → Edit(file)  # 10k tokens
 ✅ Efficient: Edit(file, old, new)    # 100 tokens
@@ -336,6 +350,7 @@ The `prp_id` is injected and persisted through multiple mechanisms:
 **Purpose:** Prevent context interference and ensure reproducibility
 
 **Mechanisms:**
+
 - **Validation gates:** Checkpoint after each phase
 - **Error boundaries:** Self-healing loops with iteration limits
 - **Strict rules:** 3 LOC limit, tmp/ folder for scripts
@@ -401,6 +416,7 @@ graph TB
 6. **VALIDATION LOOPS** - Four-level testing gates (L1-L4)
 
 **Optional Sections:**
+
 - SERENA PRE-FLIGHT CHECKS
 - SELF-HEALING GATES
 - CONFIDENCE SCORING
@@ -430,6 +446,7 @@ DRIFT_JUSTIFICATION:
 ```
 
 **Example:**
+
 ```yaml
 DRIFT_JUSTIFICATION:
   drift_score: 60%
@@ -494,6 +511,7 @@ graph TB
 #### 3.3.2 Self-Healing Protocol
 
 **Standard Loop:**
+
 1. Run validation command
 2. Capture output
 3. If failure:
@@ -505,6 +523,7 @@ graph TB
 4. Repeat until pass OR escalate after 3 attempts
 
 **Escalation Triggers:**
+
 - Same error after 3 fix attempts
 - Ambiguous error messages
 - Architectural changes required
@@ -515,6 +534,7 @@ graph TB
 **Purpose:** Ensure implementation matches architectural patterns defined in INITIAL.md EXAMPLES
 
 **Validation Steps:**
+
 1. **Extract patterns from EXAMPLES:**
    - Code structure (async/await vs callbacks)
    - Error handling approach (try-catch, error boundaries)
@@ -609,6 +629,7 @@ graph TB
    ```
 
 **Example Check:**
+
 ```python
 # INITIAL.md EXAMPLES shows:
 async def fetch_data():
@@ -699,12 +720,14 @@ graph TB
 The Context Engineering tooling is in active development. Current implementation provides core validation and context management utilities, with PRP-aware state management planned for future releases.
 
 **Implemented Features:**
+
 - ✅ 3-level validation gates (syntax, unit tests, integration) - Level 4 (pattern conformance) planned
 - ✅ Git operations (status, diff, checkpoints)
 - ✅ Context health monitoring (drift detection, sync)
 - ✅ Python code execution (3 LOC enforcement)
 
 **Planned Features:**
+
 - 🔜 PRP execution tracking and state isolation
 - 🔜 PRP-scoped checkpoint management
 - 🔜 Automated state cleanup protocols
@@ -712,6 +735,7 @@ The Context Engineering tooling is in active development. Current implementation
 - 🔜 `/generate-prp` and `/execute-prp` commands
 
 **Architecture:**
+
 - **Location:** `tools/ce/` (Python package)
 - **Management:** UV package manager
 - **CLI:** Single `ce` command with subcommands
@@ -722,11 +746,13 @@ The Context Engineering tooling is in active development. Current implementation
 **Purpose:** Execute Python code with strict 3 LOC limit
 
 **Rules:**
+
 - Ad-hoc code: Max 3 LOC (lines with actual code)
 - Longer scripts: Must be in `tmp/` folder
 - Auto-detect mode: Smart file vs code detection
 
 **Usage:**
+
 ```bash
 # Ad-hoc (max 3 LOC)
 cd tools && uv run ce run_py "import sys; print(sys.version)"
@@ -740,6 +766,7 @@ cd tools && uv run ce run_py tmp/script.py      # Detects file
 ```
 
 **Implementation:**
+
 ```python
 def run_py(code: Optional[str] = None,
            file: Optional[str] = None,
@@ -767,6 +794,7 @@ def run_py(code: Optional[str] = None,
 **Purpose:** Context Engineering operations
 
 **Core Commands (Implemented):**
+
 - `ce validate --level [1|2|3|all]` - Run validation gates
 - `ce git status` - Git repository status
 - `ce git diff [options]` - View git changes
@@ -777,6 +805,7 @@ def run_py(code: Optional[str] = None,
 - `ce run_py` - Execute Python code (3 LOC limit)
 
 **PRP Context Commands (Planned):**
+
 - `ce prp start <prp-id>` - Initialize PRP execution context with namespaced state
 - `ce prp checkpoint <phase>` - Create PRP-scoped checkpoint (e.g., `checkpoint-PRP-003-phase2`)
 - `ce prp cleanup` - Execute state cleanup protocol (Section 5.6)
@@ -785,12 +814,14 @@ def run_py(code: Optional[str] = None,
 - `ce prp list` - List all PRP checkpoints and state
 
 **Drift History Commands (Planned):**
+
 - `ce drift history [--last N]` - Show recent drift decisions from last N PRPs
 - `ce drift show <prp-id>` - Display DRIFT_JUSTIFICATION for specific PRP
 - `ce drift summary` - Aggregate drift statistics and patterns
 - `ce drift compare <prp-id-1> <prp-id-2>` - Compare drift decisions between PRPs
 
 **Implementation Status:**
+
 ```python
 # Implemented in tools/ce/
 ✅ core.py: run_cmd, git_status, git_diff, git_checkpoint, run_py
@@ -803,6 +834,7 @@ def run_py(code: Optional[str] = None,
 ```
 
 **PRP Context Command Examples:**
+
 ```bash
 # Start new PRP execution with isolated state
 ce prp start PRP-005
@@ -822,6 +854,7 @@ ce prp restore PRP-005 implementation
 ```
 
 **Drift History Command Examples:**
+
 ```bash
 # Show last 3 drift decisions
 ce drift history --last 3
@@ -857,6 +890,7 @@ ce drift compare PRP-003 PRP-005
 #### 4.1.3 MCP Integration
 
 **Serena MCP** (Codebase Navigation)
+
 - `find_symbol(name_path)` - Locate code symbols
 - `find_referencing_symbols(name_path, file)` - Find usages
 - `search_for_pattern(pattern)` - Regex search
@@ -865,10 +899,12 @@ ce drift compare PRP-003 PRP-005
 - `read_memory(name)` - Restore knowledge
 
 **Context7 MCP** (Documentation)
+
 - `resolve-library-id(name)` - Find library ID
 - `get-library-docs(id, topic)` - Fetch docs
 
 **Sequential Thinking MCP** (Reasoning)
+
 - `sequentialthinking(thought, thought_number, total_thoughts)` - Step-by-step analysis
 
 ### See Also
@@ -887,12 +923,14 @@ ce drift compare PRP-003 PRP-005
 **Use Case:** Complex features with extensive validation
 
 **Key Sections:**
+
 - SERENA PRE-FLIGHT CHECKS
 - SELF-HEALING GATES with checkpoint creation
 - CONTEXT SYNCHRONIZATION PROTOCOL
 - CONFIDENCE SCORING
 
 **Characteristics:**
+
 - Multiple checkpoints per phase
 - Detailed pseudocode
 - Comprehensive error handling
@@ -903,11 +941,13 @@ ce drift compare PRP-003 PRP-005
 **Use Case:** Simple features, quick implementations
 
 **Key Sections:**
+
 - Minimal CONTEXT (files, patterns, gotchas)
 - Streamlined IMPLEMENTATION (3-4 steps)
 - VALIDATION with automatic self-healing note
 
 **Characteristics:**
+
 - Single checkpoint at end
 - High-level pseudocode
 - Essential error handling only
@@ -970,6 +1010,7 @@ graph LR
 ```
 
 **Purpose:**
+
 - `.claude/` - Claude Code configuration
 - `PRPs/` - Specification documents
 - `examples/` - Reference implementations
@@ -1007,18 +1048,21 @@ graph TB
 ### 5.2 Step Breakdown
 
 **Step 1: CLAUDE.md** (One-time setup)
+
 - Establish project-wide rules
 - Define code structure limits
 - Specify testing requirements
 - Document style conventions
 
 **Step 2: INITIAL.md** (2-5 minutes)
+
 - Write FEATURE section (what to build)
 - Add EXAMPLES (similar code)
 - Link DOCUMENTATION (library docs)
 - List OTHER CONSIDERATIONS (gotchas)
 
 **Step 2.5: Context Sync & Health Check** (1-2 minutes)
+
 - Run `ce context sync` to refresh context with recent codebase changes
 - Run `ce context health` to verify context quality
 - Check drift score (abort if > 30% - indicates stale context)
@@ -1027,23 +1071,27 @@ graph TB
 - **Abort conditions:** High drift, failed sync, context corruption
 
 **Step 3: /generate-prp** (10-15 minutes)
+
 - Automated research: codebase patterns, documentation, architecture
 - Generate complete PRP with all sections
 - Include validation commands and pseudocode
 
 **Step 4: Human Validation** (5-10 minutes)
+
 - Architecture review
 - Security audit
 - Requirement coverage check
 - Implementation sanity check
 
 **Step 5: /execute-prp** (20-90 minutes)
+
 - Parse PRP into tasks
 - Implement following blueprint
 - Run validation gates after each phase
 - Self-heal on failures
 
 **Step 6: Validation Loop** (Continuous)
+
 - Level 1: Syntax checks
 - Level 2: Unit tests
 - Level 3: Integration tests
@@ -1054,6 +1102,7 @@ graph TB
 - Self-correct until 10/10 confidence (all 4 gates pass)
 
 **Step 6.5: State Cleanup & Context Sync** (2-3 minutes)
+
 - Execute cleanup protocol (Section 5.6):
   - Delete intermediate git checkpoints (keep final only)
   - Archive PRP-scoped Serena memories to project knowledge
@@ -1073,6 +1122,7 @@ graph TB
 | Complex | 1-2 min | 15-25 min | 45-90 min | 2-3 min | 63-120 min | 20-40 hrs |
 
 **Notes:**
+
 - **Context Sync (Step 2.5):** Health check + drift detection before PRP generation
 - **Execution:** Includes L1-L4 validation gates and self-healing
 - **Cleanup (Step 6.5):** State cleanup, memory archival, context sync after completion
@@ -1127,6 +1177,7 @@ graph TB
    - Business logic interpretation unclear
 
 **Escalation Process:**
+
 - System logs issue to `PRPs/ISSUES.md`
 - Execution pauses at safe checkpoint
 - Human reviews context and provides guidance
@@ -1141,6 +1192,7 @@ graph TB
 **Cleanup Operations:**
 
 1. **Git Checkpoint Cleanup**
+
    ```bash
    # Keep only final checkpoint for historical reference
    git tag -d checkpoint-{prp_id}-phase1
@@ -1149,6 +1201,7 @@ graph TB
    ```
 
 2. **Serena Memory Archival**
+
    ```python
    # Archive ephemeral PRP memories
    prp_learnings = read_memory(f"{prp_id}-learnings")
@@ -1163,6 +1216,7 @@ graph TB
    - Archive test results to `PRPs/{prp_id}/validation-log.md`
 
 4. **Context Health Check**
+
    ```bash
    ce context health           # Verify clean state
    ce context prune           # Remove stale context entries
@@ -1179,6 +1233,7 @@ graph TB
 | Project Knowledge | Global | Merge PRP learnings, persist patterns |
 
 **Verification:**
+
 ```bash
 # After cleanup, verify no state leakage
 git tag | grep checkpoint-{prp_id}  # Should show only *-final tag
@@ -1186,6 +1241,7 @@ ce context health                   # Should report clean state
 ```
 
 **Critical Rule:** No PRP state should persist into the next PRP execution except:
+
 - Final checkpoint (for rollback capability)
 - Generalized learnings (merged into project knowledge)
 - Persistent project structure knowledge
@@ -1205,6 +1261,7 @@ ce context health                   # Should report clean state
 **Principle:** Fast failure with actionable errors
 
 **Anti-Pattern:**
+
 ```python
 def process_data(params):
     try:
@@ -1215,6 +1272,7 @@ def process_data(params):
 ```
 
 **Best Practice:**
+
 ```python
 def process_data(params):
     try:
@@ -1232,11 +1290,13 @@ def process_data(params):
 **Principle:** Strict enforcement for ad-hoc code
 
 **Rationale:**
+
 - Forces code organization
 - Prevents unmaintainable inline scripts
 - Encourages file-based development
 
 **Enforcement:**
+
 ```python
 # Validate LOC count
 lines = [line for line in code.split('\n') if line.strip()]
@@ -1248,6 +1308,7 @@ if len(lines) > 3:
 ```
 
 **Examples:**
+
 ```bash
 # ✅ ALLOWED (3 LOC)
 run_py --code "x = [1,2,3]; y = sum(x); print(y)"
@@ -1268,6 +1329,7 @@ run_py --file tmp/calculation.py
 **Principle:** No mocks in production, no fake results
 
 **Anti-Pattern:**
+
 ```python
 def test_processor():
     result = {"success": True}  # FAKE RESULT!
@@ -1276,6 +1338,7 @@ def test_processor():
 ```
 
 **Best Practice:**
+
 ```python
 def test_processor():
     result = process_data(test_params)  # REAL CALL
@@ -1289,6 +1352,7 @@ def test_processor():
 **Principle:** Smart detection reduces cognitive load
 
 **Implementation:**
+
 ```python
 # Detect file path vs code
 if "/" in auto or auto.endswith(".py"):
@@ -1298,6 +1362,7 @@ else:
 ```
 
 **Usage:**
+
 ```bash
 # No explicit flags needed
 run_py "print('hello')"     # Auto: code
@@ -1310,12 +1375,14 @@ run_py "../data/analyze.py" # Auto: file path
 **Principle:** Never edit pyproject.toml manually
 
 **Rationale - Why Manual Edits Fail:**
+
 - **Broken dependency resolution:** Manual version specs bypass UV's constraint solver, causing incompatible version combinations
 - **Missing lock file updates:** Changes to pyproject.toml don't auto-update uv.lock, leading to non-reproducible builds across environments
 - **Skipped transitive dependencies:** Direct edits miss cascading dependency updates, resulting in runtime import errors
 - **Build system conflicts:** Incorrect build-system specifications break installation on different platforms
 
 **Operations:**
+
 ```bash
 # ✅ REQUIRED
 uv add requests              # Add production dependency
@@ -1372,6 +1439,7 @@ npm test -- --coverage --verbose
 ```
 
 **Failure Action:**
+
 1. Analyze test failure message
 2. Identify root cause (logic bug, edge case)
 3. Apply fix to implementation
@@ -1399,6 +1467,7 @@ curl -X POST http://localhost:3000/api/endpoint \
 ```
 
 **Failure Action:**
+
 1. Check server logs
 2. Verify environment configuration
 3. Debug with MCP tools
@@ -1490,6 +1559,7 @@ def calculate_confidence(results: ValidationResults) -> int:
 ```
 
 **L4 Validation Requirements:**
+
 - `pattern_conformance_pass`: Implementation matches EXAMPLES from INITIAL.md
 - `drift_score < 0.10`: Less than 10% architectural divergence (auto-accept threshold)
 - Scores 9/10: L1-L3 pass but pattern drift detected (10-30% range)
@@ -1497,6 +1567,7 @@ def calculate_confidence(results: ValidationResults) -> int:
 
 **Scoring Limitations:**
 This confidence scoring focuses on **code correctness and test coverage** but does not account for:
+
 - Security vulnerability scanning (SAST/DAST)
 - Edge case coverage beyond unit tests
 - Performance benchmarks
@@ -1510,6 +1581,7 @@ For production-critical systems, supplement with additional validation (security
 #### 7.4.1 Design Principles
 
 **Core Philosophy:**
+
 - **Single source of truth:** Production logic = Test logic
 - **Composable:** Test individual nodes, subgraphs, or full pipeline
 - **Observable:** Mocked nodes visible in logs with clear indicators
@@ -1517,6 +1589,7 @@ For production-critical systems, supplement with additional validation (security
 - **CI/CD agnostic:** Abstract pipeline definition, concrete execution
 
 **Key Requirements:**
+
 1. Same builder function constructs both production and test pipelines
 2. Mock strategy interface allows clean substitution
 3. E2E tests run full pipeline with mocked external dependencies
@@ -1785,6 +1858,7 @@ def test_parser_node_unit():
 #### 7.4.5 CI/CD Pipeline Abstraction
 
 **Design Goals:**
+
 - Unbound from concrete CI/CD implementation (GitHub Actions, GitLab CI, Jenkins)
 - Readable, manipulable signatures
 - Easy to test pipeline definition itself
@@ -1949,6 +2023,7 @@ def test_ci_pipeline_structure():
 | First-pass success | Yes |
 
 **Manual Equivalent:**
+
 - Architecture design: 2 hrs
 - Implementation: 8 hrs
 - Testing: 3 hrs
@@ -1958,12 +2033,14 @@ def test_ci_pipeline_structure():
 **⚠️ Case Study Context:**
 
 This 36x speedup represents an **exceptional outlier** under optimal conditions:
+
 - **Well-scoped task:** MCP server with clear interface boundaries
 - **Familiar patterns:** Task management is well-understood domain
 - **Mature tooling:** MCP protocol has established conventions
 - **Experienced operator:** User proficient in PRP creation and validation
 
 **Typical Performance:** Most production features achieve 10-24x speedup. Factors affecting speedup:
+
 - Complex integrations: 10-15x (multiple systems, external APIs)
 - Greenfield features: 15-20x (new patterns, no legacy constraints)
 - Well-scoped additions: 20-30x (clear boundaries, established patterns)
@@ -1988,12 +2065,14 @@ This 36x speedup represents an **exceptional outlier** under optimal conditions:
 | Production readiness | 94% | 90% |
 
 **Definitions:**
+
 - **First-pass:** Code works without validation failures (85% of executions)
 - **Second-pass:** Code works after first self-healing iteration
 - **Self-healing:** Validation failures fixed automatically (92% fix rate)
 - **Production-ready:** Meets all quality gates (10/10 confidence, L1-L4 pass)
 
 **Success Rate Calculation:**
+
 - First-pass success: 85% complete immediately
 - Remaining 15% enter self-healing
 - Self-healing fixes 92% of the 15% = 13.8%
@@ -2005,16 +2084,19 @@ This 36x speedup represents an **exceptional outlier** under optimal conditions:
 ### 8.3 Productivity Impact
 
 **Single Developer:**
+
 - Features per week (manual): 2-3
 - Features per week (PRP-driven): 8-12
 - **Productivity increase: 3-4x**
 
 **Team of 5:**
+
 - Features per week (manual): 10-15
 - Features per week (PRP-driven): 40-60
 - **Productivity increase: 3-4x**
 
 **Quality Consistency:**
+
 - Code style: 100% consistent (enforced via CLAUDE.md)
 - Test coverage: 100% consistent (enforced via validation gates)
 - Documentation: 100% consistent (generated from PRPs)
@@ -2033,6 +2115,7 @@ This 36x speedup represents an **exceptional outlier** under optimal conditions:
 | Very Large (> 200k LOC) | +60% | +35% |
 
 **Mitigation:**
+
 - Use Serena MCP for efficient navigation
 - Cache patterns in `examples/` directory
 - Maintain `PRPs/ai_docs/` with key library info
@@ -2156,6 +2239,7 @@ graph TD
 ### 11.1 Core Value Proposition
 
 Context Engineering Management delivers:
+
 - **100x reliability improvement** over prompt engineering
 - **10-24x speed improvement** over manual development
 - **3-4x productivity increase** for teams
@@ -2171,6 +2255,7 @@ Context Engineering Management delivers:
 ### 11.3 Operational Requirements
 
 **Prerequisites:**
+
 - CLAUDE.md with project rules
 - PRPs/ structure with templates
 - MCP integration (Serena, Context7)
@@ -2178,6 +2263,7 @@ Context Engineering Management delivers:
 - Validation infrastructure
 
 **Team Skills:**
+
 - PRP writing (INITIAL.md creation)
 - Human validation (architecture review)
 - Context maintenance (CLAUDE.md updates)
@@ -2227,24 +2313,28 @@ Context Engineering Management delivers:
 **Methodology:** Based on 4 documented PRP case studies (PRP-001 through PRP-004) executed between Jan-Oct 2025. These represent internal observations, not peer-reviewed research.
 
 **Case Studies:**
+
 - PRP-001: JWT Authentication (165 min)
 - PRP-002: Stripe Payments (135 min)
 - PRP-003: Inventory Management (120 min)
 - PRP-004: Order Status Webhooks (in progress)
 
 **Metrics Derived from Case Studies:**
+
 - 85% first-pass success rate (Section 8.2)
 - 92% self-healing success rate (Section 8.2)
 - 10-24x typical speedup range (Section 8.3)
 - 36x exceptional speedup for PRP Taskmaster (Section 8.1)
 
 **Limitations:**
+
 - Small sample size (n=4)
 - Single operator (experienced with framework)
 - Similar domain (web application features)
 - Not independently validated
 
 **Claims Status:**
+
 - ✅ **Research-backed:** 35-45% baseline, 1.5-2x context improvement, 60-90% token reduction
 - ⚠️ **Internal observations:** 85% success rate, 10-24x speedup, 92% self-healing rate
 - 🎯 **Aspirational targets:** 95% success rate, 100x improvement (exceptional cases)
@@ -2259,6 +2349,7 @@ Context Engineering Management delivers:
 **Maintainer:** Context Engineering Team
 
 **Related Documents:**
+
 - `docs/research/01-prp-system.md` - PRP detailed specification
 - `docs/research/02-context-engineering-foundations.md` - Philosophical foundation
 - `docs/research/03-mcp-orchestration.md` - MCP integration patterns
@@ -2269,6 +2360,7 @@ Context Engineering Management delivers:
 - `CLAUDE.md` - Project implementation guide
 
 **Revision Policy:**
+
 - Review quarterly for accuracy
 - Update with real-world metrics
 - Incorporate lessons learned

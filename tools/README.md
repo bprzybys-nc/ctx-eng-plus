@@ -103,6 +103,102 @@ ce validate --level all
 # Runs all validation levels sequentially
 ```
 
+---
+
+### Markdown & Mermaid Linting
+
+**Markdown Linting** (integrated in Level 1 validation)
+```bash
+# Lint markdown files
+npm run lint:md
+
+# Auto-fix markdown issues
+npm run lint:md:fix
+```
+
+**What it does**:
+- Validates markdown syntax using markdownlint-cli2
+- Checks for common issues: trailing spaces, missing blank lines, inconsistent headings
+- Auto-fixes formatting issues automatically
+- Integrated into Level 1 validation gate
+
+**Configuration**: `.markdownlint.json` in project root
+```json
+{
+  "default": true,
+  "MD013": false,  // Line length disabled (allow long code examples)
+  "MD033": {       // Inline HTML allowed for badges
+    "allowed_elements": ["img", "br", "sub", "sup", "User"]
+  },
+  "MD046": {       // Fenced code blocks required
+    "style": "fenced"
+  }
+}
+```
+
+**Mermaid Diagram Validation** (integrated in Level 1 validation)
+
+The mermaid validator automatically checks and fixes diagram syntax issues:
+
+**Features**:
+- ✅ Validates node text for unquoted special characters
+- ✅ Checks style statements have color specified (theme compatibility)
+- ✅ Auto-fixes common issues (renaming nodes, adding colors)
+- ✅ HTML tag support (`<br/>`, `<sub/>`, `<sup/>`)
+- ✅ Smart detection of problematic characters only
+
+**Safe Characters** (no quoting needed):
+- Colons `:` - "Level 0: CLAUDE.md" ✅
+- Question marks `?` - "Why? Because!" ✅
+- Exclamation marks `!` - "Important!" ✅
+- Slashes `/` `\` - "path/to/file" ✅
+- HTML tags - "Line 1<br/>Line 2" ✅
+
+**Problematic Characters** (require quoting or node renaming):
+- Brackets `[]` `{}` - used for node shape syntax
+- Parentheses `()` - used for node shape syntax
+- Pipes `|` - used for subgraph syntax
+- Unbalanced quotes `"` `'` - break parsing
+
+**Example Issues Detected**:
+```mermaid
+graph TD
+    N1[Text with (parentheses)]    # ❌ Will be flagged
+    style B fill:#ff0000,color:#fff           # ❌ Missing color specification
+```
+
+**Auto-Fixed Output**:
+```mermaid
+graph TD
+    N1[Text with parentheses renamed]
+    style B fill:#ff0000,color:#fff  # ✅ Color added
+```
+
+**Standalone Usage** (if needed):
+```bash
+# Validate all markdown/mermaid in docs/
+cd tools
+python ce/mermaid_validator.py ../docs
+
+# Auto-fix issues
+python ce/mermaid_validator.py --fix ../docs
+```
+
+**Results**:
+- Files checked: 14
+- Diagrams checked: 73
+- Issues auto-fixed: varies based on file state
+
+**Style Color Determination**:
+
+The validator automatically determines appropriate text color based on background luminance:
+- Light backgrounds (luminance > 0.5) → black text `#000`
+- Dark backgrounds (luminance ≤ 0.5) → white text `#fff`
+
+Uses W3C WCAG 2.0 relative luminance formula for accurate color contrast.
+
+---
+
 ### Git Operations
 
 **Check Status**

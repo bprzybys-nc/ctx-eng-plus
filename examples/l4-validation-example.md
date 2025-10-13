@@ -33,6 +33,7 @@ class APIClient:
     def __init__(self, base_url: str):
         self.base_url = base_url
 ```
+
 ```
 
 ## IMPLEMENTATION BLUEPRINT
@@ -68,6 +69,7 @@ class APIClient:
 ```
 
 **L4 Validation Result**:
+
 ```bash
 $ ce validate --level 4 --prp PRPs/PRP-42.md
 
@@ -105,6 +107,7 @@ class APIClient:
 ```
 
 **L4 Validation Result**:
+
 ```bash
 $ ce validate --level 4 --prp PRPs/PRP-42.md
 
@@ -143,6 +146,7 @@ class ApiClient:  # Should be APIClient (PascalCase convention)
 ```
 
 **L4 Validation Result**:
+
 ```bash
 $ ce validate --level 4 --prp PRPs/PRP-42.md
 

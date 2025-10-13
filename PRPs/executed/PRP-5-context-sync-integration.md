@@ -38,6 +38,7 @@ updated_by: "update-context-command"
 **Effort**: 13.0h (Pre-Sync Automation: 3h, Post-Sync Automation: 4h, Drift Detection: 2h, CLI Integration: 2h, Testing: 1h, Claude Code Hooks: 1h)
 
 **Non-Goals**:
+
 - ❌ Automatic context repair (escalates to manual intervention)
 - ❌ Distributed context synchronization (single-machine only)
 - ❌ Context version control (git handles code versions)
@@ -72,12 +73,14 @@ updated_by: "update-context-command"
 ## 📖 Context
 
 **Related Work**:
+
 - **PRP-2 dependency**: Cleanup protocol integration for Step 6.5
 - **Existing context.py**: Has `context_sync()`, `context_health()` functions
 - **Model.md spec**: Section 5.2 defines Steps 2.5 and 6.5 insertion points
 - **Workflow integration**: Hooks into PRP generation (PRP-3) and execution (PRP-4)
 
 **Current State**:
+
 - ✅ Basic context operations: `ce context sync`, `ce context health`
 - ✅ Cleanup protocol: PRP-2 provides `cleanup_prp()`
 - ✅ State management: PRP-2 tracks active PRP
@@ -88,6 +91,7 @@ updated_by: "update-context-command"
 - ❌ No auto-sync mode: Cannot enable workflow-wide automation
 
 **Desired State**:
+
 - ✅ Pre-generation sync: Automatic context sync + health check before PRP generation
 - ✅ Drift abort logic: Block generation if drift > 30%
 - ✅ Git verification: Ensure clean state before operations
@@ -117,6 +121,7 @@ updated_by: "update-context-command"
 **Approach**: Hook function callable from PRP generation workflow
 
 **Files to Modify**:
+
 - `tools/ce/context.py` - Add pre-generation sync function
 
 **Key Functions**:
@@ -227,6 +232,7 @@ def check_drift_threshold(drift_score: float, force: bool = False) -> None:
 **Approach**: Integrate PRP-2 cleanup protocol with context sync
 
 **Files to Modify**:
+
 - `tools/ce/context.py` - Add post-execution sync function
 - `tools/ce/prp.py` - Enhance cleanup_prp() with context sync
 
@@ -345,6 +351,7 @@ def sync_serena_context() -> Dict[str, Any]:
 **Approach**: Expand existing context_health() with verbose reporting
 
 **Files to Modify**:
+
 - `tools/ce/context.py` - Enhance drift detection
 
 **Key Functions**:
@@ -430,6 +437,7 @@ def drift_report_markdown() -> str:
 **Approach**: Extend `ce context` subcommand group, add config flag
 
 **Files to Modify**:
+
 - `tools/ce/__main__.py` - Add context subcommands
 - `tools/ce/context.py` - Add auto-sync mode management
 
@@ -538,6 +546,7 @@ def execute_prp(prp_id: str, ...) -> Dict[str, Any]:
 **Approach**: Unit + integration tests, README updates
 
 **Files to Create**:
+
 - `tools/tests/test_context_sync.py` - Sync automation tests
 
 **Test Coverage**:
@@ -582,6 +591,7 @@ def test_auto_sync_mode():
 ```
 
 **Documentation Updates**:
+
 - `tools/README.md`: Add context sync commands
 - `PRPs/Model.md`: Update Steps 2.5 and 6.5 with automation details
 
@@ -598,6 +608,7 @@ def test_auto_sync_mode():
 **Approach**: Document recommended Claude Code hooks, provide configuration templates
 
 **Files to Modify**:
+
 - `.claude/settings.local.json` - Add working hook configuration
 - `.claude/commands/execute-prp.md` - Document hook integration
 - `PRPs/executed/PRP-5-context-sync-integration.md` - Update with hook details
@@ -605,17 +616,19 @@ def test_auto_sync_mode():
 **Claude Code Hooks Overview**:
 
 Claude Code supports hooks that trigger shell commands on specific events:
+
 - `SessionStart`: When new Claude Code session starts
 - `SessionEnd`: When session ends
 - `UserPromptSubmit`: After user sends a message
 - `PreToolUse` / `PostToolUse`: Before/after tool execution
 - `PreCompact`: Before context compaction
 
-**Official Documentation**: https://docs.claude.com/en/docs/claude-code/hooks
+**Official Documentation**: <https://docs.claude.com/en/docs/claude-code/hooks>
 
 **Hook Configuration** (`.claude/settings.local.json`):
 
 Default configuration includes SessionStart health check:
+
 ```json
 {
   "hooks": {
@@ -636,6 +649,7 @@ Default configuration includes SessionStart health check:
 ```
 
 **Additional hooks available** (add to settings.local.json as needed):
+
 - **UserPromptSubmit**: Auto-sync reminder (checks if auto-sync disabled)
 - **PostToolUse**: Drift spike detector (alerts after Edit/Write if drift >40%)
 
@@ -694,33 +708,43 @@ When auto-sync is enabled (`ce context auto-sync --enable`), Claude Code hooks p
 ## 🔍 Validation Gates
 
 ### Gate 1: Pre-Sync Tests (After Phase 1)
+
 ```bash
 cd tools && uv run pytest tests/test_context.py::test_pre_generation_sync -v
 ```
+
 **Expected**: Pre-sync automation works, drift abort triggers at >30%
 
 ### Gate 2: Post-Sync Tests (After Phase 2)
+
 ```bash
 cd tools && uv run pytest tests/test_context.py::test_post_execution_sync -v
 ```
+
 **Expected**: Post-sync integrates cleanup, creates final checkpoint
 
 ### Gate 3: Drift Detection Tests (After Phase 3)
+
 ```bash
 cd tools && uv run pytest tests/test_context.py::test_drift_calculation -v
 ```
+
 **Expected**: Drift scoring accurate, verbose reports detailed
 
 ### Gate 4: CLI Integration Tests (After Phase 4)
+
 ```bash
 cd tools && uv run pytest tests/test_context.py::test_auto_sync_mode -v
 ```
+
 **Expected**: Auto-sync mode enable/disable works, workflow integration functional
 
 ### Gate 5: Coverage Check (After Phase 5)
+
 ```bash
 cd tools && uv run pytest tests/ --cov=ce.context --cov-report=term-missing --cov-fail-under=80
 ```
+
 **Expected**: ≥80% test coverage for context.py
 
 ---
@@ -728,18 +752,22 @@ cd tools && uv run pytest tests/ --cov=ce.context --cov-report=term-missing --co
 ## 📚 References
 
 **Model.md Sections**:
+
 - Section 5.2: Workflow Steps 2.5 and 6.5 (context sync integration points)
 - Section 5.6: PRP State Cleanup Protocol (Step 6.5 cleanup details)
 
 **GRAND-PLAN.md**:
+
 - Lines 322-370: PRP-5 specification (this PRP)
 - Lines 117-171: PRP-2 (cleanup protocol dependency)
 
 **Existing Code**:
+
 - `tools/ce/context.py`: context_sync(), context_health() functions
 - `tools/ce/prp.py`: cleanup_prp() function from PRP-2
 
 **Research Docs**:
+
 - `docs/research/06-workflow-patterns.md`: Context sync patterns
 
 ---
