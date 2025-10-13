@@ -746,3 +746,149 @@ def drift_report_markdown() -> str:
             md += f"{i}. {rec}\n"
 
     return md
+
+
+# ============================================================================
+# Auto-Sync Mode Configuration
+# ============================================================================
+
+def enable_auto_sync() -> Dict[str, Any]:
+    """Enable auto-sync mode in .ce/config.
+
+    Returns:
+        {
+            "success": True,
+            "mode": "enabled",
+            "config_path": ".ce/config"
+        }
+
+    Process:
+        1. Create .ce/config if not exists
+        2. Set auto_sync: true in config
+        3. Log: "Auto-sync enabled - Steps 2.5 and 6.5 will run automatically"
+    """
+    from pathlib import Path
+    import json
+
+    config_dir = Path(".ce")
+    config_file = config_dir / "config"
+
+    # Create directory if needed
+    config_dir.mkdir(exist_ok=True)
+
+    # Read existing config or create new
+    if config_file.exists():
+        try:
+            config = json.loads(config_file.read_text())
+        except (json.JSONDecodeError, OSError):
+            config = {}
+    else:
+        config = {}
+
+    # Set auto_sync
+    config["auto_sync"] = True
+
+    # Write config
+    config_file.write_text(json.dumps(config, indent=2))
+
+    logger.info("Auto-sync enabled - Steps 2.5 and 6.5 will run automatically")
+
+    return {
+        "success": True,
+        "mode": "enabled",
+        "config_path": str(config_file)
+    }
+
+
+def disable_auto_sync() -> Dict[str, Any]:
+    """Disable auto-sync mode in .ce/config.
+
+    Returns:
+        {
+            "success": True,
+            "mode": "disabled",
+            "config_path": ".ce/config"
+        }
+    """
+    from pathlib import Path
+    import json
+
+    config_dir = Path(".ce")
+    config_file = config_dir / "config"
+
+    # Read existing config
+    if config_file.exists():
+        try:
+            config = json.loads(config_file.read_text())
+        except (json.JSONDecodeError, OSError):
+            config = {}
+    else:
+        config = {}
+
+    # Set auto_sync to false
+    config["auto_sync"] = False
+
+    # Write config
+    config_dir.mkdir(exist_ok=True)
+    config_file.write_text(json.dumps(config, indent=2))
+
+    logger.info("Auto-sync disabled - Manual sync required")
+
+    return {
+        "success": True,
+        "mode": "disabled",
+        "config_path": str(config_file)
+    }
+
+
+def is_auto_sync_enabled() -> bool:
+    """Check if auto-sync mode is enabled.
+
+    Returns:
+        True if enabled, False otherwise
+
+    Process:
+        1. Read .ce/config
+        2. Return config.get("auto_sync", False)
+    """
+    from pathlib import Path
+    import json
+
+    config_file = Path(".ce/config")
+
+    if not config_file.exists():
+        return False
+
+    try:
+        config = json.loads(config_file.read_text())
+        return config.get("auto_sync", False)
+    except (json.JSONDecodeError, OSError):
+        return False
+
+
+def get_auto_sync_status() -> Dict[str, Any]:
+    """Get auto-sync mode status.
+
+    Returns:
+        {
+            "enabled": True,
+            "config_path": ".ce/config",
+            "message": "Auto-sync is enabled"
+        }
+    """
+    from pathlib import Path
+
+    enabled = is_auto_sync_enabled()
+    config_file = Path(".ce/config")
+
+    message = (
+        "Auto-sync is enabled - Steps 2.5 and 6.5 run automatically"
+        if enabled
+        else "Auto-sync is disabled - Manual sync required"
+    )
+
+    return {
+        "enabled": enabled,
+        "config_path": str(config_file),
+        "message": message
+    }

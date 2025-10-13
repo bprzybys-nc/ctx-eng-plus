@@ -8,7 +8,13 @@ from typing import Any, Dict
 from . import __version__
 from .core import git_status, git_checkpoint, git_diff, run_py
 from .validate import validate_level_1, validate_level_2, validate_level_3, validate_level_4, validate_all
-from .context import sync, health, prune
+from .context import (
+    sync, health, prune,
+    pre_generation_sync, post_execution_sync,
+    context_health_verbose, drift_report_markdown,
+    enable_auto_sync, disable_auto_sync, get_auto_sync_status,
+    prune_stale_memories
+)
 from .generate import generate_prp
 
 
@@ -114,20 +120,31 @@ def cmd_context(args) -> int:
             return 0
 
         elif args.action == "health":
-            result = health()
-            print(format_output(result, args.json))
+            # Check if verbose flag
+            verbose = getattr(args, 'verbose', False)
 
-            # Print summary
-            if not args.json:
-                print()
-                if result["healthy"]:
-                    print("✅ Context is healthy")
+            if verbose:
+                result = context_health_verbose()
+                if args.json:
+                    print(format_output(result, True))
                 else:
-                    print("⚠️  Context needs attention:")
-                    for rec in result["recommendations"]:
-                        print(f"  • {rec}")
+                    print(drift_report_markdown())
+                return 0 if result["threshold"] != "critical" else 1
+            else:
+                result = health()
+                print(format_output(result, args.json))
 
-            return 0 if result["healthy"] else 1
+                # Print summary
+                if not args.json:
+                    print()
+                    if result["healthy"]:
+                        print("✅ Context is healthy")
+                    else:
+                        print("⚠️  Context needs attention:")
+                        for rec in result["recommendations"]:
+                            print(f"  • {rec}")
+
+                return 0 if result["healthy"] else 1
 
         elif args.action == "prune":
             age = args.age or 7
@@ -136,12 +153,78 @@ def cmd_context(args) -> int:
             print(format_output(result, args.json))
             return 0
 
+        elif args.action == "pre-sync":
+            force = getattr(args, 'force', False)
+            result = pre_generation_sync(force=force)
+            if args.json:
+                print(format_output(result, True))
+            else:
+                print(f"✅ Pre-generation sync complete")
+                print(f"   Drift score: {result['drift_score']:.1f}%")
+                print(f"   Git clean: {result['git_clean']}")
+            return 0
+
+        elif args.action == "post-sync":
+            prp_id = getattr(args, 'prp_id', None)
+            if not prp_id:
+                print("❌ post-sync requires --prp-id argument", file=sys.stderr)
+                return 1
+
+            skip_cleanup = getattr(args, 'skip_cleanup', False)
+            result = post_execution_sync(prp_id, skip_cleanup=skip_cleanup)
+            if args.json:
+                print(format_output(result, True))
+            else:
+                print(f"✅ Post-execution sync complete (PRP-{prp_id})")
+                print(f"   Cleanup: {result['cleanup_completed']}")
+                print(f"   Drift score: {result['drift_score']:.1f}%")
+                if result['final_checkpoint']:
+                    print(f"   Checkpoint: {result['final_checkpoint']}")
+            return 0
+
+        elif args.action == "auto-sync":
+            # Check subaction
+            subaction = getattr(args, 'subaction', None)
+
+            if subaction == "enable" or getattr(args, 'enable', False):
+                result = enable_auto_sync()
+                if args.json:
+                    print(format_output(result, True))
+                else:
+                    print(f"✅ {result['mode'].title()}: Auto-sync enabled")
+                    print(f"   Steps 2.5 and 6.5 will run automatically")
+                return 0
+
+            elif subaction == "disable" or getattr(args, 'disable', False):
+                result = disable_auto_sync()
+                if args.json:
+                    print(format_output(result, True))
+                else:
+                    print(f"✅ {result['mode'].title()}: Auto-sync disabled")
+                    print(f"   Manual sync required")
+                return 0
+
+            elif subaction == "status" or getattr(args, 'status', False):
+                result = get_auto_sync_status()
+                if args.json:
+                    print(format_output(result, True))
+                else:
+                    status_emoji = "✅" if result["enabled"] else "❌"
+                    print(f"{status_emoji} {result['message']}")
+                return 0
+
+            else:
+                print("❌ auto-sync requires --enable, --disable, or --status", file=sys.stderr)
+                return 1
+
         else:
             print(f"Unknown context action: {args.action}", file=sys.stderr)
             return 1
 
     except Exception as e:
         print(f"❌ Context operation failed: {str(e)}", file=sys.stderr)
+        import traceback
+        traceback.print_exc()
         return 1
 
 
@@ -370,23 +453,64 @@ Examples:
     )
     context_parser.add_argument(
         "action",
-        choices=["sync", "health", "prune"],
+        choices=["sync", "health", "prune", "pre-sync", "post-sync", "auto-sync"],
         help="Context action to perform"
     )
+    # Common flags
+    context_parser.add_argument(
+        "--json",
+        action="store_true",
+        help="Output as JSON"
+    )
+    # For health action
+    context_parser.add_argument(
+        "--verbose",
+        action="store_true",
+        help="Verbose health report with component breakdown (for health)"
+    )
+    # For prune action
     context_parser.add_argument(
         "--age",
         type=int,
-        help="Age in days for pruning (default: 7)"
+        help="Age in days for pruning (default: 7, for prune)"
     )
     context_parser.add_argument(
         "--dry-run",
         action="store_true",
         help="Dry run mode (for prune)"
     )
+    # For pre-sync action
     context_parser.add_argument(
-        "--json",
+        "--force",
         action="store_true",
-        help="Output as JSON"
+        help="Skip drift abort check (for pre-sync, dangerous)"
+    )
+    # For post-sync action
+    context_parser.add_argument(
+        "--prp-id",
+        help="PRP identifier (for post-sync)"
+    )
+    context_parser.add_argument(
+        "--skip-cleanup",
+        action="store_true",
+        help="Skip cleanup protocol (for post-sync)"
+    )
+    # For auto-sync action
+    auto_sync_group = context_parser.add_mutually_exclusive_group()
+    auto_sync_group.add_argument(
+        "--enable",
+        action="store_true",
+        help="Enable auto-sync mode (for auto-sync)"
+    )
+    auto_sync_group.add_argument(
+        "--disable",
+        action="store_true",
+        help="Disable auto-sync mode (for auto-sync)"
+    )
+    auto_sync_group.add_argument(
+        "--status",
+        action="store_true",
+        help="Check auto-sync status (for auto-sync)"
     )
 
     # === RUN_PY COMMAND ===
