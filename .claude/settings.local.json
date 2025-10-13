@@ -11,7 +11,11 @@
       "mcp__serena__find_symbol",
       "mcp__serena__search_for_pattern",
       "mcp__serena__list_dir",
-      "mcp__serena__activate_project"
+      "mcp__serena__activate_project",
+      "mcp__serena__read_file",
+      "mcp__git__git_status",
+      "mcp__git__git_log",
+      "mcp__git__git_diff"
     ],
     "deny": [],
     "ask": []
