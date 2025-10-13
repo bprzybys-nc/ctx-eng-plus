@@ -325,3 +325,198 @@ def pre_generation_sync(
 
     logger.info(f"Pre-generation sync successful{prp_log}")
     return result
+
+
+# ============================================================================
+# Post-Execution Sync Functions (Step 6.5)
+# ============================================================================
+
+def post_execution_sync(
+    prp_id: str,
+    skip_cleanup: bool = False
+) -> Dict[str, Any]:
+    """Execute Step 6.5: Post-execution cleanup and context sync.
+
+    Args:
+        prp_id: PRP identifier
+        skip_cleanup: Skip cleanup protocol (for testing)
+
+    Returns:
+        {
+            "success": True,
+            "cleanup_completed": True,
+            "sync_completed": True,
+            "final_checkpoint": "checkpoint-PRP-003-final-20251012-160000",
+            "drift_score": 5.1,  # After sync
+            "memories_archived": 2,
+            "memories_deleted": 3,
+            "checkpoints_deleted": 2
+        }
+
+    Raises:
+        RuntimeError: If cleanup or sync fails
+
+    Process:
+        1. Execute cleanup protocol (unless skip_cleanup)
+        2. Run context sync
+        3. Run health check
+        4. Create final checkpoint
+        5. Remove active PRP session
+        6. Return cleanup + sync summary
+
+    Integration Points:
+        - cleanup_prp(prp_id): From PRP-2
+        - context_sync(): Existing context.py function
+        - context_health(): Existing context.py function
+        - create_checkpoint(phase="final"): From PRP-2
+    """
+    from .prp import cleanup_prp, create_checkpoint, get_active_prp, end_prp
+    from datetime import datetime, timezone
+
+    logger.info(f"Starting post-execution sync (PRP-{prp_id})")
+
+    result = {
+        "success": True,
+        "cleanup_completed": False,
+        "sync_completed": False,
+        "final_checkpoint": None,
+        "drift_score": 0.0,
+        "memories_archived": 0,
+        "memories_deleted": 0,
+        "checkpoints_deleted": 0
+    }
+
+    # Step 1: Execute cleanup protocol (unless skip_cleanup)
+    if not skip_cleanup:
+        try:
+            cleanup_result = cleanup_prp(prp_id)
+            result["cleanup_completed"] = True
+            result["memories_archived"] = len(cleanup_result["memories_archived"])
+            result["memories_deleted"] = len(cleanup_result["memories_deleted"])
+            result["checkpoints_deleted"] = cleanup_result["checkpoints_deleted"]
+            logger.info(f"✓ Cleanup completed: {result['checkpoints_deleted']} checkpoints deleted")
+        except Exception as e:
+            raise RuntimeError(
+                f"Cleanup protocol failed: {str(e)}\n"
+                f"🔧 Troubleshooting: Review cleanup errors and retry manually"
+            ) from e
+    else:
+        logger.info("Skipping cleanup protocol (skip_cleanup=True)")
+        result["cleanup_completed"] = True
+
+    # Step 2: Run context sync
+    try:
+        sync_result = sync()
+        result["sync_completed"] = True
+        logger.info(f"✓ Context sync completed: {sync_result['reindexed_count']} files reindexed")
+    except Exception as e:
+        raise RuntimeError(
+            f"Context sync failed: {str(e)}\n"
+            f"🔧 Troubleshooting: Check git configuration and repository state"
+        ) from e
+
+    # Step 3: Run health check
+    try:
+        health_result = health()
+        drift_score = health_result["drift_score"] * 100  # Convert to percentage
+        result["drift_score"] = drift_score
+        logger.info(f"✓ Health check completed: {drift_score:.1f}% drift")
+
+        # Warn if drift still high after sync
+        if drift_score > 10:
+            logger.warning(f"Drift still elevated after sync: {drift_score:.1f}%")
+    except Exception as e:
+        logger.warning(f"Health check failed: {e}")
+
+    # Step 4: Create final checkpoint (if active PRP session exists)
+    active = get_active_prp()
+    if active and active["prp_id"] == prp_id:
+        try:
+            checkpoint_result = create_checkpoint(
+                phase="final",
+                message=f"PRP-{prp_id} complete with context sync"
+            )
+            result["final_checkpoint"] = checkpoint_result["tag_name"]
+            logger.info(f"✓ Final checkpoint created: {checkpoint_result['tag_name']}")
+        except RuntimeError as e:
+            # Don't fail if checkpoint creation fails (may already be committed)
+            logger.warning(f"Could not create final checkpoint: {e}")
+
+        # Step 5: Remove active PRP session
+        try:
+            end_prp(prp_id)
+            logger.info(f"✓ Active PRP session ended")
+        except Exception as e:
+            logger.warning(f"Could not end PRP session: {e}")
+    else:
+        logger.info("No active PRP session to end")
+
+    logger.info(f"Post-execution sync completed (PRP-{prp_id})")
+    return result
+
+
+def sync_serena_context() -> Dict[str, Any]:
+    """Sync Serena MCP context with current codebase.
+
+    Returns:
+        {
+            "success": True,
+            "files_indexed": 127,
+            "symbols_updated": 453,
+            "memories_refreshed": 5
+        }
+
+    Process:
+        1. Trigger Serena re-index (if available)
+        2. Update relevant memories with new patterns
+        3. Refresh codebase structure knowledge
+        4. Return sync summary
+
+    Note: This is a placeholder. Full implementation requires Serena MCP integration.
+    """
+    # FIXME: Placeholder implementation - needs Serena MCP integration
+    logger.warning("Serena MCP sync not implemented - skipping")
+
+    return {
+        "success": True,
+        "files_indexed": 0,
+        "symbols_updated": 0,
+        "memories_refreshed": 0,
+        "message": "Serena sync requires MCP integration (not yet implemented)"
+    }
+
+
+def prune_stale_memories(age_days: int = 30) -> Dict[str, Any]:
+    """Prune stale Serena memories older than age_days.
+
+    Args:
+        age_days: Delete memories older than this (default: 30 days)
+
+    Returns:
+        {
+            "success": True,
+            "memories_pruned": 12,
+            "space_freed_kb": 45.2
+        }
+
+    Process:
+        1. List all Serena memories
+        2. Filter by age (creation timestamp)
+        3. Exclude essential memories (never delete):
+           - project-patterns
+           - code-style-conventions
+           - testing-standards
+        4. Delete stale memories via Serena MCP
+        5. Return pruning summary
+
+    Note: This is a placeholder. Full implementation requires Serena MCP integration.
+    """
+    # FIXME: Placeholder implementation - needs Serena MCP integration
+    logger.warning(f"Serena memory pruning not implemented - would prune memories older than {age_days} days")
+
+    return {
+        "success": True,
+        "memories_pruned": 0,
+        "space_freed_kb": 0.0,
+        "message": "Memory pruning requires Serena MCP integration (not yet implemented)"
+    }
