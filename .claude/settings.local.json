@@ -10,5 +10,19 @@
     ],
     "deny": [],
     "ask": []
+  },
+  "hooks": {
+    "SessionStart": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "cd tools && uv run ce context health --json | jq -r 'if .drift_score > 30 then \"⚠️ HIGH DRIFT: \" + (.drift_score | tostring) + \"% - Run: ce context sync\" elif .drift_score > 10 then \"⚠️ Moderate drift: \" + (.drift_score | tostring) + \"%\" else \"✅ Context healthy: \" + (.drift_score | tostring) + \"%\" end'",
+            "timeout": 5
+          }
+        ]
+      }
+    ]
   }
 }

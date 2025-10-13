@@ -596,10 +596,8 @@ def test_auto_sync_mode():
 
 **Approach**: Document recommended Claude Code hooks, provide configuration templates
 
-**Files to Create**:
-- `.claude/hooks-examples.json` - Hook configuration templates
-
 **Files to Modify**:
+- `.claude/settings.local.json` - Add working hook configuration
 - `.claude/commands/execute-prp.md` - Document hook integration
 - `PRPs/executed/PRP-5-context-sync-integration.md` - Update with hook details
 
@@ -614,8 +612,9 @@ Claude Code supports hooks that trigger shell commands on specific events:
 
 **Official Documentation**: https://docs.claude.com/en/docs/claude-code/hooks
 
-**Recommended Hook Configurations**:
+**Hook Configuration** (`.claude/settings.local.json`):
 
+Default configuration includes SessionStart health check:
 ```json
 {
   "hooks": {
@@ -625,31 +624,7 @@ Claude Code supports hooks that trigger shell commands on specific events:
         "hooks": [
           {
             "type": "command",
-            "command": "cd tools && uv run ce context health --json | jq -r 'if .drift_score > 30 then \"⚠️ HIGH DRIFT: \" + (.drift_score | tostring) + \"% - Run: ce context sync\" elif .drift_score > 10 then \"⚠️ Moderate drift: \" + (.drift_score | tostring) + \"%\" else \"✅ Context healthy: \" + (.drift_score | tostring) + \"%\" end'",
-            "timeout": 5
-          }
-        ]
-      }
-    ],
-    "UserPromptSubmit": [
-      {
-        "matcher": "*",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "cd tools && uv run ce context auto-sync --status --quiet | grep -q 'disabled' && echo '💡 TIP: Enable auto-sync: ce context auto-sync --enable' || true",
-            "timeout": 2
-          }
-        ]
-      }
-    ],
-    "PostToolUse": [
-      {
-        "matcher": "Edit|Write",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "cd tools && uv run ce context health --json | jq -r 'if .drift_score > 40 then \"🚨 CRITICAL DRIFT: \" + (.drift_score | tostring) + \"% - STOP AND SYNC\" else \"\" end' | grep -v '^$'",
+            "command": "cd tools && uv run ce context health --json | jq -r '...'",
             "timeout": 5
           }
         ]
@@ -658,6 +633,10 @@ Claude Code supports hooks that trigger shell commands on specific events:
   }
 }
 ```
+
+**Additional hooks available** (add to settings.local.json as needed):
+- **UserPromptSubmit**: Auto-sync reminder (checks if auto-sync disabled)
+- **PostToolUse**: Drift spike detector (alerts after Edit/Write if drift >40%)
 
 **Hook Use Cases**:
 
