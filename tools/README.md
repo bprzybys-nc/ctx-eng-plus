@@ -245,6 +245,55 @@ ce context prune [--age 7] [--dry-run]
 # Requires Serena MCP integration
 ```
 
+### Drift History Tracking
+
+**View Drift History**
+```bash
+ce drift history [--last N] [--prp-id ID] [--action-filter TYPE] [--json]
+# Shows drift decisions from all PRPs sorted by timestamp
+
+# Examples:
+ce drift history --last 5
+ce drift history --prp-id PRP-001
+ce drift history --action-filter accepted
+```
+
+**Show Drift Decision**
+```bash
+ce drift show <prp-id> [--json]
+# Detailed view of drift decision for specific PRP
+
+# Example:
+ce drift show PRP-001
+```
+
+**Drift Summary**
+```bash
+ce drift summary [--json]
+# Aggregate statistics across all drift decisions
+# Shows: total PRPs, average score, distribution, category breakdown
+```
+
+**Compare Drift Decisions**
+```bash
+ce drift compare <prp-id-1> <prp-id-2> [--json]
+# Compare drift decisions between two PRPs
+# Shows: score difference, common/divergent categories
+
+# Example:
+ce drift compare PRP-001 PRP-002
+```
+
+**What it tracks**:
+- Drift score (0-100%)
+- Action taken (accepted, rejected, examples_updated)
+- Justification for decisions
+- Category breakdown (code_structure, error_handling, etc.)
+- Reviewer (human, auto_accept, auto_fix)
+- Historical patterns and trends
+
+**Integration**: Drift history is displayed during Level 4 validation escalation to provide context for high-drift decisions.
+
 ## JSON Output
 
 All commands support `--json` flag for programmatic use:
