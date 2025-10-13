@@ -373,6 +373,35 @@ def cmd_prp_execute(args) -> int:
         return 1
 
 
+def cmd_prp_analyze(args) -> int:
+    """Execute prp analyze command."""
+    from pathlib import Path
+    from .prp_analyzer import analyze_prp, format_analysis_report
+
+    try:
+        prp_path = Path(args.file)
+        analysis = analyze_prp(prp_path)
+        print(format_analysis_report(analysis, json_output=args.json))
+
+        # Return exit code based on size category
+        # RED = 2 (strong warning), YELLOW = 1 (warning), GREEN = 0 (ok)
+        if analysis.size_category.value == "RED":
+            return 2
+        elif analysis.size_category.value == "YELLOW":
+            return 1
+        else:
+            return 0
+
+    except FileNotFoundError as e:
+        print(f"❌ {str(e)}", file=sys.stderr)
+        return 1
+    except Exception as e:
+        print(f"❌ PRP analysis failed: {str(e)}", file=sys.stderr)
+        import traceback
+        traceback.print_exc()
+        return 1
+
+
 def main():
     """Main CLI entry point."""
     parser = argparse.ArgumentParser(
@@ -598,6 +627,17 @@ Examples:
         "--json", action="store_true", help="Output as JSON"
     )
 
+    # prp analyze subcommand
+    prp_analyze_parser = prp_subparsers.add_parser(
+        "analyze", help="Analyze PRP size and complexity"
+    )
+    prp_analyze_parser.add_argument(
+        "file", help="Path to PRP markdown file"
+    )
+    prp_analyze_parser.add_argument(
+        "--json", action="store_true", help="Output as JSON"
+    )
+
     # Parse arguments
     args = parser.parse_args()
 
@@ -621,6 +661,8 @@ Examples:
             return cmd_prp_generate(args)
         elif args.prp_command == "execute":
             return cmd_prp_execute(args)
+        elif args.prp_command == "analyze":
+            return cmd_prp_analyze(args)
     else:
         print(f"Unknown command: {args.command}", file=sys.stderr)
         return 1

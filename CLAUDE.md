@@ -363,6 +363,25 @@ cd tools && uv run ce validate --level 1
 **Configuration**: `.markdownlint.json` in project root
 **Mermaid Rules**: Style statements must include color for theme compatibility
 
+### PRP Sizing Analysis
+
+```bash
+# Analyze PRP size before execution
+cd tools && uv run ce prp analyze <path-to-prp.md>
+
+# JSON output for automation
+cd tools && uv run ce prp analyze <path-to-prp.md> --json
+```
+
+**Size Categories**:
+- **GREEN** (optimal): ≤700 lines, ≤8h, LOW-MEDIUM risk → Proceed
+- **YELLOW** (warning): 700-1000 lines, 8-12h, MEDIUM risk → Review
+- **RED** (too large): >1000 lines, >12h, HIGH risk → Decompose
+
+**Exit Codes**: 0 (GREEN), 1 (YELLOW), 2 (RED)
+
+**Documentation**: [PRP Sizing Guidelines](docs/prp-sizing-guidelines.md)
+
 ---
 
 ## Documentation Standards
