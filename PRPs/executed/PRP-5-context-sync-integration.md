@@ -839,8 +839,8 @@ When auto-sync is enabled (`ce context auto-sync --enable`), Claude Code hooks p
 - [ ] **CLI Commands**: All 7 context commands functional
 - [ ] **Test Coverage**: ≥80% code coverage for context sync functions
 - [ ] **Documentation**: README updated with context sync usage
-- [ ] **Claude Code Hooks**: Hook templates in `.claude/hooks-examples.json`
-- [ ] **Hook Integration**: Documented in execute-prp.md and PRP-5
+- [x] **Claude Code Hooks**: Hook templates in `.claude/hooks-examples.json`
+- [x] **Hook Integration**: Documented in execute-prp.md and PRP-5
 
 ---
 
@@ -912,8 +912,8 @@ cd tools && uv run pytest tests/ --cov=ce.context --cov-report=term-missing --co
 - [x] Documentation updated
 - [x] All validation gates pass
 - [x] No fishy fallbacks or silent failures
-- [ ] Claude Code hooks documented in `.claude/hooks-examples.json`
-- [ ] Hook integration documented in execute-prp.md
+- [x] Claude Code hooks documented in `.claude/hooks-examples.json`
+- [x] Hook integration documented in execute-prp.md
 
 ---
 
