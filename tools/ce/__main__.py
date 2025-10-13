@@ -25,6 +25,7 @@ from .drift import (
 from .pipeline import load_abstract_pipeline, validate_pipeline
 from .executors.github_actions import GitHubActionsExecutor
 from .executors.mock import MockExecutor
+from .metrics import MetricsCollector
 
 
 def format_output(data: Dict[str, Any], as_json: bool = False) -> str:
@@ -590,6 +591,65 @@ def cmd_pipeline_validate(args) -> int:
         return 1
 
 
+def cmd_metrics(args) -> int:
+    """Display system metrics and success rates.
+
+    Args:
+        args: Command arguments
+
+    Returns:
+        Exit code (0 for success)
+    """
+    try:
+        collector = MetricsCollector(metrics_file=args.file)
+        summary = collector.get_summary()
+
+        if args.format == "json":
+            print(json.dumps(summary, indent=2))
+        else:
+            # Human-readable format
+            print("\n📊 Context Engineering Metrics")
+            print("=" * 60)
+
+            # Success rates
+            rates = summary["success_rates"]
+            print("\n🎯 Success Rates:")
+            print(f"  First-pass:  {rates['first_pass_rate']:.1f}%")
+            print(f"  Second-pass: {rates['second_pass_rate']:.1f}%")
+            print(f"  Overall:     {rates['overall_rate']:.1f}%")
+            print(f"  Total PRPs:  {rates['total_executions']}")
+
+            # Validation stats
+            val_stats = summary["validation_stats"]
+            if val_stats:
+                print("\n✅ Validation Pass Rates:")
+                for key, value in sorted(val_stats.items()):
+                    if key.endswith("_pass_rate"):
+                        level = key.replace("_pass_rate", "")
+                        total_key = f"{level}_total"
+                        total = val_stats.get(total_key, 0)
+                        print(f"  {level.upper()}: {value:.1f}% ({total} executions)")
+
+            # Performance
+            perf = summary["performance"]
+            print("\n⚡ Performance:")
+            print(f"  Avg duration: {perf['avg_duration']:.1f}s")
+            print(f"  Total PRPs:   {perf['total_prps']}")
+            print(f"  Total validations: {perf['total_validations']}")
+
+            print("=" * 60)
+
+        return 0
+
+    except FileNotFoundError:
+        print(f"❌ Metrics file not found: {args.file}", file=sys.stderr)
+        print(f"🔧 Troubleshooting: Run PRP executions to collect metrics", file=sys.stderr)
+        return 1
+    except Exception as e:
+        print(f"❌ Metrics error: {str(e)}", file=sys.stderr)
+        return 1
+
+
 def cmd_pipeline_render(args) -> int:
     """Execute pipeline render command."""
     from pathlib import Path
@@ -919,6 +979,23 @@ Examples:
         "-o", "--output", help="Output file path"
     )
 
+    # === METRICS COMMAND ===
+    metrics_parser = subparsers.add_parser(
+        "metrics",
+        help="Display system metrics and success rates"
+    )
+    metrics_parser.add_argument(
+        "--format",
+        choices=["text", "json"],
+        default="text",
+        help="Output format (default: text)"
+    )
+    metrics_parser.add_argument(
+        "--file",
+        default="metrics.json",
+        help="Path to metrics file (default: metrics.json)"
+    )
+
     # Parse arguments
     args = parser.parse_args()
 
@@ -951,6 +1028,8 @@ Examples:
             return cmd_pipeline_validate(args)
         elif args.pipeline_command == "render":
             return cmd_pipeline_render(args)
+    elif args.command == "metrics":
+        return cmd_metrics(args)
     else:
         print(f"Unknown command: {args.command}", file=sys.stderr)
         return 1
