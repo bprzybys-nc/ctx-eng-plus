@@ -15,7 +15,10 @@
       "mcp__serena__read_file",
       "mcp__git__git_status",
       "mcp__git__git_log",
-      "mcp__git__git_diff"
+      "mcp__git__git_diff",
+      "SlashCommand(/generate-prp:*)",
+      "SlashCommand(/peer-review PRPs/feature-requests/PRP-11-pipeline-testing-framework.md)",
+      "SlashCommand(/peer-review:*)"
     ],
     "deny": [],
     "ask": []

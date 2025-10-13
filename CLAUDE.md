@@ -384,6 +384,90 @@ cd tools && uv run ce prp analyze <path-to-prp.md> --json
 
 ---
 
+## Testing Patterns
+
+Context Engineering uses **strategy pattern** for composable testing with three distinct patterns:
+
+### Unit Test Pattern
+
+Test single strategy in isolation:
+
+```python
+from ce.testing.mocks import MockSerenaStrategy
+
+def test_mock_serena():
+    strategy = MockSerenaStrategy(canned_results=[...])
+    result = strategy.execute({"pattern": "test"})
+    assert result["success"] is True
+```
+
+### Integration Test Pattern
+
+Test subgraph with real + mock strategies:
+
+```python
+from ce.testing.builder import PipelineBuilder
+from ce.testing.real_strategies import RealParserStrategy
+from ce.testing.mocks import MockSerenaStrategy
+
+def test_parse_and_research():
+    pipeline = (
+        PipelineBuilder(mode="integration")
+        .add_node("parse", RealParserStrategy())
+        .add_node("research", MockSerenaStrategy(canned_results=[...]))
+        .add_edge("parse", "research")
+        .build()
+    )
+    result = pipeline.execute({"prp_path": "test.md"})
+```
+
+### E2E Test Pattern
+
+Test full pipeline with all external deps mocked:
+
+```python
+from ce.testing.builder import PipelineBuilder
+from ce.testing.real_strategies import RealParserStrategy
+from ce.testing.mocks import MockSerenaStrategy, MockLLMStrategy
+
+def test_full_generation():
+    pipeline = (
+        PipelineBuilder(mode="e2e")
+        .add_node("parse", RealParserStrategy())
+        .add_node("research", MockSerenaStrategy(canned_results=[...]))
+        .add_node("generate", MockLLMStrategy(template="..."))
+        .add_edge("parse", "research")
+        .add_edge("research", "generate")
+        .build()
+    )
+    result = pipeline.execute({"initial_path": "INITIAL.md"})
+```
+
+### Observable Mocking
+
+Pipeline builder logs mocked nodes:
+
+```
+🎭 MOCKED NODES: research, docs, generate
+```
+
+Clear indication of what's real vs mocked in tests.
+
+### Available Strategies
+
+**Mock Strategies**:
+- `MockSerenaStrategy` - Codebase search with canned results
+- `MockContext7Strategy` - Documentation with cached content
+- `MockLLMStrategy` - Text generation with templates
+
+**Real Strategies**:
+- `RealParserStrategy` - PRP blueprint parsing
+- `RealCommandStrategy` - Shell command execution
+
+**Full Documentation**: [Testing Patterns Guide](../docs/testing-patterns.md)
+
+---
+
 ## Documentation Standards
 
 ### Mermaid Diagrams - MANDATORY
