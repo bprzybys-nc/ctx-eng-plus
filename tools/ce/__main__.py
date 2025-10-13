@@ -22,6 +22,9 @@ from .drift import (
     show_drift_decision,
     compare_drift_decisions
 )
+from .pipeline import load_abstract_pipeline, validate_pipeline
+from .executors.github_actions import GitHubActionsExecutor
+from .executors.mock import MockExecutor
 
 
 def format_output(data: Dict[str, Any], as_json: bool = False) -> str:
@@ -567,6 +570,56 @@ def cmd_prp_analyze(args) -> int:
         return 1
 
 
+def cmd_pipeline_validate(args) -> int:
+    """Execute pipeline validate command."""
+    try:
+        pipeline = load_abstract_pipeline(args.pipeline_file)
+        result = validate_pipeline(pipeline)
+
+        if result["success"]:
+            print("✅ Pipeline validation passed")
+            return 0
+        else:
+            print("❌ Pipeline validation failed:")
+            for error in result["errors"]:
+                print(f"  - {error}")
+            return 1
+
+    except Exception as e:
+        print(f"❌ Validation error: {str(e)}", file=sys.stderr)
+        return 1
+
+
+def cmd_pipeline_render(args) -> int:
+    """Execute pipeline render command."""
+    from pathlib import Path
+
+    try:
+        pipeline = load_abstract_pipeline(args.pipeline_file)
+
+        # Select executor
+        if args.executor == "github-actions":
+            executor = GitHubActionsExecutor()
+        else:
+            executor = MockExecutor()
+
+        # Render
+        rendered = executor.render(pipeline)
+
+        # Output
+        if args.output:
+            Path(args.output).write_text(rendered)
+            print(f"✅ Rendered to {args.output}")
+        else:
+            print(rendered)
+
+        return 0
+
+    except Exception as e:
+        print(f"❌ Render error: {str(e)}", file=sys.stderr)
+        return 1
+
+
 def main():
     """Main CLI entry point."""
     parser = argparse.ArgumentParser(
@@ -837,6 +890,35 @@ Examples:
         "--json", action="store_true", help="Output as JSON"
     )
 
+    # === PIPELINE COMMAND ===
+    pipeline_parser = subparsers.add_parser(
+        "pipeline", help="CI/CD pipeline management commands"
+    )
+    pipeline_subparsers = pipeline_parser.add_subparsers(dest="pipeline_command", required=True)
+
+    # pipeline validate subcommand
+    pipeline_validate_parser = pipeline_subparsers.add_parser(
+        "validate", help="Validate abstract pipeline definition"
+    )
+    pipeline_validate_parser.add_argument(
+        "pipeline_file", help="Path to abstract pipeline YAML file"
+    )
+
+    # pipeline render subcommand
+    pipeline_render_parser = pipeline_subparsers.add_parser(
+        "render", help="Render abstract pipeline to platform-specific format"
+    )
+    pipeline_render_parser.add_argument(
+        "pipeline_file", help="Path to abstract pipeline YAML file"
+    )
+    pipeline_render_parser.add_argument(
+        "--executor", type=str, choices=["github-actions", "mock"],
+        default="github-actions", help="Platform executor to use"
+    )
+    pipeline_render_parser.add_argument(
+        "-o", "--output", help="Output file path"
+    )
+
     # Parse arguments
     args = parser.parse_args()
 
@@ -864,6 +946,11 @@ Examples:
             return cmd_prp_execute(args)
         elif args.prp_command == "analyze":
             return cmd_prp_analyze(args)
+    elif args.command == "pipeline":
+        if args.pipeline_command == "validate":
+            return cmd_pipeline_validate(args)
+        elif args.pipeline_command == "render":
+            return cmd_pipeline_render(args)
     else:
         print(f"Unknown command: {args.command}", file=sys.stderr)
         return 1

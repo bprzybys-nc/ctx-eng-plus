@@ -18,7 +18,14 @@
       "mcp__git__git_diff",
       "SlashCommand(/generate-prp:*)",
       "SlashCommand(/peer-review PRPs/feature-requests/PRP-11-pipeline-testing-framework.md)",
-      "SlashCommand(/peer-review:*)"
+      "SlashCommand(/peer-review:*)",
+      "Read(//Users/bprzybysz/.claude/**)",
+      "Bash(cat:*)",
+      "Bash(uvx:*)",
+      "Bash(env)",
+      "Read(//Users/bprzybysz/Library/Application Support/Claude/**)",
+      "Bash(uv add:*)",
+      "Bash(git diff-tree:*)"
     ],
     "deny": [],
     "ask": []

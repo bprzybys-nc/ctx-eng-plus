@@ -1,0 +1,42 @@
+name: validation-pipeline
+'on':
+- push
+- pull_request
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    - name: markdown-lint
+      run: npm run lint:md
+      timeout-minutes: 1
+    - name: mermaid-validation
+      run: cd tools && uv run ce validate --level 1
+      timeout-minutes: 2
+  test:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    - name: unit-tests
+      run: cd tools && uv run pytest tests/unit/ -v
+      timeout-minutes: 5
+    - name: integration-tests
+      run: cd tools && uv run pytest tests/integration/ -v
+      timeout-minutes: 10
+    needs:
+    - lint
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    - name: level-2-validation
+      run: cd tools && uv run ce validate --level 2
+      timeout-minutes: 5
+    - name: level-3-validation
+      run: cd tools && uv run ce validate --level 3
+      timeout-minutes: 10
+    needs:
+    - test
