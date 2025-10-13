@@ -67,7 +67,7 @@ def validate_level_1() -> Dict[str, Any]:
         for error in mermaid_result['errors'][:5]:  # Show first 5
             errors.append(f"  - {error}")
     elif mermaid_result["fixes_applied"]:
-        print(f"✅ Mermaid auto-fixes applied: {len(mermaid_result['fixes_applied'])} fixes")
+        print(f"✅ Mermaid auto-fixes applied: {len(mermaid_result['fixes_applied'])} fixes", file=sys.stderr)
 
     return {
         "success": len(errors) == 0,

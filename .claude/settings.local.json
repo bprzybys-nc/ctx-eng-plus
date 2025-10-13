@@ -6,7 +6,11 @@
       "Bash(git commit:*)",
       "Read(//Users/bprzybysz/nc-src/**)",
       "mcp__sequential-thinking__sequentialthinking",
-      "Bash(uv run:*)"
+      "Bash(uv run:*)",
+      "mcp__serena__get_symbols_overview",
+      "mcp__serena__find_symbol",
+      "mcp__serena__search_for_pattern",
+      "mcp__serena__list_dir"
     ],
     "deny": [],
     "ask": []

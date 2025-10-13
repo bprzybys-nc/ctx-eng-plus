@@ -101,12 +101,12 @@ def health() -> Dict[str, Any]:
     # Check context drift
     try:
         sync_result = sync()
-        drift_score = sync_result["drift_score"]
+        drift_score = sync_result["drift_score"] * 100  # Convert to percentage (0-100)
         drift_level = sync_result["drift_level"]
 
         if drift_level == "HIGH":
             recommendations.append(
-                f"High context drift ({drift_score:.1%}) - run: ce context sync"
+                f"High context drift ({drift_score:.2f}%) - run: ce context sync"
             )
     except Exception:
         drift_score = 0.0
@@ -120,7 +120,7 @@ def health() -> Dict[str, Any]:
         "compilation": compilation_ok,
         "git_clean": git_clean,
         "tests_passing": tests_passing,
-        "drift_score": drift_score,
+        "drift_score": drift_score,  # Now returns percentage (0-100)
         "drift_level": drift_level,
         "recommendations": recommendations
     }
@@ -219,9 +219,9 @@ def check_drift_threshold(drift_score: float, force: bool = False) -> None:
         - 30%+: ERROR log, abort (unless force=True)
     """
     if drift_score <= 10:
-        logger.info(f"Context healthy: {drift_score:.1f}% drift")
+        logger.info(f"Context healthy: {drift_score:.2f}% drift")
     elif drift_score <= 30:
-        logger.warning(f"Moderate drift: {drift_score:.1f}% - consider running ce context sync")
+        logger.warning(f"Moderate drift: {drift_score:.2f}% - consider running ce context sync")
     else:
         # High drift - abort unless forced
         if not force:
@@ -238,7 +238,7 @@ def check_drift_threshold(drift_score: float, force: bool = False) -> None:
                 troubleshooting=troubleshooting
             )
         else:
-            logger.warning(f"High drift {drift_score:.1f}% - FORCED to continue (dangerous!)")
+            logger.warning(f"High drift {drift_score:.2f}% - FORCED to continue (dangerous!)")
 
 
 def pre_generation_sync(
@@ -298,8 +298,8 @@ def pre_generation_sync(
     # Step 3: Run health check
     try:
         health_result = health()
-        drift_score = health_result["drift_score"] * 100  # Convert to percentage
-        logger.info(f"✓ Health check completed: {drift_score:.1f}% drift")
+        drift_score = health_result["drift_score"]  # Already percentage (0-100)
+        logger.info(f"✓ Health check completed: {drift_score:.2f}% drift")
     except Exception as e:
         raise RuntimeError(
             f"Health check failed: {str(e)}\n"
@@ -418,13 +418,13 @@ def post_execution_sync(
     # Step 3: Run health check
     try:
         health_result = health()
-        drift_score = health_result["drift_score"] * 100  # Convert to percentage
+        drift_score = health_result["drift_score"]  # Already percentage (0-100)
         result["drift_score"] = drift_score
-        logger.info(f"✓ Health check completed: {drift_score:.1f}% drift")
+        logger.info(f"✓ Health check completed: {drift_score:.2f}% drift")
 
         # Warn if drift still high after sync
         if drift_score > 10:
-            logger.warning(f"Drift still elevated after sync: {drift_score:.1f}%")
+            logger.warning(f"Drift still elevated after sync: {drift_score:.2f}%")
     except Exception as e:
         logger.warning(f"Health check failed: {e}")
 
@@ -731,13 +731,13 @@ def drift_report_markdown() -> str:
 
     # Build markdown
     md = f"## Context Health Report\n\n"
-    md += f"**Drift Score**: {report['drift_score']:.1f}% ({status_emoji} {status_text})\n\n"
+    md += f"**Drift Score**: {report['drift_score']:.2f}% ({status_emoji} {status_text})\n\n"
 
     # Components
     md += "### Components\n"
     for name, comp in report["components"].items():
         display_name = name.replace("_", " ").title()
-        md += f"- {display_name}: {comp['score']:.1f}% ({comp['details']})\n"
+        md += f"- {display_name}: {comp['score']:.2f}% ({comp['details']})\n"
 
     # Recommendations
     if report["recommendations"]:

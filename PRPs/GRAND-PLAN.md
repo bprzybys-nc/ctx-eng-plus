@@ -33,6 +33,32 @@ Implement complete Context Engineering Management System enabling autonomous AI-
 
 ---
 
+## PRP Summary Table
+
+*Note: Actual hours shown for completed PRPs where tracked. Most PRPs show estimated ranges.*
+
+| ID | Title | Superstage | Effort (h) | Status | Key Deliverables |
+|----|-------|------------|------------|--------|------------------|
+| PRP-1 | Level 4 Pattern Conformance | MVP | 20-30 (est) | ✅ | Pattern matching, drift detection, user escalation |
+| PRP-2 | PRP State Management | MVP | 15-20 (est) | ✅ | Checkpoints, memory namespacing, cleanup protocol |
+| PRP-3 | /generate-prp Command | MVP | 12-18 (est) | ✅ | INITIAL.md parsing, research automation, PRP generation |
+| PRP-4 | /execute-prp Command | MVP | 15-20 (est) | ✅ | Execution orchestration, validation loops, self-healing |
+| PRP-5 | Context Sync Integration | MVP | 10-15 (est) | ✅ | Pre/post-execution sync, drift detection, automation |
+| PRP-6 | Markdown Linting | MVP | 10 (est) | ✅ | markdownlint integration, mermaid validator |
+| PRP-7 | Validation Loop Tests | MVP | 15 (est) | ✅ | 33 tests, 54% coverage, core utilities at 100% |
+| PRP-8 | PRP Sizing Analysis | MVP | **4 actual** (8-12 est) | ✅ | Size analyzer, decomposition recommendations |
+| PRP-9 | Serena MCP Integration | MVP | **5.5 actual** (3-5 est) | ✅ | MCP adapter, symbol-aware insertion, 16 tests |
+| PRP-10 | Drift History Tracking | Maturing | 18 | 🏗️ IN PROGRESS | Audit trail, query tools, decision comparison, comprehensive testing |
+| PRP-11 | Pipeline Testing Framework | Maturing | 20-30 | 🔜 | Strategy pattern, mocks, test composition |
+| PRP-12 | CI/CD Abstraction | Maturing | 15-20 | 🔜 | Abstract pipelines, executors, GitHub Actions |
+| PRP-13 | Production Hardening | Maturing | 15-25 | 🔜 | Error recovery, monitoring, documentation |
+
+**Total:** 167-238 person-hours (estimated) across 13 PRPs
+**MVP Complete:** 9 PRPs ✅ (9.5h tracked actual, ~105-145h estimated total)
+**Maturing Remaining:** 4 PRPs 🔜 (62-93h estimated)
+
+---
+
 ## Architecture Overview
 
 ```
@@ -543,14 +569,17 @@ Context Engineering Management System
 
 ---
 
-### PRP-10: Drift History Tracking & Audit Trail
+### PRP-10: Drift History Tracking & Comprehensive Testing 🏗️ IN PROGRESS
 
-**Goal:** Create audit trail of architectural drift decisions for future reference and pattern analysis
+**Goal:** Create audit trail of architectural drift decisions and implement meticulous testing of all drift tooling
 
-**Why:** Drift decisions have long-term implications; history enables informed future decisions
+**Why:** Drift decisions have long-term implications requiring historical context; recent hook failures exposed gaps in drift testing
+
+**Status:** 🏗️ IN PROGRESS - BLA-16
 
 **Key Deliverables:**
 
+**Phase 10.1: Drift History (12h)**
 - New `ce drift` command suite:
   - `ce drift history [--last N]` - Show recent drift decisions
   - `ce drift show <prp-id>` - Display DRIFT_JUSTIFICATION for specific PRP
@@ -559,6 +588,13 @@ Context Engineering Management System
 - Drift decision aggregation from PRP DRIFT_JUSTIFICATION sections
 - Historical analysis and pattern detection
 - Integration with Level 4 validation (show history during escalation)
+
+**Phase 10.2: Comprehensive Testing (6h)**
+- 50+ tests covering 10 drift functionality areas
+- Drift calculation accuracy validation
+- JSON output cleanliness testing
+- Hook integration verification
+- Percentage formatting consistency
 
 **Technical Approach:**
 
@@ -597,7 +633,7 @@ Context Engineering Management System
 
 **Dependencies:** PRP-1 (DRIFT_JUSTIFICATION format)
 
-**Estimated Effort:** 12-18 hours
+**Estimated Effort:** 18 hours (12h history + 6h testing)
 
 **Success Criteria:**
 
@@ -606,12 +642,24 @@ Context Engineering Management System
 - ✅ Comparison tool highlights patterns and differences
 - ✅ Integration with L4 validation displays history
 - ✅ Documentation updated with usage examples
+- ✅ Comprehensive drift tooling validation (see test plan below)
 
 **Test Plan:**
 
 - Unit tests: Parsing, aggregation, query functions
 - Integration tests: Full drift command suite
 - E2E test: Drift tracking across multiple PRPs
+- **Meticulous drift tooling testing:**
+  - Drift score calculation accuracy (0-100% scale)
+  - Percentage formatting (2 decimal places: 37.23%)
+  - JSON output validation (clean, no stderr contamination)
+  - Hook integration testing (jq parsing works correctly)
+  - Context health reporting (compilation, git, tests, drift)
+  - Threshold logic validation (0-10% auto-accept, 10-30% warning, 30%+ escalate)
+  - Auto-sync mode functionality
+  - Memory pruning and cleanup
+  - Pre/post-generation sync workflows
+  - Drift level categorization (LOW/MEDIUM/HIGH)
 
 ---
 
@@ -1187,30 +1235,6 @@ After PRP-9 completion:
 
 - MVP Milestone: Full end-to-end validation required
 - Maturing Milestone: Production deployment validation required
-
----
-
-## Appendix A: PRP Summary Table
-
-| ID | Title | Superstage | Effort (h) | Status | Key Deliverables |
-|----|-------|------------|------------|--------|------------------|
-| PRP-1 | Level 4 Pattern Conformance | MVP | 20-30 | ✅ | Pattern matching, drift detection, user escalation |
-| PRP-2 | PRP State Management | MVP | 15-20 | ✅ | Checkpoints, memory namespacing, cleanup protocol |
-| PRP-3 | /generate-prp Command | MVP | 12-18 | ✅ | INITIAL.md parsing, research automation, PRP generation |
-| PRP-4 | /execute-prp Command | MVP | 15-20 | ✅ | Execution orchestration, validation loops, self-healing |
-| PRP-5 | Context Sync Integration | MVP | 10-15 | ✅ | Pre/post-execution sync, drift detection, automation |
-| PRP-6 | Markdown Linting | MVP | 8-12 | ✅ | markdownlint integration, mermaid validator |
-| PRP-7 | Validation Loop Tests | MVP | 12-18 | ✅ | 33 tests, 54% coverage, core utilities at 100% |
-| PRP-8 | PRP Sizing Analysis | MVP | 8-12 | ✅ | Size analyzer, decomposition recommendations |
-| PRP-9 | Serena MCP Integration | MVP | 3-5 | ✅ | MCP adapter, symbol-aware insertion, 16 tests |
-| PRP-10 | Drift History Tracking | Maturing | 12-18 | 🔜 | Audit trail, query tools, decision comparison |
-| PRP-11 | Pipeline Testing Framework | Maturing | 20-30 | 🔜 | Strategy pattern, mocks, test composition |
-| PRP-12 | CI/CD Abstraction | Maturing | 15-20 | 🔜 | Abstract pipelines, executors, GitHub Actions |
-| PRP-13 | Production Hardening | Maturing | 15-25 | 🔜 | Error recovery, monitoring, documentation |
-
-**Total:** 167-238 person-hours across 13 PRPs
-**MVP Complete:** 105-145 hours (9 PRPs) ✅
-**Maturing Remaining:** 62-93 hours (4 PRPs) 🔜
 
 ---
 
