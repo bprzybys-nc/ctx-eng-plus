@@ -650,143 +650,10 @@ Default configuration includes SessionStart health check:
    - Reminds user to enable before PRP generation/execution
    - Prevents forgotten manual sync steps
 
-3. **Post-Tool Context Check** (optional):
-   - Monitors drift after major file operations
-   - Suggests sync if drift jumps significantly
-   - Helps catch context staleness early
-
-**Key Functions**:
-
-```python
-def get_claude_code_hooks() -> Dict[str, Any]:
-    """Get recommended Claude Code hook configurations.
-
-    Returns:
-        {
-            "conversation_start": {
-                "command": "cd tools && uv run ce context health --json | ...",
-                "enabled": False,
-                "description": "Check context health at conversation start"
-            },
-            "user_prompt_submit": {
-                "command": "cd tools && uv run ce context auto-sync --status --quiet",
-                "enabled": False,
-                "description": "Remind if auto-sync disabled"
-            }
-        }
-
-    Note: Hooks default to disabled - user enables in .claude/settings.local.json
-    """
-    pass
-
-def format_hook_command(hook_type: str, config: Dict[str, Any]) -> str:
-    """Format hook command for .claude/settings.local.json.
-
-    Args:
-        hook_type: "conversation_start" | "user_prompt_submit" | "tool_use"
-        config: Hook configuration dict
-
-    Returns:
-        Formatted JSON string for settings file
-
-    Example:
-        >>> format_hook_command("conversation_start", {...})
-        '{
-          "hooks": {
-            "conversation_start": {
-              "command": "cd tools && ...",
-              "enabled": false
-            }
-          }
-        }'
-    """
-    pass
-```
-
-**`.claude/hooks-examples.json` Template**:
-
-```json
-{
-  "comment": "Claude Code Hook Configuration Examples",
-  "comment_usage": "Copy desired hooks to .claude/settings.local.json",
-  "comment_warning": "Hooks run on every event - keep commands fast (<500ms)",
-
-  "hooks": {
-    "conversation_start_health_check": {
-      "event": "conversation_start",
-      "command": "cd tools && uv run ce context health --json | jq -r 'if .drift_score > 30 then \"⚠️ HIGH DRIFT: \" + (.drift_score | tostring) + \"% - Run: ce context sync\" elif .drift_score > 10 then \"⚠️ Moderate drift: \" + (.drift_score | tostring) + \"%\" else \"✅ Context healthy: \" + (.drift_score | tostring) + \"%\" end'",
-      "enabled": false,
-      "description": "Check context health at conversation start (drift warning)",
-      "performance": "~300ms",
-      "recommended_for": "Daily development, PRP work"
-    },
-
-    "auto_sync_status_reminder": {
-      "event": "user_prompt_submit",
-      "command": "cd tools && uv run ce context auto-sync --status --quiet | grep -q 'disabled' && echo '💡 TIP: Enable auto-sync with: ce context auto-sync --enable' || true",
-      "enabled": false,
-      "description": "Remind if auto-sync disabled (once per conversation)",
-      "performance": "~100ms",
-      "recommended_for": "Users who forget to enable auto-sync"
-    },
-
-    "drift_spike_detector": {
-      "event": "tool_use",
-      "command": "cd tools && uv run ce context health --json | jq -r 'if .drift_score > 40 then \"🚨 CRITICAL DRIFT: \" + (.drift_score | tostring) + \"% - STOP AND SYNC\" else \"\" end' | grep -v '^$'",
-      "enabled": false,
-      "description": "Alert on critical drift spikes during work",
-      "performance": "~300ms per tool use",
-      "recommended_for": "Long sessions with many file changes",
-      "warning": "Runs after EVERY tool call - can be noisy"
-    },
-
-    "simple_health_check": {
-      "event": "conversation_start",
-      "command": "cd tools && uv run ce context health --quiet || echo '⚠️ Context unhealthy - run: ce context sync'",
-      "enabled": false,
-      "description": "Simple pass/fail health check (fastest)",
-      "performance": "~150ms",
-      "recommended_for": "Performance-sensitive setups"
-    }
-  },
-
-  "installation_instructions": {
-    "step_1": "Choose hooks from examples above",
-    "step_2": "Copy to .claude/settings.local.json under 'hooks' key",
-    "step_3": "Set 'enabled': true for desired hooks",
-    "step_4": "Restart Claude Code or reload settings",
-    "step_5": "Test with: echo test message in conversation"
-  },
-
-  "performance_notes": {
-    "timing_target": "Hooks should complete in <500ms",
-    "blocking_behavior": "Hooks block user interaction until complete",
-    "optimization": "Use --quiet, --json, and grep for speed",
-    "caching": "Consider caching health checks for 5-10 minutes"
-  },
-
-  "troubleshooting": {
-    "hook_not_firing": [
-      "Check .claude/settings.local.json syntax (valid JSON)",
-      "Verify 'enabled': true is set",
-      "Check command runs successfully in terminal",
-      "Restart Claude Code"
-    ],
-    "slow_hooks": [
-      "Add --quiet flag to ce commands",
-      "Use grep/jq to filter output",
-      "Consider --json for structured parsing",
-      "Cache results with timestamp check"
-    ],
-    "noisy_hooks": [
-      "Use grep -v '^$' to filter empty output",
-      "Add || true to prevent non-zero exit codes",
-      "Disable tool_use hooks (run after every tool)",
-      "Add debouncing logic with timestamp files"
-    ]
-  }
-}
-```
+3. **PostToolUse Drift Detector** (optional):
+   - Monitors drift after Edit/Write operations
+   - Alerts if drift spikes above 40%
+   - Helps catch context staleness during active development
 
 **Integration with Auto-Sync Mode**:
 
@@ -799,9 +666,9 @@ When auto-sync is enabled (`ce context auto-sync --enable`), Claude Code hooks p
 | Exploration | No auto-sync (not PRP workflow) | Hooks warn about drift accumulation | Proactive monitoring |
 | Long Session | No auto-sync | tool_use hook catches drift spikes | Early warning system |
 
-**Validation Command**: Create and verify `.claude/hooks-examples.json` has valid JSON
+**Validation Command**: Test SessionStart hook - start new Claude Code session and verify drift health message appears
 
-**Checkpoint**: `git add .claude/hooks-examples.json && git commit -m "feat(PRP-5): Claude Code hook integration"`
+**Checkpoint**: `git add .claude/settings.local.json && git commit -m "feat(PRP-5): Claude Code hook integration"`
 
 ---
 

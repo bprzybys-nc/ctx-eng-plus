@@ -259,13 +259,14 @@ With auto-sync enabled (`ce context auto-sync --enable`):
 
 **Proactive context monitoring** during interactive sessions:
 
-`.claude/hooks-examples.json` provides hook templates for:
+**Working hook** (configured in `.claude/settings.local.json`):
+- **SessionStart health check** - Warns about drift on session start
 
-1. **SessionStart health check** - Warn about drift on session start
-2. **UserPromptSubmit reminder** - Remind to enable auto-sync
-3. **PostToolUse drift detector** - Alert on critical drift after edits
+**Additional hooks available** (add to settings.local.json as needed):
+- **UserPromptSubmit**: Auto-sync reminder (checks if auto-sync disabled)
+- **PostToolUse**: Drift spike detector (alerts after Edit/Write if drift >40%)
 
-**Example hook (copy to `.claude/settings.local.json`)**:
+**Current hook configuration**:
 ```json
 {
   "hooks": {
@@ -275,7 +276,7 @@ With auto-sync enabled (`ce context auto-sync --enable`):
         "hooks": [
           {
             "type": "command",
-            "command": "cd tools && uv run ce context health --quiet || echo '⚠️ Context drift detected'",
+            "command": "cd tools && uv run ce context health --json | jq -r 'if .drift_score > 30 then \"⚠️ HIGH DRIFT: \" + (.drift_score | tostring) + \"% - Run: ce context sync\" elif .drift_score > 10 then \"⚠️ Moderate drift: \" + (.drift_score | tostring) + \"%\" else \"✅ Context healthy: \" + (.drift_score | tostring) + \"%\" end'",
             "timeout": 5
           }
         ]
@@ -292,7 +293,7 @@ With auto-sync enabled (`ce context auto-sync --enable`):
 
 **Note**: Hooks are optional. Auto-sync mode handles PRP workflow automatically.
 
-**More info**: See `.claude/hooks-examples.json` for complete templates
+**More info**: See official docs at https://docs.claude.com/en/docs/claude-code/hooks
 
 ## Common Issues
 
