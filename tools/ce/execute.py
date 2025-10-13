@@ -549,17 +549,24 @@ def execute_phase(phase: Dict[str, Any]) -> Dict[str, Any]:
         }
 
     Process:
-        1. Create files listed in files_to_create using Serena MCP
-        2. Modify files listed in files_to_modify using Serena MCP
+        1. Create files listed in files_to_create using Serena MCP (or fallback)
+        2. Modify files listed in files_to_modify using Serena MCP (or fallback)
         3. Implement functions from function signatures
-        4. Log progress to console
+        4. Log progress to console (shows method used: mcp vs filesystem)
         5. Return execution summary
 
     Implementation Strategy:
+        - Use Serena MCP when available for symbol-aware code insertion
+        - Graceful fallback to filesystem operations when MCP unavailable
         - Use function signatures as implementation guides
         - Follow approach description for implementation style
         - Reference goal for context
-        - Use Serena MCP for all file operations
+
+    MCP Integration (PRP-9):
+        - mcp_adapter.py provides abstraction layer
+        - File creation: create_file_with_mcp() tries MCP, falls back to filesystem
+        - Code insertion: insert_code_with_mcp() uses symbol-aware MCP or naive append
+        - Console output shows method used (mcp/mcp_symbol_aware/filesystem_append)
     """
     import time
 
@@ -579,15 +586,15 @@ def execute_phase(phase: Dict[str, Any]) -> Dict[str, Any]:
             # Generate initial file content based on description and functions
             content = _generate_file_content(filepath, description, phase)
 
-            # FIXME: Placeholder implementation - using local filesystem instead of Serena MCP
-            # TODO: Replace with mcp__serena__create_text_file(filepath, content) when in MCP context
-            # Current implementation bypasses Serena's code analysis capabilities
-            from pathlib import Path
-            file_path = Path(filepath)
-            file_path.parent.mkdir(parents=True, exist_ok=True)
-            file_path.write_text(content)  # FIXME: Hardcoded local file write
+            # Create file using Serena MCP or fallback to filesystem
+            from .mcp_adapter import create_file_with_mcp
+            result = create_file_with_mcp(filepath, content)
+
+            if not result["success"]:
+                raise RuntimeError(f"Failed to create {filepath}: {result.get('error')}")
 
             files_created.append(filepath)
+            print(f"    ✓ Created via {result['method']}: {filepath}")
 
         # Modify existing files
         for file_entry in phase.get("files_to_modify", []):
@@ -681,28 +688,28 @@ def _add_functions_to_file(filepath: str, functions: List[Dict[str, str]], phase
     if not functions:
         return
 
-    # FIXME: Placeholder implementation - using local filesystem instead of Serena MCP
-    # TODO: Replace with mcp__serena__insert_after_symbol when in MCP context
-    # Current: Naive append to end of file (doesn't respect symbol structure)
-    from pathlib import Path
+    # Use Serena MCP for symbol-aware insertion or fallback to filesystem
+    from .mcp_adapter import insert_code_with_mcp
 
     try:
-        file_path = Path(filepath)
-        if not file_path.exists():
-            raise RuntimeError(
-                f"Cannot modify file {filepath} - file does not exist\n"
-                f"🔧 Troubleshooting: Ensure file is created before modification"
-            )
-
-        current_content = file_path.read_text()
-        new_content = current_content
-
+        # Insert each function using symbol-aware insertion
         for func_entry in functions:
             full_code = func_entry.get("full_code", "")
             if full_code:
-                new_content += "\n\n" + full_code  # FIXME: Naive append
+                result = insert_code_with_mcp(
+                    filepath=filepath,
+                    code=full_code,
+                    mode="after_last_symbol"  # Insert after last function/class
+                )
 
-        file_path.write_text(new_content)
+                if not result["success"]:
+                    raise RuntimeError(f"Failed to insert code: {result.get('error')}")
+
+                method = result["method"]
+                if method == "mcp_symbol_aware":
+                    print(f"    ✓ Inserted via MCP (after {result.get('symbol')})")
+                else:
+                    print(f"    ✓ Inserted via {method}")
 
     except Exception as e:
         raise RuntimeError(
