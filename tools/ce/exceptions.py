@@ -62,3 +62,24 @@ class ValidationError(RuntimeError):
             f"🔧 Troubleshooting: Review validation output for specific errors"
         )
         super().__init__(message)
+
+
+class ContextDriftError(RuntimeError):
+    """Raised when context drift exceeds acceptable threshold.
+
+    Attributes:
+        drift_score: Drift percentage (0-100)
+        threshold: Threshold that was exceeded
+        troubleshooting: Multi-line troubleshooting guidance
+    """
+
+    def __init__(self, drift_score: float, threshold: float, troubleshooting: str):
+        self.drift_score = drift_score
+        self.threshold = threshold
+        self.troubleshooting = troubleshooting
+
+        message = (
+            f"Context drift too high: {drift_score:.1f}% (threshold: {threshold:.1f}%)\n"
+            f"🔧 Troubleshooting:\n{troubleshooting}"
+        )
+        super().__init__(message)
