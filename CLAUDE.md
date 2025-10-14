@@ -48,6 +48,12 @@ uv sync                          # Install dependencies
 - **Proposing code without execution** - Must execute via run_py
 - **Violating 3 LOC limit** - Longer code MUST be in tmp/ file
 
+# 💡 If linear mcp starts responding with error "Not connected" - execute this command (I'm approving it): 
+
+```bash
+rm -rf ~/.mcp-auth
+```
+
 **STRICT RULE:** Ad-hoc code max 3 lines of code (LOC). No exceptions.
 
 - ✅ ALLOWED: Ad-hoc ≤3 LOC: `"x = [1,2,3]; print(sum(x))"`

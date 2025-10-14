@@ -25,7 +25,9 @@
       "Bash(env:*)",
       "Read(//Users/bprzybysz/Library/Application Support/Claude/**)",
       "Bash(uv add:*)",
-      "Bash(git diff-tree:*)"
+      "Bash(git diff-tree:*)",
+      "Bash(brew install:*)",
+      "Bash(rm -rf ~/.mcp-auth)"
     ],
     "deny": [],
     "ask": []
