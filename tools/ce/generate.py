@@ -13,7 +13,7 @@ Usage:
 import re
 import logging
 from pathlib import Path
-from typing import Dict, List, Any
+from typing import Dict, List, Any, Optional
 
 logger = logging.getLogger(__name__)
 
@@ -707,7 +707,11 @@ def fetch_external_link(
 # =============================================================================
 
 
-def generate_prp(initial_md_path: str, output_dir: str = "PRPs/feature-requests") -> str:
+def generate_prp(
+    initial_md_path: str,
+    output_dir: str = "PRPs/feature-requests",
+    join_prp: Optional[str] = None
+) -> str:
     """Generate complete PRP from INITIAL.md.
 
     Main orchestration function that coordinates all phases.
@@ -715,14 +719,16 @@ def generate_prp(initial_md_path: str, output_dir: str = "PRPs/feature-requests"
     Args:
         initial_md_path: Path to INITIAL.md file
         output_dir: Directory for output PRP file
+        join_prp: Optional PRP to join (number, ID like 'PRP-12', or file path)
+                  If provided, updates existing PRP's Linear issue instead of creating new
 
     Returns:
         Path to generated PRP file
 
     Raises:
         FileNotFoundError: If INITIAL.md doesn't exist
-        ValueError: If INITIAL.md invalid
-        RuntimeError: If PRP generation fails
+        ValueError: If INITIAL.md invalid or join_prp invalid
+        RuntimeError: If PRP generation or Linear integration fails
 
     Process:
         1. Parse INITIAL.md → structured data
@@ -731,7 +737,9 @@ def generate_prp(initial_md_path: str, output_dir: str = "PRPs/feature-requests"
         4. Synthesize sections (TLDR, Implementation, Validation Gates, etc.)
         5. Get next PRP ID
         6. Write PRP file with YAML header
-        7. Check completeness
+        7. Create/update Linear issue with defaults
+        8. Update PRP YAML with issue ID
+        9. Check completeness
     """
     logger.info(f"Starting PRP generation from: {initial_md_path}")
 
@@ -785,6 +793,61 @@ def generate_prp(initial_md_path: str, output_dir: str = "PRPs/feature-requests"
         f.write(prp_content)
 
     logger.info(f"PRP generated: {output_path}")
+
+    # Step 7: Create or update Linear issue
+    try:
+        from .linear_utils import create_issue_with_defaults
+
+        issue_identifier = None
+
+        if join_prp:
+            # Join existing PRP's issue
+            logger.info(f"Joining PRP: {join_prp}")
+            target_prp_path = _resolve_prp_path(join_prp)
+            target_issue_id = _extract_issue_from_prp(target_prp_path)
+
+            if not target_issue_id:
+                logger.warning(f"Target PRP has no Linear issue: {target_prp_path}")
+                logger.warning("Creating new issue instead")
+            else:
+                # Update existing issue (append new PRP info)
+                logger.info(f"Updating Linear issue: {target_issue_id}")
+                _update_linear_issue(
+                    target_issue_id,
+                    prp_id,
+                    parsed_data['feature_name'],
+                    str(output_path)
+                )
+                issue_identifier = target_issue_id
+                logger.info(f"Updated issue {target_issue_id} with {prp_id}")
+
+        if not issue_identifier:
+            # Create new issue
+            logger.info("Creating new Linear issue")
+            issue_data = create_issue_with_defaults(
+                title=f"{prp_id}: {parsed_data['feature_name']}",
+                description=_generate_issue_description(prp_id, parsed_data, str(output_path)),
+                state="todo"
+            )
+
+            # Call Linear MCP to create issue
+            # For now, we'll prepare the data structure
+            # In full implementation, this would call: mcp__linear-server__create_issue
+            logger.info(f"Issue data prepared: {issue_data}")
+            # FIXME: Placeholder - replace with actual Linear MCP call
+            issue_identifier = f"{prp_id}-placeholder"
+            logger.warning("Linear MCP integration pending - issue not actually created")
+
+        # Update PRP YAML with issue ID
+        if issue_identifier:
+            _update_prp_yaml_with_issue(str(output_path), issue_identifier)
+            logger.info(f"Updated PRP YAML with issue: {issue_identifier}")
+
+    except ImportError:
+        logger.warning("Linear utils not available - skipping issue creation")
+    except Exception as e:
+        logger.error(f"Linear issue creation failed: {e}")
+        logger.warning("Continuing without Linear integration")
 
     # Check completeness
     completeness = check_prp_completeness(str(output_path))
@@ -1199,3 +1262,237 @@ def _slugify(text: str) -> str:
     # Remove multiple hyphens
     slug = re.sub(r'-+', '-', slug)
     return slug.strip("-")
+
+
+# =============================================================================
+# Linear Integration Helpers
+# =============================================================================
+
+
+def _resolve_prp_path(join_prp: str) -> Path:
+    """Resolve join_prp reference to PRP file path.
+
+    Args:
+        join_prp: PRP reference (number like "12", ID like "PRP-12", or file path)
+
+    Returns:
+        Path to PRP file
+
+    Raises:
+        ValueError: If join_prp invalid or PRP not found
+    """
+    # Check if it's already a valid file path
+    if "/" in join_prp or "\\" in join_prp:
+        prp_path = Path(join_prp)
+        if prp_path.exists():
+            return prp_path
+        raise ValueError(
+            f"PRP file not found: {join_prp}\n"
+            f"🔧 Troubleshooting: Verify file path is correct"
+        )
+
+    # Parse as PRP number or ID
+    prp_number = None
+    if join_prp.startswith("PRP-"):
+        # Extract number from "PRP-12"
+        match = re.match(r"PRP-(\d+)", join_prp)
+        if match:
+            prp_number = int(match.group(1))
+    else:
+        # Try parsing as plain number "12"
+        try:
+            prp_number = int(join_prp)
+        except ValueError:
+            raise ValueError(
+                f"Invalid PRP reference: {join_prp}\n"
+                f"🔧 Troubleshooting: Use format '12', 'PRP-12', or file path"
+            )
+
+    if not prp_number:
+        raise ValueError(
+            f"Could not parse PRP reference: {join_prp}\n"
+            f"🔧 Troubleshooting: Use format '12', 'PRP-12', or file path"
+        )
+
+    # Search for PRP file in feature-requests/ and executed/
+    prp_id = f"PRP-{prp_number}"
+    search_dirs = ["PRPs/feature-requests", "PRPs/executed"]
+
+    for search_dir in search_dirs:
+        search_path = Path(search_dir)
+        if search_path.exists():
+            # Find PRP-{number}-*.md
+            matches = list(search_path.glob(f"{prp_id}-*.md"))
+            if matches:
+                return matches[0]
+
+    raise ValueError(
+        f"PRP not found: {prp_id}\n"
+        f"🔧 Troubleshooting: Searched in {', '.join(search_dirs)}"
+    )
+
+
+def _extract_issue_from_prp(prp_path: Path) -> Optional[str]:
+    """Extract Linear issue ID from PRP YAML header.
+
+    Args:
+        prp_path: Path to PRP file
+
+    Returns:
+        Issue ID (e.g., "BLA-24") or None if not found
+    """
+    content = prp_path.read_text(encoding="utf-8")
+
+    # Extract YAML frontmatter
+    yaml_match = re.match(r"---\n(.*?)\n---", content, re.DOTALL)
+    if not yaml_match:
+        return None
+
+    yaml_content = yaml_match.group(1)
+
+    # Extract issue field
+    issue_match = re.search(r"^issue:\s*(.+)$", yaml_content, re.MULTILINE)
+    if not issue_match:
+        return None
+
+    issue_value = issue_match.group(1).strip()
+
+    # Return None for null/empty values
+    if issue_value.lower() in ["null", "none", ""]:
+        return None
+
+    return issue_value
+
+
+def _update_linear_issue(
+    issue_id: str,
+    prp_id: str,
+    feature_name: str,
+    prp_path: str
+) -> None:
+    """Update existing Linear issue with new PRP info.
+
+    Args:
+        issue_id: Linear issue identifier (e.g., "BLA-24")
+        prp_id: New PRP ID (e.g., "PRP-15")
+        feature_name: New PRP feature name
+        prp_path: Path to new PRP file
+
+    Raises:
+        RuntimeError: If update fails
+    """
+    logger.info(f"Updating Linear issue {issue_id} with {prp_id}")
+
+    # FIXME: Placeholder - replace with actual Linear MCP call
+    # In full implementation, this would:
+    # 1. Get current issue description via mcp__linear-server__get_issue
+    # 2. Append new PRP section to description
+    # 3. Update issue via mcp__linear-server__update_issue
+
+    update_text = f"""
+
+---
+
+## Related: {prp_id} - {feature_name}
+
+**PRP File**: `{prp_path}`
+
+This PRP is related to the same feature/initiative.
+"""
+
+    logger.info(f"Would append to issue {issue_id}: {update_text[:100]}...")
+    logger.warning("Linear MCP integration pending - issue not actually updated")
+
+
+def _generate_issue_description(
+    prp_id: str,
+    parsed_data: Dict[str, Any],
+    prp_path: str
+) -> str:
+    """Generate Linear issue description from PRP data.
+
+    Args:
+        prp_id: PRP identifier (e.g., "PRP-15")
+        parsed_data: Parsed INITIAL.md data
+        prp_path: Path to generated PRP file
+
+    Returns:
+        Markdown description for Linear issue
+    """
+    feature = parsed_data["feature"]
+    examples_count = len(parsed_data["examples"])
+
+    # Truncate feature description for issue
+    feature_summary = feature[:300] + "..." if len(feature) > 300 else feature
+
+    description = f"""## Feature
+
+{feature_summary}
+
+## PRP Details
+
+- **PRP ID**: {prp_id}
+- **PRP File**: `{prp_path}`
+- **Examples Provided**: {examples_count}
+
+## Implementation
+
+See PRP file for detailed implementation steps, validation gates, and testing strategy.
+
+"""
+
+    # Add other considerations if present
+    if parsed_data.get("other_considerations"):
+        other = parsed_data["other_considerations"]
+        other_summary = other[:200] + "..." if len(other) > 200 else other
+        description += f"""## Considerations
+
+{other_summary}
+"""
+
+    return description
+
+
+def _update_prp_yaml_with_issue(prp_path: str, issue_id: str) -> None:
+    """Update PRP YAML header with Linear issue ID.
+
+    Args:
+        prp_path: Path to PRP file
+        issue_id: Linear issue identifier
+
+    Raises:
+        RuntimeError: If YAML update fails
+    """
+    content = Path(prp_path).read_text(encoding="utf-8")
+
+    # Check if YAML frontmatter exists
+    yaml_match = re.match(r"(---\n.*?\n---)", content, re.DOTALL)
+    if not yaml_match:
+        raise RuntimeError(
+            f"No YAML frontmatter found in {prp_path}\n"
+            f"🔧 Troubleshooting: PRP file should start with YAML frontmatter"
+        )
+
+    yaml_block = yaml_match.group(1)
+
+    # Check if issue field exists
+    if re.search(r"^issue:", yaml_block, re.MULTILINE):
+        # Update existing issue field
+        updated_yaml = re.sub(
+            r"^issue:.*$",
+            f"issue: {issue_id}",
+            yaml_block,
+            flags=re.MULTILINE
+        )
+    else:
+        # Add issue field before closing ---
+        updated_yaml = yaml_block.replace(
+            "\n---",
+            f"\nissue: {issue_id}\n---"
+        )
+
+    # Replace YAML block in content
+    updated_content = content.replace(yaml_block, updated_yaml)
+
+    # Write back to file
+    Path(prp_path).write_text(updated_content, encoding="utf-8")

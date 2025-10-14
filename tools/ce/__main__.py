@@ -26,6 +26,7 @@ from .pipeline import load_abstract_pipeline, validate_pipeline
 from .executors.github_actions import GitHubActionsExecutor
 from .executors.mock import MockExecutor
 from .metrics import MetricsCollector
+from .update_context import sync_context
 
 
 def format_output(data: Dict[str, Any], as_json: bool = False) -> str:
@@ -458,7 +459,8 @@ def cmd_prp_generate(args) -> int:
     """Execute prp generate command."""
     try:
         output_dir = args.output or "PRPs/feature-requests"
-        prp_path = generate_prp(args.initial_md, output_dir)
+        join_prp = getattr(args, 'join_prp', None)
+        prp_path = generate_prp(args.initial_md, output_dir, join_prp=join_prp)
 
         result = {
             "success": True,
@@ -647,6 +649,37 @@ def cmd_metrics(args) -> int:
         return 1
     except Exception as e:
         print(f"❌ Metrics error: {str(e)}", file=sys.stderr)
+        return 1
+
+
+def cmd_update_context(args) -> int:
+    """Execute update-context command."""
+    try:
+        target_prp = args.prp if hasattr(args, 'prp') and args.prp else None
+
+        result = sync_context(target_prp=target_prp)
+
+        if args.json:
+            print(format_output(result, True))
+        else:
+            print("✅ Context sync completed")
+            print(f"   PRPs scanned: {result['prps_scanned']}")
+            print(f"   PRPs updated: {result['prps_updated']}")
+            print(f"   PRPs moved: {result['prps_moved']}")
+            print(f"   CE updated: {result['ce_updated_count']}")
+            print(f"   Serena updated: {result['serena_updated_count']}")
+
+            if result['errors']:
+                print(f"\n⚠️  Errors encountered:")
+                for error in result['errors']:
+                    print(f"   - {error}")
+
+        return 0 if result['success'] else 1
+
+    except Exception as e:
+        print(f"❌ Update context failed: {str(e)}", file=sys.stderr)
+        import traceback
+        traceback.print_exc()
         return 1
 
 
@@ -915,6 +948,10 @@ Examples:
     prp_generate_parser.add_argument(
         "--json", action="store_true", help="Output as JSON"
     )
+    prp_generate_parser.add_argument(
+        "--join-prp",
+        help="Update existing PRP's Linear issue (PRP number, ID like 'PRP-12', or file path)"
+    )
 
     # prp execute subcommand
     prp_execute_parser = prp_subparsers.add_parser(
@@ -996,6 +1033,21 @@ Examples:
         help="Path to metrics file (default: metrics.json)"
     )
 
+    # === UPDATE-CONTEXT COMMAND ===
+    update_context_parser = subparsers.add_parser(
+        "update-context",
+        help="Sync CE/Serena with codebase changes"
+    )
+    update_context_parser.add_argument(
+        "--prp",
+        help="Target specific PRP file (path relative to project root)"
+    )
+    update_context_parser.add_argument(
+        "--json",
+        action="store_true",
+        help="Output as JSON"
+    )
+
     # Parse arguments
     args = parser.parse_args()
 
@@ -1030,6 +1082,8 @@ Examples:
             return cmd_pipeline_render(args)
     elif args.command == "metrics":
         return cmd_metrics(args)
+    elif args.command == "update-context":
+        return cmd_update_context(args)
     else:
         print(f"Unknown command: {args.command}", file=sys.stderr)
         return 1

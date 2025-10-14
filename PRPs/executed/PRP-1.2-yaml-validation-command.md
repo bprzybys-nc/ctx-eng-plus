@@ -1,23 +1,27 @@
 ---
-name: "Add YAML Validation Command to CE Tools"
-description: "CLI command to validate PRP YAML headers against schema with actionable error messages"
-prp_id: "PRP-1.2"
-task_id: "BLA-6"
-status: "executed"
-priority: "MEDIUM"
-confidence: "8/10"
-effort_hours: 3.0
-risk: "LOW"
-dependencies: []
-parent_prp: "PRP-001"
+confidence: 8/10
 context_memories: []
-meeting_evidence: []
 context_sync:
-  ce_updated: false
+  ce_updated: true
+  last_sync: '2025-10-15T07:54:37.609288+00:00'
   serena_updated: false
+created_date: '2025-01-15T21:30:00Z'
+dependencies: []
+description: CLI command to validate PRP YAML headers against schema with actionable
+  error messages
+effort_hours: 3.0
+last_updated: '2025-01-15T21:30:00Z'
+meeting_evidence: []
+name: Add YAML Validation Command to CE Tools
+parent_prp: PRP-001
+priority: MEDIUM
+prp_id: PRP-1.2
+risk: LOW
+status: executed
+task_id: BLA-6
+updated: '2025-10-15T07:54:37.609291+00:00'
+updated_by: update-context-command
 version: 1
-created_date: "2025-01-15T21:30:00Z"
-last_updated: "2025-01-15T21:30:00Z"
 ---
 
 # PRP-1.2: Add YAML Validation Command to CE Tools

@@ -527,8 +527,10 @@ def execute_prp(
         # On error, still try to end PRP context
         try:
             end_prp(prp_id)
-        except:
-            pass
+        except Exception as cleanup_error:
+            import logging
+            logger = logging.getLogger(__name__)
+            logger.warning(f"Failed to end PRP context during cleanup: {cleanup_error}")
         raise
 
 

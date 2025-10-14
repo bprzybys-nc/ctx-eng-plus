@@ -1,19 +1,20 @@
 ---
-prp_id: PRP-9
-feature_name: Serena MCP Integration for File Operations
-status: executed
-issue: BLA-20
-created: 2025-10-13T02:33:42.661509
-updated: 2025-10-13T12:15:00Z
-completed: 2025-10-13T12:15:00Z
-complexity: medium
-estimated_hours: 3-5
 actual_hours: 2.5
-dependencies:
-updated_by: execute-prp-command
+completed: 2025-10-13 12:15:00+00:00
+complexity: medium
 context_sync:
   ce_updated: true
+  last_sync: '2025-10-15T07:54:37.627046+00:00'
   serena_updated: false
+created: 2025-10-13 02:33:42.661509
+dependencies: null
+estimated_hours: 3-5
+feature_name: Serena MCP Integration for File Operations
+issue: BLA-20
+prp_id: PRP-9
+status: executed
+updated: '2025-10-15T07:54:37.627054+00:00'
+updated_by: update-context-command
 ---
 
 # Serena MCP Integration for File Operations

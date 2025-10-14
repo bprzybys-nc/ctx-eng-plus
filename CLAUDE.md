@@ -90,6 +90,52 @@ uv run ce --help  # Will fail if not in tools/
 
 ---
 
+## Hooks & Shell Functions
+
+### Git Hooks
+
+**Pre-Commit Hook**: Pattern conformance check
+- **Location**: `.git/hooks/pre-commit`
+- **What**: Runs `ce validate --level 4` before each commit
+- **When**: Automatic on every `git commit`
+- **Skip**: Use `git commit --no-verify` (sparingly!)
+
+**SessionStart Hook**: Drift score check
+- **Location**: `.claude/settings.local.json` (hooks section)
+- **What**: Shows drift score on session start
+- **When**: Automatic when starting new Claude Code session
+- **Output**: "✅ Context healthy: X%" or "⚠️ HIGH DRIFT: X%"
+
+### Shell Functions (Optional)
+
+**Setup** (one-time):
+```bash
+# Add to ~/.zshrc or ~/.bashrc:
+source /path/to/project/.ce/shell-functions.sh
+```
+
+**Functions Available**:
+```bash
+# ce-in-tools: Run ce commands from anywhere in project
+ce-in-tools validate --level all
+ce-in-tools context health
+ce-in-tools update-context
+
+# Shorter alias
+cet validate --level all
+
+# Quick drift check
+ce-drift
+```
+
+**How it works**: Automatically detects git root and changes to `tools/` directory, works from ANY location within project.
+
+**Why**: Solves working directory problem where hooks/commands fail because `cd tools` doesn't work when already in `tools/`.
+
+**Alternative** (without shell functions): Use `uv run -C tools ce ...` to run from any directory.
+
+---
+
 ## Tool Usage Workflow
 
 ### Quick Commands
@@ -389,6 +435,183 @@ cd tools && uv run ce prp analyze <path-to-prp.md> --json
 **Exit Codes**: 0 (GREEN), 1 (YELLOW), 2 (RED)
 
 **Documentation**: [PRP Sizing Guidelines](docs/prp-sizing-guidelines.md)
+
+### Context Sync - /update-context
+
+```bash
+# Sync all PRPs with codebase (universal mode)
+cd tools && uv run ce update-context
+
+# Sync specific PRP only (targeted mode)
+cd tools && uv run ce update-context --prp PRPs/executed/PRP-6-markdown-linting.md
+
+# JSON output
+cd tools && uv run ce update-context --json
+```
+
+**What it does**:
+- Updates YAML headers with context_sync flags (ce_updated, serena_updated, last_sync)
+- Verifies implementations exist via function extraction
+- Auto-transitions PRPs from feature-requests/ to executed/ when verified
+- Detects pattern drift (code violations + missing examples)
+- Generates drift report at `.ce/drift-report.md`
+
+**When to run**:
+- After completing PRP implementation
+- After significant codebase refactoring
+- Weekly system hygiene (prevent drift accumulation)
+
+**Drift Detection**:
+- **Part 1**: Code violating documented patterns (error handling, naming, KISS)
+- **Part 2**: Critical PRPs missing examples/ documentation
+- Each violation includes file location, issue, and proposed solution
+
+**Graceful Degradation**:
+- Works without Serena MCP (sets serena_updated=false with warning)
+- Skips drift detection if examples/ directory missing
+- No silent failures - all errors include troubleshooting guidance
+
+---
+
+## Linear Integration
+
+### Configuration
+
+**Location**: `.ce/linear-defaults.yml`
+
+**Purpose**: Preserve project-specific Linear settings for automated issue creation.
+
+**Configuration File**:
+```yaml
+# Project name to assign issues to
+project: "Context Engineering"
+
+# Default assignee email
+assignee: "blazej.przybyszewski@gmail.com"
+
+# Team identifier
+team: "Blaise78"
+
+# Default labels for PRP-related issues
+default_labels:
+  - "feature"
+```
+
+### Usage in Code
+
+**Import helper**:
+```python
+from ce.linear_utils import get_linear_defaults, create_issue_with_defaults
+
+# Get defaults
+defaults = get_linear_defaults()
+# {"project": "Context Engineering", "assignee": "...", ...}
+
+# Create issue with defaults
+issue = create_issue_with_defaults(
+    title="PRP-15: New Feature",
+    description="Implement feature X",
+    state="todo"
+)
+```
+
+**Helpers Available**:
+- `get_linear_defaults()` - Read full config
+- `get_default_assignee()` - Get assignee email only
+- `get_default_project()` - Get project name only
+- `create_issue_with_defaults()` - Create issue with auto-applied defaults
+
+### When Creating Issues
+
+**Automatic Defaults Applied**:
+- Project: "Context Engineering"
+- Assignee: "blazej.przybyszewski@gmail.com"
+- Labels: ["feature"] + any additional labels
+
+**Override When Needed**:
+```python
+issue = create_issue_with_defaults(
+    title="Special Issue",
+    description="...",
+    override_assignee="someone.else@example.com",
+    override_project="Different Project"
+)
+```
+
+### PRP Generation Integration
+
+**Auto-Create Linear Issues**: The `/generate-prp` command automatically creates Linear issues using the defaults from `.ce/linear-defaults.yml`.
+
+**Basic Usage** (creates new issue):
+```bash
+/generate-prp path/to/INITIAL.md
+# Creates new PRP + Linear issue with default project/assignee/labels
+```
+
+**Join Existing Issue** (updates existing PRP's issue):
+```bash
+/generate-prp path/to/INITIAL.md --join-prp 12
+# Joins PRP-12's Linear issue (appends new PRP info to description)
+
+# Alternative formats:
+/generate-prp path/to/INITIAL.md --join-prp PRP-12
+/generate-prp path/to/INITIAL.md --join-prp PRPs/executed/PRP-12-feature.md
+```
+
+**How It Works**:
+
+1. **New Issue** (no --join-prp):
+   - Generates PRP file
+   - Creates Linear issue with title: `{PRP-ID}: {Feature Name}`
+   - Uses defaults from `.ce/linear-defaults.yml`
+   - Updates PRP YAML header with `issue: {ISSUE-ID}`
+
+2. **Join Existing** (with --join-prp):
+   - Generates PRP file
+   - Finds target PRP's Linear issue ID from YAML
+   - Updates that issue by appending new PRP information
+   - Both PRPs reference same Linear issue
+
+**Issue Description Format**:
+```markdown
+## Feature
+{First 300 chars of feature description}...
+
+## PRP Details
+- **PRP ID**: PRP-15
+- **PRP File**: `PRPs/feature-requests/PRP-15-feature.md`
+- **Examples Provided**: 3
+
+## Implementation
+See PRP file for detailed implementation steps, validation gates, and testing strategy.
+```
+
+**Use Cases**:
+
+- **Related Features**: Multiple PRPs implementing parts of same initiative
+  ```bash
+  /generate-prp auth-part1.md              # Creates PRP-10 + BLA-25
+  /generate-prp auth-part2.md --join-prp 10  # Creates PRP-11, joins BLA-25
+  ```
+
+- **Incremental Work**: Breaking large PRP into smaller chunks
+- **Follow-up Work**: Additional PRP for same feature area
+
+### Troubleshooting
+
+```bash
+# Check Linear config
+cat .ce/linear-defaults.yml
+
+# Test Linear defaults loading
+cd tools && python3 -c "from ce.linear_utils import get_linear_defaults; print(get_linear_defaults())"
+
+# Reset Linear MCP connection if needed
+rm -rf ~/.mcp-auth
+
+# Check PRP's Linear issue ID
+grep "^issue:" PRPs/executed/PRP-12-feature.md
+```
 
 ---
 
