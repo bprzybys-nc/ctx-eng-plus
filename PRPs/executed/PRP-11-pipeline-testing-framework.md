@@ -2,6 +2,7 @@
 prp_id: PRP-11
 feature_name: Pipeline Testing Framework & Strategy Pattern
 status: executed
+issue: BLA-21
 created: 2025-01-13
 updated: 2025-01-13
 executed_date: 2025-01-13

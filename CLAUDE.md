@@ -54,6 +54,8 @@ uv sync                          # Install dependencies
 rm -rf ~/.mcp-auth
 ```
 
+# 💡 Whenever I say 'linear( mcp)' in context of project management - it means linear-server mcp
+
 **STRICT RULE:** Ad-hoc code max 3 lines of code (LOC). No exceptions.
 
 - ✅ ALLOWED: Ad-hoc ≤3 LOC: `"x = [1,2,3]; print(sum(x))"`

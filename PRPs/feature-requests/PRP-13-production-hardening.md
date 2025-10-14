@@ -2,6 +2,7 @@
 prp_id: PRP-13
 feature_name: Production Hardening & Comprehensive Documentation
 status: partial
+issue: BLA-23
 created: 2025-01-13
 updated: 2025-01-13
 last_updated: "2025-01-13T20:45:00Z"

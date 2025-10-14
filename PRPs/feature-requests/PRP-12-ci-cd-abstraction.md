@@ -2,6 +2,7 @@
 prp_id: PRP-12
 feature_name: CI/CD Pipeline Abstraction
 status: executed
+issue: BLA-22
 created: 2025-01-13
 updated: 2025-10-13
 complexity: medium

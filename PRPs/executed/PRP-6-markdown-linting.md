@@ -2,6 +2,7 @@
 prp_id: PRP-6
 feature_name: Markdown & Mermaid Linting with Self-Healing
 status: executed
+issue: BLA-17
 created: 2025-10-13
 updated: 2025-10-13T09:12:00Z
 completed: 2025-10-13T09:12:00Z

@@ -2,6 +2,7 @@
 prp_id: PRP-9
 feature_name: Serena MCP Integration for File Operations
 status: executed
+issue: BLA-20
 created: 2025-10-13T02:33:42.661509
 updated: 2025-10-13T12:15:00Z
 completed: 2025-10-13T12:15:00Z

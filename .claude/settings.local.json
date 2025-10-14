@@ -27,7 +27,19 @@
       "Bash(uv add:*)",
       "Bash(git diff-tree:*)",
       "Bash(brew install:*)",
-      "Bash(rm -rf ~/.mcp-auth)"
+      "Bash(rm -rf ~/.mcp-auth)",
+      "Bash(for file in PRPs/feature-requests/*.md PRPs/executed/*.md)",
+      "Bash(do [ -f \"$file\" ])",
+      "Bash(echo \"=== $file ===\")",
+      "Bash(head:*)",
+      "Bash(done)",
+      "Bash(chmod:*)",
+      "Bash(./tmp/extract_prp_metadata.sh:*)",
+      "Bash(do if [ -f \"$file\" ])",
+      "Bash(then echo \"=== $file ===\")",
+      "Bash(fi)",
+      "Bash(python:*)",
+      "Bash(python3:*)"
     ],
     "deny": [],
     "ask": []

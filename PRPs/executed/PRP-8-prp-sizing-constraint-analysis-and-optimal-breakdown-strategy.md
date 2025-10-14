@@ -2,6 +2,7 @@
 prp_id: PRP-8
 feature_name: PRP Sizing Constraint Analysis and Optimal Breakdown Strategy
 status: executed
+issue: BLA-19
 created: 2025-10-13T02:33:42.602372
 updated: 2025-10-13T14:30:00.000000
 completed: 2025-10-13T14:30:00.000000
