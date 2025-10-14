@@ -7,6 +7,7 @@ requires-python = ">=3.10"
 dependencies = [
     "diagrams>=0.24.4",
     "jsonschema>=4.25.1",
+    "python-frontmatter>=1.1.0",
     "pyyaml>=6.0.3",
 ]
 

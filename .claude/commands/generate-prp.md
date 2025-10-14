@@ -5,8 +5,14 @@ Automates PRP (Product Requirements Prompt) generation from INITIAL.md with comp
 ## Usage
 
 ```
-/generate-prp <initial-md-path>
+/generate-prp <initial-md-path>                        # Creates new PRP + Linear issue
+/generate-prp <initial-md-path> --join-prp <prp-ref>  # Joins existing PRP's Linear issue
 ```
+
+**PRP Reference Formats**:
+- Number: `--join-prp 12` (searches for PRP-12)
+- ID: `--join-prp PRP-12`
+- File path: `--join-prp PRPs/executed/PRP-12-feature.md`
 
 ## What It Does
 
@@ -32,7 +38,12 @@ Automates PRP (Product Requirements Prompt) generation from INITIAL.md with comp
    - Auto-generates next PRP ID (PRP-N+1)
    - Validates completeness (ensures all required sections present)
 
-5. **Outputs to**: `PRPs/feature-requests/PRP-{id}-{feature-slug}.md`
+5. **Creates/Updates Linear issue**:
+   - **Without --join-prp**: Creates new Linear issue with project defaults (from `.ce/linear-defaults.yml`)
+   - **With --join-prp**: Updates existing PRP's Linear issue with new PRP information
+   - Updates PRP YAML header with `issue: {ISSUE-ID}`
+
+6. **Outputs to**: `PRPs/feature-requests/PRP-{id}-{feature-slug}.md`
 
 ## INITIAL.md Structure
 
@@ -110,15 +121,39 @@ uv run ce prp generate feature-requests/user-auth/INITIAL.md
 ## CLI Command
 
 ```bash
-# Basic usage
+# Basic usage (creates new PRP + Linear issue)
 cd tools
 uv run ce prp generate <path-to-initial.md>
+
+# Join existing PRP's Linear issue
+uv run ce prp generate <path-to-initial.md> --join-prp 12
+uv run ce prp generate <path-to-initial.md> --join-prp PRP-12
+uv run ce prp generate <path-to-initial.md> --join-prp PRPs/executed/PRP-12-feature.md
 
 # Custom output directory
 uv run ce prp generate <path-to-initial.md> -o /custom/path
 
 # JSON output (for scripting)
 uv run ce prp generate <path-to-initial.md> --json
+
+# Combined options
+uv run ce prp generate <path-to-initial.md> --join-prp 12 --json
+```
+
+**Use Cases for --join-prp**:
+- **Related features**: Multiple PRPs implementing parts of same initiative
+- **Incremental work**: Breaking large PRP into smaller chunks
+- **Follow-up work**: Additional PRP for same feature area
+
+**Example workflow**:
+```bash
+# Create first PRP for auth system
+uv run ce prp generate auth-part1.md
+# Output: PRP-10 created, Linear issue BLA-25 created
+
+# Create second PRP, join same issue
+uv run ce prp generate auth-part2.md --join-prp 10
+# Output: PRP-11 created, BLA-25 updated with PRP-11 info
 ```
 
 ## Output Structure

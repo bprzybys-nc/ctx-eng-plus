@@ -1,0 +1,17 @@
+# Linear Issue Defaults for Context Engineering Project
+# Used when creating issues via /generate-prp or manual issue creation
+
+# Project name to assign issues to
+project: "Context Engineering"
+
+# Default assignee email
+assignee: "blazej.przybyszewski@gmail.com"
+
+# Team identifier (resolved from Linear API)
+team: "Blaise78"
+
+# Default labels for PRP-related issues
+default_labels:
+  - "feature"
+
+# Note: These defaults can be overridden when creating specific issues
