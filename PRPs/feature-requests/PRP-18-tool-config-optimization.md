@@ -52,6 +52,8 @@ Optimize tool configuration to reduce context overhead by 30-50% and accelerate 
 
 - **Context reduction**: 30-50% (measured in tokens)
 - **Query tree simplification**: 60-70% fewer tools to evaluate
+- **Allow list**: 31 explicit MCP tools (no wildcards)
+- **Deny list**: 105 explicit items (94 MCP tools + 11 bash commands, all granular)
 - **Bash reduction**: From 45+ permissions to 3 (git, uv only)
 - **Performance**: Python utilities 10-50x faster than bash subprocess
 - **Agent clarity**: Tool mapping guide eliminates trial-and-error
@@ -218,8 +220,18 @@ bash_commands:
   keep_external_tools: 3        # git, uv, pytest
 
 recommendations:
-  allow_list_size: 31  # MCP tools
-  deny_list_size: 52   # 50 MCP + 11 bash
+  allow_list_size: 31      # MCP tools (explicit)
+  deny_list_size: 105      # 94 MCP tools + 11 bash (all explicit, no wildcards)
+  deny_breakdown:
+    serena: 15
+    filesystem: 6
+    git: 7
+    github: 26
+    playwright: 31
+    perplexity: 1
+    repomix: 6
+    ide: 2
+    bash: 11
   context_reduction: "60-70%"
 ```
 
@@ -299,20 +311,24 @@ cd tools && uv run ce validate --level 1
     ],
 
     "deny": [
-      // SERENA unused (~20 tools)
+      // SERENA unused (~20 tools - granular tool-level)
       "mcp__serena__delete_memory",
       "mcp__serena__rename_symbol",
       "mcp__serena__create_text_file",
       "mcp__serena__switch_modes",
       "mcp__serena__prepare_for_new_conversation",
       "mcp__serena__write_memory",
+      "mcp__serena__list_memories",
       "mcp__serena__check_onboarding_performed",
       "mcp__serena__onboarding",
       "mcp__serena__think_about_collected_information",
       "mcp__serena__think_about_task_adherence",
       "mcp__serena__think_about_whether_you_are_done",
+      "mcp__serena__insert_before_symbol",
+      "mcp__serena__replace_symbol_body",
+      "mcp__serena__get_current_config",
 
-      // FILESYSTEM unused (~12 tools)
+      // FILESYSTEM unused (~12 tools - granular tool-level)
       "mcp__filesystem__read_file",
       "mcp__filesystem__read_media_file",
       "mcp__filesystem__read_multiple_files",
@@ -320,7 +336,7 @@ cd tools && uv run ce validate --level 1
       "mcp__filesystem__move_file",
       "mcp__filesystem__list_directory_with_sizes",
 
-      // GIT unused (~10 tools)
+      // GIT unused (~10 tools - granular tool-level)
       "mcp__git__git_branch",
       "mcp__git__git_checkout",
       "mcp__git__git_show",
@@ -329,12 +345,82 @@ cd tools && uv run ce validate --level 1
       "mcp__git__git_diff_staged",
       "mcp__git__git_diff_unstaged",
 
-      // Entire unused MCP servers
-      "mcp__github__*",
-      "mcp__playwright__*",
-      "mcp__perplexity__*",
-      "mcp__repomix__*",
-      "mcp__ide__*",
+      // GITHUB unused (~26 tools - explicit granular list)
+      "mcp__github__create_or_update_file",
+      "mcp__github__search_repositories",
+      "mcp__github__create_repository",
+      "mcp__github__get_file_contents",
+      "mcp__github__push_files",
+      "mcp__github__create_issue",
+      "mcp__github__create_pull_request",
+      "mcp__github__fork_repository",
+      "mcp__github__create_branch",
+      "mcp__github__list_commits",
+      "mcp__github__list_issues",
+      "mcp__github__update_issue",
+      "mcp__github__add_issue_comment",
+      "mcp__github__search_code",
+      "mcp__github__search_issues",
+      "mcp__github__search_users",
+      "mcp__github__get_issue",
+      "mcp__github__get_pull_request",
+      "mcp__github__list_pull_requests",
+      "mcp__github__create_pull_request_review",
+      "mcp__github__merge_pull_request",
+      "mcp__github__get_pull_request_files",
+      "mcp__github__get_pull_request_status",
+      "mcp__github__update_pull_request_branch",
+      "mcp__github__get_pull_request_comments",
+      "mcp__github__get_pull_request_reviews",
+
+      // PLAYWRIGHT unused (~31 tools - explicit granular list)
+      "mcp__playwright__start_codegen_session",
+      "mcp__playwright__end_codegen_session",
+      "mcp__playwright__get_codegen_session",
+      "mcp__playwright__clear_codegen_session",
+      "mcp__playwright__playwright_navigate",
+      "mcp__playwright__playwright_screenshot",
+      "mcp__playwright__playwright_click",
+      "mcp__playwright__playwright_iframe_click",
+      "mcp__playwright__playwright_iframe_fill",
+      "mcp__playwright__playwright_fill",
+      "mcp__playwright__playwright_select",
+      "mcp__playwright__playwright_hover",
+      "mcp__playwright__playwright_upload_file",
+      "mcp__playwright__playwright_evaluate",
+      "mcp__playwright__playwright_console_logs",
+      "mcp__playwright__playwright_close",
+      "mcp__playwright__playwright_get",
+      "mcp__playwright__playwright_post",
+      "mcp__playwright__playwright_put",
+      "mcp__playwright__playwright_patch",
+      "mcp__playwright__playwright_delete",
+      "mcp__playwright__playwright_expect_response",
+      "mcp__playwright__playwright_assert_response",
+      "mcp__playwright__playwright_custom_user_agent",
+      "mcp__playwright__playwright_get_visible_text",
+      "mcp__playwright__playwright_get_visible_html",
+      "mcp__playwright__playwright_go_back",
+      "mcp__playwright__playwright_go_forward",
+      "mcp__playwright__playwright_drag",
+      "mcp__playwright__playwright_press_key",
+      "mcp__playwright__playwright_save_as_pdf",
+      "mcp__playwright__playwright_click_and_switch_tab",
+
+      // PERPLEXITY unused (1 tool - explicit granular list)
+      "mcp__perplexity__perplexity_ask",
+
+      // REPOMIX unused (6 tools - explicit granular list)
+      "mcp__repomix__pack_codebase",
+      "mcp__repomix__pack_remote_repository",
+      "mcp__repomix__read_repomix_output",
+      "mcp__repomix__grep_repomix_output",
+      "mcp__repomix__file_system_read_file",
+      "mcp__repomix__file_system_read_directory",
+
+      // IDE unused (2 tools - explicit granular list)
+      "mcp__ide__getDiagnostics",
+      "mcp__ide__executeCode",
 
       // BASH - Replaceable with Python (11 commands)
       "Bash(cat:*)",
@@ -377,7 +463,12 @@ cd tools && uv run ce validate --level 1
 
 **Validation Command**:
 ```bash
-test -f examples/tool-usage-patterns.md && test -f .serena/memories/tool-usage-guide.md && echo "✅ Guide created"
+# Validate guide exists and contains required patterns
+grep -q "mcp__serena__find_symbol" examples/tool-usage-patterns.md && \
+grep -q "shell_utils.grep_text" examples/tool-usage-patterns.md && \
+grep -q "Anti-Patterns" examples/tool-usage-patterns.md && \
+diff examples/tool-usage-patterns.md .serena/memories/tool-usage-guide.md && \
+echo "✅ Tool usage guide validated and synced"
 ```
 
 **Files to create/modify**:
@@ -962,10 +1053,11 @@ echo "Reduction: [percentage]%"
 ## 5. ACCEPTANCE CRITERIA
 
 - [ ] **MCP tool audit completed**: `.ce/tool-inventory.yml` created with usage stats
-- [ ] **Allow list optimized**: ~31 specific MCP tools (explicit, no wildcards)
-- [ ] **Deny list populated**: 50+ unused MCP tools + 11 bash commands
-- [ ] **Tool usage guide created**: `examples/tool-usage-patterns.md`
-- [ ] **Serena memory populated**: `.serena/memories/tool-usage-guide.md`
+- [ ] **Allow list optimized**: 31 explicit MCP tools (no wildcards, granular tool-level)
+- [ ] **Deny list populated**: 105 explicit items (94 MCP + 11 bash, all granular tool-level)
+- [ ] **No wildcard denials**: All MCP servers remain enabled, only specific tools denied
+- [ ] **Tool usage guide created**: `examples/tool-usage-patterns.md` with validation
+- [ ] **Serena memory populated**: `.serena/memories/tool-usage-guide.md` (exact copy)
 - [ ] **Python shell_utils implemented**: 8 functions (grep, wc, head, tail, find, awk×3)
 - [ ] **Unit tests**: 100% coverage for shell_utils module
 - [ ] **CE modules refactored**: Bash usage reduced from 34 to ~3 calls
@@ -1017,15 +1109,22 @@ echo "Reduction: [percentage]%"
 
 ### Key Decisions
 
-**Decision 1**: Deny list for efficiency, not security
-- **Rationale**: Unused tools bloat context but aren't security risks
-- **Alternative considered**: Remove MCP servers entirely (too aggressive)
+**Decision 1**: Granular tool-level permissions (no wildcards)
+- **Rationale**: User requirement - "all [servers] are allowed, just specify granular list of mcp's tools"
+- **Implementation**: 105 explicit tool names (94 MCP + 11 bash)
+- **Alternative considered**: Server-level wildcards (rejected - violates requirements)
+- **Critical**: All MCP servers remain enabled, only specific unused tools denied
 
-**Decision 2**: Python over bash for text processing
+**Decision 2**: Deny list for efficiency, not security
+- **Rationale**: Unused tools bloat context but aren't security risks
+- **Purpose**: Query tree simplification + context reduction
+- **Alternative considered**: Security-focused deny list (rejected - wrong use case)
+
+**Decision 3**: Python over bash for text processing
 - **Rationale**: 10-50x performance improvement, no subprocess overhead
 - **Alternative considered**: Keep bash (rejected due to inefficiency)
 
-**Decision 3**: Tool mapping guide in examples/ + Serena memory
+**Decision 4**: Tool mapping guide in examples/ + Serena memory
 - **Rationale**: Agent needs instant access without searching docs
 - **Alternative considered**: Only in docs/ (rejected, too slow for agent)
 
