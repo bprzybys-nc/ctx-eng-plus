@@ -2,21 +2,15 @@
 # Controls validation behavior in pre-commit hooks
 
 pre_commit:
-  # Validation level to run before commit
-  # 1 = Syntax & Style (fast, recommended during refactoring)
-  # 2 = Unit Tests (medium speed)
-  # 3 = Integration Tests (slow)
-  # 4 = Pattern Conformance (checks against examples/, use manually)
-  validation_level: 1
+  # Uncomment validation_level to enable pre-commit validation
+  # If commented/missing = no validation (hook disabled)
+  #
+  # validation_level: 1  # Syntax & Style (fast)
+  # validation_level: 2  # Unit Tests (medium)
+  # validation_level: 3  # Integration Tests (slow)
+  #
+  # NOTE: Level 4 (Pattern Conformance) is NEVER for hooks
+  #       Run manually: cd tools && uv run ce validate --level 4
 
-  # Skip hook entirely (not recommended)
-  enabled: true
-
-  # Timeout in seconds
-  timeout: 30
-
-# Notes:
-# - Level 1 is recommended for active development (fast feedback)
-# - Level 4 should be run manually during code review
-# - Edit this file to change validation behavior
-# - Changes take effect immediately (no hook reinstall needed)
+# Default: validation_level commented = hook does nothing (fast commits during refactoring)
+# To enable: uncomment validation_level and set 1, 2, or 3
