@@ -1270,6 +1270,247 @@ def generate_drift_report(violations: List[str], drift_score: float,
     return report
 
 
+def get_cache_ttl(cli_ttl: Optional[int] = None) -> int:
+    """Get cache TTL from CLI arg, config, or default.
+
+    Priority:
+        1. CLI flag (--cache-ttl)
+        2. .ce/config.yml value
+        3. Hardcoded default (5 minutes)
+
+    Args:
+        cli_ttl: TTL from command-line --cache-ttl flag
+
+    Returns:
+        TTL in minutes
+
+    Example:
+        >>> ttl = get_cache_ttl()
+        >>> assert ttl >= 1
+        >>> ttl = get_cache_ttl(cli_ttl=10)
+        >>> assert ttl == 10
+    """
+    # Priority 1: CLI flag
+    if cli_ttl is not None:
+        return cli_ttl
+
+    # Priority 2: Config file
+    current_dir = Path.cwd()
+    if current_dir.name == "tools":
+        project_root = current_dir.parent
+    else:
+        project_root = current_dir
+
+    config_path = project_root / ".ce" / "config.yml"
+    if config_path.exists():
+        try:
+            import yaml
+            config = yaml.safe_load(config_path.read_text())
+            ttl = config.get("cache", {}).get("analysis_ttl_minutes")
+            if ttl is not None:
+                return int(ttl)
+        except Exception:
+            pass  # Fall back to default
+
+    # Priority 3: Default
+    return 5
+
+
+def get_cached_analysis() -> Optional[Dict[str, Any]]:
+    """Read cached drift analysis from report file.
+
+    Parses .ce/drift-report.md to extract cached analysis results.
+
+    Returns:
+        Cached analysis dict or None if not found
+
+    Example:
+        >>> cached = get_cached_analysis()
+        >>> if cached:
+        ...     assert "drift_score" in cached
+        ...     assert "generated_at" in cached
+    """
+    current_dir = Path.cwd()
+    if current_dir.name == "tools":
+        project_root = current_dir.parent
+    else:
+        project_root = current_dir
+
+    report_path = project_root / ".ce" / "drift-report.md"
+    if not report_path.exists():
+        return None
+
+    try:
+        content = report_path.read_text()
+
+        # Extract timestamp from report
+        # Format: **Generated**: 2025-10-16T20:03:32.185604+00:00
+        timestamp_match = re.search(
+            r'\*\*Generated\*\*: (.+?)$',
+            content,
+            re.MULTILINE
+        )
+        if not timestamp_match:
+            return None
+
+        generated_at = timestamp_match.group(1).strip()
+
+        # Extract drift score
+        score_match = re.search(r'\*\*Drift Score\*\*: ([\d.]+)%', content)
+        if not score_match:
+            return None
+
+        drift_score = float(score_match.group(1))
+
+        # Extract violation count
+        violations_match = re.search(r'\*\*Violations Found\*\*: (\d+)', content)
+        violation_count = int(violations_match.group(1)) if violations_match else 0
+
+        # Classify drift level
+        if drift_score < 5:
+            drift_level = "ok"
+        elif drift_score < 15:
+            drift_level = "warning"
+        else:
+            drift_level = "critical"
+
+        return {
+            "drift_score": drift_score,
+            "drift_level": drift_level,
+            "violation_count": violation_count,
+            "report_path": str(report_path),
+            "generated_at": generated_at,
+            "cached": True
+        }
+
+    except Exception as e:
+        logger.debug(f"Failed to read cache: {e}")
+        return None
+
+
+def is_cache_valid(cached: Dict[str, Any], ttl_minutes: int = 5) -> bool:
+    """Check if cached analysis is still valid.
+
+    Args:
+        cached: Cached analysis dict with 'generated_at' field
+        ttl_minutes: Cache time-to-live in minutes
+
+    Returns:
+        True if cache is fresh (< TTL), False otherwise
+
+    Example:
+        >>> cached = {"generated_at": "2025-10-17T10:00:00+00:00"}
+        >>> is_valid = is_cache_valid(cached, ttl_minutes=5)
+        >>> assert isinstance(is_valid, bool)
+    """
+    try:
+        # Parse timestamp (handle multiple formats)
+        generated_str = cached["generated_at"]
+
+        # Replace timezone suffix for consistent parsing
+        generated_str = generated_str.replace("+00:00", "+00:00")
+
+        generated_at = datetime.fromisoformat(generated_str)
+
+        # Ensure timezone aware
+        if generated_at.tzinfo is None:
+            generated_at = generated_at.replace(tzinfo=timezone.utc)
+
+        now = datetime.now(timezone.utc)
+        age_minutes = (now - generated_at).total_seconds() / 60
+
+        return age_minutes < ttl_minutes
+
+    except Exception:
+        return False
+
+
+def analyze_context_drift() -> Dict[str, Any]:
+    """Run drift analysis and generate report.
+
+    Fast drift detection without metadata updates - optimized for CI/CD.
+
+    Returns:
+        {
+            "drift_score": 17.9,
+            "drift_level": "critical",  # ok, warning, critical
+            "violations": ["..."],
+            "violation_count": 5,
+            "missing_examples": [...],
+            "report_path": ".ce/drift-report.md",
+            "generated_at": "2025-10-16T20:15:00Z",
+            "duration_seconds": 2.3
+        }
+
+    Raises:
+        RuntimeError: If analysis fails with troubleshooting guidance
+
+    Example:
+        >>> result = analyze_context_drift()
+        >>> assert result["drift_level"] in ["ok", "warning", "critical"]
+        >>> assert 0 <= result["drift_score"] <= 100
+    """
+    import time
+    start_time = time.time()
+
+    try:
+        # Run drift detection (existing functions)
+        drift_result = verify_codebase_matches_examples()
+        missing_examples = detect_missing_examples_for_prps()
+
+        # Generate report
+        report = generate_drift_report(
+            drift_result["violations"],
+            drift_result["drift_score"],
+            missing_examples
+        )
+
+        # Save report
+        current_dir = Path.cwd()
+        if current_dir.name == "tools":
+            project_root = current_dir.parent
+        else:
+            project_root = current_dir
+
+        ce_dir = project_root / ".ce"
+        ce_dir.mkdir(exist_ok=True)
+        report_path = ce_dir / "drift-report.md"
+        report_path.write_text(report)
+
+        # Calculate duration
+        duration = time.time() - start_time
+
+        # Classify drift level
+        drift_score = drift_result["drift_score"]
+        if drift_score < 5:
+            drift_level = "ok"
+        elif drift_score < 15:
+            drift_level = "warning"
+        else:
+            drift_level = "critical"
+
+        return {
+            "drift_score": drift_score,
+            "drift_level": drift_level,
+            "violations": drift_result["violations"],
+            "violation_count": len(drift_result["violations"]),
+            "missing_examples": missing_examples,
+            "report_path": str(report_path),
+            "generated_at": datetime.now(timezone.utc).isoformat(),
+            "duration_seconds": round(duration, 1)
+        }
+
+    except Exception as e:
+        raise RuntimeError(
+            f"Drift analysis failed: {e}\n"
+            f"🔧 Troubleshooting:\n"
+            f"   - Ensure examples/ directory exists\n"
+            f"   - Check PRPs have valid YAML headers\n"
+            f"   - Verify tools/ce/ directory is accessible\n"
+            f"   - Run: cd tools && uv run ce validate --level 1"
+        ) from e
+
+
 def sync_context(target_prp: Optional[str] = None) -> Dict[str, Any]:
     """Execute context sync workflow.
 

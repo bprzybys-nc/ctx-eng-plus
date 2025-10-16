@@ -1,0 +1,8 @@
+# Context Engineering Configuration
+
+# Cache settings
+cache:
+  # TTL for drift analysis cache in minutes
+  # Used by: ce analyze-context
+  # Can be overridden with --cache-ttl flag
+  analysis_ttl_minutes: 5

@@ -21,6 +21,7 @@ from .cli_handlers import (
     cmd_pipeline_validate,
     cmd_pipeline_render,
     cmd_metrics,
+    cmd_analyze_context,
     cmd_update_context,
 )
 
@@ -345,6 +346,28 @@ Examples:
         help="Path to metrics file (default: metrics.json)"
     )
 
+    # === ANALYZE-CONTEXT COMMAND ===
+    analyze_context_parser = subparsers.add_parser(
+        "analyze-context",
+        aliases=["analyse-context"],
+        help="Analyze context drift without updating metadata (fast check for CI/CD)"
+    )
+    analyze_context_parser.add_argument(
+        "--json",
+        action="store_true",
+        help="Output JSON for scripting"
+    )
+    analyze_context_parser.add_argument(
+        "--force",
+        action="store_true",
+        help="Force re-analysis, bypass cache"
+    )
+    analyze_context_parser.add_argument(
+        "--cache-ttl",
+        type=int,
+        help="Cache TTL in minutes (default: from config or 5)"
+    )
+
     # === UPDATE-CONTEXT COMMAND ===
     update_context_parser = subparsers.add_parser(
         "update-context",
@@ -399,6 +422,8 @@ Examples:
             return cmd_pipeline_render(args)
     elif args.command == "metrics":
         return cmd_metrics(args)
+    elif args.command in ["analyze-context", "analyse-context"]:
+        return cmd_analyze_context(args)
     elif args.command == "update-context":
         return cmd_update_context(args)
     else:

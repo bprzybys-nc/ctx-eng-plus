@@ -721,6 +721,96 @@ def cmd_metrics(args) -> int:
         return 1
 
 
+# === ANALYZE-CONTEXT COMMAND ===
+
+def cmd_analyze_context(args) -> int:
+    """Execute analyze-context command.
+    
+    Fast drift check without metadata updates - optimized for CI/CD.
+    
+    Returns:
+        Exit code: 0 (ok), 1 (warning), 2 (critical)
+    """
+    from .update_context import (
+        analyze_context_drift,
+        get_cached_analysis,
+        is_cache_valid,
+        get_cache_ttl
+    )
+    
+    try:
+        # Get cache TTL (CLI flag > config > default)
+        cache_ttl = get_cache_ttl(getattr(args, 'cache_ttl', None))
+        
+        # Check cache if not forced
+        if not getattr(args, 'force', False):
+            cached = get_cached_analysis()
+            if cached and is_cache_valid(cached, ttl_minutes=cache_ttl):
+                result = cached
+                
+                if not args.json:
+                    # Calculate cache age
+                    from datetime import datetime, timezone
+                    try:
+                        generated_at = datetime.fromisoformat(
+                            cached["generated_at"].replace("+00:00", "+00:00")
+                        )
+                        if generated_at.tzinfo is None:
+                            generated_at = generated_at.replace(tzinfo=timezone.utc)
+                        now = datetime.now(timezone.utc)
+                        age_minutes = int((now - generated_at).total_seconds() / 60)
+                        print(f"\u2705 Using cached analysis ({age_minutes}m old, TTL: {cache_ttl}m)")
+                        print(f"   Use --force to re-analyze\n")
+                    except Exception:
+                        print(f"\u2705 Using cached analysis (TTL: {cache_ttl}m)\n")
+            else:
+                result = analyze_context_drift()
+        else:
+            result = analyze_context_drift()
+        
+        # Display or output JSON
+        if args.json:
+            print(format_output(result, True))
+        else:
+            # Human-readable output
+            drift_score = result["drift_score"]
+            drift_level = result["drift_level"]
+            violations = result.get("violation_count", 0)
+            missing = len(result.get("missing_examples", []))
+            duration = result.get("duration_seconds", 0)
+            
+            # Emoji indicators
+            if drift_level == "ok":
+                indicator = "\u2705"
+            elif drift_level == "warning":
+                indicator = "\u26a0\ufe0f "
+            else:  # critical
+                indicator = "\ud83d\udea8"
+            
+            print(f"\ud83d\udd0d Analyzing context drift...")
+            if duration > 0:
+                print(f"   \ud83d\udcca Pattern conformance: scan complete")
+                print(f"   \ud83d\udcda Documentation gaps: check complete")
+                print()
+            
+            print(f"{indicator} Analysis complete ({duration}s)")
+            print(f"   Drift Score: {drift_score:.1f}% ({drift_level.upper()})")
+            print(f"   Violations: {violations}")
+            if missing > 0:
+                print(f"   Missing Examples: {missing}")
+            print(f"   Report: {result['report_path']}")
+        
+        # Return exit code based on drift level
+        exit_codes = {"ok": 0, "warning": 1, "critical": 2}
+        return exit_codes[result["drift_level"]]
+    
+    except Exception as e:
+        print(f"\u274c Analysis failed: {str(e)}", file=sys.stderr)
+        import traceback
+        traceback.print_exc()
+        return 1
+
+
 # === UPDATE-CONTEXT COMMAND ===
 
 def cmd_update_context(args) -> int:
