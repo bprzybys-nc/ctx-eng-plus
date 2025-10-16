@@ -41,7 +41,8 @@
       "Bash(python:*)",
       "Bash(python3:*)",
       "WebFetch(domain:github.com)",
-      "mcp__serena__read_memory"
+      "mcp__serena__read_memory",
+      "Bash(find:*)"
     ],
     "deny": [],
     "ask": []
