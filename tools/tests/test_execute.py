@@ -669,7 +669,7 @@ def test_apply_self_healing_fix_unsupported_error_type():
 
 def test_add_import_statement_top_of_file():
     """Test import added at correct position in file."""
-    from ce.execute import _add_import_statement
+    from ce.validation_loop import _add_import_statement
     import tempfile
     from pathlib import Path
 
@@ -692,7 +692,7 @@ def test_add_import_statement_top_of_file():
 
 def test_add_import_statement_after_existing_imports():
     """Test import added after existing imports, not at top."""
-    from ce.execute import _add_import_statement
+    from ce.validation_loop import _add_import_statement
     import tempfile
     from pathlib import Path
 
