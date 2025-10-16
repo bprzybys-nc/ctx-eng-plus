@@ -1591,32 +1591,26 @@ def sync_context(target_prp: Optional[str] = None) -> Dict[str, Any]:
             errors.append(error_msg)
             continue
 
-    # Drift detection (universal sync only)
+    # Drift detection (universal sync only) with caching
     if not target_prp:
         logger.info("Running drift detection...")
-        drift_result = verify_codebase_matches_examples()
-        missing_examples = detect_missing_examples_for_prps()
 
-        if drift_result["violations"] or missing_examples:
-            report = generate_drift_report(
-                drift_result["violations"],
-                drift_result["drift_score"],
-                missing_examples
-            )
+        # Check cache (default TTL: 5 minutes)
+        cached = get_cached_analysis()
+        if cached and is_cache_valid(cached, ttl_minutes=5):
+            logger.info(f"Using cached drift analysis ({cached['drift_score']:.1f}%)")
+            drift_score = cached["drift_score"]
+            report_path = Path(cached["report_path"])
+        else:
+            # Run fresh analysis
+            analysis_result = analyze_context_drift()
+            drift_score = analysis_result["drift_score"]
+            report_path = Path(analysis_result["report_path"])
 
-            # Save report
-            current_dir = Path.cwd()
-            if current_dir.name == "tools":
-                project_root = current_dir.parent
-            else:
-                project_root = current_dir
-            ce_dir = project_root / ".ce"
-            ce_dir.mkdir(exist_ok=True)
-            report_path = ce_dir / "drift-report.md"
-            report_path.write_text(report)
-
+        # Display warning if drift detected
+        if drift_score >= 5:
             logger.warning(
-                f"Examples drift detected: {drift_result['drift_score']:.1f}%\n"
+                f"Examples drift detected: {drift_score:.1f}%\n"
                 f"📊 Report saved: {report_path}\n"
                 f"🔧 Review and apply fixes: cat {report_path}"
             )
