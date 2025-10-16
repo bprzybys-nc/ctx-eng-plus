@@ -54,7 +54,10 @@ def parse_drift_justification(prp_path: str) -> Optional[Dict[str, Any]]:
         # Extract YAML header (between --- markers)
         yaml_match = re.match(r'^---\n(.*?)\n---', content, re.DOTALL)
         if not yaml_match:
-            raise ValueError(f"No YAML header found in {prp_path}")
+            raise ValueError(
+                f"No YAML header found in {prp_path}\n"
+                f"🔧 Troubleshooting: Ensure PRP has YAML front matter between --- markers"
+            )
 
         yaml_content = yaml_match.group(1)
         header = yaml.safe_load(yaml_content)

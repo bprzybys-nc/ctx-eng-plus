@@ -39,34 +39,32 @@ def retry_with_backoff(
     def decorator(func: Callable) -> Callable:
         @functools.wraps(func)
         def wrapper(*args, **kwargs) -> Any:
-            last_exception = None
-
             for attempt in range(max_attempts):
                 try:
                     return func(*args, **kwargs)
                 except exceptions as e:
-                    last_exception = e
+                    is_final_attempt = (attempt == max_attempts - 1)
+                    if is_final_attempt:
+                        _raise_retry_error(func, max_attempts, e)
 
-                    if attempt == max_attempts - 1:
-                        # Final attempt failed - propagate with context
-                        func_name = getattr(func, '__name__', repr(func))
-                        raise RuntimeError(
-                            f"Failed after {max_attempts} attempts: {func_name}\n"
-                            f"Last error: {str(e)}\n"
-                            f"🔧 Troubleshooting: Check network connectivity, API rate limits"
-                        ) from e
-
-                    # Calculate backoff delay (exponential with max cap)
+                    # Backoff and retry
                     delay = min(base_delay * (exponential_base ** attempt), max_delay)
                     time.sleep(delay)
 
-            # Should never reach here, but satisfy type checker
-            if last_exception:
-                raise last_exception
             raise RuntimeError("Retry logic error - should not reach here")
 
         return wrapper
     return decorator
+
+
+def _raise_retry_error(func: Callable, max_attempts: int, last_error: Exception) -> None:
+    """Raise detailed retry error after exhausting attempts."""
+    func_name = getattr(func, '__name__', repr(func))
+    raise RuntimeError(
+        f"Failed after {max_attempts} attempts: {func_name}\n"
+        f"Last error: {str(last_error)}\n"
+        f"🔧 Troubleshooting: Check network connectivity, API rate limits"
+    ) from last_error
 
 
 class CircuitBreaker:

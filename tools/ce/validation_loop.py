@@ -82,27 +82,13 @@ def run_validation_loop(
                 if attempt > 1:
                     self_healed.append(f"L1: Fixed after {attempt} attempts")
                 break
-            else:
-                l1_errors = l1_result.get("errors", [])
-                print(f"    ❌ L1 failed (attempt {attempt}/{max_attempts}): {len(l1_errors)} errors")
 
-                # Parse error and try self-healing
-                if attempt < max_attempts:
-                    combined_error = "\n".join(l1_errors)
-                    error = parse_validation_error(combined_error, "L1")
-                    error_history.append(error["message"])
+            # Validation failed - try self-healing
+            l1_errors = l1_result.get("errors", [])
+            print(f"    ❌ L1 failed (attempt {attempt}/{max_attempts}): {len(l1_errors)} errors")
 
-                    # Check escalation triggers
-                    if check_escalation_triggers(error, attempt, error_history):
-                        escalate_to_human(error, "persistent_error")
-
-                    # Apply self-healing
-                    print(f"      🔧 Attempting self-heal...")
-                    fix_result = apply_self_healing_fix(error, attempt)
-                    if fix_result["success"]:
-                        print(f"      ✅ Applied fix: {fix_result['description']}")
-                    else:
-                        print(f"      ⚠️  Auto-fix failed: {fix_result['description']}")
+            combined_error = "\n".join(l1_errors)
+            _try_self_heal(combined_error, "L1", attempt, max_attempts, error_history)
 
         except EscalationRequired:
             raise  # Propagate escalation
@@ -143,25 +129,14 @@ def run_validation_loop(
                     if attempt > 1:
                         self_healed.append(f"L2: Fixed after {attempt} attempts")
                     break
-                else:
-                    l2_errors = [l2_result.get("stderr", "Test failed")]
-                    print(f"    ❌ L2 failed (attempt {attempt}/{max_attempts})")
-                    print(f"       {l2_result.get('stderr', 'Unknown error')[:200]}")
 
-                    # Self-healing for test failures
-                    if attempt < max_attempts:
-                        error = parse_validation_error(l2_result.get("stderr", ""), "L2")
-                        error_history_l2.append(error["message"])
+                # Validation failed - try self-healing
+                l2_errors = [l2_result.get("stderr", "Test failed")]
+                print(f"    ❌ L2 failed (attempt {attempt}/{max_attempts})")
+                print(f"       {l2_result.get('stderr', 'Unknown error')[:200]}")
 
-                        if check_escalation_triggers(error, attempt, error_history_l2):
-                            escalate_to_human(error, "persistent_error")
-
-                        print(f"      🔧 Attempting self-heal...")
-                        fix_result = apply_self_healing_fix(error, attempt)
-                        if fix_result["success"]:
-                            print(f"      ✅ Applied fix: {fix_result['description']}")
-                        else:
-                            print(f"      ⚠️  Auto-fix failed: {fix_result['description']}")
+                error_output = l2_result.get("stderr", "")
+                _try_self_heal(error_output, "L2", attempt, max_attempts, error_history_l2)
 
             except EscalationRequired:
                 raise
@@ -238,6 +213,49 @@ def run_validation_loop(
         "escalated": escalated,
         "attempts": 1
     }
+
+
+def _try_self_heal(
+    error_output: str,
+    level: str,
+    attempt: int,
+    max_attempts: int,
+    error_history: List[str]
+) -> bool:
+    """Try self-healing for validation error.
+
+    Args:
+        error_output: Raw error output to parse
+        level: Validation level (L1, L2, etc.)
+        attempt: Current attempt number
+        max_attempts: Maximum attempts allowed
+        error_history: List of previous error messages
+
+    Returns:
+        True if should continue trying, False if should stop
+
+    Raises:
+        EscalationRequired: If escalation triggered
+    """
+    if attempt >= max_attempts:
+        return False
+
+    error = parse_validation_error(error_output, level)
+    error_history.append(error["message"])
+
+    # Check escalation triggers
+    if check_escalation_triggers(error, attempt, error_history):
+        escalate_to_human(error, "persistent_error")
+
+    # Apply self-healing
+    print(f"      🔧 Attempting self-heal...")
+    fix_result = apply_self_healing_fix(error, attempt)
+    if fix_result["success"]:
+        print(f"      ✅ Applied fix: {fix_result['description']}")
+    else:
+        print(f"      ⚠️  Auto-fix failed: {fix_result['description']}")
+
+    return True
 
 
 def calculate_confidence_score(validation_results: Dict[str, Any]) -> str:

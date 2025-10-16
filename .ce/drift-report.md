@@ -1,7 +1,7 @@
 ## Context Drift Report - Examples/ Patterns
 
 **Drift Score**: 25.0% (🚨 CRITICAL)
-**Generated**: 2025-10-16T19:08:24.144076+00:00
+**Generated**: 2025-10-16T19:46:56.605177+00:00
 **Violations Found**: 8
 **Missing Examples**: 0
 
