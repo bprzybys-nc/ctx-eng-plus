@@ -1,19 +1,16 @@
 ## Context Drift Report - Examples/ Patterns
 
-**Drift Score**: 37.5% (🚨 CRITICAL)
-**Generated**: 2025-10-15T07:54:37.649768+00:00
-**Violations Found**: 11
+**Drift Score**: 25.0% (🚨 CRITICAL)
+**Generated**: 2025-10-16T19:08:24.144076+00:00
+**Violations Found**: 8
 **Missing Examples**: 0
 
 ### Part 1: Code Violating Documented Patterns
 
-#### KISS Violations (5 violations)
+#### KISS Violations (2 violations)
 
-1. File tools/ce/execute.py has deep_nesting (violates pattern): Reduce nesting depth (max 4 levels)
-2. File tools/ce/update_context.py has deep_nesting (violates pattern): Reduce nesting depth (max 4 levels)
-3. File tools/ce/code_analyzer.py has deep_nesting (violates pattern): Reduce nesting depth (max 4 levels)
-4. File tools/ce/resilience.py has deep_nesting (violates pattern): Reduce nesting depth (max 4 levels)
-5. File tools/ce/__main__.py has deep_nesting (violates pattern): Reduce nesting depth (max 4 levels)
+1. File tools/ce/validation_loop.py has deep_nesting (violates pattern): Reduce nesting depth (max 4 levels)
+2. File tools/ce/resilience.py has deep_nesting (violates pattern): Reduce nesting depth (max 4 levels)
 
 ### Part 2: Missing Pattern Documentation
 
@@ -24,10 +21,10 @@ All critical PRPs have corresponding examples/ documentation.
 ### Proposed Solutions Summary
 
 1. **Code Violations** (manual review):
-   - Review and fix: File tools/ce/execute.py has missing_troubleshooting (violates examples/patterns/error-handling.py): Add 🔧 Troubleshooting guidance
-   - Review and fix: File tools/ce/execute.py has deep_nesting (violates pattern): Reduce nesting depth (max 4 levels)
+   - Review and fix: File tools/ce/validation_loop.py has deep_nesting (violates pattern): Reduce nesting depth (max 4 levels)
+   - Review and fix: File tools/ce/blueprint_parser.py has missing_troubleshooting (violates examples/patterns/error-handling.py): Add 🔧 Troubleshooting guidance
    - Review and fix: File tools/ce/drift.py has missing_troubleshooting (violates examples/patterns/error-handling.py): Add 🔧 Troubleshooting guidance
-   - Review 8 other files listed in Part 1
+   - Review 5 other files listed in Part 1
 
 2. **Missing Examples** (documentation needed):
    - No missing examples
