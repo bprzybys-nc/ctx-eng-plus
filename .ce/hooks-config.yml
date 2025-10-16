@@ -1,0 +1,22 @@
+# Git hooks configuration for Context Engineering
+# Controls validation behavior in pre-commit hooks
+
+pre_commit:
+  # Validation level to run before commit
+  # 1 = Syntax & Style (fast, recommended during refactoring)
+  # 2 = Unit Tests (medium speed)
+  # 3 = Integration Tests (slow)
+  # 4 = Pattern Conformance (checks against examples/, use manually)
+  validation_level: 1
+
+  # Skip hook entirely (not recommended)
+  enabled: true
+
+  # Timeout in seconds
+  timeout: 30
+
+# Notes:
+# - Level 1 is recommended for active development (fast feedback)
+# - Level 4 should be run manually during code review
+# - Edit this file to change validation behavior
+# - Changes take effect immediately (no hook reinstall needed)
