@@ -593,7 +593,14 @@ def execute_phase(phase: Dict[str, Any]) -> Dict[str, Any]:
             result = create_file_with_mcp(filepath, content)
 
             if not result["success"]:
-                raise RuntimeError(f"Failed to create {filepath}: {result.get('error')}")
+                raise RuntimeError(
+                    f"Failed to create {filepath}: {result.get('error')}\n"
+                    f"🔧 Troubleshooting:\n"
+                    f"  1. Verify parent directory exists and is writable\n"
+                    f"  2. Check file path doesn't contain invalid characters\n"
+                    f"  3. Ensure Serena MCP is available (fallback may fail)\n"
+                    f"  4. Review phase files_to_create list for accuracy"
+                )
 
             files_created.append(filepath)
             print(f"    ✓ Created via {result['method']}: {filepath}")
@@ -705,7 +712,14 @@ def _add_functions_to_file(filepath: str, functions: List[Dict[str, str]], phase
                 )
 
                 if not result["success"]:
-                    raise RuntimeError(f"Failed to insert code: {result.get('error')}")
+                    raise RuntimeError(
+                        f"Failed to insert code: {result.get('error')}\n"
+                        f"🔧 Troubleshooting:\n"
+                        f"  1. Verify file exists and is writable: {filepath}\n"
+                        f"  2. Check function code is syntactically valid\n"
+                        f"  3. Ensure Serena MCP is available for symbol-aware insertion\n"
+                        f"  4. Review phase functions list for correctness"
+                    )
 
                 method = result["method"]
                 if method == "mcp_symbol_aware":

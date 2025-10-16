@@ -126,7 +126,7 @@ def get_drift_history(
     # Sort by timestamp (newest first)
     all_decisions.sort(
         key=lambda d: d["drift_decision"].get("timestamp", ""),
-        reverse=Trueafter
+        reverse=True
     )
 
     # Apply limit
