@@ -804,21 +804,79 @@ def verify_implementation_with_serena(expected_functions: List[str]) -> bool:
 
     Returns:
         True if ALL functions found, False otherwise
+
+    Raises:
+        None - gracefully degrades if Serena unavailable
+
+    Example:
+        >>> funcs = ["generate_maintenance_prp", "remediate_drift_workflow"]
+        >>> result = verify_implementation_with_serena(funcs)
+        >>> assert isinstance(result, bool)
     """
     if not expected_functions:
         # No functions to verify - mark as updated
+        logger.debug("No implementations to verify")
         return True
 
     try:
-        # Try to use Serena MCP
-        # For now, graceful degradation - log warning and return False
+        # Import Serena MCP module directly
+        import mcp__serena as serena
+
+        verified_count = 0
+        missing = []
+
+        for func_name in expected_functions:
+            try:
+                # Query Serena for symbol
+                # Note: Serena MCP returns list directly
+                # Based on actual usage in this codebase
+                result = serena.find_symbol(
+                    name_path=func_name,
+                    relative_path="tools/ce/",  # Search in ce module
+                    include_body=False
+                )
+
+                # Check if implementation found
+                # Result structure: list of symbol dicts
+                if result and isinstance(result, list) and len(result) > 0:
+                    verified_count += 1
+                    logger.debug(f"✓ Verified: {func_name}")
+                else:
+                    missing.append(func_name)
+                    logger.warning(f"✗ Missing: {func_name}")
+
+            except Exception as e:
+                # Symbol query failed, mark as missing
+                logger.debug(f"Symbol query failed for {func_name}: {e}")
+                missing.append(func_name)
+                continue
+
+        # Mark as verified only if ALL functions found
+        all_verified = len(missing) == 0
+
+        if all_verified:
+            logger.info(f"Serena verification complete: {verified_count}/{len(expected_functions)} implementations found")
+        else:
+            logger.warning(
+                f"Serena verification incomplete: {verified_count}/{len(expected_functions)} found\n"
+                f"Missing: {', '.join(missing)}"
+            )
+
+        return all_verified
+
+    except (ImportError, ModuleNotFoundError):
+        # Serena MCP not available - graceful degradation
         logger.warning(
-            "Serena MCP verification not yet implemented\n"
-            "🔧 Troubleshooting: Set serena_updated=false until MCP integration complete"
+            "Serena MCP not available - skipping verification\n"
+            "🔧 Troubleshooting: Ensure Serena MCP server is configured and running"
         )
         return False
     except Exception as e:
-        logger.warning(f"Serena MCP unavailable: {e}")
+        # Unexpected error - log and degrade gracefully
+        logger.error(
+            f"Serena verification failed: {e}\n"
+            "🔧 Troubleshooting: Check Serena MCP connection and logs"
+        )
         return False
 
 
