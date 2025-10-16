@@ -1,7 +1,7 @@
 ---
 context_sync:
   ce_updated: true
-  last_sync: '2025-10-16T19:46:56.554998+00:00'
+  last_sync: '2025-10-16T20:03:32.141035+00:00'
   serena_updated: false
   verified_implementations:
   - verify_implementation_with_serena
@@ -20,7 +20,7 @@ related_prps:
 - PRP-15
 risk: LOW
 status: executed
-updated: '2025-10-16T19:46:56.555001+00:00'
+updated: '2025-10-16T20:03:32.141046+00:00'
 updated_by: update-context-command
 version: 1
 ---
@@ -704,3 +704,168 @@ uv run pytest tests/ -v
 - Direct Serena import (validation in Gate 2 integration test)
 
 **Confidence Score**: Maintained at 8/10 with clearer scope boundaries
+
+---
+
+## Post-Execution Analysis: Pattern Detector Investigation
+
+**Date**: 2025-10-16T20:05:00Z
+**Issue**: Pattern detector flagged deep nesting violations after initial fix attempt
+**Outcome**: Root cause identified, workflow improved, violations resolved
+
+### Problem Discovery
+
+During drift remediation (PRP-15.3), pattern detector flagged deep nesting violations in:
+- `tools/ce/resilience.py` - retry logic with exponential backoff
+- `tools/ce/validation_loop.py` - self-healing validation loop
+
+**First Fix Attempt** (commit ec028c8):
+- Extracted `_raise_retry_error()` helper in resilience.py
+- Extracted `_try_self_heal()` helper in validation_loop.py
+- **Result**: Violations persisted - pattern detector still flagged both files
+
+### Root Cause Analysis
+
+**Key Finding**: Confusing functional complexity with structural depth
+
+**What Pattern Detector Checks**:
+```python
+# Regex from PATTERN_CHECKS
+r"^                    (if |for |while |try:|elif |with )"
+# Matches control flow statements at 20+ spaces (5+ indentation levels)
+```
+
+**First Fix Mistake**:
+- Extracted **leaf logic** (error raising, self-healing call)
+- Reduced **functional complexity** (responsibility separation)
+- Did NOT reduce **structural depth** (indentation levels)
+
+**Structure After First Fix**:
+```python
+for attempt:              # Level 3
+    try:                  # Level 4
+        return func()     # Level 5 (20 spaces) ❌
+    except:               # Level 4
+        if final:         # Level 5 (20 spaces) ❌ Control flow!
+            _raise_error()  # Level 6 (24 spaces) ❌
+```
+
+**Critical Insight**: Must extract the **parent nesting layer**, not leaf operations
+
+### Correct Fix
+
+**resilience.py** - Extracted entire try-except-if block into `_try_call()`:
+```python
+def _try_call(...) -> Any:
+    """Try calling function with retry logic.
+    Returns value on success, None on retryable error, raises on final attempt.
+    """
+    try:
+        return func(*args, **kwargs)
+    except exceptions as e:
+        if is_final_attempt:
+            _raise_retry_error(...)
+        delay = min(base_delay * (exponential_base ** attempt), max_delay)
+        time.sleep(delay)
+        return None
+
+# Caller becomes:
+for attempt:                    # Level 3
+    result = _try_call(...)     # Level 4
+    if result is not None:      # Level 4 (16 spaces) ✅
+        return result           # Level 5 (20 spaces) - OK (not control flow)
+```
+
+**validation_loop.py** - Restructured with early continue pattern:
+```python
+for attempt:                             # Level 3
+    try:                                 # Level 4
+        result = validate()              # Level 5
+        if not result["success"]:        # Level 5 (16 spaces) ✅
+            # Handle failure
+            continue                      # Level 6 - early exit
+
+        # Success path - unindented from previous if
+        passed = True                    # Level 5 (16 spaces) ✅
+        if attempt > 1:                  # Level 5 (16 spaces) ✅
+            self_healed.append(...)      # Level 6 (20 spaces) - OK
+```
+
+**Key**: Early continue pattern inverts control flow, reducing nesting
+
+### Workflow Gap Identified
+
+**Problem**: No validation loop after applying fixes
+
+**Current Workflow**:
+1. Detect drift → Generate PRP → Display command → END
+2. User applies fixes manually
+3. No re-validation step
+4. Violations may persist until next context sync
+
+**Solution Implemented**: Updated drift report template (PRP-15.2)
+
+**New Next Steps Section**:
+```markdown
+3. **🔧 CRITICAL - Validate Each Fix**:
+   - After fixing each violation, run: ce update-context
+   - Verify violation removed from drift report
+   - If still present: Analyze why fix didn't work, try different approach
+
+**Anti-Pattern**: Batch-apply all fixes without validation (violations may persist)
+**Correct Pattern**: Fix → Validate → Next fix (iterative verification)
+```
+
+### Results
+
+**Drift Score Progression**:
+- 34.18% (start) → 25.0% (PRP-16) → 21.4% (first fix) → **17.9% (correct fix) ✅**
+
+**Violations Progression**:
+- 8 violations → 7 violations → **5 violations ✅**
+- Deep nesting violations: **RESOLVED** (0 remaining)
+- Remaining: 5 missing_troubleshooting violations (unrelated)
+
+**Pattern Detector Verification**:
+```bash
+# Before fix
+grep -E "^                    (if |for |while )" ce/validation_loop.py
+# Line 130: if attempt > 1:
+
+# After fix
+grep -E "^                    (if |for |while )" ce/validation_loop.py
+# (no output) ✅
+```
+
+### Lessons Learned
+
+1. **Functional Complexity ≠ Structural Depth**
+   - Extracting helpers reduces responsibility
+   - Doesn't automatically reduce indentation
+   - Must extract parent nesting layer, not leaf logic
+
+2. **Pattern Detector Checks Physical Indentation**
+   - Control flow at 20+ spaces (if/for/while/try/with)
+   - NOT return/assignment/function calls
+   - Understand what detector actually checks
+
+3. **Early Continue Pattern Powerful**
+   - Inverts control flow: `if not success: continue`
+   - Success path unindented from failure check
+   - Reduces nesting naturally
+
+4. **Validation Loop Essential**
+   - Can't assume fix worked without verification
+   - Pattern detector is source of truth
+   - Must re-run after each fix
+
+### Workflow Improvements Applied
+
+**File**: `tools/ce/update_context.py` (line 1258-1267)
+
+Added validation reminder to drift report:
+- Explicit validation step after each fix
+- Anti-pattern warning (batch fixes without validation)
+- Correct pattern documentation (iterative verification)
+
+**Impact**: Future drift remediation will include validation step, preventing false fixes

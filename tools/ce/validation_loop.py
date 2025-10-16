@@ -76,19 +76,20 @@ def run_validation_loop(
         l1_attempts = attempt
         try:
             l1_result = validate_level_1()
-            if l1_result["success"]:
-                l1_passed = True
-                print(f"    ✅ L1 passed ({l1_result['duration']:.2f}s)")
-                if attempt > 1:
-                    self_healed.append(f"L1: Fixed after {attempt} attempts")
-                break
+            if not l1_result["success"]:
+                # Validation failed - try self-healing
+                l1_errors = l1_result.get("errors", [])
+                print(f"    ❌ L1 failed (attempt {attempt}/{max_attempts}): {len(l1_errors)} errors")
+                combined_error = "\n".join(l1_errors)
+                _try_self_heal(combined_error, "L1", attempt, max_attempts, error_history)
+                continue
 
-            # Validation failed - try self-healing
-            l1_errors = l1_result.get("errors", [])
-            print(f"    ❌ L1 failed (attempt {attempt}/{max_attempts}): {len(l1_errors)} errors")
-
-            combined_error = "\n".join(l1_errors)
-            _try_self_heal(combined_error, "L1", attempt, max_attempts, error_history)
+            # Success path
+            l1_passed = True
+            print(f"    ✅ L1 passed ({l1_result['duration']:.2f}s)")
+            if attempt > 1:
+                self_healed.append(f"L1: Fixed after {attempt} attempts")
+            break
 
         except EscalationRequired:
             raise  # Propagate escalation
@@ -123,20 +124,21 @@ def run_validation_loop(
             l2_attempts = attempt
             try:
                 l2_result = run_cmd(phase["validation_command"])
-                if l2_result["success"]:
-                    l2_passed = True
-                    print(f"    ✅ L2 passed ({l2_result['duration']:.2f}s)")
-                    if attempt > 1:
-                        self_healed.append(f"L2: Fixed after {attempt} attempts")
-                    break
+                if not l2_result["success"]:
+                    # Validation failed - try self-healing
+                    l2_errors = [l2_result.get("stderr", "Test failed")]
+                    print(f"    ❌ L2 failed (attempt {attempt}/{max_attempts})")
+                    print(f"       {l2_result.get('stderr', 'Unknown error')[:200]}")
+                    error_output = l2_result.get("stderr", "")
+                    _try_self_heal(error_output, "L2", attempt, max_attempts, error_history_l2)
+                    continue
 
-                # Validation failed - try self-healing
-                l2_errors = [l2_result.get("stderr", "Test failed")]
-                print(f"    ❌ L2 failed (attempt {attempt}/{max_attempts})")
-                print(f"       {l2_result.get('stderr', 'Unknown error')[:200]}")
-
-                error_output = l2_result.get("stderr", "")
-                _try_self_heal(error_output, "L2", attempt, max_attempts, error_history_l2)
+                # Success path
+                l2_passed = True
+                print(f"    ✅ L2 passed ({l2_result['duration']:.2f}s)")
+                if attempt > 1:
+                    self_healed.append(f"L2: Fixed after {attempt} attempts")
+                break
 
             except EscalationRequired:
                 raise

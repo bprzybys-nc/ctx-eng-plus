@@ -40,21 +40,34 @@ def retry_with_backoff(
         @functools.wraps(func)
         def wrapper(*args, **kwargs) -> Any:
             for attempt in range(max_attempts):
-                try:
-                    return func(*args, **kwargs)
-                except exceptions as e:
-                    is_final_attempt = (attempt == max_attempts - 1)
-                    if is_final_attempt:
-                        _raise_retry_error(func, max_attempts, e)
-
-                    # Backoff and retry
-                    delay = min(base_delay * (exponential_base ** attempt), max_delay)
-                    time.sleep(delay)
-
+                result = _try_call(func, args, kwargs, exceptions, attempt, max_attempts, base_delay, exponential_base, max_delay)
+                if result is not None:
+                    return result
             raise RuntimeError("Retry logic error - should not reach here")
 
         return wrapper
     return decorator
+
+
+def _try_call(func: Callable, args: tuple, kwargs: dict, exceptions: Tuple,
+              attempt: int, max_attempts: int, base_delay: float,
+              exponential_base: float, max_delay: float) -> Any:
+    """Try calling function with retry logic.
+
+    Returns function result on success, None on retryable failure.
+    Raises on final attempt failure.
+    """
+    try:
+        return func(*args, **kwargs)
+    except exceptions as e:
+        is_final_attempt = (attempt == max_attempts - 1)
+        if is_final_attempt:
+            _raise_retry_error(func, max_attempts, e)
+
+        # Backoff and retry
+        delay = min(base_delay * (exponential_base ** attempt), max_delay)
+        time.sleep(delay)
+        return None
 
 
 def _raise_retry_error(func: Callable, max_attempts: int, last_error: Exception) -> None:

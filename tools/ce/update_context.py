@@ -1255,9 +1255,16 @@ def generate_drift_report(violations: List[str], drift_score: float,
 ### Next Steps
 1. Review violations in Part 1 and fix manually
 2. Create missing examples from Part 2
-3. Validate: ce validate --level 4
-4. Update patterns if codebase evolution is intentional
-5. Re-run /update-context to verify drift resolved
+3. **🔧 CRITICAL - Validate Each Fix**:
+   - After fixing each violation, run: ce update-context
+   - Verify violation removed from drift report
+   - If still present: Analyze why fix didn't work, try different approach
+4. Validate: ce validate --level 4
+5. Update patterns if codebase evolution is intentional
+6. Re-run /update-context to verify drift resolved
+
+**Anti-Pattern**: Batch-apply all fixes without validation (violations may persist)
+**Correct Pattern**: Fix → Validate → Next fix (iterative verification)
 """
 
     return report
