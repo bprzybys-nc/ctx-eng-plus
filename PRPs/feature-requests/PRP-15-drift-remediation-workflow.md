@@ -4,8 +4,8 @@ description: "Enhance ce update-context with drift remediation workflow. Vanilla
 prp_id: "PRP-15"
 status: "reviewed"
 created_date: "2025-10-15T00:00:00Z"
-last_updated: "2025-10-15T00:00:00Z"
-updated_by: "peer-review-iteration-2"
+last_updated: "2025-10-16T00:00:00Z"
+updated_by: "peer-review-iteration-4-context-refresh"
 issue: "BLA-25"
 context_sync:
   ce_updated: false
@@ -43,22 +43,28 @@ dependencies: []
 
 **Complete before implementation:**
 
-- [ ] **Review documentation**:
-  - `tools/ce/update_context.py` lines 648-768 (`sync_context` function)
-  - `tools/ce/update_context.py` lines 535-645 (`generate_drift_report` function)
+- [ ] **Verify existing implementation** (PRP-14 outputs):
+  - File exists: `tools/ce/update_context.py` (769 lines)
+  - Function exists: `generate_drift_report()` at line 513
+  - Function exists: `sync_context()` at line 648
+  - Directory exists: `.ce/` with `drift-report.md`
+  - Current drift score: 37.5% (CRITICAL) - real test case available
+
+- [ ] **Review drift detection code**:
+  - `tools/ce/update_context.py` lines 513-580 (`generate_drift_report` function)
+  - `tools/ce/update_context.py` lines 648-746 (`sync_context` function)
   - `tools/ce/__main__.py` lines 654-682 (`cmd_update_context` function)
   - `tools/ce/validate.py` lines 297-375 (user escalation pattern with `input()`)
   - `tools/ce/core.py` lines 8-68 (`run_cmd` for subprocess)
   - `CLAUDE.md` sections on drift remediation
 
 - [ ] **Verify codebase state**:
-  - File exists: `tools/ce/update_context.py` (drift report generation)
-  - File exists: `tools/ce/__main__.py` (CLI commands)
   - Directory exists: `PRPs/system/` (for system-generated PRPs)
-  - Directory exists: `tmp/` (for temporary files)
+  - Directory NOT exists: `tmp/ce/` (will be created by remediation workflow)
   - Slash commands work: `/generate-prp`, `/peer-review`
+  - Current drift report: `.ce/drift-report.md` has 11 violations (37.5%)
 
-- [ ] **Git baseline**: Current branch is `feat/context-sync` with drift score 61.64%
+- [ ] **Git baseline**: Current branch is `feat/context-sync` with drift score 37.5%
 
 - [ ] **Dependencies installed**: `cd tools && uv sync`
 
@@ -142,16 +148,24 @@ git branch -D test/prp-15-e2e
 **Related Work**:
 - **PRP-1**: Established drift detection and DRIFT_JUSTIFICATION format
 - **PRP-10**: Drift history tracking and comprehensive testing
-- **Existing drift tooling**: Full detection in `tools/ce/update_context.py`
+- **PRP-14**: Implemented `/update-context` command with full drift detection (EXECUTED)
+  - Created `tools/ce/update_context.py` (769 lines)
+  - Implemented `sync_context()`, `generate_drift_report()`, pattern detection
+  - Outputs to `.ce/drift-report.md`
+- **PRP-15 Decomposition**: This PRP split into 3 focused sub-PRPs
+  - **PRP-15.1**: Transform foundation (`transform_drift_to_initial()`)
+  - **PRP-15.2**: Blueprint generation workflow
+  - **PRP-15.3**: CLI integration (`--remediate` flag)
 - **/generate-prp**: Slash command for PRP generation from INITIAL.md
 - **/peer-review**: Slash command for automated PRP review
 
-**Current State**:
+**Current State** (Post-PRP-14):
 - ✅ Drift detection: `sync_context()` with violation categorization
-- ✅ Report generation: `generate_drift_report()` creates markdown
+- ✅ Report generation: `generate_drift_report()` creates markdown (line 513)
 - ✅ Output location: `.ce/drift-report.md` (hidden directory)
 - ✅ User escalation pattern: Exists in `validate.py` with `input()` prompts
 - ✅ Subprocess execution: `run_cmd()` available for slash commands
+- ✅ **Real drift exists**: Current score 37.5% (CRITICAL) - authentic test case
 - ❌ **Remediation workflow missing**: No path from detection → PRP
 - ❌ **Report hidden**: `.ce/` directory not visible during development
 - ❌ **Manual intervention required**: No automation for remediation
@@ -160,9 +174,9 @@ git branch -D test/prp-15-e2e
 ```markdown
 ## Context Drift Report - Examples/ Patterns
 
-**Drift Score**: 23.4% (⚠️ WARNING)
-**Violations Found**: 12
-**Missing Examples**: 3
+**Drift Score**: 37.5% (🚨 CRITICAL)
+**Violations Found**: 11
+**Missing Examples**: 0
 
 ### Part 1: Code Violating Documented Patterns
 ...code violations...
@@ -181,7 +195,7 @@ git branch -D test/prp-15-e2e
 - ✅ Peer review integration: Manual review recommended (automated in future)
 - ✅ Visible temp files: `tmp/ce/` for transparency
 
-**Why Now**: System maturity requires completing the drift → remediation loop. Current detection-only approach lets drift accumulate.
+**Why Now**: PRP-14 completed detection infrastructure. System maturity requires completing the drift → remediation loop. Current detection-only approach lets drift accumulate.
 
 ---
 
@@ -297,9 +311,13 @@ flowchart TD
 
 ### Phase 1: Report Path & Format Transformation (1 hour)
 
-**Goal**: Change drift report location and format for all `ce update-context` modes
+**Goal**: Add transformation function to EXISTING `tools/ce/update_context.py` file (created by PRP-14)
 
-**Approach**: Modify `sync_context()` to write INITIAL.md format to `tmp/ce/`
+**Approach**: 
+- ADD `transform_drift_to_initial()` function to existing file (769 lines)
+- This is ADDITIVE - existing `generate_drift_report()` at line 513 stays unchanged
+- Transform function will be called ONLY by remediation workflow (Phase 2)
+- Standard `sync_context()` continues using `generate_drift_report()` → `.ce/drift-report.md`
 
 ---
 
@@ -1404,12 +1422,14 @@ cd tools && uv run ce update-context --remediate
 
 ## 📚 References
 
-**Existing Code**:
-- `tools/ce/update_context.py` lines 648-768 - sync_context function
-- `tools/ce/update_context.py` lines 535-645 - generate_drift_report function
-- `tools/ce/__main__.py` lines 654-682 - cmd_update_context function
-- `tools/ce/validate.py` lines 297-375 - user escalation with input() pattern
-- `tools/ce/core.py` lines 8-68 - run_cmd for subprocess execution
+**Existing Code** (Post-PRP-14):
+- `tools/ce/update_context.py` - Full file (769 lines, created by PRP-14)
+  - Line 513: `generate_drift_report()` function (existing detection)
+  - Line 648: `sync_context()` function (main orchestration)
+- `tools/ce/__main__.py` lines 654-682 - `cmd_update_context` CLI handler
+- `tools/ce/validate.py` lines 297-375 - User escalation with `input()` pattern
+- `tools/ce/core.py` lines 8-68 - `run_cmd` for subprocess execution
+- `.ce/drift-report.md` - Current drift report (37.5% score, 11 violations)
 
 **Related PRPs**:
 - PRP-1: Drift detection and DRIFT_JUSTIFICATION format
@@ -1525,6 +1545,86 @@ All critical issues resolved. PRP now has:
 - ✅ Backwards compatibility (remediate-only changes)
 - ✅ Comprehensive tests (unit + E2E with fixtures)
 - ✅ Complete documentation (flowcharts + usage examples)
+
+---
+
+## 📝 Peer Review Notes - Iteration 4: Context Refresh (2025-10-16)
+
+**Reviewer**: Claude Code (Context-Naive Review Post-Context Update)
+**Status**: Context refreshed, PRP remains valid ✅
+
+### Context Update Impact Analysis
+
+**What Changed** (Commit 0bbb48a, 2025-10-14):
+- ✅ **PRP-14 Executed**: Created `tools/ce/update_context.py` (769 lines)
+- ✅ **Detection Complete**: `generate_drift_report()` implemented (line 513)
+- ✅ **Drift Report Active**: `.ce/drift-report.md` shows 37.5% drift (11 violations)
+- ✅ **Infrastructure Ready**: `sync_context()`, pattern detection, YAML updates all working
+
+**What PRP-15 Still Needs** (Unchanged Scope):
+- ❌ `transform_drift_to_initial()` - Convert report → blueprint
+- ❌ `remediate_drift_workflow()` - Orchestration with approval gates
+- ❌ `--remediate` CLI flag - YOLO mode
+- ❌ Blueprint generation at `tmp/ce/DEDRIFT-INITIAL.md`
+- ❌ Auto-PRP generation from drift violations
+
+**Decomposition Status**:
+- PRP-15.1 (Transform): Status "new" - NOT executed
+- PRP-15.2 (Blueprint): Status "new" - NOT executed
+- PRP-15.3 (Workflow): Status "new" - NOT executed
+
+### Changes Applied (Iteration 4)
+
+1. **Updated "Related Work" Section**
+   - Added: PRP-14 execution context (769-line file, detection complete)
+   - Added: Decomposition references (PRP-15.1, 15.2, 15.3)
+   - Added: Current drift score 37.5% (real test case available)
+
+2. **Updated "Current State" Section**
+   - Changed: From "detection missing" to "detection complete, remediation missing"
+   - Added: Existing functions (`generate_drift_report()` at line 513)
+   - Added: Real drift context (37.5% CRITICAL score)
+
+3. **Updated "Pre-Execution Context Rebuild"**
+   - Changed: Verify existing file (not "will be created")
+   - Added: Line number references for existing functions
+   - Added: Real drift score as E2E test case
+
+4. **Updated Phase 1 Scope**
+   - Clarified: ADDITIVE to existing 769-line file (not new file)
+   - Noted: `generate_drift_report()` stays unchanged
+   - Emphasized: Transform only called by remediation workflow
+
+5. **Updated References Section**
+   - Changed: From theoretical lines to actual file structure
+   - Added: Line 513 for existing `generate_drift_report()`
+   - Added: Reference to current drift report with real violations
+
+### Verdict: PRP-15 Remains Valid
+
+**Why It's Still Valid**:
+- ✅ Scope unchanged: Detection exists, remediation workflow does NOT
+- ✅ Architecture sound: Decomposition (15.1 → 15.2 → 15.3) remains valid
+- ✅ Implementation additive: Extends existing code, doesn't replace
+- ✅ Real test case: 37.5% drift provides authentic E2E validation
+- ✅ No conflicts: Sub-PRPs (15.1, 15.2, 15.3) all status "new" - none executed
+
+**What Changed**:
+- 📝 Documentation refreshed to reflect PRP-14 execution
+- 📝 Line numbers updated to match actual codebase
+- 📝 References updated from theoretical to concrete
+- 📝 Test case upgraded from hypothetical to real (37.5% drift)
+
+### Execution Recommendation
+
+**Proceed with PRP-15 execution** using decomposed approach:
+1. Execute PRP-15.1 (transform foundation) - ~1.5h
+2. Execute PRP-15.2 (blueprint generation) - ~1.5h
+3. Execute PRP-15.3 (workflow automation) - ~1.5h
+
+**Alternative**: Execute original PRP-15 as single unit (2.5h total)
+
+Both approaches valid - decomposition provides clearer incremental progress, original provides complete feature in one shot.
 
 ---
 

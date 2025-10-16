@@ -70,6 +70,179 @@ def read_prp_header(file_path: Path) -> Tuple[Dict[str, Any], str]:
         ) from e
 
 
+def transform_drift_to_initial(
+    violations: List[str],
+    drift_score: float,
+    missing_examples: List[Dict[str, Any]]
+) -> str:
+    """Transform drift report → INITIAL.md blueprint format.
+
+    Args:
+        violations: List of violation messages with format:
+                   "File {path} has {issue} (violates {pattern}): {fix}"
+        drift_score: Percentage score (0-100)
+        missing_examples: List of PRPs missing examples with metadata:
+                         [{"prp_id": "PRP-10", "feature_name": "...",
+                           "suggested_path": "...", "rationale": "..."}]
+
+    Returns:
+        INITIAL.md formatted string with:
+        - Feature: Drift summary with breakdown
+        - Context: Root causes and impact
+        - Examples: Top 5 violations + up to 3 missing examples
+        - Acceptance Criteria: Standard remediation checklist
+        - Technical Notes: File count, effort estimate, complexity
+
+    Raises:
+        ValueError: If violations empty and missing_examples empty
+                   If drift_score invalid (not 0-100)
+
+    Edge Cases:
+        - Empty violations + empty missing: Raises ValueError
+        - drift_score outside 0-100: Raises ValueError
+        - More than 5 violations: Shows top 5 only
+        - More than 3 missing examples: Shows top 3 only
+        - No file paths extractable: files_affected = 0
+
+    Example:
+        >>> violations = ["File tools/ce/foo.py has bare_except: Use specific"]
+        >>> missing = [{"prp_id": "PRP-10", "suggested_path": "ex.py",
+        ...            "feature_name": "Feature", "rationale": "Important"}]
+        >>> result = transform_drift_to_initial(violations, 12.5, missing)
+        >>> assert "# Drift Remediation" in result
+        >>> assert "12.5%" in result
+        >>> assert "PRP-10" in result
+    """
+    # Validation
+    if not violations and not missing_examples:
+        raise ValueError(
+            "Cannot generate INITIAL.md: no violations and no missing examples\n"
+            "🔧 Troubleshooting: Drift detection returned empty results"
+        )
+
+    if not (0 <= drift_score <= 100):
+        raise ValueError(
+            f"Invalid drift_score: {drift_score} (must be 0-100)\n"
+            "🔧 Troubleshooting: Check drift calculation returns percentage"
+        )
+
+    now = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+
+    # Count violations by category (extract pattern from violation string)
+    # Pattern format: "(violates examples/patterns/{category}.py)"
+    error_handling = len([v for v in violations if "error-handling.py" in v or "error_handling.py" in v])
+    naming = len([v for v in violations if "naming.py" in v])
+    kiss = len([v for v in violations if "kiss.py" in v or "nesting" in v.lower()])
+
+    # Categorize drift level
+    if drift_score < 5:
+        drift_level = "✅ OK"
+    elif drift_score < 15:
+        drift_level = "⚠️ WARNING"
+    else:
+        drift_level = "🚨 CRITICAL"
+
+    # Calculate effort estimate (15 min per violation + 30 min per missing example)
+    effort_hours = (len(violations) * 0.25) + (len(missing_examples) * 0.5)
+    effort_hours = max(1, round(effort_hours))  # Minimum 1 hour
+
+    # Calculate complexity
+    total_items = len(violations) + len(missing_examples)
+    if total_items < 5:
+        complexity = "LOW"
+    elif total_items < 15:
+        complexity = "MEDIUM"
+    else:
+        complexity = "HIGH"
+
+    # Extract unique file paths for count
+    # Expected format: "File {path} has {issue} (violates {pattern}): {fix}"
+    files_affected = set()
+    for v in violations:
+        if "File " in v and " has " in v:
+            # Extract file path: "File tools/ce/foo.py has ..."
+            try:
+                file_part = v.split(" has ")[0].replace("File ", "").strip()
+                if file_part:  # Only add non-empty paths
+                    files_affected.add(file_part)
+            except (IndexError, AttributeError):
+                # Malformed violation string, skip gracefully
+                continue
+
+    # Build INITIAL.md content
+    initial = f"""# Drift Remediation - {now}
+
+## Feature
+
+Address {len(violations)} drift violations detected in codebase scan on {now}.
+
+**Drift Score**: {drift_score:.1f}% ({drift_level})
+
+**Violations Breakdown**:
+- Error Handling: {error_handling}
+- Naming Conventions: {naming}
+- KISS Violations: {kiss}
+- Missing Examples: {len(missing_examples)}
+
+## Context
+
+Context Engineering drift detection found violations between documented patterns (CLAUDE.md, examples/) and actual implementation.
+
+**Root Causes**:
+1. New code written without pattern awareness
+2. Missing examples for critical PRPs
+3. Pattern evolution without documentation updates
+
+**Impact**:
+- Code quality inconsistency
+- Reduced onboarding effectiveness
+- Pattern erosion over time
+
+## Examples
+
+"""
+
+    # Add top 5 violations
+    for i, violation in enumerate(violations[:5], 1):
+        initial += f"### Violation {i}\n\n"
+        initial += f"{violation}\n\n"
+
+    # Add missing examples (up to 3)
+    if missing_examples:
+        initial += "### Missing Examples\n\n"
+        for missing in missing_examples[:3]:
+            initial += f"**{missing['prp_id']}**: {missing['feature_name']}\n"
+            initial += f"- **Missing**: `{missing['suggested_path']}`\n"
+            initial += f"- **Rationale**: {missing['rationale']}\n\n"
+
+    # Add Acceptance Criteria
+    initial += """## Acceptance Criteria
+
+- [ ] All HIGH priority violations resolved
+- [ ] Missing examples created for critical PRPs
+- [ ] L4 validation passes (ce validate --level 4)
+- [ ] Drift score < 5% after remediation
+- [ ] Pattern documentation updated if intentional drift
+
+"""
+
+    # Add Technical Notes with high-level summary
+    initial += f"""## Technical Notes
+
+**Files Affected**: {len(files_affected)}
+**Estimated Effort**: {effort_hours}h based on violation count
+**Complexity**: {complexity}
+**Total Items**: {len(violations)} violations + {len(missing_examples)} missing examples
+
+**Priority Focus**:
+- Address HIGH priority violations first
+- Create missing examples for critical PRPs
+- Run L4 validation after each fix
+"""
+
+    return initial
+
+
 def update_context_sync_flags(
     file_path: Path,
     ce_updated: bool,
