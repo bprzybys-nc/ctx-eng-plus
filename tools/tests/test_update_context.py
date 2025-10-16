@@ -12,7 +12,11 @@ from ce.update_context import (
     detect_missing_examples_for_prps,
     generate_drift_report,
     load_pattern_checks,
-    transform_drift_to_initial
+    transform_drift_to_initial,
+    detect_drift_violations,
+    generate_drift_blueprint,
+    display_drift_summary,
+    generate_prp_yaml_header
 )
 
 
@@ -444,6 +448,319 @@ context_sync:
 
         assert "last_sync" in metadata["context_sync"]
         assert metadata["updated_by"] == "update-context-command"
+
+    finally:
+        os.chdir(original_cwd)
+
+
+# ======================================================================
+# PRP-15.2: Blueprint Generation Workflow Tests
+# ======================================================================
+
+# detect_drift_violations() tests
+def test_detect_drift_violations_with_violations():
+    """Test successful drift detection with violations."""
+    result = detect_drift_violations()
+
+    assert "drift_score" in result
+    assert "violations" in result
+    assert "missing_examples" in result
+    assert "has_drift" in result
+    assert isinstance(result["drift_score"], (int, float))
+    assert isinstance(result["violations"], list)
+    assert isinstance(result["missing_examples"], list)
+    assert isinstance(result["has_drift"], bool)
+
+
+def test_detect_drift_violations_has_drift_logic():
+    """Test has_drift calculated correctly (score >= 5 OR missing > 0)."""
+    result = detect_drift_violations()
+
+    # has_drift should be True if drift_score >= 5 OR missing_examples > 0
+    if result["drift_score"] >= 5 or len(result["missing_examples"]) > 0:
+        assert result["has_drift"] is True
+    else:
+        assert result["has_drift"] is False
+
+
+# generate_drift_blueprint() tests
+def test_generate_drift_blueprint_success(tmp_path):
+    """Test successful blueprint generation."""
+    import os
+    original_cwd = os.getcwd()
+
+    try:
+        # Setup test environment
+        os.chdir(tmp_path)
+
+        # Create minimal drift result
+        drift_result = {
+            "violations": ["File test.py has issue: Fix it"],
+            "drift_score": 10.0
+        }
+        missing = []
+
+        # Generate blueprint
+        blueprint_path = generate_drift_blueprint(drift_result, missing)
+
+        # Verify
+        assert blueprint_path.exists()
+        assert blueprint_path.name == "DEDRIFT-INITIAL.md"
+        assert blueprint_path.parent.name == "ce"
+        assert blueprint_path.parent.parent.name == "tmp"
+
+        # Verify content
+        content = blueprint_path.read_text()
+        assert "# Drift Remediation" in content
+        assert "10.0%" in content
+
+    finally:
+        os.chdir(original_cwd)
+
+
+def test_generate_drift_blueprint_creates_directory(tmp_path):
+    """Test blueprint generation creates tmp/ce/ if missing."""
+    import os
+    original_cwd = os.getcwd()
+
+    try:
+        os.chdir(tmp_path)
+
+        # Ensure tmp/ce/ doesn't exist
+        tmp_ce_dir = tmp_path / "tmp" / "ce"
+        assert not tmp_ce_dir.exists()
+
+        drift_result = {
+            "violations": ["File test.py has issue: Fix"],
+            "drift_score": 8.0
+        }
+
+        blueprint_path = generate_drift_blueprint(drift_result, [])
+
+        # Verify directory created
+        assert tmp_ce_dir.exists()
+        assert blueprint_path.exists()
+
+    finally:
+        os.chdir(original_cwd)
+
+
+def test_generate_drift_blueprint_returns_path_object(tmp_path):
+    """Test blueprint generation returns valid Path object."""
+    import os
+    original_cwd = os.getcwd()
+
+    try:
+        os.chdir(tmp_path)
+
+        drift_result = {
+            "violations": ["File test.py has issue: Fix"],
+            "drift_score": 5.0
+        }
+
+        blueprint_path = generate_drift_blueprint(drift_result, [])
+
+        # Verify return type
+        assert isinstance(blueprint_path, Path)
+        assert blueprint_path.is_absolute()
+
+    finally:
+        os.chdir(original_cwd)
+
+
+def test_generate_drift_blueprint_from_tools_directory(tmp_path):
+    """Test blueprint works from tools/ directory."""
+    import os
+    original_cwd = os.getcwd()
+
+    try:
+        # Create tools/ directory
+        tools_dir = tmp_path / "tools"
+        tools_dir.mkdir()
+        os.chdir(tools_dir)
+
+        drift_result = {
+            "violations": ["File test.py has issue: Fix"],
+            "drift_score": 7.0
+        }
+
+        blueprint_path = generate_drift_blueprint(drift_result, [])
+
+        # Verify blueprint created in parent/tmp/ce/
+        assert blueprint_path.exists()
+        assert blueprint_path.parent.name == "ce"
+        assert blueprint_path.parent.parent.name == "tmp"
+        # Parent of tmp should be project root (tmp_path)
+        assert blueprint_path.parent.parent.parent == tmp_path
+
+    finally:
+        os.chdir(original_cwd)
+
+
+# display_drift_summary() tests
+def test_display_drift_summary_output(capsys, tmp_path):
+    """Test drift summary displays complete output."""
+    violations = [
+        "File tools/ce/foo.py has bare_except (violates examples/patterns/error-handling.py): Fix",
+        "File tools/ce/bar.py has version_suffix (violates examples/patterns/naming.py): Fix"
+    ]
+    missing = [
+        {"prp_id": "PRP-10", "feature_name": "Feature", "suggested_path": "ex.py", "rationale": "R"}
+    ]
+
+    blueprint_path = tmp_path / "DEDRIFT-INITIAL.md"
+    blueprint_path.touch()
+
+    display_drift_summary(12.5, violations, missing, blueprint_path)
+
+    captured = capsys.readouterr()
+
+    # Verify output structure
+    assert "📊 Drift Summary" in captured.out
+    assert "12.5%" in captured.out
+    assert "Total Violations: 3" in captured.out  # 2 violations + 1 missing
+    assert "Blueprint:" in captured.out
+    assert str(blueprint_path) in captured.out
+
+
+def test_display_drift_summary_categorizes_violations(capsys, tmp_path):
+    """Test drift summary categorizes violations correctly."""
+    violations = [
+        "File a.py has bare_except (violates examples/patterns/error-handling.py): Fix",
+        "File b.py has bare_except (violates examples/patterns/error-handling.py): Fix",
+        "File c.py has version_suffix (violates examples/patterns/naming.py): Fix",
+        "File d.py has deep nesting (violates examples/patterns/kiss.py): Fix"
+    ]
+
+    blueprint_path = tmp_path / "test.md"
+    blueprint_path.touch()
+
+    display_drift_summary(10.0, violations, [], blueprint_path)
+
+    captured = capsys.readouterr()
+
+    # Verify categorization (match actual output format)
+    assert "Error Handling: 2 violations" in captured.out
+    assert "Naming Conventions: 1 violation" in captured.out
+    assert "KISS Violations: 1 violation" in captured.out
+
+
+def test_display_drift_summary_drift_levels(capsys, tmp_path):
+    """Test drift level display (WARNING vs CRITICAL)."""
+    violations = ["File test.py has issue: Fix"]
+    blueprint_path = tmp_path / "test.md"
+    blueprint_path.touch()
+
+    # WARNING level (5-15%)
+    display_drift_summary(10.0, violations, [], blueprint_path)
+    captured_warn = capsys.readouterr()
+    assert "⚠️ WARNING" in captured_warn.out
+
+    # CRITICAL level (15%+)
+    display_drift_summary(20.0, violations, [], blueprint_path)
+    captured_crit = capsys.readouterr()
+    assert "🚨 CRITICAL" in captured_crit.out
+
+
+# generate_prp_yaml_header() tests
+def test_generate_prp_yaml_header_valid_yaml():
+    """Test YAML header generation produces valid YAML."""
+    import yaml
+
+    header = generate_prp_yaml_header(5, 2, "20250116")
+
+    # Remove YAML delimiters
+    yaml_content = header.strip().replace("---\n", "").replace("\n---", "")
+
+    # Parse YAML
+    data = yaml.safe_load(yaml_content)
+
+    # Verify structure
+    assert "prp_id" in data
+    assert "DEDRIFT-20250116" == data["prp_id"]
+    assert "effort_hours" in data
+    assert "risk" in data
+    assert "status" in data
+    assert data["status"] == "new"
+
+
+def test_generate_prp_yaml_header_effort_calculation():
+    """Test effort calculation accuracy."""
+    # 8 violations * 0.25 = 2h
+    # 4 missing * 0.5 = 2h
+    # Total = 4h
+    header = generate_prp_yaml_header(8, 4, "20250116")
+
+    assert "effort_hours: 4" in header
+
+
+def test_generate_prp_yaml_header_risk_categorization():
+    """Test risk categorization (LOW/MEDIUM/HIGH)."""
+    # LOW: < 5 items
+    header_low = generate_prp_yaml_header(3, 1, "20250116")
+    assert 'risk: "LOW"' in header_low
+
+    # MEDIUM: 5-9 items
+    header_medium = generate_prp_yaml_header(5, 2, "20250116")
+    assert 'risk: "MEDIUM"' in header_medium
+
+    # HIGH: 10+ items
+    header_high = generate_prp_yaml_header(8, 5, "20250116")
+    assert 'risk: "HIGH"' in header_high
+
+
+def test_generate_prp_yaml_header_minimum_effort():
+    """Test minimum effort is 1 hour."""
+    # 1 violation = 0.25h, should round up to 1h
+    header = generate_prp_yaml_header(1, 0, "20250116")
+
+    assert "effort_hours: 1" in header
+
+
+# Integration test
+def test_blueprint_generation_workflow_e2e(tmp_path, capsys):
+    """Test full workflow: detect → blueprint → display."""
+    import os
+    original_cwd = os.getcwd()
+
+    try:
+        os.chdir(tmp_path)
+
+        # Phase 1: Detect drift
+        drift_result = detect_drift_violations()
+
+        # Only proceed if there's drift
+        if drift_result["has_drift"]:
+            # Phase 2: Generate blueprint
+            blueprint_path = generate_drift_blueprint(
+                drift_result,
+                drift_result["missing_examples"]
+            )
+
+            # Verify blueprint exists
+            assert blueprint_path.exists()
+
+            # Verify blueprint content
+            content = blueprint_path.read_text()
+            assert "# Drift Remediation" in content
+            assert f"{drift_result['drift_score']:.1f}%" in content
+
+            # Phase 3: Display summary
+            display_drift_summary(
+                drift_result["drift_score"],
+                drift_result["violations"],
+                drift_result["missing_examples"],
+                blueprint_path
+            )
+
+            # Verify display output
+            captured = capsys.readouterr()
+            assert "📊 Drift Summary" in captured.out
+            assert f"{drift_result['drift_score']:.1f}%" in captured.out
+        else:
+            # No drift case - skip blueprint generation
+            assert drift_result["drift_score"] < 5
+            assert len(drift_result["missing_examples"]) == 0
 
     finally:
         os.chdir(original_cwd)

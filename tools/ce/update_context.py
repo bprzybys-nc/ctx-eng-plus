@@ -243,6 +243,213 @@ Context Engineering drift detection found violations between documented patterns
     return initial
 
 
+def detect_drift_violations() -> Dict[str, Any]:
+    """Run drift detection and return structured results.
+
+    Returns:
+        {
+            "drift_score": 12.5,
+            "violations": ["file.py:42 - Error", ...],
+            "missing_examples": [{"prp_id": "PRP-10", ...}],
+            "has_drift": True
+        }
+
+    Raises:
+        RuntimeError: If detection fails with troubleshooting guidance
+
+    Example:
+        >>> result = detect_drift_violations()
+        >>> assert "drift_score" in result
+        >>> assert isinstance(result["violations"], list)
+    """
+    logger.info("Running drift detection...")
+    try:
+        # Call existing detection functions
+        drift_result = verify_codebase_matches_examples()
+        missing_examples = detect_missing_examples_for_prps()
+
+        drift_score = drift_result["drift_score"]
+        violations = drift_result["violations"]
+        has_drift = drift_score >= 5 or len(missing_examples) > 0
+
+        return {
+            "drift_score": drift_score,
+            "violations": violations,
+            "missing_examples": missing_examples,
+            "has_drift": has_drift
+        }
+    except Exception as e:
+        raise RuntimeError(
+            f"Drift detection failed: {e}\n"
+            f"🔧 Troubleshooting:\n"
+            f"   - Ensure examples/ directory exists\n"
+            f"   - Check PRPs have valid YAML headers\n"
+            f"   - Verify tools/ce/ directory is accessible\n"
+            f"   - Run: cd tools && uv run ce validate --level 1"
+        ) from e
+
+
+def generate_drift_blueprint(drift_result: Dict, missing_examples: List) -> Path:
+    """Generate DEDRIFT-INITIAL.md blueprint in tmp/ce/.
+
+    Args:
+        drift_result: Detection results from detect_drift_violations()
+        missing_examples: List of PRPs missing examples
+
+    Returns:
+        Path to generated blueprint file
+
+    Raises:
+        RuntimeError: If blueprint generation fails
+
+    Example:
+        >>> drift = detect_drift_violations()
+        >>> missing = drift["missing_examples"]
+        >>> path = generate_drift_blueprint(drift, missing)
+        >>> assert path.exists()
+        >>> assert "DEDRIFT-INITIAL.md" in path.name
+    """
+    logger.info("Generating remediation blueprint...")
+    try:
+        # Use PRP-15.1 transform function
+        blueprint = transform_drift_to_initial(
+            drift_result["violations"],
+            drift_result["drift_score"],
+            missing_examples
+        )
+
+        # Determine project root
+        current_dir = Path.cwd()
+        if current_dir.name == "tools":
+            project_root = current_dir.parent
+        else:
+            project_root = current_dir
+
+        # Create tmp/ce/ directory
+        tmp_ce_dir = project_root / "tmp" / "ce"
+        tmp_ce_dir.mkdir(parents=True, exist_ok=True)
+
+        # Write blueprint
+        blueprint_path = tmp_ce_dir / "DEDRIFT-INITIAL.md"
+        blueprint_path.write_text(blueprint)
+
+        logger.info(f"Blueprint generated: {blueprint_path}")
+        return blueprint_path
+
+    except Exception as e:
+        raise RuntimeError(
+            f"Blueprint generation failed: {e}\n"
+            f"🔧 Troubleshooting:\n"
+            f"   - Check tmp/ce/ directory permissions\n"
+            f"   - Verify transform_drift_to_initial() is available (PRP-15.1)\n"
+            f"   - Check disk space: df -h\n"
+            f"   - Run: ls -la tmp/"
+        ) from e
+
+
+def display_drift_summary(drift_score: float, violations: List[str],
+                          missing_examples: List[Dict], blueprint_path: Path):
+    """Display drift summary with direct output (no box-drawing).
+
+    Args:
+        drift_score: Percentage score (0-100)
+        violations: List of violation messages
+        missing_examples: List of PRPs missing examples
+        blueprint_path: Path to generated blueprint
+
+    Example:
+        >>> display_drift_summary(12.5, violations, missing, path)
+        # Prints direct output with Unicode separators
+    """
+    print("\n" + "━" * 60)
+    print("📊 Drift Summary")
+    print("━" * 60)
+
+    # Drift level indicator
+    level = "⚠️ WARNING" if drift_score < 15 else "🚨 CRITICAL"
+    print(f"Drift Score: {drift_score:.1f}% ({level})")
+    print(f"Total Violations: {len(violations) + len(missing_examples)}")
+    print()
+
+    # Breakdown by category
+    # Pattern format: "(violates examples/patterns/{category}.py)"
+    print("Breakdown:")
+    if violations:
+        # Categorize violations using pattern file detection (consistent with PRP-15.1)
+        error_count = len([v for v in violations if "error-handling.py" in v or "error_handling.py" in v])
+        naming_count = len([v for v in violations if "naming.py" in v])
+        kiss_count = len([v for v in violations if "kiss.py" in v or "nesting" in v.lower()])
+
+        if error_count > 0:
+            print(f"  • Error Handling: {error_count} violation{'s' if error_count != 1 else ''}")
+        if naming_count > 0:
+            print(f"  • Naming Conventions: {naming_count} violation{'s' if naming_count != 1 else ''}")
+        if kiss_count > 0:
+            print(f"  • KISS Violations: {kiss_count} violation{'s' if kiss_count != 1 else ''}")
+
+    if missing_examples:
+        print(f"  • Missing Examples: {len(missing_examples)} PRP{'s' if len(missing_examples) != 1 else ''}")
+
+    print()
+    print(f"Blueprint: {blueprint_path}")
+    print("━" * 60)
+    print()
+
+
+def generate_prp_yaml_header(violation_count: int, missing_count: int, timestamp: str) -> str:
+    """Generate YAML header for DEDRIFT maintenance PRP.
+
+    Args:
+        violation_count: Number of code violations
+        missing_count: Number of missing examples
+        timestamp: Formatted timestamp for PRP ID (e.g., "20251015-120530")
+
+    Returns:
+        YAML header string with metadata
+
+    Example:
+        >>> header = generate_prp_yaml_header(5, 2, "20251015-120530")
+        >>> assert "prp_id:" in header
+        >>> assert "DEDRIFT-20251015-120530" in header
+        >>> assert "effort_hours:" in header
+    """
+    total_items = violation_count + missing_count
+
+    # Effort estimation: 15 min per violation + 30 min per missing example
+    # NOTE: Same formula as PRP-15.1 transform function for consistency
+    effort_hours = (violation_count * 0.25) + (missing_count * 0.5)
+    effort_hours = max(1, round(effort_hours))  # Minimum 1 hour
+
+    # Risk assessment based on item count
+    if total_items < 5:
+        risk = "LOW"
+    elif total_items < 10:
+        risk = "MEDIUM"
+    else:
+        risk = "HIGH"
+
+    now = datetime.now().isoformat()
+
+    return f"""---
+name: "Drift Remediation - {timestamp}"
+description: "Address drift violations detected in codebase scan"
+prp_id: "DEDRIFT-{timestamp}"
+status: "new"
+created_date: "{now}Z"
+last_updated: "{now}Z"
+updated_by: "drift-remediation-workflow"
+context_sync:
+  ce_updated: false
+  serena_updated: false
+version: 1
+priority: "MEDIUM"
+effort_hours: {effort_hours}
+risk: "{risk}"
+---
+
+"""
+
+
 def update_context_sync_flags(
     file_path: Path,
     ce_updated: bool,
