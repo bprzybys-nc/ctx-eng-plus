@@ -4,7 +4,7 @@ import pytest
 import tempfile
 from pathlib import Path
 
-from ce.execute import (
+from ce.blueprint_parser import (
     parse_blueprint,
     extract_field,
     parse_file_list,
