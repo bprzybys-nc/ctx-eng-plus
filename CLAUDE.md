@@ -502,6 +502,67 @@ cd tools && uv run ce update-context --json
 - Skips drift detection if examples/ directory missing
 - No silent failures - all errors include troubleshooting guidance
 
+### Fast Drift Analysis - analyze-context
+
+```bash
+# Fast drift check without metadata updates (2-3s vs 10-15s)
+cd tools && uv run ce analyze-context
+
+# JSON output for CI/CD integration
+cd tools && uv run ce analyze-context --json
+
+# Force re-analysis (bypass cache)
+cd tools && uv run ce analyze-context --force
+
+# Custom cache TTL
+cd tools && uv run ce analyze-context --cache-ttl 10
+
+# UK spelling alias
+cd tools && uv run ce analyse-context
+```
+
+**What it does**:
+- Fast drift detection without PRP metadata updates
+- Generates/updates `.ce/drift-report.md` with violations
+- Uses smart caching (5-minute TTL by default)
+- Returns exit codes for CI/CD: 0 (ok), 1 (warning), 2 (critical)
+
+**When to use**:
+- Quick drift checks in CI/CD pipelines
+- Pre-commit validation (faster than update-context)
+- Regular health monitoring without sync overhead
+- Before running update-context (reuses cache if fresh)
+
+**Caching Behavior**:
+- Cache TTL priority: `--cache-ttl` flag > `.ce/config.yml` > default (5 min)
+- Cache stored in `.ce/drift-report.md` (timestamp-based validation)
+- `update-context` reuses cache if fresh (avoids redundant analysis)
+- `--force` flag bypasses cache for immediate re-analysis
+
+**Exit Codes**:
+- **0** (ok): Drift score < 5% - context healthy
+- **1** (warning): Drift score 5-15% - review recommended
+- **2** (critical): Drift score >= 15% - immediate action required
+
+**Example CI/CD Usage**:
+```bash
+# GitHub Actions / CI pipeline
+cd tools && uv run ce analyze-context --json
+EXIT_CODE=$?
+if [ $EXIT_CODE -eq 2 ]; then
+  echo "CRITICAL drift detected - blocking merge"
+  exit 1
+elif [ $EXIT_CODE -eq 1 ]; then
+  echo "WARNING: drift detected - review recommended"
+fi
+```
+
+**Configuration** (`.ce/config.yml`):
+```yaml
+cache:
+  analysis_ttl_minutes: 5  # Default TTL (overridden by --cache-ttl flag)
+```
+
 ---
 
 ## Linear Integration
