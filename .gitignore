@@ -20,3 +20,4 @@ tools/.coverage
 tools/uv.lock
 
 node_modules/
+tests/__pycache__/

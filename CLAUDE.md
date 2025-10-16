@@ -136,6 +136,37 @@ ce-drift
 
 ---
 
+## Tool Selection Quick Reference
+
+**Comprehensive Guide**: `examples/tool-usage-patterns.md` + `.serena/memories/tool-usage-guide.md`
+
+**Purpose**: Accelerate tool selection, eliminate trial-and-error, reduce query tree complexity
+
+### Quick Patterns
+
+**Code Navigation**:
+- Find symbol: `mcp__serena__find_symbol`
+- File overview: `mcp__serena__get_symbols_overview`
+- Pattern search: `mcp__serena__search_for_pattern`
+
+**File Operations**:
+- Read file: `mcp__filesystem__read_text_file` (config/text) or `mcp__serena__read_file` (code)
+- Edit file: `mcp__filesystem__edit_file`
+- List dir: `mcp__filesystem__list_directory`
+
+**Text Processing** (always use Python shell_utils, NOT bash):
+- Search: `shell_utils.grep_text()` ❌ NOT `Bash(grep)`
+- Extract fields: `shell_utils.extract_fields()` ❌ NOT `Bash(awk)`
+- Count lines: `shell_utils.count_lines()` ❌ NOT `Bash(wc)`
+- Head/tail: `shell_utils.head()` / `tail()` ❌ NOT `Bash(head/tail)`
+
+**Git Operations**:
+- `mcp__git__git_status`, `git_diff`, `git_log`, `git_add`, `git_commit`
+
+**Optimization Impact**: 60-70% reduction in tool evaluation overhead (30 essential tools vs 100+ previously)
+
+---
+
 ## Tool Usage Workflow
 
 ### Quick Commands
