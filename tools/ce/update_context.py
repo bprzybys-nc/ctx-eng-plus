@@ -411,7 +411,11 @@ def verify_codebase_matches_examples() -> Dict[str, Any]:
             ],
             "drift_score": 15.3  # Percentage of files violating patterns
         }
+
+    Refactored to reduce nesting depth from 5 to 4 levels.
     """
+    from .pattern_detectors import check_file_for_violations
+
     current_dir = Path.cwd()
     if current_dir.name == "tools":
         project_root = current_dir.parent
@@ -435,24 +439,14 @@ def verify_codebase_matches_examples() -> Dict[str, Any]:
     python_files = list(tools_ce_dir.glob("*.py"))
     files_with_violations = set()
 
+    # Process each file (delegated to reduce nesting)
     for py_file in python_files:
-        try:
-            content = py_file.read_text()
-
-            # Check each pattern category
-            for category, checks in pattern_checks.items():
-                for check_name, regex, fix_desc in checks:
-                    matches = re.findall(regex, content, re.MULTILINE)
-                    if matches:
-                        violations.append(
-                            f"File {py_file.relative_to(project_root)} has {check_name} "
-                            f"(violates {PATTERN_FILES.get(category, 'pattern')}): {fix_desc}"
-                        )
-                        files_with_violations.add(py_file)
-
-        except Exception as e:
-            logger.warning(f"Skipping {py_file.name} - read error: {e}")
-            continue
+        file_violations, has_violations = check_file_for_violations(
+            py_file, pattern_checks, project_root
+        )
+        violations.extend(file_violations)
+        if has_violations:
+            files_with_violations.add(py_file)
 
     # Calculate drift score
     drift_score = 0.0
@@ -480,7 +474,11 @@ def detect_missing_examples_for_prps() -> List[Dict[str, Any]]:
             },
             ...
         ]
+
+    Refactored to reduce nesting depth from 5 to 4 levels.
     """
+    from .pattern_detectors import check_prp_for_missing_examples
+
     current_dir = Path.cwd()
     if current_dir.name == "tools":
         project_root = current_dir.parent
@@ -489,46 +487,25 @@ def detect_missing_examples_for_prps() -> List[Dict[str, Any]]:
     examples_dir = project_root / "examples"
     missing_examples = []
 
+    # Define keyword patterns
+    keywords_to_examples = {
+        "error recovery": ("error_recovery", "examples/patterns/error-recovery.py",
+                           "Complex error recovery logic should be documented"),
+        "strategy pattern": ("strategy_pattern_testing", "examples/patterns/strategy-testing.py",
+                             "Strategy pattern with mocks is reusable pattern"),
+        "pipeline": ("pipeline_testing", "examples/patterns/pipeline-testing.py",
+                     "Pipeline orchestration pattern should be documented")
+    }
+
     # Get all executed PRPs
     executed_prps = (project_root / "PRPs" / "executed").glob("*.md")
 
+    # Check each PRP (delegated to reduce nesting)
     for prp_path in executed_prps:
-        try:
-            metadata, content = read_prp_header(prp_path)
-
-            # Check complexity/risk
-            complexity = metadata.get("complexity", "unknown")
-            if complexity not in ["medium", "high"]:
-                continue
-
-            # Check if example exists
-            # Simple heuristic: look for keywords in content
-            keywords_to_examples = {
-                "error recovery": ("error_recovery", "examples/patterns/error-recovery.py",
-                                   "Complex error recovery logic should be documented"),
-                "strategy pattern": ("strategy_pattern_testing", "examples/patterns/strategy-testing.py",
-                                     "Strategy pattern with mocks is reusable pattern"),
-                "pipeline": ("pipeline_testing", "examples/patterns/pipeline-testing.py",
-                             "Pipeline orchestration pattern should be documented")
-            }
-
-            for keyword, (example_name, suggested_path, rationale) in keywords_to_examples.items():
-                if keyword.lower() in content.lower():
-                    # Check if example exists
-                    example_path = project_root / suggested_path
-                    if not example_path.exists():
-                        missing_examples.append({
-                            "prp_id": metadata.get("prp_id", "unknown"),
-                            "feature_name": metadata.get("feature_name", "unknown"),
-                            "complexity": complexity,
-                            "missing_example": example_name,
-                            "suggested_path": suggested_path,
-                            "rationale": rationale
-                        })
-
-        except Exception as e:
-            logger.warning(f"Skipping {prp_path.name} - read error: {e}")
-            continue
+        prp_missing = check_prp_for_missing_examples(
+            prp_path, project_root, keywords_to_examples
+        )
+        missing_examples.extend(prp_missing)
 
     return missing_examples
 
