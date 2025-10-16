@@ -450,6 +450,208 @@ risk: "{risk}"
 """
 
 
+# ======================================================================
+# PRP-15.3: Drift Remediation Workflow Automation
+# ======================================================================
+
+def generate_maintenance_prp(blueprint_path: Path) -> Path:
+    """Generate complete maintenance PRP file from blueprint.
+
+    Args:
+        blueprint_path: Path to DEDRIFT-INITIAL.md blueprint
+
+    Returns:
+        Path to generated PRP file in PRPs/system/
+
+    Raises:
+        RuntimeError: If PRP generation fails
+
+    Example:
+        >>> blueprint = Path("tmp/ce/DEDRIFT-INITIAL.md")
+        >>> prp = generate_maintenance_prp(blueprint)
+        >>> assert prp.exists()
+        >>> assert "DEDRIFT_PRP-" in prp.name
+    """
+    logger.info("Generating maintenance PRP file...")
+    try:
+        # Read blueprint content
+        blueprint_content = blueprint_path.read_text()
+
+        # Extract metadata from blueprint for YAML header
+        # Count violations and missing examples from content
+        violation_count = blueprint_content.count("### Violation")
+        missing_count = blueprint_content.count("**Missing**:")
+
+        # Generate timestamp for PRP ID
+        timestamp = datetime.now().strftime("%Y%m%d-%H%M%S")
+
+        # Generate YAML header (PRP-15.2 function)
+        yaml_header = generate_prp_yaml_header(violation_count, missing_count, timestamp)
+
+        # Combine YAML + blueprint content
+        prp_content = yaml_header + blueprint_content
+
+        # Determine project root and create PRPs/system/ directory
+        current_dir = Path.cwd()
+        if current_dir.name == "tools":
+            project_root = current_dir.parent
+        else:
+            project_root = current_dir
+
+        prp_system_dir = project_root / "PRPs" / "system"
+        prp_system_dir.mkdir(parents=True, exist_ok=True)
+
+        # Write PRP file
+        prp_path = prp_system_dir / f"DEDRIFT_PRP-{timestamp}.md"
+        prp_path.write_text(prp_content)
+
+        logger.info(f"Maintenance PRP generated: {prp_path}")
+        return prp_path
+
+    except Exception as e:
+        raise RuntimeError(
+            f"PRP generation failed: {e}\n"
+            f"🔧 Troubleshooting:\n"
+            f"   - Check PRPs/system/ directory permissions\n"
+            f"   - Verify blueprint file exists: {blueprint_path}\n"
+            f"   - Check disk space: df -h"
+        ) from e
+
+
+def remediate_drift_workflow(yolo_mode: bool = False) -> Dict[str, Any]:
+    """Execute drift remediation workflow.
+
+    Args:
+        yolo_mode: If True, skip approval gate (--remediate flag)
+
+    Returns:
+        {
+            "success": bool,
+            "prp_path": Optional[Path],
+            "blueprint_path": Optional[Path],
+            "errors": List[str]
+        }
+
+    Workflow:
+        1. Detect drift violations (PRP-15.2)
+        2. Transform to INITIAL.md format (PRP-15.1)
+        3. Generate blueprint file (PRP-15.2)
+        4. Display drift summary (PRP-15.2)
+        5. Ask approval (vanilla) OR skip approval (YOLO)
+        6. Generate maintenance PRP (PRP-15.3)
+        7. Display /execute-prp command for manual execution
+
+    Raises:
+        None - all errors captured in errors list
+
+    Example (Vanilla Mode):
+        >>> result = remediate_drift_workflow(yolo_mode=False)
+        # Prompts: "Proceed with remediation? (yes/no):"
+        # If yes: Generates PRP, displays command
+        # If no: Workflow stops, blueprint saved
+
+    Example (YOLO Mode):
+        >>> result = remediate_drift_workflow(yolo_mode=True)
+        # Skips approval prompt
+        # Auto-generates PRP, displays command
+    """
+    mode_label = "YOLO mode (no approval)" if yolo_mode else "Interactive mode"
+    logger.info(f"Starting drift remediation workflow ({mode_label})...")
+    errors = []
+
+    # Step 1: Detect drift (PRP-15.2 function)
+    try:
+        drift = detect_drift_violations()
+    except RuntimeError as e:
+        return {
+            "success": False,
+            "prp_path": None,
+            "blueprint_path": None,
+            "errors": [str(e)]
+        }
+
+    # Early exit if no drift
+    if not drift["has_drift"]:
+        print(f"\n✅ No drift detected (score: {drift['drift_score']:.1f}%)")
+        print("Context is healthy - no remediation needed.\n")
+        return {
+            "success": True,
+            "prp_path": None,
+            "blueprint_path": None,
+            "errors": []
+        }
+
+    # Step 2: Generate blueprint (PRP-15.2 function)
+    try:
+        blueprint_path = generate_drift_blueprint(drift, drift["missing_examples"])
+    except RuntimeError as e:
+        return {
+            "success": False,
+            "prp_path": None,
+            "blueprint_path": None,
+            "errors": [str(e)]
+        }
+
+    # Step 3: Display summary (PRP-15.2 function)
+    display_drift_summary(
+        drift["drift_score"],
+        drift["violations"],
+        drift["missing_examples"],
+        blueprint_path
+    )
+
+    # Step 4: Approval gate (vanilla only)
+    if not yolo_mode:
+        print(f"\nReview INITIAL.md: {blueprint_path}")
+        approval = input("Proceed with remediation? (yes/no): ").strip().lower()
+
+        if approval not in ["yes", "y"]:
+            print("⚠️ Remediation skipped by user")
+            print(f"Blueprint saved: {blueprint_path}\n")
+            return {
+                "success": True,
+                "prp_path": None,
+                "blueprint_path": blueprint_path,
+                "errors": []
+            }
+
+        logger.info("User approved remediation - proceeding...")
+
+    # Step 5: Generate maintenance PRP (PRP-15.3 function)
+    logger.info("Generating maintenance PRP...")
+    try:
+        prp_path = generate_maintenance_prp(blueprint_path)
+    except Exception as e:
+        errors.append(f"PRP generation failed: {e}")
+        return {
+            "success": False,
+            "prp_path": None,
+            "blueprint_path": blueprint_path,
+            "errors": errors
+        }
+
+    # Step 6: Display next step (manual execution)
+    logger.info("PRP ready for execution...")
+
+    print("\n" + "━" * 60)
+    print("🔧 Next Step: Execute PRP")
+    print("━" * 60)
+    print(f"Run: /execute-prp {prp_path}")
+    print("━" * 60)
+    print()
+
+    # Workflow complete - PRP ready for manual execution
+    print(f"✅ PRP Generated: {prp_path}")
+    print(f"📄 Blueprint: {blueprint_path}\n")
+
+    return {
+        "success": True,
+        "prp_path": prp_path,
+        "blueprint_path": blueprint_path,
+        "errors": []
+    }
+
+
 def update_context_sync_flags(
     file_path: Path,
     ce_updated: bool,

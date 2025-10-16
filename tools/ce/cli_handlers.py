@@ -726,6 +726,23 @@ def cmd_metrics(args) -> int:
 def cmd_update_context(args) -> int:
     """Execute update-context command."""
     try:
+        # PRP-15.3: Check for --remediate flag (YOLO mode)
+        if hasattr(args, 'remediate') and args.remediate:
+            # Import remediation workflow
+            from .update_context import remediate_drift_workflow
+
+            # Execute drift remediation workflow (YOLO mode)
+            result = remediate_drift_workflow(yolo_mode=True)
+
+            if args.json:
+                print(format_output(result, True))
+            else:
+                # Output handled by remediate_drift_workflow
+                pass
+
+            return 0 if result['success'] else 1
+
+        # Standard context sync (vanilla mode)
         target_prp = args.prp if hasattr(args, 'prp') and args.prp else None
 
         result = sync_context(target_prp=target_prp)

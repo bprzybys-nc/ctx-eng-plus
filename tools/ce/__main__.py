@@ -355,6 +355,11 @@ Examples:
         help="Target specific PRP file (path relative to project root)"
     )
     update_context_parser.add_argument(
+        "--remediate",
+        action="store_true",
+        help="Auto-remediate drift violations (YOLO mode - skips approval)"
+    )
+    update_context_parser.add_argument(
         "--json",
         action="store_true",
         help="Output as JSON"
