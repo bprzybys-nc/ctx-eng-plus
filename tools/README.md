@@ -221,6 +221,33 @@ ce git diff [--since HEAD~5] [--json]
 
 ### Context Management
 
+**Fast Drift Analysis** (NEW - PRP-17)
+```bash
+ce analyze-context [--json] [--force] [--cache-ttl N]
+# Fast drift check without metadata updates (2-3s vs 10-15s)
+# Exit codes: 0 (ok), 1 (warning), 2 (critical)
+# Uses smart caching (5-min TTL by default)
+
+# Examples:
+ce analyze-context                        # Quick check with cache
+ce analyze-context --force                # Force re-analysis
+ce analyze-context --json                 # CI/CD integration
+ce analyze-context --cache-ttl 10         # Custom TTL (minutes)
+ce analyse-context                        # UK spelling alias
+```
+
+**What it does**:
+- Detects pattern drift (code violations + missing examples)
+- Generates/updates `.ce/drift-report.md` with violations
+- Returns CI/CD-friendly exit codes (0/1/2)
+- Reuses cache if fresh (avoids redundant analysis)
+- No PRP metadata updates (faster than update-context)
+
+**When to use**:
+- Quick drift checks in CI/CD pipelines
+- Pre-commit validation
+- Before running update-context (shares cache)
+
 **Sync Context**
 ```bash
 ce context sync [--json]
@@ -306,16 +333,33 @@ ce context health --json | jq '.drift_score'
 
 ## Exit Codes
 
+**Standard Commands**:
 - **0**: Success
 - **1**: Failure
 
+**analyze-context** (drift-aware):
+- **0**: OK - drift score < 5%
+- **1**: WARNING - drift score 5-15%
+- **2**: CRITICAL - drift score >= 15%
+
 Use in scripts:
 ```bash
+# Standard validation
 if ce validate --level 1; then
     echo "Validation passed"
 else
     echo "Validation failed"
     exit 1
+fi
+
+# Drift analysis for CI/CD
+ce analyze-context --json
+EXIT_CODE=$?
+if [ $EXIT_CODE -eq 2 ]; then
+    echo "CRITICAL drift - blocking merge"
+    exit 1
+elif [ $EXIT_CODE -eq 1 ]; then
+    echo "WARNING drift - review recommended"
 fi
 ```
 
