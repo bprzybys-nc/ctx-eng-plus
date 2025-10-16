@@ -4,7 +4,7 @@ import subprocess
 import pytest
 import json
 from pathlib import Path
-from ce.__main__ import format_output
+from ce.cli_handlers import format_output
 
 
 def test_cli_help():
