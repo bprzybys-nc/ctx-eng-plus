@@ -142,6 +142,45 @@ ce-drift
 
 **Purpose**: Accelerate tool selection, eliminate trial-and-error, reduce query tree complexity
 
+**Current Configuration**: 46 allowed tools, 124 denied patterns
+
+### Allowed Tools by Category
+
+#### Bash Patterns (11 tools)
+- Version control: `Bash(git:*)`, `git add:*`, `git commit:*`, `git diff-tree:*`
+- Package management: `Bash(uv run:*)`, `uv run pytest:*`, `uv add:*`, `uvx:*`
+- System: `Bash(env:*)`, `brew install:*`
+- MCP auth reset: `Bash(rm -rf ~/.mcp-auth)`
+
+#### Serena Essential (7 tools)
+- Code navigation: `mcp__serena__find_symbol`, `get_symbols_overview`, `search_for_pattern`
+- Impact analysis: `mcp__serena__find_referencing_symbols`
+- Memory: `mcp__serena__write_memory`
+- File creation: `mcp__serena__create_text_file`
+- Project management: `mcp__serena__activate_project`
+
+#### Filesystem Core (8 tools)
+- Read/write: `mcp__filesystem__read_text_file`, `write_file`, `edit_file`
+- Navigation: `mcp__filesystem__list_directory`, `search_files`, `directory_tree`
+- Info: `mcp__filesystem__get_file_info`, `list_allowed_directories`
+
+#### Git Essentials (5 tools)
+- `mcp__git__git_status`, `git_diff`, `git_log`, `git_add`, `git_commit`
+
+#### Documentation & Reasoning (3 tools)
+- Context7 docs: `mcp__context7__resolve-library-id`, `get-library-docs`
+- Complex reasoning: `mcp__sequential-thinking__sequentialthinking`
+
+#### Project Management - Linear (5 tools)
+- Issues: `mcp__linear-server__create_issue`, `get_issue`, `list_issues`, `update_issue`
+- Projects: `mcp__linear-server__list_projects`
+
+#### Codebase Analysis (1 tool)
+- `mcp__repomix__pack_codebase`
+
+#### Special Permissions (6 patterns)
+- Read paths, WebFetch(domain:github.com), SlashCommand(/generate-prp, /peer-review)
+
 ### Quick Patterns
 
 **Code Navigation**:
@@ -150,7 +189,7 @@ ce-drift
 - Pattern search: `mcp__serena__search_for_pattern`
 
 **File Operations**:
-- Read file: `mcp__filesystem__read_text_file` (config/text) or `mcp__serena__read_file` (code)
+- Read file: `mcp__filesystem__read_text_file` (config/text)
 - Edit file: `mcp__filesystem__edit_file`
 - List dir: `mcp__filesystem__list_directory`
 
@@ -163,7 +202,20 @@ ce-drift
 **Git Operations**:
 - `mcp__git__git_status`, `git_diff`, `git_log`, `git_add`, `git_commit`
 
-**Optimization Impact**: 60-70% reduction in tool evaluation overhead (30 essential tools vs 100+ previously)
+### Validation Tool
+
+Check current permissions with Python utility (replaces jq/grep):
+
+```bash
+cd tools && uv run python -m ce.validate_permissions count       # Show counts
+cd tools && uv run python -m ce.validate_permissions categorize  # Show breakdown
+cd tools && uv run python -m ce.validate_permissions verify <tool_name>
+cd tools && uv run python -m ce.validate_permissions search <pattern> [allow|deny]
+```
+
+**Note**: `tools-rationalization-study.md` is outdated reference - current config already empirically optimized
+
+**Optimization Impact**: 60-70% reduction in tool evaluation overhead (46 essential tools vs 100+ previously)
 
 ---
 

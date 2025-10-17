@@ -509,9 +509,75 @@ search_files("tests", "test_*.py")
 This guide exists to **reduce query tree complexity** and **accelerate tool selection**.
 
 **Before optimization**: Agent evaluates 100+ tools for each decision
-**After optimization**: Agent quickly selects from 30 essential tools
+**After optimization**: Agent quickly selects from 46 essential tools
 
-**Deny list (126 tools)**: Removes unused tools from context
+**Deny list (124 tools)**: Removes unused tools from context
 **This guide**: Maps tasks to specific tools, eliminates trial-and-error
 
 **Result**: 60-70% reduction in tool evaluation overhead
+
+---
+
+## Current Permission Configuration
+
+**Last Verified**: 2025-10-17
+**Source**: `.claude/settings.local.json`
+
+### Allow List (46 tools)
+
+**Category Breakdown**:
+- **Bash patterns**: 11 (git, uv, env, brew, mcp-auth)
+- **Serena**: 7 (find_symbol, overview, search, referencing, memory, create, activate)
+- **Filesystem**: 8 (read, write, edit, list, search, tree, info, allowed_dirs)
+- **Git**: 5 (status, diff, log, add, commit)
+- **Context7**: 2 (resolve-library-id, get-library-docs)
+- **Sequential-thinking**: 1 (sequentialthinking)
+- **Linear**: 5 (create/get/list/update issues, list_projects)
+- **Repomix**: 1 (pack_codebase)
+- **Special**: 6 (Read paths, WebFetch, SlashCommands)
+
+### Deny List (124 tools)
+
+**Major Categories**:
+- **Serena advanced**: 13 (symbol mutations, thinking tools, modes, memories)
+- **Filesystem redundant**: 6 (read variants, move, sizes)
+- **Git advanced**: 6 (branch, checkout, show, reset, diff variants)
+- **GitHub MCP**: 26 (all GitHub operations - use git CLI instead)
+- **Playwright**: 31 (web automation not needed)
+- **Perplexity**: 1 (redundant with web search)
+- **Repomix partial**: 4 (remote repo, read/grep output, file system ops)
+- **IDE**: 2 (diagnostics, executeCode)
+- **Linear extended**: 14 (comments, cycles, docs, labels, statuses, teams, users)
+- **Bash text processing**: 11 (cat, head, tail, find, grep, wc, awk, sed, echo, python)
+
+### Rationale
+
+**Why this configuration**:
+- **Linear tools preserved**: PRP generation workflow requires issue creation/tracking (see CLAUDE.md lines 498-554)
+- **Context7 preserved**: Documentation lookup essential for external libs
+- **Sequential-thinking preserved**: Complex reasoning for PRP generation
+- **find_referencing_symbols preserved**: Impact analysis before code changes
+- **edit_file preserved**: Primary tool for surgical code edits
+
+**Historical note**: `PRPs/feature-requests/tools-rationalization-study.md` recommended 31-tool config but missed critical workflow tools (Linear, Context7, reasoning) and recommended already-denied tools (symbol mutations, read_memory). Current 46-tool config is empirically optimized.
+
+### Validation Tool
+
+Check current permissions with Python utility (replaces forbidden jq/grep):
+
+```bash
+# Count tools (replaces: jq '.permissions.allow | length')
+cd tools && uv run python -m ce.validate_permissions count
+# Output: Allow: 46, Deny: 124
+
+# Show categorized breakdown
+cd tools && uv run python -m ce.validate_permissions categorize
+
+# Verify critical tool exists (replaces: grep -F "tool_name")
+cd tools && uv run python -m ce.validate_permissions verify mcp__linear-server__create_issue
+# Output: In allow: True, In deny: False
+
+# Search for pattern (replaces: jq '.permissions.allow[] | select(contains("pattern"))')
+cd tools && uv run python -m ce.validate_permissions search linear allow
+# Output: All 5 Linear tools listed
+```
