@@ -85,7 +85,11 @@ def parse_blueprint(prp_path: str) -> List[Dict[str, Any]]:
     if not blueprint_match:
         raise BlueprintParseError(
             prp_path,
-            "Missing '## 🔧 Implementation Blueprint' section"
+            "Missing '## 🔧 Implementation Blueprint' section\n"
+            "🔧 Troubleshooting:\n"
+            "   - Ensure PRP file contains Implementation Blueprint section\n"
+            "   - Check section header format (must include 🔧 emoji)\n"
+            "   - Reference: examples/system-prps/ for correct format"
         )
 
     blueprint_text = blueprint_match.group(1)
@@ -97,7 +101,11 @@ def parse_blueprint(prp_path: str) -> List[Dict[str, Any]]:
     if not phase_splits:
         raise BlueprintParseError(
             prp_path,
-            "No phases found (expected '### Phase N: Name (X hours)' format)"
+            "No phases found (expected '### Phase N: Name (X hours)' format)\n"
+            "🔧 Troubleshooting:\n"
+            "   - Add phase sections: ### Phase 1: Name (X hours)\n"
+            "   - Ensure phases are numbered sequentially\n"
+            "   - Reference: examples/system-prps/example-simple-feature.md"
         )
 
     phases = []
@@ -170,14 +178,10 @@ def extract_field(
         if required:
             raise BlueprintParseError(
                 prp_path,
-                f"Required field not found using pattern: {pattern}
-"
-                f"🔧 Troubleshooting: Ensure phase contains the required field with correct formatting
-"
-                f"   - Check field name spelling (capitalization matters)
-"
-                f"   - Verify the field uses ** ** formatting: **Field Name**: value
-"
+                f"Required field not found using pattern: {pattern}\n"
+                f"🔧 Troubleshooting:\n"
+                f"   - Check field name spelling (capitalization matters)\n"
+                f"   - Verify the field uses ** ** formatting: **Field Name**: value\n"
                 f"   - Common patterns: **Goal**, **Approach**, **Validation Command**, **Checkpoint**"
             )
         return None

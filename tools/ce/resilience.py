@@ -43,7 +43,10 @@ def retry_with_backoff(
                 result = _try_call(func, args, kwargs, exceptions, attempt, max_attempts, base_delay, exponential_base, max_delay)
                 if result is not None:
                     return result
-            raise RuntimeError("Retry logic error - should not reach here")
+            raise RuntimeError(
+                "Retry logic error - should not reach here\n"
+                "🔧 Troubleshooting: Check retry decorator logic - this indicates internal implementation bug"
+            )
 
         return wrapper
     return decorator
