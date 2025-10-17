@@ -1,20 +1,32 @@
 ---
-prp_id: 17
-title: "Extract Drift Analysis into Separate Command"
-status: executed
-project: "Context Engineering"
-description: |
-  Extract drift analysis logic from ce update-context into new ce analyze-context command.
+ce_updated: true
+context_sync:
+  ce_updated: true
+  last_sync: '2025-10-17T10:44:01.067113+00:00'
+  serena_updated: false
+description: 'Extract drift analysis logic from ce update-context into new ce analyze-context
+  command.
+
   Enable fast drift checking (2-3s) without full sync overhead (~10-15s).
+
   Support CI/CD integration with exit codes and JSON output.
-  Add smart caching to avoid redundant analysis when running update-context after analyze-context.
+
+  Add smart caching to avoid redundant analysis when running update-context after
+  analyze-context.
+
+  '
+executed_at: 2025-10-17 00:00:00+00:00
+executed_by: claude-code
 issue: BLA-31
 issue_url: https://linear.app/blaise78/issue/BLA-31/prp-17-extract-drift-analysis-into-separate-command
-ce_updated: true
+last_sync: 2025-10-17 00:00:00+00:00
+project: Context Engineering
+prp_id: 17
 serena_updated: true
-last_sync: 2025-10-17T00:00:00Z
-executed_by: claude-code
-executed_at: 2025-10-17T00:00:00Z
+status: executed
+title: Extract Drift Analysis into Separate Command
+updated: '2025-10-17T10:44:01.067295+00:00'
+updated_by: update-context-command
 ---
 
 # Extract Drift Analysis into Separate Command

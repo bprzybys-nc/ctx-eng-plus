@@ -1,11 +1,15 @@
 ## Context Drift Report - Examples/ Patterns
 
-**Drift Score**: 17.9% (🚨 CRITICAL)
-**Generated**: 2025-10-16T20:03:32.185604+00:00
-**Violations Found**: 5
+**Drift Score**: 20.7% (🚨 CRITICAL)
+**Generated**: 2025-10-17T10:42:01.828597+00:00
+**Violations Found**: 6
 **Missing Examples**: 0
 
 ### Part 1: Code Violating Documented Patterns
+
+#### KISS Violations (1 violations)
+
+1. File tools/ce/cli_handlers.py has deep_nesting (violates pattern): Reduce nesting depth (max 4 levels)
 
 ### Part 2: Missing Pattern Documentation
 
@@ -17,9 +21,9 @@ All critical PRPs have corresponding examples/ documentation.
 
 1. **Code Violations** (manual review):
    - Review and fix: File tools/ce/blueprint_parser.py has missing_troubleshooting (violates examples/patterns/error-handling.py): Add 🔧 Troubleshooting guidance
+   - Review and fix: File tools/ce/cli_handlers.py has deep_nesting (violates pattern): Reduce nesting depth (max 4 levels)
    - Review and fix: File tools/ce/context.py has missing_troubleshooting (violates examples/patterns/error-handling.py): Add 🔧 Troubleshooting guidance
-   - Review and fix: File tools/ce/pipeline.py has missing_troubleshooting (violates examples/patterns/error-handling.py): Add 🔧 Troubleshooting guidance
-   - Review 2 other files listed in Part 1
+   - Review 3 other files listed in Part 1
 
 2. **Missing Examples** (documentation needed):
    - No missing examples

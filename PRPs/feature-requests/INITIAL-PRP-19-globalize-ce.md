@@ -1,0 +1,1 @@
+global claude config or MCP? i'd be for mcp

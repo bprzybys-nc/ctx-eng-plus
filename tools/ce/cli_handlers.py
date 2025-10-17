@@ -781,16 +781,16 @@ def cmd_analyze_context(args) -> int:
             
             # Emoji indicators
             if drift_level == "ok":
-                indicator = "\u2705"
+                indicator = "✅"
             elif drift_level == "warning":
-                indicator = "\u26a0\ufe0f "
+                indicator = "⚠️ "
             else:  # critical
-                indicator = "\ud83d\udea8"
+                indicator = "🚨"
             
-            print(f"\ud83d\udd0d Analyzing context drift...")
+            print("🔍 Analyzing context drift...")
             if duration > 0:
-                print(f"   \ud83d\udcca Pattern conformance: scan complete")
-                print(f"   \ud83d\udcda Documentation gaps: check complete")
+                print("   📊 Pattern conformance: scan complete")
+                print("   📚 Documentation gaps: check complete")
                 print()
             
             print(f"{indicator} Analysis complete ({duration}s)")
@@ -814,27 +814,17 @@ def cmd_analyze_context(args) -> int:
 # === UPDATE-CONTEXT COMMAND ===
 
 def cmd_update_context(args) -> int:
-    """Execute update-context command."""
+    """Execute update-context command.
+
+    Workflow:
+        1. Standard context sync (always runs)
+        2. Drift remediation workflow (always runs)
+           - Vanilla mode (no --remediate): asks approval before PRP generation
+           - YOLO mode (--remediate): skips approval, auto-generates PRP
+    """
     try:
-        # PRP-15.3: Check for --remediate flag (YOLO mode)
-        if hasattr(args, 'remediate') and args.remediate:
-            # Import remediation workflow
-            from .update_context import remediate_drift_workflow
-
-            # Execute drift remediation workflow (YOLO mode)
-            result = remediate_drift_workflow(yolo_mode=True)
-
-            if args.json:
-                print(format_output(result, True))
-            else:
-                # Output handled by remediate_drift_workflow
-                pass
-
-            return 0 if result['success'] else 1
-
-        # Standard context sync (vanilla mode)
+        # Step 1: ALWAYS run standard context sync first
         target_prp = args.prp if hasattr(args, 'prp') and args.prp else None
-
         result = sync_context(target_prp=target_prp)
 
         if args.json:
@@ -852,7 +842,23 @@ def cmd_update_context(args) -> int:
                 for error in result['errors']:
                     print(f"   - {error}")
 
-        return 0 if result['success'] else 1
+        # Step 2: ALWAYS run drift remediation workflow after sync
+        from .update_context import remediate_drift_workflow
+
+        yolo_mode = hasattr(args, 'remediate') and args.remediate
+        remediate_result = remediate_drift_workflow(yolo_mode=yolo_mode)
+
+        if args.json:
+            # Combine both results in JSON output
+            combined = {
+                "sync": result,
+                "remediation": remediate_result
+            }
+            print(format_output(combined, True))
+
+        # Combine success status from both workflows
+        success = result['success'] and remediate_result['success']
+        return 0 if success else 1
 
     except Exception as e:
         print(f"❌ Update context failed: {str(e)}", file=sys.stderr)
