@@ -1,8 +1,8 @@
 ## Context Drift Report - Examples/ Patterns
 
-**Drift Score**: 16.7% (🚨 CRITICAL)
-**Generated**: 2025-10-17T14:36:35.828332+00:00
-**Violations Found**: 5
+**Drift Score**: 10.0% (⚠️  WARNING)
+**Generated**: 2025-10-17T15:02:51.003392+00:00
+**Violations Found**: 3
 **Missing Examples**: 0
 
 ### Part 1: Code Violating Documented Patterns
@@ -16,10 +16,9 @@ All critical PRPs have corresponding examples/ documentation.
 ### Proposed Solutions Summary
 
 1. **Code Violations** (manual review):
-   - Review and fix: File tools/ce/blueprint_parser.py has missing_troubleshooting (violates examples/patterns/error-handling.py): Add 🔧 Troubleshooting guidance
    - Review and fix: File tools/ce/context.py has missing_troubleshooting (violates examples/patterns/error-handling.py): Add 🔧 Troubleshooting guidance
    - Review and fix: File tools/ce/pipeline.py has missing_troubleshooting (violates examples/patterns/error-handling.py): Add 🔧 Troubleshooting guidance
-   - Review 2 other files listed in Part 1
+   - Review and fix: File tools/ce/pattern_extractor.py has missing_troubleshooting (violates examples/patterns/error-handling.py): Add 🔧 Troubleshooting guidance
 
 2. **Missing Examples** (documentation needed):
    - No missing examples
