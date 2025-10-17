@@ -170,7 +170,15 @@ def extract_field(
         if required:
             raise BlueprintParseError(
                 prp_path,
-                f"Required field not found (pattern: {pattern})"
+                f"Required field not found using pattern: {pattern}
+"
+                f"🔧 Troubleshooting: Ensure phase contains the required field with correct formatting
+"
+                f"   - Check field name spelling (capitalization matters)
+"
+                f"   - Verify the field uses ** ** formatting: **Field Name**: value
+"
+                f"   - Common patterns: **Goal**, **Approach**, **Validation Command**, **Checkpoint**"
             )
         return None
 

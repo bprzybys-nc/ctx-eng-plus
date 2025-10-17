@@ -723,6 +723,96 @@ def cmd_metrics(args) -> int:
 
 # === ANALYZE-CONTEXT COMMAND ===
 
+def _get_analysis_result(args, cache_ttl: int):
+    """Get analysis result from cache or fresh analysis.
+    
+    Args:
+        args: Command arguments
+        cache_ttl: Cache TTL in minutes
+    
+    Returns:
+        Analysis result dict
+    """
+    from .update_context import (
+        analyze_context_drift,
+        get_cached_analysis,
+        is_cache_valid,
+    )
+    
+    # Skip cache if forced
+    if getattr(args, 'force', False):
+        return analyze_context_drift()
+    
+    # Try to use cache
+    cached = get_cached_analysis()
+    if cached and is_cache_valid(cached, ttl_minutes=cache_ttl):
+        return cached
+    
+    # Cache miss or invalid - run fresh analysis
+    return analyze_context_drift()
+
+
+def _print_analysis_output(result, args, cache_ttl: int) -> None:
+    """Print analysis output in human or JSON format.
+    
+    Args:
+        result: Analysis result
+        args: Command arguments
+        cache_ttl: Cache TTL in minutes
+    """
+    if args.json:
+        print(format_output(result, True))
+        return
+    
+    # Calculate cache age for display
+    from datetime import datetime, timezone
+    cache_age_str = ""
+    if not getattr(args, 'force', False):
+        try:
+            generated_at = datetime.fromisoformat(
+                result["generated_at"].replace("+00:00", "+00:00")
+            )
+            if generated_at.tzinfo is None:
+                generated_at = generated_at.replace(tzinfo=timezone.utc)
+            now = datetime.now(timezone.utc)
+            age_minutes = int((now - generated_at).total_seconds() / 60)
+            cache_age_str = f" ({age_minutes}m old, TTL: {cache_ttl}m)"
+        except Exception:
+            cache_age_str = f" (TTL: {cache_ttl}m)"
+    
+    # Human-readable output
+    drift_score = result["drift_score"]
+    drift_level = result["drift_level"]
+    violations = result.get("violation_count", 0)
+    missing = len(result.get("missing_examples", []))
+    duration = result.get("duration_seconds", 0)
+    
+    # Emoji indicators
+    if drift_level == "ok":
+        indicator = "✅"
+    elif drift_level == "warning":
+        indicator = "⚠️ "
+    else:  # critical
+        indicator = "🚨"
+    
+    print("🔍 Analyzing context drift...")
+    if duration > 0:
+        print("   📊 Pattern conformance: scan complete")
+        print("   📚 Documentation gaps: check complete")
+        print()
+    
+    if cache_age_str and not getattr(args, 'force', False):
+        print(f"✅ Using cached analysis{cache_age_str}")
+        print(f"   Use --force to re-analyze")
+    
+    print(f"{indicator} Analysis complete ({duration}s)")
+    print(f"   Drift Score: {drift_score:.1f}% ({drift_level.upper()})")
+    print(f"   Violations: {violations}")
+    if missing > 0:
+        print(f"   Missing Examples: {missing}")
+    print(f"   Report: {result['report_path']}")
+
+
 def cmd_analyze_context(args) -> int:
     """Execute analyze-context command.
     
@@ -731,81 +821,24 @@ def cmd_analyze_context(args) -> int:
     Returns:
         Exit code: 0 (ok), 1 (warning), 2 (critical)
     """
-    from .update_context import (
-        analyze_context_drift,
-        get_cached_analysis,
-        is_cache_valid,
-        get_cache_ttl
-    )
+    from .update_context import get_cache_ttl
     
     try:
         # Get cache TTL (CLI flag > config > default)
         cache_ttl = get_cache_ttl(getattr(args, 'cache_ttl', None))
         
-        # Check cache if not forced
-        if not getattr(args, 'force', False):
-            cached = get_cached_analysis()
-            if cached and is_cache_valid(cached, ttl_minutes=cache_ttl):
-                result = cached
-                
-                if not args.json:
-                    # Calculate cache age
-                    from datetime import datetime, timezone
-                    try:
-                        generated_at = datetime.fromisoformat(
-                            cached["generated_at"].replace("+00:00", "+00:00")
-                        )
-                        if generated_at.tzinfo is None:
-                            generated_at = generated_at.replace(tzinfo=timezone.utc)
-                        now = datetime.now(timezone.utc)
-                        age_minutes = int((now - generated_at).total_seconds() / 60)
-                        print(f"\u2705 Using cached analysis ({age_minutes}m old, TTL: {cache_ttl}m)")
-                        print(f"   Use --force to re-analyze\n")
-                    except Exception:
-                        print(f"\u2705 Using cached analysis (TTL: {cache_ttl}m)\n")
-            else:
-                result = analyze_context_drift()
-        else:
-            result = analyze_context_drift()
+        # Get analysis result (cached or fresh)
+        result = _get_analysis_result(args, cache_ttl)
         
-        # Display or output JSON
-        if args.json:
-            print(format_output(result, True))
-        else:
-            # Human-readable output
-            drift_score = result["drift_score"]
-            drift_level = result["drift_level"]
-            violations = result.get("violation_count", 0)
-            missing = len(result.get("missing_examples", []))
-            duration = result.get("duration_seconds", 0)
-            
-            # Emoji indicators
-            if drift_level == "ok":
-                indicator = "✅"
-            elif drift_level == "warning":
-                indicator = "⚠️ "
-            else:  # critical
-                indicator = "🚨"
-            
-            print("🔍 Analyzing context drift...")
-            if duration > 0:
-                print("   📊 Pattern conformance: scan complete")
-                print("   📚 Documentation gaps: check complete")
-                print()
-            
-            print(f"{indicator} Analysis complete ({duration}s)")
-            print(f"   Drift Score: {drift_score:.1f}% ({drift_level.upper()})")
-            print(f"   Violations: {violations}")
-            if missing > 0:
-                print(f"   Missing Examples: {missing}")
-            print(f"   Report: {result['report_path']}")
+        # Print output
+        _print_analysis_output(result, args, cache_ttl)
         
         # Return exit code based on drift level
         exit_codes = {"ok": 0, "warning": 1, "critical": 2}
         return exit_codes[result["drift_level"]]
     
     except Exception as e:
-        print(f"\u274c Analysis failed: {str(e)}", file=sys.stderr)
+        print(f"❌ Analysis failed: {str(e)}", file=sys.stderr)
         import traceback
         traceback.print_exc()
         return 1

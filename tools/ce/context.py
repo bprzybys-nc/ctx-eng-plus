@@ -555,7 +555,11 @@ def calculate_drift_score() -> float:
             file_changes_score = (len(changed_files) / max(total_files, 1)) * 100
         else:
             file_changes_score = 0
-    except Exception:
+    except Exception as e:
+        logger.warning(
+            f"Failed to calculate file changes score: {e}\n"
+            f"🔧 Troubleshooting: Ensure git is available and repository has commits"
+        )
         file_changes_score = 0
 
     # Component 2: Memory staleness (30% weight)
@@ -574,8 +578,11 @@ def calculate_drift_score() -> float:
             deps_lines = int(deps_result["stdout"].strip())
             # Normalize: >10 lines of changes = 100% score
             dependency_changes_score = min((deps_lines / 10.0) * 100, 100)
-    except Exception:
-        pass
+    except Exception as e:
+        logger.warning(
+            f"Failed to check dependency changes: {e}\n"
+            f"🔧 Troubleshooting: Ensure git is available"
+        )
 
     # Component 4: Uncommitted changes (10% weight)
     uncommitted_changes_score = 0
@@ -585,8 +592,11 @@ def calculate_drift_score() -> float:
         untracked = len(status["untracked"])
         # Normalize: >5 files = 100% score
         uncommitted_changes_score = min(((uncommitted + untracked) / 5.0) * 100, 100)
-    except Exception:
-        pass
+    except Exception as e:
+        logger.warning(
+            f"Failed to check uncommitted changes: {e}\n"
+            f"🔧 Troubleshooting: Ensure git is available and you're in a repository"
+        )
 
     # Weighted sum
     drift = (
@@ -635,6 +645,10 @@ def context_health_verbose() -> Dict[str, Any]:
             if file_score > 15:
                 recommendations.append("Run: ce context sync to refresh indexes")
     except Exception as e:
+        logger.warning(
+            f"Failed to calculate file changes component: {e}\n"
+            f"🔧 Troubleshooting: Ensure git is available"
+        )
         components["file_changes"] = {"score": 0, "details": f"Error: {e}"}
 
     # Memory staleness component (placeholder)
@@ -658,7 +672,11 @@ def context_health_verbose() -> Dict[str, Any]:
             }
             if deps_score > 10:
                 recommendations.append("Dependencies changed - run: uv sync")
-    except Exception:
+    except Exception as e:
+        logger.warning(
+            f"Failed to check dependency changes component: {e}\n"
+            f"🔧 Troubleshooting: Ensure git is available"
+        )
         components["dependency_changes"] = {"score": 0, "details": "No changes"}
 
     # Uncommitted changes component
@@ -673,7 +691,11 @@ def context_health_verbose() -> Dict[str, Any]:
         }
         if uncommitted + untracked > 0:
             recommendations.append("Commit or stash changes before PRP operations")
-    except Exception:
+    except Exception as e:
+        logger.warning(
+            f"Failed to check uncommitted changes component: {e}\n"
+            f"🔧 Troubleshooting: Ensure git is available and you're in a repository"
+        )
         components["uncommitted_changes"] = {"score": 0, "details": "0 uncommitted"}
 
     # Calculate overall drift

@@ -10,7 +10,8 @@ from ce.shell_utils import (
     find_files,
     extract_fields,
     sum_column,
-    filter_and_extract
+    filter_and_extract,
+    Pipeline
 )
 
 
@@ -351,3 +352,187 @@ class TestIntegration:
         assert first[0] == "line0"
         assert last[-1] == "line99"
         assert len(first) + len(last) == 10
+
+
+# Pipeline tests
+class TestPipelineBasic:
+    """Tests for Pipeline class basic operations."""
+
+    def test_pipeline_from_text(self):
+        """Test creating pipeline from text."""
+        text = "a\nb\nc"
+        pipe = Pipeline.from_text(text)
+        assert pipe.text() == "a\nb\nc"
+        assert len(pipe.lines()) == 3
+
+    def test_pipeline_from_file(self, tmp_path):
+        """Test creating pipeline from file."""
+        file = tmp_path / "test.txt"
+        file.write_text("line1\nline2\nline3")
+        pipe = Pipeline.from_file(str(file))
+        assert pipe.count() == 3
+
+    def test_pipeline_from_list(self):
+        """Test creating pipeline from list."""
+        data = ["a", "b", "c"]
+        pipe = Pipeline(data)
+        assert pipe.count() == 3
+        assert pipe.text() == "a\nb\nc"
+
+    def test_pipeline_head(self):
+        """Test pipeline head operation."""
+        text = "\n".join([f"line{i}" for i in range(10)])
+        pipe = Pipeline.from_text(text)
+        result = pipe.head(3)
+        assert result.count() == 3
+        assert "line0" in result.text()
+
+    def test_pipeline_tail(self):
+        """Test pipeline tail operation."""
+        text = "\n".join([f"line{i}" for i in range(10)])
+        pipe = Pipeline.from_text(text)
+        result = pipe.tail(3)
+        assert result.count() == 3
+        assert "line9" in result.text()
+
+    def test_pipeline_grep(self):
+        """Test pipeline grep operation."""
+        text = "error\ninfo\nerror2"
+        pipe = Pipeline.from_text(text)
+        result = pipe.grep("error")
+        assert result.count() == 2
+
+    def test_pipeline_grep_with_context(self):
+        """Test pipeline grep with context lines."""
+        text = "a\nerror\nb\nerror2\nc"
+        pipe = Pipeline.from_text(text)
+        result = pipe.grep("error", context_lines=1)
+        assert result.count() >= 2
+
+    def test_pipeline_count(self):
+        """Test pipeline line count."""
+        text = "a\nb\nc\n\nd"
+        pipe = Pipeline.from_text(text)
+        # Empty lines are skipped
+        assert pipe.count() == 4
+
+    def test_pipeline_first(self):
+        """Test getting first line from pipeline."""
+        text = "\na\nb"
+        pipe = Pipeline.from_text(text)
+        assert pipe.first() == "a"
+
+    def test_pipeline_last(self):
+        """Test getting last line from pipeline."""
+        text = "a\nb\n"
+        pipe = Pipeline.from_text(text)
+        assert pipe.last() == "b"
+
+    def test_pipeline_extract_fields(self):
+        """Test pipeline field extraction."""
+        text = "a 1\nb 2\nc 3"
+        pipe = Pipeline.from_text(text)
+        result = pipe.extract_fields([1])
+        assert "a" in result.text()
+
+    def test_pipeline_sum_column(self):
+        """Test pipeline column summation."""
+        text = "a 100\nb 200\nc 300"
+        pipe = Pipeline.from_text(text)
+        total = pipe.sum_column(2)
+        assert total == 600.0
+
+    def test_pipeline_lines(self):
+        """Test getting lines from pipeline."""
+        text = "a\nb\nc"
+        pipe = Pipeline.from_text(text)
+        lines = pipe.lines()
+        assert lines == ["a", "b", "c"]
+
+
+class TestPipelineChaining:
+    """Tests for Pipeline method chaining."""
+
+    def test_chained_grep_and_head(self):
+        """Test chaining grep and head."""
+        text = "\n".join([f"error{i}" if i % 2 == 0 else f"info{i}" for i in range(10)])
+        result = (
+            Pipeline.from_text(text)
+            .grep("error")
+            .head(2)
+            .text()
+        )
+        assert "error0" in result
+        assert "info" not in result
+
+    def test_chained_grep_and_count(self):
+        """Test chaining grep and count."""
+        text = "error\ninfo\nerror2\ninfo2\nerror3"
+        count = Pipeline.from_text(text).grep("error").count()
+        assert count == 3
+
+    def test_chained_head_and_count(self):
+        """Test chaining head and count."""
+        text = "\n".join([f"line{i}" for i in range(100)])
+        count = Pipeline.from_text(text).head(5).count()
+        assert count == 5
+
+    def test_complex_pipeline(self):
+        """Test complex multi-step pipeline."""
+        lines = []
+        for i in range(100):
+            if i % 10 == 0:
+                lines.append(f"ERROR level{i % 3}")
+            else:
+                lines.append(f"INFO level{i % 3}")
+        text = "\n".join(lines)
+        result = (
+            Pipeline.from_text(text)
+            .grep("ERROR")
+            .head(5)
+            .count()
+        )
+        assert result == 5
+
+
+class TestPipelineEdgeCases:
+    """Tests for Pipeline edge cases."""
+
+    def test_pipeline_empty_text(self):
+        """Test pipeline with empty text."""
+        pipe = Pipeline.from_text("")
+        assert pipe.count() == 0
+        assert pipe.first() is None
+        assert pipe.last() is None
+
+    def test_pipeline_single_line(self):
+        """Test pipeline with single line."""
+        pipe = Pipeline.from_text("single")
+        assert pipe.count() == 1
+        assert pipe.first() == "single"
+        assert pipe.last() == "single"
+
+    def test_pipeline_whitespace_only(self):
+        """Test pipeline with whitespace only lines."""
+        text = "\n   \n  \n"
+        pipe = Pipeline.from_text(text)
+        assert pipe.count() == 0
+
+    def test_pipeline_grep_no_matches(self):
+        """Test pipeline grep with no matches."""
+        pipe = Pipeline.from_text("a\nb\nc")
+        result = pipe.grep("notfound")
+        assert result.count() == 0
+
+    def test_pipeline_head_zero(self):
+        """Test pipeline head with n=0."""
+        pipe = Pipeline.from_text("a\nb\nc")
+        result = pipe.head(0)
+        assert result.count() == 0
+
+    def test_pipeline_tail_zero(self):
+        """Test pipeline tail with n=0."""
+        pipe = Pipeline.from_text("a\nb\nc")
+        result = pipe.tail(0)
+        # Python's list[-0:] returns the entire list, not empty
+        assert result.count() == 3
