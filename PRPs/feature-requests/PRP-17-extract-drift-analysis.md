@@ -2,7 +2,7 @@
 ce_updated: true
 context_sync:
   ce_updated: true
-  last_sync: '2025-10-17T10:44:01.067113+00:00'
+  last_sync: '2025-10-17T11:29:21.565734+00:00'
   serena_updated: false
 description: 'Extract drift analysis logic from ce update-context into new ce analyze-context
   command.
@@ -25,7 +25,7 @@ prp_id: 17
 serena_updated: true
 status: executed
 title: Extract Drift Analysis into Separate Command
-updated: '2025-10-17T10:44:01.067295+00:00'
+updated: '2025-10-17T11:29:21.565911+00:00'
 updated_by: update-context-command
 ---
 

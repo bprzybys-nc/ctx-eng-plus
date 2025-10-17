@@ -515,3 +515,253 @@ This guide exists to **reduce query tree complexity** and **accelerate tool sele
 **This guide**: Maps tasks to specific tools, eliminates trial-and-error
 
 **Result**: 60-70% reduction in tool evaluation overhead
+
+---
+
+## Quick Reference: Common Violations
+
+**All violations from tools-misuse-test-report.md with immediate remedies**
+
+| Denied Pattern | ❌ Problem | ✅ Allowed Alternative | Performance Gain | Example |
+|----------------|-----------|------------------------|-----------------|----------|
+| `Bash(cat file)` | Subprocess fork overhead | `read_text_file(path)` | 10-50x faster | `read_text_file('log.txt')` |
+| `Bash(head -n 10 file)` | Subprocess + piping | `Read(limit=10)` or `shell_utils.head()` | 10-50x faster | `head('file.py', 10)` |
+| `Bash(tail -n 10 file)` | Subprocess + piping | `Read(offset=-10)` or `shell_utils.tail()` | 10-50x faster | `tail('log.txt', 10)` |
+| `Bash(grep pattern file)` | Regex fragile, no type safety | `shell_utils.grep_text()` or `Grep()` tool | 10-50x faster | `grep_text('ERROR', text)` |
+| `Bash(awk '{print $1}')` | Complex piping, hard to test | `shell_utils.extract_fields()` | 10-50x faster | `extract_fields(text, [1])` |
+| `Bash(wc -l file)` | Subprocess overhead | `shell_utils.count_lines()` | 10-50x faster | `count_lines('file.py')` |
+| `Bash(python script.py)` | Wrong env (no venv activation) | `uv run ce run_py script.py` | Proper env mgmt | `Bash(uv run:*)` |
+| `mcp__serena__replace_symbol_body` | Permission denied (elevated access) | `replace_regex()` or `edit_file()` | Same speed, more control | See "Workarounds" below |
+
+---
+
+## Troubleshooting: Permission Denied Errors
+
+### Error: "Permission denied - mcp__serena__replace_symbol_body"
+
+**Cause**: Tool requires elevated permissions (not available in this project context)
+
+**Immediate Fixes**:
+
+1. **For full function replacement** → Use `mcp__serena__replace_regex()`
+   ```python
+   # Instead of replace_symbol_body()
+   mcp__serena__replace_regex(
+       relative_path="path/to/file.py",
+       regex="def my_func\\(.*?\\):\\s*.*?(?=^def |\\Z)",
+       repl="def my_func(...):\n    pass",
+       allow_multiple_occurrences=False
+   )
+   ```
+
+2. **For line-level changes** → Use `mcp__filesystem__edit_file()`
+   ```python
+   # Surgical edit within a function
+   mcp__filesystem__edit_file(
+       path="path/to/file.py",
+       edits=[{
+           "oldText": "    x = old_value",
+           "newText": "    x = new_value"
+       }]
+   )
+   ```
+
+3. **For adding new methods** → Use `mcp__serena__insert_after_symbol()`
+   ```python
+   mcp__serena__insert_after_symbol(
+       name_path="ClassName/existing_method",
+       relative_path="path/to/file.py",
+       body="    def new_method(self):\n        pass"
+   )
+   ```
+
+### Error: "Permission denied - Bash(cat:*), Bash(grep:*), etc"
+
+**Cause**: Text processing via bash is inefficient and denied by policy
+
+**Immediate Fixes**:
+
+| Error | Remedy | How |
+|-------|--------|-----|
+| `Bash(cat file)` denied | Use `read_text_file()` | Direct file read, no subprocess |
+| `Bash(grep pattern)` denied | Use `grep_text()` or `Grep()` | Python stdlib or MCP tool |
+| `Bash(head -n 10)` denied | Use `head(file, 10)` | Python stdlib wrapper |
+| `Bash(tail -n 10)` denied | Use `tail(file, 10)` | Python stdlib wrapper |
+| `Bash(awk '{...}')` denied | Use `extract_fields()` | Type-safe field extraction |
+| `Bash(python script.py)` denied | Use `uv run ce run_py script.py` | Proper environment activation |
+
+**Quick Fix Template**:
+```python
+# ❌ DENIED - Will get permission error
+Bash(grep "ERROR" log.txt)
+
+# ✅ ALLOWED - Works immediately
+from ce.shell_utils import grep_text
+text = read_text_file("log.txt")
+matches = grep_text("ERROR", text, context_lines=2)
+```
+
+---
+
+## Real Production Examples (From tools-misuse-test-report.md)
+
+### Example 1: Bash head anti-pattern
+
+**❌ DETECTED VIOLATION**:
+```bash
+Bash(head -n 20 file.py)
+```
+
+**Problem**: 
+- Subprocess fork overhead
+- No type safety
+- Hard to compose with other operations
+
+**✅ CORRECTED**:
+```python
+from ce.shell_utils import head
+first_lines = head("file.py", n=20)
+```
+
+**Impact**: 10-50x faster (no subprocess fork)
+
+---
+
+### Example 2: Bash grep anti-pattern
+
+**❌ DETECTED VIOLATION**:
+```bash
+Bash(grep "pattern" file.log | grep "ERROR")
+```
+
+**Problem**:
+- Multiple subprocess forks
+- Fragile piping
+- Error handling unclear
+
+**✅ CORRECTED**:
+```python
+from ce.shell_utils import grep_text
+text = read_text_file("file.log")
+errors = grep_text("pattern", text, context_lines=2)
+error_matches = [line for line in errors if "ERROR" in line]
+```
+
+**Impact**: 10-50x faster, type-safe filtering
+
+---
+
+### Example 3: Python subprocess anti-pattern
+
+**❌ DETECTED VIOLATION**:
+```bash
+Bash(python3 -c "print('hello')")
+```
+
+**Problem**:
+- Wrong Python environment (no venv activation)
+- Subprocess overhead
+- Hard to pass complex code
+
+**✅ CORRECTED**:
+```bash
+Bash(uv run ce run_py --code "print('hello')")
+# Or for files:
+Bash(uv run ce run_py script.py)
+```
+
+**Impact**: Proper environment management, correct dependencies
+
+---
+
+### Example 4: Symbol body replacement anti-pattern
+
+**❌ DETECTED VIOLATION**:
+```python
+mcp__serena__replace_symbol_body(
+    name_path="validate_token",
+    relative_path="src/auth.py",
+    body="def validate_token():\n    return True"
+)
+# Error: Permission denied
+```
+
+**Problem**: Tool not available in project context
+
+**✅ CORRECTED** (Option 1 - Full replacement):
+```python
+mcp__serena__replace_regex(
+    relative_path="src/auth.py",
+    regex="def validate_token\\(.*?\\):\\s*.*?(?=^def |\\Z)",
+    repl="def validate_token():\n    return True",
+    allow_multiple_occurrences=False
+)
+```
+
+**✅ CORRECTED** (Option 2 - Surgical edit):
+```python
+mcp__filesystem__edit_file(
+    path="src/auth.py",
+    edits=[{
+        "oldText": "    return False",
+        "newText": "    return True"
+    }]
+)
+```
+
+**Impact**: Same speed, more control, no permission errors
+
+---
+
+## Performance Benchmarks
+
+### Measured Improvements (tools-misuse-test-report.md)
+
+| Operation | Bash Approach | Python Approach | Speedup | Reason |
+|-----------|---------------|-----------------|---------|--------|
+| Read file (100KB) | `Bash(cat)` | `read_text_file()` | 20-40x | No subprocess fork |
+| Search text (1000 lines) | `Bash(grep)` | `grep_text()` | 15-50x | No piping overhead |
+| Extract fields (10k rows) | `Bash(awk)` | `extract_fields()` | 10-30x | Python loop vs regex |
+| Count lines | `Bash(wc)` | `count_lines()` | 10-25x | No subprocess |
+| Head/tail (N lines) | `Bash(head/tail)` | Python function | 10-50x | No piping |
+
+### Token Usage Impact
+
+| Approach | Tokens | Notes |
+|----------|--------|-------|
+| Bash subprocess call | 50-100 | Overhead from shell parsing |
+| Python native function | 10-20 | Direct execution, no fork |
+| **Savings** | **60-80%** | Per operation |
+
+### When to Check Performance Metrics
+
+- **High-volume operations** (>1000 items): Use Python (10-50x gain)
+- **Low-volume operations** (<10 items): Either approach (difference negligible)
+- **Complex filtering**: Always use Python (type safety matters more than speed)
+- **Production code**: Never use Bash for text processing (unmaintainable)
+
+---
+
+## Implementation Roadmap
+
+### Phase 1: Policy Enforcement ✅ COMPLETE
+- Deny list configured in `.claude/settings.local.json`
+- All violations blocked at source
+- Serena MCP restrictions documented
+
+### Phase 2: Documentation & Guidance ✅ IN PROGRESS
+- Quick Reference table added (this section)
+- Troubleshooting guide added (this section)
+- Real production examples added (this section)
+- Performance benchmarks documented (this section)
+
+### Phase 3: Auto-Remediation (PENDING)
+- Create `.ce/tool-alternatives.yml` (structured metadata)
+- Integrate with `tools-misuse-scan` command
+- Add `--remediate` mode for automatic fixes
+- Link to CI/CD validation pipeline
+
+### Phase 4: Continuous Monitoring (FUTURE)
+- Pre-commit hook to catch violations early
+- Agent training feedback loop
+- Quarterly policy review

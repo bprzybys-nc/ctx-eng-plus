@@ -6,6 +6,7 @@ knowledge systems with actual implementations.
 
 import logging
 import re
+import sys
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
@@ -13,6 +14,11 @@ from typing import Any, Dict, List, Optional, Tuple
 import frontmatter
 
 logger = logging.getLogger(__name__)
+
+
+def is_interactive() -> bool:
+    """Check if stdin is connected to a terminal (interactive mode)."""
+    return sys.stdin.isatty()
 
 # Pattern detection rules from examples/
 PATTERN_FILES = {
@@ -602,6 +608,20 @@ def remediate_drift_workflow(yolo_mode: bool = False) -> Dict[str, Any]:
 
     # Step 4: Approval gate (vanilla only)
     if not yolo_mode:
+        # Check if running in interactive mode
+        if not is_interactive():
+            # Non-interactive mode without --remediate: skip remediation gracefully
+            print(f"\n⏭️ Non-interactive mode detected (no TTY)")
+            print(f"📄 Blueprint saved: {blueprint_path}")
+            print(f"\n💡 For automated remediation, use: ce update-context --remediate\n")
+            return {
+                "success": True,
+                "prp_path": None,
+                "blueprint_path": blueprint_path,
+                "errors": []
+            }
+
+        # Interactive mode: ask for approval
         print(f"\nReview INITIAL.md: {blueprint_path}")
         approval = input("Proceed with remediation? (yes/no): ").strip().lower()
 
@@ -662,10 +682,14 @@ def update_context_sync_flags(
     Args:
         file_path: Path to PRP markdown file
         ce_updated: Whether CE content was updated
-        serena_updated: Whether Serena was updated
+        serena_updated: Always False (Serena verification disabled due to MCP architecture)
 
     Raises:
         ValueError: If YAML update fails
+
+    Note:
+        - Serena verification removed (Python subprocess cannot access parent's stdio MCP)
+        - Only updates timestamps if flags actually changed (no false positives)
     """
     metadata, content = read_prp_header(file_path)
 
@@ -673,29 +697,35 @@ def update_context_sync_flags(
     if "context_sync" not in metadata:
         metadata["context_sync"] = {}
 
-    # Update flags
-    metadata["context_sync"]["ce_updated"] = ce_updated
-    metadata["context_sync"]["serena_updated"] = serena_updated
-    metadata["context_sync"]["last_sync"] = datetime.now(timezone.utc).isoformat()
+    # Track if anything actually changed
+    old_ce_updated = metadata["context_sync"].get("ce_updated", False)
+    old_serena_updated = metadata["context_sync"].get("serena_updated", False)
+    flags_changed = (old_ce_updated != ce_updated) or (old_serena_updated != serena_updated)
 
-    # Update attribution
-    metadata["updated_by"] = "update-context-command"
-    metadata["updated"] = datetime.now(timezone.utc).isoformat()
+    # Only update if flags changed
+    if flags_changed:
+        metadata["context_sync"]["ce_updated"] = ce_updated
+        metadata["context_sync"]["serena_updated"] = serena_updated
+        metadata["context_sync"]["last_sync"] = datetime.now(timezone.utc).isoformat()
+        metadata["updated_by"] = "update-context-command"
+        metadata["updated"] = datetime.now(timezone.utc).isoformat()
 
-    # Write back
-    try:
-        post = frontmatter.Post(content, **metadata)
-        with open(file_path, 'w') as f:
-            f.write(frontmatter.dumps(post))
-        logger.info(f"Updated context_sync flags: {file_path}")
-    except Exception as e:
-        raise ValueError(
-            f"Failed to write YAML header to {file_path}: {e}\n"
-            f"🔧 Troubleshooting:\n"
-            f"   - Check file permissions: ls -la {file_path}\n"
-            f"   - Ensure disk space available: df -h\n"
-            f"   - Verify file not locked by another process"
-        ) from e
+        # Write back
+        try:
+            post = frontmatter.Post(content, **metadata)
+            with open(file_path, 'w') as f:
+                f.write(frontmatter.dumps(post))
+            logger.info(f"Updated context_sync flags: {file_path}")
+        except Exception as e:
+            raise ValueError(
+                f"Failed to write YAML header to {file_path}: {e}\n"
+                f"🔧 Troubleshooting:\n"
+                f"   - Check file permissions: ls -la {file_path}\n"
+                f"   - Ensure disk space available: df -h\n"
+                f"   - Verify file not locked by another process"
+            ) from e
+    else:
+        logger.debug(f"No flag changes detected for {file_path.name} - skipping update")
 
 
 def get_prp_status(file_path: Path) -> str:
@@ -796,88 +826,9 @@ def extract_expected_functions(content: str) -> List[str]:
     return sorted(list(functions))
 
 
-def verify_implementation_with_serena(expected_functions: List[str]) -> bool:
-    """Use Serena MCP find_symbol to verify implementations exist.
-
-    Args:
-        expected_functions: List of function/class names to verify
-
-    Returns:
-        True if ALL functions found, False otherwise
-
-    Raises:
-        None - gracefully degrades if Serena unavailable
-
-    Example:
-        >>> funcs = ["generate_maintenance_prp", "remediate_drift_workflow"]
-        >>> result = verify_implementation_with_serena(funcs)
-        >>> assert isinstance(result, bool)
-    """
-    if not expected_functions:
-        # No functions to verify - mark as updated
-        logger.debug("No implementations to verify")
-        return True
-
-    try:
-        # Import Serena MCP module directly
-        import mcp__serena as serena
-
-        verified_count = 0
-        missing = []
-
-        for func_name in expected_functions:
-            try:
-                # Query Serena for symbol
-                # Note: Serena MCP returns list directly
-                # Based on actual usage in this codebase
-                result = serena.find_symbol(
-                    name_path=func_name,
-                    relative_path="tools/ce/",  # Search in ce module
-                    include_body=False
-                )
-
-                # Check if implementation found
-                # Result structure: list of symbol dicts
-                if result and isinstance(result, list) and len(result) > 0:
-                    verified_count += 1
-                    logger.debug(f"✓ Verified: {func_name}")
-                else:
-                    missing.append(func_name)
-                    logger.warning(f"✗ Missing: {func_name}")
-
-            except Exception as e:
-                # Symbol query failed, mark as missing
-                logger.debug(f"Symbol query failed for {func_name}: {e}")
-                missing.append(func_name)
-                continue
-
-        # Mark as verified only if ALL functions found
-        all_verified = len(missing) == 0
-
-        if all_verified:
-            logger.info(f"Serena verification complete: {verified_count}/{len(expected_functions)} implementations found")
-        else:
-            logger.warning(
-                f"Serena verification incomplete: {verified_count}/{len(expected_functions)} found\n"
-                f"Missing: {', '.join(missing)}"
-            )
-
-        return all_verified
-
-    except (ImportError, ModuleNotFoundError):
-        # Serena MCP not available - graceful degradation
-        logger.warning(
-            "Serena MCP not available - skipping verification\n"
-            "🔧 Troubleshooting: Ensure Serena MCP server is configured and running"
-        )
-        return False
-    except Exception as e:
-        # Unexpected error - log and degrade gracefully
-        logger.error(
-            f"Serena verification failed: {e}\n"
-            "🔧 Troubleshooting: Check Serena MCP connection and logs"
-        )
-        return False
+# Serena verification removed - Python subprocess cannot access parent's stdio MCP servers
+# MCP architecture limitation: stdio transport requires local subprocess spawn
+# Serena is internal to Claude Code session and not accessible from uv run subprocess
 
 
 def should_transition_to_executed(file_path: Path) -> bool:
@@ -1564,8 +1515,8 @@ def sync_context(target_prp: Optional[str] = None) -> Dict[str, Any]:
             # Extract expected functions
             expected_functions = extract_expected_functions(content)
 
-            # Verify with Serena
-            serena_verified = verify_implementation_with_serena(expected_functions)
+            # Serena verification disabled (subprocess cannot access parent's stdio MCP)
+            serena_verified = False
 
             # For now, mark CE as updated if functions found
             ce_verified = len(expected_functions) > 0

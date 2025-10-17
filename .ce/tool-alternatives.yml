@@ -1,0 +1,261 @@
+# Tool Alternatives & Remediation Metadata
+# 
+# Purpose: Provide structured mapping of denied tools to allowed alternatives
+# Usage: Enables auto-remediation in tools-misuse-scan --remediate mode
+# Updated: 2025-10-17
+#
+# Structure:
+#   - Category (e.g., bash_text_processing)
+#     - Denied tool name
+#       - reason: Why the tool is denied
+#       - alternatives: List of allowed replacements with performance impact
+#       - detection_pattern: Regex to identify violations
+#       - severity: warn|block
+
+---
+
+bash_text_processing:
+  "Bash(cat:*)":
+    reason: "Subprocess overhead, no type safety, inefficient file reading"
+    severity: block
+    detection_pattern: "Bash\\(cat\\s+"
+    alternatives:
+      - tool: "mcp__filesystem__read_text_file"
+        method: "direct_call"
+        performance_impact: "10-50x faster (no subprocess fork)"
+        example: "read_text_file('file.py')"
+        use_case: "Reading entire file contents"
+      - tool: "mcp__serena__read_file"
+        method: "direct_call"
+        performance_impact: "10-50x faster (indexed by LSP)"
+        example: "read_file(relative_path='code.py')"
+        use_case: "Reading Python code files"
+
+  "Bash(head:*)":
+    reason: "Subprocess + piping overhead, no type safety"
+    severity: block
+    detection_pattern: "Bash\\(head\\s+"
+    alternatives:
+      - tool: "mcp__filesystem__read_text_file"
+        method: "limit_parameter"
+        performance_impact: "10-50x faster (no subprocess)"
+        example: "read_text_file('file.py', limit=10)"
+        use_case: "Reading first N lines"
+      - tool: "shell_utils.head()"
+        method: "function_call"
+        performance_impact: "10-50x faster (Python stdlib)"
+        example: "head('file.py', n=10)"
+        use_case: "First N lines with Python"
+
+  "Bash(tail:*)":
+    reason: "Subprocess + piping overhead, no type safety"
+    severity: block
+    detection_pattern: "Bash\\(tail\\s+"
+    alternatives:
+      - tool: "mcp__filesystem__read_text_file"
+        method: "offset_parameter"
+        performance_impact: "10-50x faster (no subprocess)"
+        example: "read_text_file('file.py', offset=-10)"
+        use_case: "Reading last N lines"
+      - tool: "shell_utils.tail()"
+        method: "function_call"
+        performance_impact: "10-50x faster (Python stdlib)"
+        example: "tail('file.py', n=10)"
+        use_case: "Last N lines with Python"
+
+  "Bash(grep:*)":
+    reason: "Regex fragile, no type safety, multiple subprocess forks in pipes"
+    severity: block
+    detection_pattern: "Bash\\(grep\\s+"
+    alternatives:
+      - tool: "shell_utils.grep_text()"
+        method: "function_call"
+        performance_impact: "10-50x faster (Python stdlib, no piping)"
+        example: "grep_text('ERROR', text, context_lines=2)"
+        use_case: "Search text with context"
+      - tool: "mcp__serena__search_for_pattern"
+        method: "semantic_search"
+        performance_impact: "Semantic search with LSP indexing"
+        example: "search_for_pattern('pattern', path='src/')"
+        use_case: "Code pattern search across files"
+      - tool: "Grep"
+        method: "mcp_tool"
+        performance_impact: "Optimized for large files"
+        example: "Grep(pattern='pattern', type='py')"
+        use_case: "Large file grep operations"
+
+  "Bash(awk:*)":
+    reason: "Complex shell escaping, fragile piping, hard to debug"
+    severity: block
+    detection_pattern: "Bash\\(awk\\s+"
+    alternatives:
+      - tool: "shell_utils.extract_fields()"
+        method: "function_call"
+        performance_impact: "10-50x faster (Python, type-safe)"
+        example: "extract_fields(text, field_indices=[1, 3])"
+        use_case: "Extract specific columns"
+      - tool: "shell_utils.sum_column()"
+        method: "function_call"
+        performance_impact: "10-50x faster (Python stdlib)"
+        example: "sum_column(text, column=2)"
+        use_case: "Sum numeric columns"
+      - tool: "shell_utils.filter_and_extract()"
+        method: "function_call"
+        performance_impact: "10-50x faster (combined operation)"
+        example: "filter_and_extract(text, 'ERROR', field_index=2)"
+        use_case: "Filter rows and extract field"
+
+  "Bash(wc:*)":
+    reason: "Subprocess overhead for simple operation"
+    severity: block
+    detection_pattern: "Bash\\(wc\\s+"
+    alternatives:
+      - tool: "shell_utils.count_lines()"
+        method: "function_call"
+        performance_impact: "10-50x faster (Python stdlib)"
+        example: "count_lines('file.py')"
+        use_case: "Count total lines"
+      - tool: "mcp__filesystem__read_text_file"
+        method: "count_parameter"
+        performance_impact: "Direct count, no full read"
+        example: "# Read and call len(lines.split('\\n'))"
+        use_case: "When reading file anyway"
+
+  "Bash(sed:*)":
+    reason: "Sed escaping complex, mutable file operations risky"
+    severity: block
+    detection_pattern: "Bash\\(sed\\s+"
+    alternatives:
+      - tool: "mcp__filesystem__edit_file"
+        method: "line_based_edit"
+        performance_impact: "Safer, more readable"
+        example: "edit_file(path='file.py', edits=[{'oldText': '...', 'newText': '...'}])"
+        use_case: "File mutations with full context"
+      - tool: "mcp__serena__replace_regex"
+        method: "regex_replacement"
+        performance_impact: "Semantic awareness + regex power"
+        example: "replace_regex(relative_path='file.py', regex='pattern', repl='replacement')"
+        use_case: "Complex regex replacements in code"
+
+  "Bash(echo:*)":
+    reason: "Subprocess overhead for simple string output"
+    severity: block
+    detection_pattern: "Bash\\(echo\\s+"
+    alternatives:
+      - tool: "Python print()"
+        method: "direct_call"
+        performance_impact: "Direct execution, no subprocess"
+        example: "print('message')"
+        use_case: "Simple output"
+      - tool: "Python string operations"
+        method: "direct_call"
+        performance_impact: "No subprocess overhead"
+        example: "text = 'hello'; return text"
+        use_case: "String manipulation"
+
+  "Bash(find:*)":
+    reason: "Subprocess overhead, complex shell syntax"
+    severity: block
+    detection_pattern: "Bash\\(find\\s+"
+    alternatives:
+      - tool: "shell_utils.find_files()"
+        method: "function_call"
+        performance_impact: "10-50x faster (Python pathlib)"
+        example: "find_files('src', '*.py', exclude=['__pycache__'])"
+        use_case: "Recursive file search"
+      - tool: "mcp__filesystem__search_files"
+        method: "mcp_tool"
+        performance_impact: "Optimized for complex patterns"
+        example: "search_files(path='tests', pattern='test_*.py')"
+        use_case: "Complex file pattern matching"
+
+  "Bash(python:*)" or "Bash(python3:*)":
+    reason: "Wrong Python environment (no venv activation)"
+    severity: block
+    detection_pattern: "Bash\\((python|python3)\\s+"
+    alternatives:
+      - tool: "Bash(uv run:*)"
+        method: "uv_runner"
+        performance_impact: "Proper environment management"
+        example: "Bash(uv run ce run_py --code \"print('hello')\")"
+        use_case: "Execute Python in virtual env"
+      - tool: "uv run ce run_py"
+        method: "context_tool"
+        performance_impact: "Automatic env + error handling"
+        example: "Bash(uv run ce run_py script.py)"
+        use_case: "Run Python scripts with proper deps"
+
+---
+
+serena_mcp_operations:
+  "mcp__serena__replace_symbol_body":
+    reason: "Permission denied - requires elevated access (not available in project context)"
+    severity: block
+    detection_pattern: "replace_symbol_body\\("
+    alternatives:
+      - tool: "mcp__serena__replace_regex"
+        method: "full_replacement"
+        performance_impact: "Same speed, more control"
+        example: |
+          replace_regex(
+              relative_path="path/to/file.py",
+              regex="def my_func\\(.*?\\):\\s*.*?(?=^def |\\Z)",
+              repl="def my_func(...):\n    pass",
+              allow_multiple_occurrences=False
+          )
+        use_case: "Replace entire function body"
+      - tool: "mcp__filesystem__edit_file"
+        method: "line_based_edit"
+        performance_impact: "Surgical changes, safer"
+        example: |
+          edit_file(
+              path="path/to/file.py",
+              edits=[{
+                  "oldText": "    x = old_value",
+                  "newText": "    x = new_value"
+              }]
+          )
+        use_case: "Modify specific lines within function"
+      - tool: "mcp__serena__insert_after_symbol"
+        method: "symbol_insertion"
+        performance_impact: "Safe addition of new code"
+        example: |
+          insert_after_symbol(
+              name_path="ClassName/existing_method",
+              relative_path="path/to/file.py",
+              body="    def new_method(self):\n        pass"
+          )
+        use_case: "Add new methods after existing ones"
+
+  "mcp__serena__delete_memory":
+    reason: "Dangerous - could lose documentation references"
+    severity: warn
+    detection_pattern: "delete_memory\\("
+    alternatives:
+      - tool: "Manual review"
+        method: "read_and_update"
+        performance_impact: "Prevents accidental data loss"
+        example: "Review .serena/memories/ files manually before deletion"
+        use_case: "When memory is truly obsolete"
+
+  "mcp__serena__rename_symbol":
+    reason: "Global refactoring - test impact thoroughly first"
+    severity: warn
+    detection_pattern: "rename_symbol\\("
+    alternatives:
+      - tool: "mcp__serena__find_referencing_symbols"
+        method: "impact_analysis"
+        performance_impact: "Identify all usages before renaming"
+        example: "find_referencing_symbols(name_path='old_name', relative_path='file.py')"
+        use_case: "Analyze impact before refactoring"
+
+---
+
+metadata:
+  version: "1.0"
+  last_updated: "2025-10-17"
+  source: "tools-misuse-test-report.md + serena-mcp-tool-restrictions.md"
+  total_denied_tools: 18
+  total_alternatives: 32
+  documentation_reference: "examples/tool-usage-patterns.md"
+  integration_point: "tools/ce/tools_misuse_scan.py (--remediate mode)"
