@@ -35,7 +35,13 @@ def extract_patterns_from_prp(prp_path: str) -> Dict[str, Any]:
     """
     prp_path_obj = Path(prp_path)
     if not prp_path_obj.exists():
-        raise FileNotFoundError(f"PRP file not found: {prp_path}")
+        raise FileNotFoundError(
+            f"PRP file not found: {prp_path}\n"
+            f"🔧 Troubleshooting:\n"
+            f"   - Verify file path is correct\n"
+            f"   - Check if file was moved or renamed\n"
+            f"   - Use: ls {prp_path_obj.parent} to list directory"
+        )
 
     content = prp_path_obj.read_text()
 
