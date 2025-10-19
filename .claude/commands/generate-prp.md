@@ -261,12 +261,28 @@ All generated implementations follow:
 4. **Note OTHER CONSIDERATIONS**: Security concerns, edge cases, constraints
 5. **Code quality alignment**: Generated code will follow project standards - review for consistency
 
+## Haiku-Ready PRP Checklist
+
+Before executing a generated PRP, verify it's optimized for Claude 4.5 Haiku execution:
+
+- [ ] **Goal**: Exact end state described, not vague improvement
+- [ ] **Output**: File paths and line numbers specified
+- [ ] **Limits**: Scope boundaries explicit (what's IN/OUT)
+- [ ] **Data**: All required context inline in PRP (no external references)
+- [ ] **Evaluation**: Validation gates are copy-paste bash commands
+- [ ] **Decisions**: All architectural choices made (Haiku executes, doesn't decide)
+- [ ] **Code Snippets**: Before/after code provided for major changes
+- [ ] **No Vague Language**: Check for "appropriate", "suitable", "handle appropriately"
+
+**Reference**: See [PRP-23: Haiku-Optimized PRP Guidelines](../../PRPs/feature-requests/PRP-23-haiku-optimized-prp-guidelines.md) for detailed patterns.
+
 ## Next Steps After Generation
 
 1. Review generated PRP for completeness
 2. Fill in TBD fields (prp_id will be auto-assigned on execution)
 3. Adjust estimated hours if needed
-4. Execute PRP using `/execute-prp <prp-file>`
+4. **Check Haiku-Ready checklist above**
+5. Execute PRP using `/execute-prp <prp-file>`
 
 ## Implementation Details
 
