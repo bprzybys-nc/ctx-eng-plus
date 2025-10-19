@@ -8,6 +8,7 @@ import ast
 import logging
 import re
 import sys
+import yaml
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
@@ -112,7 +113,7 @@ def verify_function_exists_ast(function_name: str, search_dir: Path) -> bool:
 
 
 def read_prp_header(file_path: Path) -> Tuple[Dict[str, Any], str]:
-    """Read PRP YAML header using frontmatter library.
+    """Read PRP YAML header using safe YAML loading.
 
     Args:
         file_path: Path to PRP markdown file
@@ -123,6 +124,10 @@ def read_prp_header(file_path: Path) -> Tuple[Dict[str, Any], str]:
     Raises:
         FileNotFoundError: If file doesn't exist
         ValueError: If YAML header is invalid
+
+    Security Note:
+        Uses yaml.safe_load() to prevent code injection via !!python/object directives.
+        Only safe YAML constructs are parsed (no arbitrary Python code execution).
     """
     if not file_path.exists():
         raise FileNotFoundError(
@@ -134,15 +139,37 @@ def read_prp_header(file_path: Path) -> Tuple[Dict[str, Any], str]:
         )
 
     try:
+        # Use yaml.safe_load() for security (prevents code injection)
+        content = file_path.read_text(encoding="utf-8")
+        # Extract YAML frontmatter manually for explicit safe loading
+        if content.startswith("---"):
+            # Find closing --- delimiter
+            end_marker = content.find("---", 3)
+            if end_marker != -1:
+                yaml_content = content[3:end_marker].strip()
+                markdown_content = content[end_marker + 3:].strip()
+
+                # Parse YAML safely
+                metadata = yaml.safe_load(yaml_content) or {}
+                return metadata, markdown_content
+
+        # Fallback to frontmatter.load() with safe loader for backwards compatibility
         post = frontmatter.load(file_path)
         return post.metadata, post.content
-    except Exception as e:
+    except yaml.YAMLError as e:
         raise ValueError(
             f"Failed to parse YAML header in {file_path}: {e}\n"
             f"🔧 Troubleshooting:\n"
             f"   - Check YAML syntax with: head -n 20 {file_path}\n"
             f"   - Ensure --- delimiters are present\n"
-            f"   - Validate YAML structure"
+            f"   - Validate YAML structure (no !!python/object directives)"
+        ) from e
+    except Exception as e:
+        raise ValueError(
+            f"Failed to read PRP header in {file_path}: {e}\n"
+            f"🔧 Troubleshooting:\n"
+            f"   - Check file permissions: ls -la {file_path}\n"
+            f"   - Ensure file is readable text"
         ) from e
 
 
@@ -1461,12 +1488,64 @@ def get_cached_analysis() -> Optional[Dict[str, Any]]:
         return None
 
 
-def is_cache_valid(cached: Dict[str, Any], ttl_minutes: int = 5) -> bool:
+def get_cache_ttl() -> int:
+    """Get cache TTL from config or environment, with validation.
+
+    Returns:
+        Cache TTL in minutes (minimum 1, default 5)
+
+    Sources (in priority order):
+        1. CONTEXT_CACHE_TTL environment variable
+        2. .ce/config.yml cache.analysis_ttl_minutes
+        3. Default: 5 minutes
+
+    🔧 Troubleshooting:
+        - Set env: export CONTEXT_CACHE_TTL=10
+        - Or configure: echo "cache: {analysis_ttl_minutes: 10}" >> .ce/config.yml
+    """
+    import os
+
+    # Check environment variable first
+    env_ttl = os.getenv("CONTEXT_CACHE_TTL")
+    if env_ttl:
+        try:
+            ttl = max(1, int(env_ttl))  # Minimum 1 minute
+            logger.debug(f"Cache TTL from env: {ttl} minutes")
+            return ttl
+        except ValueError:
+            logger.warning(f"Invalid CONTEXT_CACHE_TTL: {env_ttl}, using default")
+
+    # Check .ce/config.yml
+    try:
+        current_dir = Path.cwd()
+        if current_dir.name == "tools":
+            project_root = current_dir.parent
+        else:
+            project_root = current_dir
+
+        config_path = project_root / ".ce" / "config.yml"
+        if config_path.exists():
+            config = yaml.safe_load(config_path.read_text()) or {}
+            cache_config = config.get("cache", {})
+            ttl = cache_config.get("analysis_ttl_minutes")
+            if ttl:
+                ttl = max(1, int(ttl))  # Minimum 1 minute
+                logger.debug(f"Cache TTL from config: {ttl} minutes")
+                return ttl
+    except Exception as e:
+        logger.debug(f"Failed to read cache config: {e}")
+
+    # Default
+    logger.debug("Using default cache TTL: 5 minutes")
+    return 5
+
+
+def is_cache_valid(cached: Dict[str, Any], ttl_minutes: int = 0) -> bool:
     """Check if cached analysis is still valid.
 
     Args:
         cached: Cached analysis dict with 'generated_at' field
-        ttl_minutes: Cache time-to-live in minutes
+        ttl_minutes: Cache time-to-live in minutes. If 0, uses get_cache_ttl()
 
     Returns:
         True if cache is fresh (< TTL), False otherwise
@@ -1476,6 +1555,10 @@ def is_cache_valid(cached: Dict[str, Any], ttl_minutes: int = 5) -> bool:
         >>> is_valid = is_cache_valid(cached, ttl_minutes=5)
         >>> assert isinstance(is_valid, bool)
     """
+    # Use configured TTL if not specified
+    if ttl_minutes == 0:
+        ttl_minutes = get_cache_ttl()
+
     try:
         # Parse timestamp (handle multiple formats)
         generated_str = cached["generated_at"]
@@ -1492,9 +1575,13 @@ def is_cache_valid(cached: Dict[str, Any], ttl_minutes: int = 5) -> bool:
         now = datetime.now(timezone.utc)
         age_minutes = (now - generated_at).total_seconds() / 60
 
-        return age_minutes < ttl_minutes
+        is_valid = age_minutes < ttl_minutes
+        if not is_valid:
+            logger.debug(f"Cache expired: {age_minutes:.1f}m old, TTL: {ttl_minutes}m")
+        return is_valid
 
-    except Exception:
+    except Exception as e:
+        logger.debug(f"Cache validation failed: {e}")
         return False
 
 
@@ -1682,14 +1769,15 @@ def sync_context(target_prp: Optional[str] = None) -> Dict[str, Any]:
     if not target_prp:
         logger.info("Running drift detection...")
 
-        # Check cache (default TTL: 5 minutes)
+        # Check cache with configured TTL (reads from env/config/default)
         cached = get_cached_analysis()
-        if cached and is_cache_valid(cached, ttl_minutes=5):
+        if cached and is_cache_valid(cached):  # Uses get_cache_ttl() internally
             logger.info(f"Using cached drift analysis ({cached['drift_score']:.1f}%)")
             drift_score = cached["drift_score"]
             report_path = Path(cached["report_path"])
         else:
             # Run fresh analysis
+            logger.info("Running fresh drift analysis (cache expired or not found)")
             analysis_result = analyze_context_drift()
             drift_score = analysis_result["drift_score"]
             report_path = Path(analysis_result["report_path"])
