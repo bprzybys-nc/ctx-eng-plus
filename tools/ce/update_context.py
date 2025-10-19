@@ -1488,16 +1488,20 @@ def get_cached_analysis() -> Optional[Dict[str, Any]]:
         return None
 
 
-def get_cache_ttl() -> int:
+def get_cache_ttl(override_ttl: int = None) -> int:
     """Get cache TTL from config or environment, with validation.
+
+    Args:
+        override_ttl: Optional override from CLI --cache-ttl flag
 
     Returns:
         Cache TTL in minutes (minimum 1, default 5)
 
     Sources (in priority order):
-        1. CONTEXT_CACHE_TTL environment variable
-        2. .ce/config.yml cache.analysis_ttl_minutes
-        3. Default: 5 minutes
+        1. override_ttl parameter (CLI --cache-ttl)
+        2. CONTEXT_CACHE_TTL environment variable
+        3. .ce/config.yml cache.analysis_ttl_minutes
+        4. Default: 5 minutes
 
     🔧 Troubleshooting:
         - Set env: export CONTEXT_CACHE_TTL=10
@@ -1505,7 +1509,16 @@ def get_cache_ttl() -> int:
     """
     import os
 
-    # Check environment variable first
+    # Check CLI override first
+    if override_ttl is not None:
+        try:
+            ttl = max(1, int(override_ttl))  # Minimum 1 minute
+            logger.debug(f"Cache TTL from CLI: {ttl} minutes")
+            return ttl
+        except (ValueError, TypeError):
+            logger.warning(f"Invalid cache TTL override: {override_ttl}, ignoring")
+
+    # Check environment variable
     env_ttl = os.getenv("CONTEXT_CACHE_TTL")
     if env_ttl:
         try:

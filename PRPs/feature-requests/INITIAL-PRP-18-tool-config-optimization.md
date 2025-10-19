@@ -1,9 +1,9 @@
 ---
 context_sync:
-  ce_updated: true
-  last_sync: '2025-10-17T11:29:21.579581+00:00'
+  ce_updated: false
+  last_sync: '2025-10-19T15:36:39.138042+00:00'
   serena_updated: false
-updated: '2025-10-17T11:29:21.579584+00:00'
+updated: '2025-10-19T15:36:39.138052+00:00'
 updated_by: update-context-command
 ---
 

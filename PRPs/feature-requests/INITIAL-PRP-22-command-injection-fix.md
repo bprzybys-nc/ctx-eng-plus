@@ -115,6 +115,13 @@ def run_cmd(
     else:
         cmd_list = cmd
 
+    # Handle empty command
+    if not cmd_list:
+        raise ValueError(
+            "Empty command provided\n"
+            "🔧 Troubleshooting: Provide a valid command string or list"
+        )
+
     try:
         result = subprocess.run(
             cmd_list,  # ✅ List format
@@ -240,7 +247,12 @@ def count_git_diff_lines(
 
 **File**: `tools/ce/context.py`
 
-**Line 31** - Replace:
+**First**: Add imports at top of file (after existing imports from .core):
+```python
+from .core import run_cmd, git_status, git_diff, count_git_files, count_git_diff_lines
+```
+
+**Line 31** (in sync function) - Replace:
 ```python
 # OLD (vulnerable)
 total_result = run_cmd("git ls-files | wc -l", capture_output=True)
@@ -253,7 +265,7 @@ from .core import count_git_files
 total_files = count_git_files()
 ```
 
-**Line 551** - Replace:
+**Line 551** (in calculate_drift_score function) - Replace:
 ```python
 # OLD
 total_result = run_cmd("git ls-files | wc -l", capture_output=True)
@@ -264,7 +276,7 @@ if total_result["success"]:
 total_files = count_git_files()
 ```
 
-**Line 572-573** - Replace:
+**Line 572-573** (in calculate_drift_score function, dependency check) - Replace:
 ```python
 # OLD
 deps_result = run_cmd(
@@ -274,15 +286,41 @@ deps_result = run_cmd(
 
 # NEW
 from .core import count_git_diff_lines
-deps_changed = count_git_diff_lines(
+deps_count = count_git_diff_lines(
+    ref="HEAD~5",
+    files=["pyproject.toml", "package.json"]
+)
+# Note: Variable renamed from deps_result to deps_count for clarity
+# Update any downstream references: deps_result["stdout"] → deps_count
+```
+
+**Line 636** (in context_health_verbose function) - Same pattern as line 551:
+```python
+# OLD
+total_result = run_cmd("git ls-files | wc -l", capture_output=True)
+if total_result["success"]:
+    total_files = int(total_result["stdout"].strip())
+
+# NEW
+total_files = count_git_files()
+```
+
+**Line 661-662** (in context_health_verbose function, dependency check) - Same pattern as line 572:
+```python
+# OLD
+deps_result = run_cmd(
+    "git diff HEAD~5 -- pyproject.toml package.json 2>/dev/null | wc -l",
+    capture_output=True
+)
+if deps_result["success"]:
+    deps_count = int(deps_result["stdout"].strip())
+
+# NEW
+deps_count = count_git_diff_lines(
     ref="HEAD~5",
     files=["pyproject.toml", "package.json"]
 )
 ```
-
-**Line 636** - Same as line 551 (duplicate pattern)
-
-**Line 661-662** - Same as line 572 (duplicate pattern)
 
 ### 4. Keep Safe Code Unchanged
 
@@ -316,17 +354,22 @@ def test_command_injection_prevention():
 def test_shell_metacharacters_safe():
     """Ensure shell metacharacters are escaped."""
     test_cases = [
-        "echo hello; whoami",  # Command chaining
-        "echo hello | cat",     # Pipe
-        "echo hello > /tmp/test",  # Redirection
-        "echo `whoami`",        # Command substitution
-        "echo $(whoami)",       # Command substitution
+        ("echo hello; whoami", "echo"),      # Command chaining
+        ("echo hello | cat", "echo"),         # Pipe
+        ("echo hello > /tmp/test", "echo"),   # Redirection
+        ("echo `whoami`", "echo"),            # Command substitution (backticks)
+        ("echo $(whoami)", "echo"),           # Command substitution (dollar)
     ]
 
-    for cmd in test_cases:
+    for cmd, expected_cmd in test_cases:
         result = run_cmd(cmd)
-        # Should fail or treat as literal args, not execute shell features
-        # The key is that no secondary commands execute
+
+        # Should fail because shell metacharacters treated as literal args
+        assert result["success"] is False, f"Command should fail (shell metacharacters as literals): {cmd}"
+
+        # Verify only first command attempted, not shell interpretation
+        # (Command will fail because "; whoami" is invalid argument)
+        assert expected_cmd in str(result.get("stderr", "")) or "not found" in str(result.get("stderr", ""))
 
 
 def test_count_git_files_no_injection():
@@ -382,6 +425,18 @@ def test_count_git_diff_lines():
     count = count_git_diff_lines("HEAD~1")
     assert isinstance(count, int)
     assert count >= 0
+
+
+def test_run_cmd_empty_string():
+    """Test empty command raises clear error."""
+    with pytest.raises(ValueError, match="Empty command"):
+        run_cmd("")
+
+
+def test_run_cmd_empty_list():
+    """Test empty list raises clear error."""
+    with pytest.raises(ValueError, match="Empty command"):
+        run_cmd([])
 ```
 
 ### 3. Integration Tests
@@ -410,10 +465,11 @@ All 35 existing test files must pass without modification.
 - ✅ Return format unchanged
 
 ### Edge Cases Handled
-- Empty commands → shlex.split() handles gracefully
-- Quoted arguments → shlex.split() preserves quotes correctly
-- Special characters → Properly escaped, not interpreted
-- Complex git commands → Still work (no shell needed)
+- **Empty commands** → Explicit ValueError with troubleshooting guidance
+- **Quoted arguments** → shlex.split() preserves quotes correctly
+- **Special characters** → Properly escaped, not interpreted as shell metacharacters
+- **Complex git commands** → Still work (no shell needed)
+- **Shell metacharacters** → Treated as literal arguments, commands fail safely
 
 ### Performance Impact
 - Negligible: shlex.split() is fast (~microseconds)
@@ -466,3 +522,30 @@ All 35 existing test files must pass without modification.
 - ✅ All existing tests pass (no regression)
 - ✅ Command injection vulnerability eliminated (verified)
 - ✅ No breaking changes to user workflows
+
+---
+
+## Peer Review Notes
+
+### Document Review (2025-10-19)
+
+**Reviewer**: Context-Naive AI Peer Review
+**Rating**: ⭐⭐⭐⭐½ (4.5/5) - EXCELLENT with minor improvements
+
+**Strengths**:
+- ✅ Clear security context with specific vulnerability location (core.py:35)
+- ✅ Concrete attack vector example demonstrating real exploit
+- ✅ Complete implementation plan with exact line numbers
+- ✅ Comprehensive testing strategy (security, functional, regression)
+- ✅ Strong focus on backward compatibility
+
+**Improvements Applied**:
+1. **Enhanced security test assertions** - Added explicit assertions to `test_shell_metacharacters_safe()` to verify shell metacharacters fail safely
+2. **Added empty command handling** - Explicit ValueError for empty string/list commands with troubleshooting guidance
+3. **Added empty command tests** - `test_run_cmd_empty_string()` and `test_run_cmd_empty_list()`
+4. **Improved edge case documentation** - Clarified exact behavior for all edge cases
+5. **Clarified import locations** - Specified where to add imports in context.py
+6. **Detailed variable renaming** - Documented variable name changes (deps_result → deps_count) with migration notes
+7. **Expanded context.py examples** - Showed complete before/after for all 5 locations
+
+**Questions for User**: None - all issues resolved

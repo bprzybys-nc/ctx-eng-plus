@@ -1,11 +1,15 @@
 ## Context Drift Report - Examples/ Patterns
 
-**Drift Score**: 6.7% (⚠️  WARNING)
-**Generated**: 2025-10-19T14:39:46.564553+00:00
-**Violations Found**: 2
+**Drift Score**: 3.3% (✅ OK)
+**Generated**: 2025-10-19T15:41:03.291129+00:00
+**Violations Found**: 4
 **Missing Examples**: 0
 
 ### Part 1: Code Violating Documented Patterns
+
+#### KISS Violations (1 violations)
+
+1. File tools/ce/update_context.py has deep_nesting (violates pattern): Reduce nesting depth (max 4 levels)
 
 ### Part 2: Missing Pattern Documentation
 
@@ -16,8 +20,10 @@ All critical PRPs have corresponding examples/ documentation.
 ### Proposed Solutions Summary
 
 1. **Code Violations** (manual review):
+   - Review and fix: File tools/ce/validation_loop.py has missing_troubleshooting (violates examples/patterns/error-handling.py): Add 🔧 Troubleshooting guidance
+   - Review and fix: File tools/ce/execute.py has missing_troubleshooting (violates examples/patterns/error-handling.py): Add 🔧 Troubleshooting guidance
    - Review and fix: File tools/ce/context.py has missing_troubleshooting (violates examples/patterns/error-handling.py): Add 🔧 Troubleshooting guidance
-   - Review and fix: File tools/ce/pipeline.py has missing_troubleshooting (violates examples/patterns/error-handling.py): Add 🔧 Troubleshooting guidance
+   - Review 1 other files listed in Part 1
 
 2. **Missing Examples** (documentation needed):
    - No missing examples
