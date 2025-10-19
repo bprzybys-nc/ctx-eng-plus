@@ -4,6 +4,7 @@ This module provides the /update-context command functionality for syncing
 knowledge systems with actual implementations.
 """
 
+import ast
 import logging
 import re
 import sys
@@ -39,6 +40,75 @@ PATTERN_CHECKS = {
         ("deep_nesting", r"^                    (if |for |while |try:|elif |with )", "Reduce nesting depth (max 4 levels)")
     ]
 }
+
+
+def atomic_write(file_path: Path, content: str) -> None:
+    """Write file atomically using temp file + rename pattern.
+
+    Args:
+        file_path: Target file path
+        content: Content to write
+
+    Raises:
+        RuntimeError: If write operation fails
+            🔧 Troubleshooting: Check file permissions and disk space
+
+    Note: Prevents file corruption by writing to temp file first,
+    then replacing original atomically. Based on pattern from prp.py:215-219.
+    """
+    try:
+        # Write to temp file
+        temp_file = file_path.with_suffix(file_path.suffix + ".tmp")
+        temp_file.write_text(content, encoding="utf-8")
+
+        # Atomic replace
+        temp_file.replace(file_path)
+    except Exception as e:
+        raise RuntimeError(
+            f"Failed to write {file_path}: {e}\n"
+            f"🔧 Troubleshooting: Check file permissions and disk space"
+        ) from e
+
+
+def verify_function_exists_ast(function_name: str, search_dir: Path) -> bool:
+    """Verify function exists in codebase using AST parsing.
+
+    Args:
+        function_name: Name of function to find (e.g., "sync_context")
+        search_dir: Directory to search (e.g., tools/ce/)
+
+    Returns:
+        True if function found in any Python file, False otherwise
+
+    Raises:
+        RuntimeError: If search directory doesn't exist
+            🔧 Troubleshooting: Verify search_dir path is correct
+    """
+    if not search_dir.exists():
+        raise RuntimeError(
+            f"Search directory not found: {search_dir}\n"
+            f"🔧 Troubleshooting: Verify search_dir path is correct"
+        )
+
+    # Scan all Python files
+    for py_file in search_dir.glob("*.py"):
+        try:
+            content = py_file.read_text(encoding="utf-8")
+            tree = ast.parse(content, filename=str(py_file))
+
+            # Walk AST looking for function definitions
+            for node in ast.walk(tree):
+                if isinstance(node, ast.FunctionDef):
+                    if node.name == function_name:
+                        return True
+        except SyntaxError:
+            # Skip files with syntax errors
+            continue
+        except Exception as e:
+            logger.warning(f"Failed to parse {py_file}: {e}")
+            continue
+
+    return False
 
 
 def read_prp_header(file_path: Path) -> Tuple[Dict[str, Any], str]:
@@ -335,9 +405,9 @@ def generate_drift_blueprint(drift_result: Dict, missing_examples: List) -> Path
         tmp_ce_dir = project_root / "tmp" / "ce"
         tmp_ce_dir.mkdir(parents=True, exist_ok=True)
 
-        # Write blueprint
+        # Write blueprint atomically
         blueprint_path = tmp_ce_dir / "DEDRIFT-INITIAL.md"
-        blueprint_path.write_text(blueprint)
+        atomic_write(blueprint_path, blueprint)
 
         logger.info(f"Blueprint generated: {blueprint_path}")
         return blueprint_path
@@ -507,9 +577,9 @@ def generate_maintenance_prp(blueprint_path: Path) -> Path:
         prp_system_dir = project_root / "PRPs" / "system"
         prp_system_dir.mkdir(parents=True, exist_ok=True)
 
-        # Write PRP file
+        # Write PRP file atomically
         prp_path = prp_system_dir / f"DEDRIFT_PRP-{timestamp}.md"
-        prp_path.write_text(prp_content)
+        atomic_write(prp_path, prp_content)
 
         logger.info(f"Maintenance PRP generated: {prp_path}")
         return prp_path
@@ -524,17 +594,20 @@ def generate_maintenance_prp(blueprint_path: Path) -> Path:
         ) from e
 
 
-def remediate_drift_workflow(yolo_mode: bool = False) -> Dict[str, Any]:
+def remediate_drift_workflow(yolo_mode: bool = False, auto_execute: bool = False) -> Dict[str, Any]:
     """Execute drift remediation workflow.
 
     Args:
         yolo_mode: If True, skip approval gate (--remediate flag)
+        auto_execute: If True, automatically execute PRP without user approval
 
     Returns:
         {
             "success": bool,
             "prp_path": Optional[Path],
             "blueprint_path": Optional[Path],
+            "executed": bool,  # True if auto_execute=True and PRP was executed
+            "fixes": List[str],  # List of fixes applied (if executed=True)
             "errors": List[str]
         }
 
@@ -584,6 +657,8 @@ def remediate_drift_workflow(yolo_mode: bool = False) -> Dict[str, Any]:
             "success": True,
             "prp_path": None,
             "blueprint_path": None,
+            "executed": False,
+            "fixes": [],
             "errors": []
         }
 
@@ -650,6 +725,49 @@ def remediate_drift_workflow(yolo_mode: bool = False) -> Dict[str, Any]:
             "errors": errors
         }
 
+    # Step 6: Auto-execute if requested
+    if auto_execute:
+        logger.info(f"Auto-executing PRP: {prp_path}")
+        try:
+            # Import here to avoid circular imports
+            from .prp import execute_prp as execute_prp_impl
+
+            exec_result = execute_prp_impl(str(prp_path))
+
+            if not exec_result.get("success", False):
+                raise RuntimeError(
+                    f"PRP execution failed: {exec_result.get('error', 'Unknown error')}\n"
+                    f"🔧 Troubleshooting:\n"
+                    f"   - Check PRP: {prp_path}\n"
+                    f"   - Review errors above\n"
+                    f"   - Try manual execution: /execute-prp {prp_path}"
+                )
+
+            fixes = exec_result.get("fixes", [])
+            print(f"\n✅ Remediation executed: {len(fixes)} fixes applied")
+            logger.info(f"PRP executed successfully: {len(fixes)} fixes applied")
+
+            return {
+                "success": True,
+                "prp_path": prp_path,
+                "blueprint_path": blueprint_path,
+                "executed": True,
+                "fixes": fixes,
+                "errors": []
+            }
+        except Exception as e:
+            error_msg = f"Auto-execution failed: {e}"
+            logger.error(error_msg)
+            errors.append(error_msg)
+            return {
+                "success": False,
+                "prp_path": prp_path,
+                "blueprint_path": blueprint_path,
+                "executed": False,
+                "fixes": [],
+                "errors": errors
+            }
+
     # Step 6: Display next step (manual execution)
     logger.info("PRP ready for execution...")
 
@@ -668,6 +786,8 @@ def remediate_drift_workflow(yolo_mode: bool = False) -> Dict[str, Any]:
         "success": True,
         "prp_path": prp_path,
         "blueprint_path": blueprint_path,
+        "executed": False,
+        "fixes": [],
         "errors": []
     }
 
@@ -710,11 +830,11 @@ def update_context_sync_flags(
         metadata["updated_by"] = "update-context-command"
         metadata["updated"] = datetime.now(timezone.utc).isoformat()
 
-        # Write back
+        # Write back atomically
         try:
             post = frontmatter.Post(content, **metadata)
-            with open(file_path, 'w') as f:
-                f.write(frontmatter.dumps(post))
+            prp_content = frontmatter.dumps(post)
+            atomic_write(file_path, prp_content)
             logger.info(f"Updated context_sync flags: {file_path}")
         except Exception as e:
             raise ValueError(
@@ -1039,10 +1159,12 @@ def verify_codebase_matches_examples() -> Dict[str, Any]:
         if has_violations:
             files_with_violations.add(py_file)
 
-    # Calculate drift score
+    # Calculate drift score based on violation count, not file count
     drift_score = 0.0
     if python_files:
-        drift_score = (len(files_with_violations) / len(python_files)) * 100
+        total_checks = len(python_files) * sum(len(checks) for checks in pattern_checks.values())
+        if total_checks > 0:
+            drift_score = (len(violations) / total_checks) * 100
 
     return {
         "violations": violations,
@@ -1426,7 +1548,7 @@ def analyze_context_drift() -> Dict[str, Any]:
         ce_dir = project_root / ".ce"
         ce_dir.mkdir(exist_ok=True)
         report_path = ce_dir / "drift-report.md"
-        report_path.write_text(report)
+        atomic_write(report_path, report)
 
         # Calculate duration
         duration = time.time() - start_time
@@ -1515,11 +1637,25 @@ def sync_context(target_prp: Optional[str] = None) -> Dict[str, Any]:
             # Extract expected functions
             expected_functions = extract_expected_functions(content)
 
+            # Verify functions actually exist in codebase using AST
+            current_dir = Path.cwd()
+            if current_dir.name == "tools":
+                project_root = current_dir.parent
+            else:
+                project_root = current_dir
+            tools_ce_dir = project_root / "tools" / "ce"
+
+            ce_verified = False
+            if expected_functions and tools_ce_dir.exists():
+                # Check if ALL expected functions exist
+                all_found = all(
+                    verify_function_exists_ast(func, tools_ce_dir)
+                    for func in expected_functions
+                )
+                ce_verified = all_found
+
             # Serena verification disabled (subprocess cannot access parent's stdio MCP)
             serena_verified = False
-
-            # For now, mark CE as updated if functions found
-            ce_verified = len(expected_functions) > 0
 
             # Update context_sync flags
             update_context_sync_flags(prp_path, ce_verified, serena_verified)

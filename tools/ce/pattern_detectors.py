@@ -169,7 +169,115 @@ def check_pattern_category(
     project_root: Path,
     category: str
 ) -> List[str]:
-    """Check file content against pattern category checks.
+    """Check file content against pattern category checks using AST.
+
+    Args:
+        content: File content string
+        checks: List of (check_name, regex, fix_desc) tuples
+        py_file: Path to file being checked
+        project_root: Project root for relative paths
+        category: Pattern category name
+
+    Returns:
+        List of violation messages
+
+    Note: Uses AST parsing instead of regex to avoid false positives from
+    comments/docstrings and to handle multiline code properly.
+    """
+    from .update_context import PATTERN_FILES
+
+    violations = []
+
+    try:
+        tree = ast.parse(content, filename=str(py_file))
+    except SyntaxError:
+        # Fallback to regex for files with syntax errors
+        logger.warning(f"Syntax error in {py_file}, using regex fallback")
+        return _check_pattern_category_regex(content, checks, py_file, project_root, category)
+
+    for check_name, regex, fix_desc in checks:
+        # Use AST-based checks for known patterns
+        if check_name == "missing_troubleshooting":
+            if _check_missing_troubleshooting_ast(tree, content):
+                violations.append(
+                    f"File {py_file.relative_to(project_root)} has {check_name} "
+                    f"(violates {PATTERN_FILES.get(category, 'pattern')}): {fix_desc}"
+                )
+        elif check_name == "bare_except":
+            if _check_bare_except_ast(tree):
+                violations.append(
+                    f"File {py_file.relative_to(project_root)} has {check_name} "
+                    f"(violates {PATTERN_FILES.get(category, 'pattern')}): {fix_desc}"
+                )
+        else:
+            # Fallback to regex for other patterns
+            matches = re.findall(regex, content, re.MULTILINE | re.DOTALL)
+            if matches:
+                violations.append(
+                    f"File {py_file.relative_to(project_root)} has {check_name} "
+                    f"(violates {PATTERN_FILES.get(category, 'pattern')}): {fix_desc}"
+                )
+
+    return violations
+
+
+def _check_missing_troubleshooting_ast(tree: ast.AST, content: str) -> bool:
+    """Check for raise statements missing 🔧 troubleshooting using AST.
+
+    Args:
+        tree: Parsed AST tree
+        content: File content (for emoji check)
+
+    Returns:
+        True if violations found, False otherwise
+    """
+    for node in ast.walk(tree):
+        if isinstance(node, ast.Raise):
+            # Get the line where raise occurs
+            if hasattr(node, 'lineno'):
+                # Check if 🔧 appears in the raise message
+                # We need to look at the actual source for multiline strings
+                raise_line = node.lineno
+                # Check 5 lines around the raise statement
+                lines = content.split('\n')
+                start = max(0, raise_line - 2)
+                end = min(len(lines), raise_line + 3)
+                context = '\n'.join(lines[start:end])
+
+                # If this is a raise with an exception instance
+                if node.exc and not ('🔧' in context):
+                    return True
+
+    return False
+
+
+def _check_bare_except_ast(tree: ast.AST) -> bool:
+    """Check for bare except clauses using AST.
+
+    Args:
+        tree: Parsed AST tree
+
+    Returns:
+        True if bare except found, False otherwise
+    """
+    for node in ast.walk(tree):
+        if isinstance(node, ast.Try):
+            for handler in node.handlers:
+                # Bare except has no type specified
+                if handler.type is None:
+                    return True
+
+    return False
+
+
+def _check_pattern_category_regex(
+    content: str,
+    checks: List[Tuple[str, str, str]],
+    py_file: Path,
+    project_root: Path,
+    category: str
+) -> List[str]:
+    """Regex fallback for files with syntax errors.
 
     Args:
         content: File content string
@@ -186,7 +294,7 @@ def check_pattern_category(
     violations = []
 
     for check_name, regex, fix_desc in checks:
-        matches = re.findall(regex, content, re.MULTILINE)
+        matches = re.findall(regex, content, re.MULTILINE | re.DOTALL)
         if matches:
             violations.append(
                 f"File {py_file.relative_to(project_root)} has {check_name} "
