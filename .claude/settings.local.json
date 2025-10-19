@@ -9,6 +9,8 @@
       "Bash(uv add:*)",
       "Bash(uvx:*)",
       "Bash(env:*)",
+      "Bash(head:*)",
+      "Bash(tail:*)",
       "Bash(git diff-tree:*)",
       "Bash(brew install:*)",
       "Bash(rm -rf ~/.mcp-auth)",
@@ -17,6 +19,7 @@
       "Read(//Users/bprzybysz/Library/Application Support/Claude/**)",
       "WebFetch(domain:github.com)",
       "SlashCommand(/generate-prp:*)",
+      "SlashCommand(/execute-prp:*)",
       "SlashCommand(/peer-review:*)",
       "mcp__serena__find_symbol",
       "mcp__serena__get_symbols_overview",
@@ -46,7 +49,8 @@
       "mcp__linear-server__get_issue",
       "mcp__linear-server__list_issues",
       "mcp__linear-server__update_issue",
-      "mcp__linear-server__list_projects"
+      "mcp__linear-server__list_projects",
+      "WebSearch"
     ],
     "deny": [
       "mcp__serena__delete_memory",
@@ -163,8 +167,6 @@
       "mcp__linear-server__get_user",
       "mcp__linear-server__search_documentation",
       "Bash(cat:*)",
-      "Bash(head:*)",
-      "Bash(tail:*)",
       "Bash(find:*)",
       "Bash(grep:*)",
       "Bash(wc:*)",

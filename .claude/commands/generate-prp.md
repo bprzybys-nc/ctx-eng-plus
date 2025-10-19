@@ -20,7 +20,14 @@ Automates PRP (Product Requirements Prompt) generation from INITIAL.md with comp
    - Extracts FEATURE, EXAMPLES, DOCUMENTATION, OTHER CONSIDERATIONS sections
    - Validates required sections present (FEATURE and EXAMPLES are mandatory)
 
-2. **Researches codebase** (via Serena MCP):
+2. **Proposes clean code**:
+   - Follows project code quality standards (50-line functions, 500-line files)
+   - Applies KISS principle (simple solutions, minimal dependencies)
+   - Ensures no fishy fallbacks or silent error masking
+   - All mocks marked with FIXME comments in production code
+   - Includes actionable error messages with troubleshooting guidance
+
+3. **Researches codebase** (via Serena MCP):
    - Searches for similar patterns using keywords
    - Analyzes symbol structure and relationships
    - Infers test framework (pytest/unittest/jest)
@@ -235,12 +242,24 @@ The tool works even if MCP servers are unavailable:
 - **Without Context7**: No library documentation fetched, but external links preserved
 - **Without Sequential Thinking**: Heuristic-based topic extraction used
 
+## Code Quality Standards Applied
+
+All generated implementations follow:
+- **Function limits**: Target 50 lines max per function
+- **File limits**: Target 500 lines max per file
+- **KISS principle**: Simple solutions first, clear code over clever code
+- **Error handling**: Fast failure with actionable troubleshooting messages
+- **No silent failures**: Exceptions bubble up, never swallowed
+- **Real functionality**: No hardcoded success messages or fake results
+- **Naming conventions**: Business-focused (no version numbers or placeholders)
+
 ## Tips
 
 1. **Be specific in FEATURE section**: Include clear acceptance criteria
 2. **Provide relevant EXAMPLES**: Reference similar code in your codebase
 3. **Link to DOCUMENTATION**: Include library docs and external resources
 4. **Note OTHER CONSIDERATIONS**: Security concerns, edge cases, constraints
+5. **Code quality alignment**: Generated code will follow project standards - review for consistency
 
 ## Next Steps After Generation
 

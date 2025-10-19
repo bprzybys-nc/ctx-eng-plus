@@ -1,7 +1,7 @@
 """Context management: sync, health checks, pruning."""
 
 from typing import Dict, Any, List, Optional
-from .core import run_cmd, git_status, git_diff
+from .core import run_cmd, git_status, git_diff, count_git_files, count_git_diff_lines
 from .validate import validate_level_1, validate_level_2
 from .exceptions import ContextDriftError
 import logging
@@ -29,14 +29,7 @@ def sync() -> Dict[str, Any]:
 
     # Calculate drift score (percentage of files changed)
     # Get total tracked files
-    total_result = run_cmd("git ls-files | wc -l", capture_output=True)
-    if not total_result["success"]:
-        raise RuntimeError(
-            f"Failed to count tracked files: {total_result['stderr']}\n"
-            f"🔧 Troubleshooting: Ensure git is working correctly"
-        )
-
-    total_files = int(total_result["stdout"].strip())
+    total_files = count_git_files()
     drift_score = len(changed_files) / max(total_files, 1)  # Prevent division by zero
 
     return {
@@ -549,11 +542,10 @@ def calculate_drift_score() -> float:
     # Component 1: File changes (40% weight)
     try:
         changed_files = git_diff(since="HEAD~5", name_only=True)
-        total_result = run_cmd("git ls-files | wc -l", capture_output=True)
-        if total_result["success"]:
-            total_files = int(total_result["stdout"].strip())
+        try:
+            total_files = count_git_files()
             file_changes_score = (len(changed_files) / max(total_files, 1)) * 100
-        else:
+        except RuntimeError:
             file_changes_score = 0
     except Exception as e:
         logger.warning(
@@ -570,14 +562,12 @@ def calculate_drift_score() -> float:
     dependency_changes_score = 0
     try:
         # Check if pyproject.toml changed recently
-        deps_result = run_cmd(
-            "git diff HEAD~5 -- pyproject.toml package.json 2>/dev/null | wc -l",
-            capture_output=True
+        deps_lines = count_git_diff_lines(
+            ref="HEAD~5",
+            files=["pyproject.toml", "package.json"]
         )
-        if deps_result["success"]:
-            deps_lines = int(deps_result["stdout"].strip())
-            # Normalize: >10 lines of changes = 100% score
-            dependency_changes_score = min((deps_lines / 10.0) * 100, 100)
+        # Normalize: >10 lines of changes = 100% score
+        dependency_changes_score = min((deps_lines / 10.0) * 100, 100)
     except Exception as e:
         logger.warning(
             f"Failed to check dependency changes: {e}\n"
@@ -634,9 +624,8 @@ def context_health_verbose() -> Dict[str, Any]:
     # File changes component
     try:
         changed_files = git_diff(since="HEAD~5", name_only=True)
-        total_result = run_cmd("git ls-files | wc -l", capture_output=True)
-        if total_result["success"]:
-            total_files = int(total_result["stdout"].strip())
+        try:
+            total_files = count_git_files()
             file_score = (len(changed_files) / max(total_files, 1)) * 100
             components["file_changes"] = {
                 "score": file_score,
@@ -644,6 +633,8 @@ def context_health_verbose() -> Dict[str, Any]:
             }
             if file_score > 15:
                 recommendations.append("Run: ce context sync to refresh indexes")
+        except RuntimeError:
+            components["file_changes"] = {"score": 0, "details": "Error: could not count files"}
     except Exception as e:
         logger.warning(
             f"Failed to calculate file changes component: {e}\n"
@@ -659,19 +650,17 @@ def context_health_verbose() -> Dict[str, Any]:
 
     # Dependency changes component
     try:
-        deps_result = run_cmd(
-            "git diff HEAD~5 -- pyproject.toml package.json 2>/dev/null | wc -l",
-            capture_output=True
+        deps_lines = count_git_diff_lines(
+            ref="HEAD~5",
+            files=["pyproject.toml", "package.json"]
         )
-        if deps_result["success"]:
-            deps_lines = int(deps_result["stdout"].strip())
-            deps_score = min((deps_lines / 10.0) * 100, 100)
-            components["dependency_changes"] = {
-                "score": deps_score,
-                "details": f"{deps_lines} lines changed" if deps_lines > 0 else "No changes"
-            }
-            if deps_score > 10:
-                recommendations.append("Dependencies changed - run: uv sync")
+        deps_score = min((deps_lines / 10.0) * 100, 100)
+        components["dependency_changes"] = {
+            "score": deps_score,
+            "details": f"{deps_lines} lines changed" if deps_lines > 0 else "No changes"
+        }
+        if deps_score > 10:
+            recommendations.append("Dependencies changed - run: uv sync")
     except Exception as e:
         logger.warning(
             f"Failed to check dependency changes component: {e}\n"
