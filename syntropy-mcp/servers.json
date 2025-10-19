@@ -1,0 +1,67 @@
+{
+  "servers": {
+    "syn-serena": {
+      "command": "uvx",
+      "args": [
+        "--from",
+        "git+https://github.com/oraios/serena",
+        "serena",
+        "start-mcp-server"
+      ],
+      "env": {
+        "SERENA_PROJECT_ROOT": "/Users/bprzybysz/nc-src/ctx-eng-plus"
+      }
+    },
+    "syn-filesystem": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-filesystem",
+        "."
+      ],
+      "env": {}
+    },
+    "syn-git": {
+      "command": "uvx",
+      "args": [
+        "mcp-server-git"
+      ],
+      "env": {}
+    },
+    "syn-context7": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@upstash/context7-mcp@latest"
+      ],
+      "env": {
+        "DEFAULT_MINIMUM_TOKENS": "10000"
+      }
+    },
+    "syn-thinking": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-sequential-thinking"
+      ],
+      "env": {}
+    },
+    "syn-repomix": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "repomix",
+        "--mcp"
+      ],
+      "env": {}
+    },
+    "_notes": {
+      "description": "MCP servers available for Syntropy aggregation",
+      "note_serena": "SERENA_PROJECT_ROOT env var sets the active project on startup (autodetect for current workspace)",
+      "note_linear": "Linear provides hosted remote MCP at https://mcp.linear.app/sse (not a downloadable package)",
+      "note_credentials": "For servers requiring API tokens, set environment variables in your shell or .env file",
+      "example_github": "export GITHUB_PERSONAL_ACCESS_TOKEN='ghp_xxxxx'",
+      "example_perplexity": "export PERPLEXITY_API_KEY='pplx_xxxxx'"
+    }
+  }
+}

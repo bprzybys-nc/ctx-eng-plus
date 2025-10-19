@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "syntropy": {
+      "command": "node",
+      "args": [
+        "/Users/bprzybysz/nc-src/ctx-eng-plus/syntropy-mcp/build/index.js"
+      ],
+      "env": {}
+    }
+  }
+}
