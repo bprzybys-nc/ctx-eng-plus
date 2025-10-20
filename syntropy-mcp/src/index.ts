@@ -32,6 +32,9 @@ import {
 } from "@modelcontextprotocol/sdk/types.js";
 import { MCPClientManager } from "./client-manager.js";
 import { SYNTROPY_TOOLS } from "./tools-definition.js";
+// After SYNTROPY_TOOLS import
+console.error(`[SYNTROPY DEBUG] Registering ${SYNTROPY_TOOLS.length} tools`);
+console.error(`[SYNTROPY DEBUG] Tool 58: ${SYNTROPY_TOOLS[57]?.name || 'N/A'}`);
 import path from "path";
 import { fileURLToPath } from "url";
 

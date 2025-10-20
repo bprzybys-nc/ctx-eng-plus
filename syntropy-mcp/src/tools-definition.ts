@@ -3,6 +3,10 @@
  *
  * This follows MCP best practices by including inputSchema for each tool.
  * inputSchema is CRITICAL for Claude Code to properly register and expose tools.
+ * 
+ * ✅ All schemas are JSON Schema Draft 2020-12 compliant
+ * ✅ All array types include proper 'items' definitions
+ * ✅ No invalid 'any[]' type usage
  */
 
 export const SYNTROPY_TOOLS = [
@@ -150,7 +154,8 @@ export const SYNTROPY_TOOLS = [
     }
   },
 
-  // ============ FILESYSTEM TOOLS (9) ============
+
+  // ============ FILESYSTEM TOOLS (13) ============
   {
     name: "syntropy_filesystem_read_file",
     description: "Read file (deprecated - use read_text_file)",
@@ -217,6 +222,7 @@ export const SYNTROPY_TOOLS = [
       properties: {
         paths: {
           type: "array",
+          items: { type: "string" },
           description: "Array of file paths to read"
         }
       },
@@ -317,6 +323,14 @@ export const SYNTROPY_TOOLS = [
         },
         edits: {
           type: "array",
+          items: {
+            type: "object",
+            properties: {
+              oldText: { type: "string" },
+              newText: { type: "string" }
+            },
+            required: ["oldText", "newText"]  // Add this
+          },
           description: "Array of edit operations"
         },
         dryRun: {
@@ -386,6 +400,7 @@ export const SYNTROPY_TOOLS = [
       required: []
     }
   },
+
 
   // ============ GIT TOOLS (5) ============
   {
@@ -476,6 +491,7 @@ export const SYNTROPY_TOOLS = [
     }
   },
 
+
   // ============ CONTEXT7 TOOLS (2) ============
   {
     name: "syntropy_context7_resolve_library_id",
@@ -513,6 +529,7 @@ export const SYNTROPY_TOOLS = [
       required: ["context7CompatibleLibraryID"]
     }
   },
+
 
   // ============ THINKING TOOLS (1) ============
   {
@@ -561,6 +578,7 @@ export const SYNTROPY_TOOLS = [
       required: ["thought", "thoughtNumber", "totalThoughts", "nextThoughtNeeded"]
     }
   },
+
 
   // ============ LINEAR TOOLS (5) ============
   {
@@ -629,7 +647,8 @@ export const SYNTROPY_TOOLS = [
         },
         updates: {
           type: "object",
-          description: "Updates to apply"
+          description: "Updates to apply",
+          additionalProperties: true  // Allow any properties
         }
       },
       required: ["issue_id"]
@@ -644,6 +663,7 @@ export const SYNTROPY_TOOLS = [
       required: []
     }
   },
+
 
   // ============ REPOMIX TOOLS (1) ============
   {
@@ -660,6 +680,7 @@ export const SYNTROPY_TOOLS = [
       required: ["directory"]
     }
   },
+
 
   // ============ GITHUB TOOLS (27) ============
   {
@@ -729,7 +750,18 @@ export const SYNTROPY_TOOLS = [
         owner: { type: "string", description: "Repository owner (username or organization)" },
         repo: { type: "string", description: "Repository name" },
         branch: { type: "string", description: "Branch to push to (e.g., 'main' or 'master')" },
-        files: { type: "any[]", description: "Array of files to push" },
+        files: {
+          type: "array",
+          items: {
+            type: "object",
+            properties: {
+              path: { type: "string" },
+              content: { type: "string" }
+            },
+            required: ["path", "content"]
+          },
+          description: "Array of files to push"
+        },
         message: { type: "string", description: "Commit message" }
       },
       required: ["owner", "repo", "branch", "files", "message"]
@@ -745,9 +777,17 @@ export const SYNTROPY_TOOLS = [
         repo: { type: "string", description: "Repository name" },
         title: { type: "string", description: "Issue title" },
         body: { type: "string", description: "Issue body" },
-        assignees: { type: "any[]", description: "Assignees" },
-        milestone: { type: "number", description: "Milestone" },
-        labels: { type: "any[]", description: "Labels" }
+        assignees: {
+          type: "array",
+          items: { type: "string" },
+          description: "Assignees (GitHub usernames)"
+        },
+        milestone: { type: "number", description: "Milestone number" },
+        labels: {
+          type: "array",
+          items: { type: "string" },
+          description: "Labels"
+        }
       },
       required: ["owner", "repo", "title"]
     }
@@ -820,13 +860,17 @@ export const SYNTROPY_TOOLS = [
       properties: {
         owner: { type: "string", description: "Repository owner" },
         repo: { type: "string", description: "Repository name" },
-        direction: { type: "string", description: "Direction" },
-        labels: { type: "any[]", description: "Labels" },
+        direction: { type: "string", description: "Direction (asc or desc)" },
+        labels: {
+          type: "array",
+          items: { type: "string" },
+          description: "Labels to filter by"
+        },
         page: { type: "number", description: "Page number" },
         per_page: { type: "number", description: "Results per page" },
-        since: { type: "string", description: "Since date" },
-        sort: { type: "string", description: "Sort by" },
-        state: { type: "string", description: "Issue state" }
+        since: { type: "string", description: "Since date (ISO 8601 format)" },
+        sort: { type: "string", description: "Sort by (created, updated, comments)" },
+        state: { type: "string", description: "Issue state (open, closed, all)" }
       },
       required: ["owner", "repo"]
     }
@@ -842,10 +886,18 @@ export const SYNTROPY_TOOLS = [
         issue_number: { type: "number", description: "Issue number" },
         title: { type: "string", description: "Issue title" },
         body: { type: "string", description: "Issue body" },
-        assignees: { type: "any[]", description: "Assignees" },
-        milestone: { type: "number", description: "Milestone" },
-        labels: { type: "any[]", description: "Labels" },
-        state: { type: "string", description: "Issue state" }
+        assignees: {
+          type: "array",
+          items: { type: "string" },
+          description: "Assignees (GitHub usernames)"
+        },
+        milestone: { type: "number", description: "Milestone number" },
+        labels: {
+          type: "array",
+          items: { type: "string" },
+          description: "Labels"
+        },
+        state: { type: "string", description: "Issue state (open or closed)" }
       },
       required: ["owner", "repo", "issue_number"]
     }
@@ -871,7 +923,7 @@ export const SYNTROPY_TOOLS = [
       type: "object" as const,
       properties: {
         q: { type: "string", description: "Search query" },
-        order: { type: "string", description: "Sort order" },
+        order: { type: "string", description: "Sort order (asc or desc)" },
         page: { type: "number", description: "Page number" },
         per_page: { type: "number", description: "Results per page" }
       },
@@ -885,10 +937,10 @@ export const SYNTROPY_TOOLS = [
       type: "object" as const,
       properties: {
         q: { type: "string", description: "Search query" },
-        order: { type: "string", description: "Sort order" },
+        order: { type: "string", description: "Sort order (asc or desc)" },
         page: { type: "number", description: "Page number" },
         per_page: { type: "number", description: "Results per page" },
-        sort: { type: "string", description: "Sort by" }
+        sort: { type: "string", description: "Sort by (comments, reactions, created, updated)" }
       },
       required: ["q"]
     }
@@ -900,10 +952,10 @@ export const SYNTROPY_TOOLS = [
       type: "object" as const,
       properties: {
         q: { type: "string", description: "Search query" },
-        order: { type: "string", description: "Sort order" },
+        order: { type: "string", description: "Sort order (asc or desc)" },
         page: { type: "number", description: "Page number" },
         per_page: { type: "number", description: "Results per page" },
-        sort: { type: "string", description: "Sort by" }
+        sort: { type: "string", description: "Sort by (followers, repositories, joined)" }
       },
       required: ["q"]
     }
@@ -942,11 +994,11 @@ export const SYNTROPY_TOOLS = [
       properties: {
         owner: { type: "string", description: "Repository owner (username or organization)" },
         repo: { type: "string", description: "Repository name" },
-        state: { type: "string", description: "State of the pull requests to return" },
+        state: { type: "string", description: "State of the pull requests to return (open, closed, all)" },
         head: { type: "string", description: "Filter by head user or head organization and branch name" },
         base: { type: "string", description: "Filter by base branch name" },
-        sort: { type: "string", description: "What to sort results by" },
-        direction: { type: "string", description: "The direction of the sort" },
+        sort: { type: "string", description: "What to sort results by (created, updated, popularity, long-running)" },
+        direction: { type: "string", description: "The direction of the sort (asc or desc)" },
         per_page: { type: "number", description: "Results per page (max 100)" },
         page: { type: "number", description: "Page number of the results" }
       },
@@ -964,8 +1016,20 @@ export const SYNTROPY_TOOLS = [
         pull_number: { type: "number", description: "Pull request number" },
         commit_id: { type: "string", description: "The SHA of the commit that needs a review" },
         body: { type: "string", description: "The body text of the review" },
-        event: { type: "string", description: "The review action to perform" },
-        comments: { type: "any[]", description: "Comments to post as part of the review (specify either position or line, not both)" }
+        event: { type: "string", description: "The review action to perform (APPROVE, REQUEST_CHANGES, COMMENT)" },
+        comments: {
+          type: "array",
+          items: {
+            type: "object",
+            properties: {
+              path: { type: "string" },
+              position: { type: "number" },
+              body: { type: "string" }
+            },
+            required: ["path", "body"]
+          },
+          description: "Comments to post as part of the review (specify either position or line, not both)"
+        }
       },
       required: ["owner", "repo", "pull_number", "body", "event"]
     }
@@ -981,7 +1045,7 @@ export const SYNTROPY_TOOLS = [
         pull_number: { type: "number", description: "Pull request number" },
         commit_title: { type: "string", description: "Title for the automatic commit message" },
         commit_message: { type: "string", description: "Extra detail to append to automatic commit message" },
-        merge_method: { type: "string", description: "Merge method to use" }
+        merge_method: { type: "string", description: "Merge method to use (merge, squash, rebase)" }
       },
       required: ["owner", "repo", "pull_number"]
     }
@@ -1053,6 +1117,7 @@ export const SYNTROPY_TOOLS = [
     }
   },
 
+
   // ============ PERPLEXITY TOOLS (1) ============
   {
     name: "syntropy_perplexity_perplexity_ask",
@@ -1060,7 +1125,18 @@ export const SYNTROPY_TOOLS = [
     inputSchema: {
       type: "object" as const,
       properties: {
-        messages: { type: "any[]", description: "Array of conversation messages" }
+        messages: {
+          type: "array",
+          items: {
+            type: "object",
+            properties: {
+              role: { type: "string", description: "Message role (system, user, assistant)" },
+              content: { type: "string", description: "Message content" }
+            },
+            required: ["role", "content"]
+          },
+          description: "Array of conversation messages"
+        }
       },
       required: ["messages"]
     }
