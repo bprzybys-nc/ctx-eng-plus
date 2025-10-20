@@ -89,6 +89,22 @@ function getPoolKey(shortServer: string): string {
 }
 
 /**
+ * Map tool names that use hyphens in actual server but underscores in our definitions.
+ * Example: resolve_library_id -> resolve-library-id for Context7
+ */
+function normalizeToolName(server: string, tool: string): string {
+  // Context7 tools use hyphens instead of underscores
+  if (server === "context7") {
+    return tool.replace(/_/g, "-");
+  }
+  // Sequential Thinking uses no separators
+  if (server === "thinking") {
+    return tool;
+  }
+  return tool;
+}
+
+/**
  * Convert syntropy tool name to underlying MCP tool name.
  */
 function toMcpToolName(server: string, tool: string): string {
@@ -107,7 +123,9 @@ function toMcpToolName(server: string, tool: string): string {
     );
   }
 
-  return `${prefix}${tool}`;
+  // Normalize tool name based on server (handles hyphens, etc.)
+  const normalizedTool = normalizeToolName(server, tool);
+  return `${prefix}${normalizedTool}`;
 }
 
 /**

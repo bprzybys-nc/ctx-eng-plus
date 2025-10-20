@@ -483,12 +483,12 @@ export const SYNTROPY_TOOLS = [
     inputSchema: {
       type: "object" as const,
       properties: {
-        library_name: {
+        libraryName: {
           type: "string",
-          description: "Library name to resolve"
+          description: "Library name to resolve (e.g., 'numpy', 'react')"
         }
       },
-      required: ["library_name"]
+      required: ["libraryName"]
     }
   },
   {
@@ -497,16 +497,20 @@ export const SYNTROPY_TOOLS = [
     inputSchema: {
       type: "object" as const,
       properties: {
-        library_id: {
+        context7CompatibleLibraryID: {
           type: "string",
-          description: "Library ID"
+          description: "Context7-compatible library ID (e.g., '/mongodb/docs', '/vercel/next.js')"
         },
-        section: {
+        topic: {
           type: "string",
-          description: "Documentation section"
+          description: "Focus the docs on a specific topic (e.g., 'routing', 'hooks')"
+        },
+        tokens: {
+          type: "number",
+          description: "Maximum number of tokens to return (default 5000)"
         }
       },
-      required: ["library_id"]
+      required: ["context7CompatibleLibraryID"]
     }
   },
 
@@ -517,12 +521,44 @@ export const SYNTROPY_TOOLS = [
     inputSchema: {
       type: "object" as const,
       properties: {
-        question: {
+        thought: {
           type: "string",
-          description: "Question or problem to think through"
+          description: "The current thought or reasoning step"
+        },
+        thoughtNumber: {
+          type: "number",
+          description: "Sequential number of this thought"
+        },
+        totalThoughts: {
+          type: "number",
+          description: "Estimated total number of thoughts needed"
+        },
+        nextThoughtNeeded: {
+          type: "boolean",
+          description: "Whether another thought is needed to continue reasoning"
+        },
+        isRevision: {
+          type: "boolean",
+          description: "Whether this thought revises a previous thought"
+        },
+        revisesThought: {
+          type: "number",
+          description: "Number of the thought being revised (if isRevision is true)"
+        },
+        branchFromThought: {
+          type: "number",
+          description: "Number of the thought this branches from (if branching)"
+        },
+        branchId: {
+          type: "string",
+          description: "Identifier for this branch"
+        },
+        needsMoreThoughts: {
+          type: "boolean",
+          description: "Whether more thoughts are needed beyond totalThoughts"
         }
       },
-      required: ["question"]
+      required: ["thought", "thoughtNumber", "totalThoughts", "nextThoughtNeeded"]
     }
   },
 
