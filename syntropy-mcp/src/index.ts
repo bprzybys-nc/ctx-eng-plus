@@ -52,7 +52,9 @@ const SERVER_ROUTES: Record<string, string> = {
   "syn-context7": "mcp__context7__",
   "syn-thinking": "mcp__sequential-thinking__",
   "syn-linear": "mcp__linear-server__",
-  "syn-repomix": "mcp__repomix__"
+  "syn-repomix": "mcp__repomix__",
+  "syn-github": "mcp__github__",
+  "syn-perplexity": "mcp__perplexity__"
 };
 
 /**
