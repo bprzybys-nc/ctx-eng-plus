@@ -683,6 +683,132 @@ echo '{"method": "tools/list"}' | node build/index.js
 
 ---
 
+### Gate 5: Eager Initialization Verification with Debug Logging
+
+**Purpose**: Verify eager initialization working as planned with clear debug output
+
+**Add Debug Logging** to `initializeEagerServersWithHealthCheck()`:
+
+```typescript
+private async initializeEagerServersWithHealthCheck(): Promise<void> {
+  const eagerServers = Array.from(this.serverPools.entries())
+    .filter(([_, pool]) => pool.config.lazy === false)
+    .map(([serverName, _]) => serverName);
+
+  if (eagerServers.length === 0) {
+    logger.info("ℹ️ No eager servers configured - all servers will lazy-load on demand");
+    return;
+  }
+
+  // 🐛 DEBUG: Log eager server list
+  logger.info(
+    `🐛 DEBUG: Eager servers configured: ${eagerServers.join(", ")}\n` +
+    `🐛 DEBUG: Starting parallel initialization...`
+  );
+  const startTime = Date.now();
+
+  // Phase 1: Initialize all servers in parallel
+  logger.info(`🐛 DEBUG: Phase 1 - Spawning ${eagerServers.length} processes...`);
+  const initResults = await Promise.allSettled(
+    eagerServers.map(serverName => this.getClient(serverName))
+  );
+
+  // 🐛 DEBUG: Log spawn results
+  const spawnTime = Date.now() - startTime;
+  const spawnedCount = initResults.filter(r => r.status === "fulfilled").length;
+  logger.info(
+    `🐛 DEBUG: Phase 1 complete - ${spawnedCount}/${eagerServers.length} spawned in ${spawnTime}ms`
+  );
+
+  // Phase 2: Health check each server
+  logger.info(`🐛 DEBUG: Phase 2 - Running health checks...`);
+  const healthCheckResults = await Promise.allSettled(
+    initResults.map(async (result, index) => {
+      if (result.status === "rejected") {
+        throw new Error(`Failed to connect: ${result.reason}`);
+      }
+      return this.healthCheckServer(eagerServers[index], result.value);
+    })
+  );
+
+  // Phase 3: Report results
+  let successCount = 0;
+  let failureCount = 0;
+
+  healthCheckResults.forEach((result, index) => {
+    if (result.status === "fulfilled" && result.value === true) {
+      logger.info(`✅ ${eagerServers[index]} - Ready`);
+      successCount++;
+    } else {
+      const reason = result.status === "rejected" ? result.reason : "Health check failed";
+      logger.warn(`⚠️ ${eagerServers[index]} - Failed (${reason})`);
+      failureCount++;
+    }
+  });
+
+  const duration = Date.now() - startTime;
+
+  // 🐛 DEBUG: Final summary with timing breakdown
+  logger.info(
+    `🐛 DEBUG: Phase 2 complete - ${successCount} healthy, ${failureCount} failed\n` +
+    `🎯 Eager init complete in ${duration}ms: ${successCount}/${eagerServers.length} servers healthy\n` +
+    `   - Spawn time: ${spawnTime}ms\n` +
+    `   - Health check time: ${duration - spawnTime}ms`
+  );
+
+  if (failureCount > 0) {
+    logger.warn(
+      `⚠️ ${failureCount} critical server(s) failed initialization\n` +
+      `🔧 Some features may not work - check configuration and server logs`
+    );
+  }
+}
+```
+
+**Verification Command**:
+```bash
+cd syntropy-mcp
+npm run build
+node build/index.js 2>&1 | grep -E "(DEBUG|Eager init|Health check)"
+```
+
+**Expected Output**:
+```
+🐛 DEBUG: Eager servers configured: syn-serena, syn-filesystem, syn-git, syn-thinking, syn-linear
+🐛 DEBUG: Starting parallel initialization...
+🐛 DEBUG: Phase 1 - Spawning 5 processes...
+🐛 DEBUG: Phase 1 complete - 5/5 spawned in 520ms
+🐛 DEBUG: Phase 2 - Running health checks...
+✅ Health check passed for syn-serena: 8 tools available
+✅ Health check passed for syn-filesystem: 12 tools available
+✅ Health check passed for syn-git: 15 tools available
+✅ Health check passed for syn-thinking: 1 tools available
+✅ Health check passed for syn-linear: 24 tools available
+✅ syn-serena - Ready
+✅ syn-filesystem - Ready
+✅ syn-git - Ready
+✅ syn-thinking - Ready
+✅ syn-linear - Ready
+🐛 DEBUG: Phase 2 complete - 5 healthy, 0 failed
+🎯 Eager init complete in 1180ms: 5/5 servers healthy
+   - Spawn time: 520ms
+   - Health check time: 660ms
+✅ All eager servers ready - MCP server starting
+```
+
+**Success Criteria**:
+- ✅ All 5 eager servers listed in DEBUG output
+- ✅ Phase 1 spawns all servers in <2 seconds
+- ✅ Phase 2 health checks complete successfully
+- ✅ Total init time <9 seconds
+- ✅ Each server reports tool count (confirms responding)
+- ✅ Timing breakdown shows parallel spawn (not sequential)
+- ✅ "All eager servers ready" message appears before MCP server starts
+
+**Post-Validation**: Remove debug logging (lines with `🐛 DEBUG:`) or wrap in `if (process.env.DEBUG_EAGER_INIT)`
+
+---
+
 ## Testing Strategy
 
 ### Test Types
@@ -734,25 +860,33 @@ echo '{"method": "tools/list"}' | node build/index.js
 5. Update constructor to trigger eager init
 6. Update `index.ts` with timeout strategy
 
-### Step 2: Test (1 hour)
+### Step 2: Add Debug Logging (15 min)
+
+1. Add debug logging to `initializeEagerServersWithHealthCheck()` (Gate 5)
+2. Log eager server list, spawn timing, health check results
+3. Include timing breakdown (spawn vs health checks)
+
+### Step 3: Test (1 hour)
 
 1. Write unit tests (`eager-init.test.ts`)
 2. Run all tests: `npm test`
 3. Performance benchmark
 4. Manual integration test
+5. **Verify debug logging** (Gate 5) - confirm init working as planned
 
-### Step 3: Document (30 min)
+### Step 4: Document (30 min)
 
 1. Update `README.md` with eager init documentation
 2. Add configuration examples
 3. Document initialization strategies
 
-### Step 4: Deploy (15 min)
+### Step 5: Clean Up and Deploy (15 min)
 
 1. Update `servers.json` with `lazy` parameters
-2. Rebuild: `npm run build`
-3. Test in development environment
-4. Deploy to production
+2. Remove or conditionally enable debug logging (`DEBUG_EAGER_INIT`)
+3. Rebuild: `npm run build`
+4. Test in development environment
+5. Deploy to production
 
 ---
 
