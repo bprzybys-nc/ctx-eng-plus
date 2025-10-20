@@ -32,6 +32,7 @@ import {
 } from "@modelcontextprotocol/sdk/types.js";
 import { MCPClientManager } from "./client-manager.js";
 import { SYNTROPY_TOOLS } from "./tools-definition.js";
+import { runHealthCheck, formatHealthCheckText } from "./health-checker.js";
 // After SYNTROPY_TOOLS import
 console.error(`[SYNTROPY DEBUG] Registering ${SYNTROPY_TOOLS.length} tools`);
 console.error(`[SYNTROPY DEBUG] Tool 58: ${SYNTROPY_TOOLS[57]?.name || 'N/A'}`);
@@ -193,6 +194,44 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
   // DEBUG: Log the incoming tool name
   console.error(`[Syntropy] DEBUG: Received tool call: "${name}"`);
   console.error(`[Syntropy] DEBUG: Tool args:`, JSON.stringify(args));
+
+  // Handle healthcheck tool (special case - direct implementation, no forwarding)
+  if (name === "mcp__syntropy_healthcheck" || name === "syntropy_healthcheck") {
+    const detailed = (args as { detailed?: boolean }).detailed ?? false;
+    const timeoutMs = (args as { timeout_ms?: number }).timeout_ms ?? 2000;
+
+    try {
+      const result = await runHealthCheck(clientManager, timeoutMs);
+
+      if (detailed) {
+        // Return full JSON for automation
+        return {
+          content: [
+            {
+              type: "text" as const,
+              text: JSON.stringify(result, null, 2),
+            },
+          ],
+        };
+      } else {
+        // Return human-readable format
+        return {
+          content: [
+            {
+              type: "text" as const,
+              text: formatHealthCheckText(result),
+            },
+          ],
+        };
+      }
+    } catch (error) {
+      throw new McpError(
+        ErrorCode.InternalError,
+        `Health check failed: ${error}\n` +
+        `🔧 Troubleshooting: Check Syntropy server logs`
+      );
+    }
+  }
 
   // Parse syntropy tool name (format: mcp__syntropy_server_tool, added by Claude Code)
   const parsed = parseSyntropyTool(name);

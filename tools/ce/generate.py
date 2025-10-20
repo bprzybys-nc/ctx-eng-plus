@@ -797,6 +797,11 @@ def generate_prp(
     # Step 7: Create or update Linear issue
     try:
         from .linear_utils import create_issue_with_defaults
+        from .linear_mcp_resilience import (
+            create_issue_resilient,
+            update_issue_resilient,
+            get_linear_mcp_status
+        )
 
         issue_identifier = None
 
@@ -810,41 +815,49 @@ def generate_prp(
                 logger.warning(f"Target PRP has no Linear issue: {target_prp_path}")
                 logger.warning("Creating new issue instead")
             else:
-                # Update existing issue (append new PRP info)
+                # Update existing issue with resilience + auth recovery
                 logger.info(f"Updating Linear issue: {target_issue_id}")
-                _update_linear_issue(
+                result = _update_linear_issue_with_resilience(
                     target_issue_id,
                     prp_id,
                     parsed_data['feature_name'],
                     str(output_path)
                 )
-                issue_identifier = target_issue_id
-                logger.info(f"Updated issue {target_issue_id} with {prp_id}")
+
+                if result["success"]:
+                    issue_identifier = target_issue_id
+                    logger.info(f"Updated issue {target_issue_id} with {prp_id}")
+                else:
+                    logger.warning(f"Failed to update issue: {result['error']}")
+                    logger.info("Will create new issue instead")
 
         if not issue_identifier:
-            # Create new issue
-            logger.info("Creating new Linear issue")
-            issue_data = create_issue_with_defaults(
+            # Create new issue with resilience + auth recovery
+            logger.info("Creating new Linear issue with resilience")
+            result = create_issue_resilient(
                 title=f"{prp_id}: {parsed_data['feature_name']}",
                 description=_generate_issue_description(prp_id, parsed_data, str(output_path)),
                 state="todo"
             )
 
-            # Call Linear MCP to create issue
-            # For now, we'll prepare the data structure
-            # In full implementation, this would call: mcp__linear-server__create_issue
-            logger.info(f"Issue data prepared: {issue_data}")
-            # FIXME: Placeholder - replace with actual Linear MCP call
-            issue_identifier = f"{prp_id}-placeholder"
-            logger.warning("Linear MCP integration pending - issue not actually created")
+            if result["success"]:
+                issue_data = result.get("result", {})
+                # Extract identifier from result (when actual MCP integration added)
+                issue_identifier = issue_data.get("id") or issue_data.get("identifier") or f"{prp_id}-created"
+                logger.info(f"Created Linear issue: {issue_identifier}")
+            else:
+                logger.error(f"Linear issue creation failed: {result['error']}")
+                logger.warning("Circuit breaker state:", get_linear_mcp_status())
+                logger.warning("Continuing without Linear integration")
 
         # Update PRP YAML with issue ID
         if issue_identifier:
             _update_prp_yaml_with_issue(str(output_path), issue_identifier)
             logger.info(f"Updated PRP YAML with issue: {issue_identifier}")
 
-    except ImportError:
-        logger.warning("Linear utils not available - skipping issue creation")
+    except ImportError as e:
+        logger.warning(f"Linear resilience utils not available: {e}")
+        logger.warning("Skipping issue creation")
     except Exception as e:
         logger.error(f"Linear issue creation failed: {e}")
         logger.warning("Continuing without Linear integration")
@@ -1364,6 +1377,54 @@ def _extract_issue_from_prp(prp_path: Path) -> Optional[str]:
     return issue_value
 
 
+def _update_linear_issue_with_resilience(
+    issue_id: str,
+    prp_id: str,
+    feature_name: str,
+    prp_path: str
+) -> Dict[str, Any]:
+    """Update existing Linear issue with new PRP info using resilience layer.
+
+    Args:
+        issue_id: Linear issue identifier (e.g., "BLA-24")
+        prp_id: New PRP ID (e.g., "PRP-15")
+        feature_name: New PRP feature name
+        prp_path: Path to new PRP file
+
+    Returns:
+        Result dict from update_issue_resilient with success/error status
+
+    Process:
+        1. Generate update text for new PRP
+        2. Call update_issue_resilient with auth recovery
+        3. Return detailed result with success status
+    """
+    from .linear_mcp_resilience import update_issue_resilient
+
+    logger.info(f"Updating Linear issue {issue_id} with {prp_id}")
+
+    update_text = f"""
+
+---
+
+## Related: {prp_id} - {feature_name}
+
+**PRP File**: `{prp_path}`
+
+This PRP is related to the same feature/initiative.
+"""
+
+    # Call with resilience + auth recovery
+    result = update_issue_resilient(issue_id, update_text)
+
+    if result["success"]:
+        logger.info(f"Successfully updated issue {issue_id}")
+    else:
+        logger.warning(f"Failed to update issue: {result['error']}")
+
+    return result
+
+
 def _update_linear_issue(
     issue_id: str,
     prp_id: str,
@@ -1371,6 +1432,8 @@ def _update_linear_issue(
     prp_path: str
 ) -> None:
     """Update existing Linear issue with new PRP info.
+
+    DEPRECATED: Use _update_linear_issue_with_resilience instead.
 
     Args:
         issue_id: Linear issue identifier (e.g., "BLA-24")

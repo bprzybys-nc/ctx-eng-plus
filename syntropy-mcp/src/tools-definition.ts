@@ -1140,5 +1140,26 @@ export const SYNTROPY_TOOLS = [
       },
       required: ["messages"]
     }
+  },
+
+
+  // ============ SYNTROPY TOOLS (1) ============
+  {
+    name: "syntropy_healthcheck",
+    description: "Check health status of Syntropy server and all underlying MCP servers",
+    inputSchema: {
+      type: "object" as const,
+      properties: {
+        detailed: {
+          type: "boolean",
+          description: "Include detailed diagnostics (call counts, last errors). Default: false"
+        },
+        timeout_ms: {
+          type: "number",
+          description: "Timeout in milliseconds for each server check. Default: 2000 (2 seconds)"
+        }
+      },
+      required: []
+    }
   }
 ];

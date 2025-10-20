@@ -13,6 +13,7 @@ Syntropy routes tool calls to multiple underlying MCP servers using a standardiz
 - Connection pooling with lazy initialization
 - Graceful shutdown and signal handling
 - Structured logging for monitoring
+- Health monitoring with parallel checks
 
 ## Quick Start
 
@@ -101,8 +102,7 @@ Command: npx -y @modelcontextprotocol/server-filesystem .
 ## Supported Servers
 
 | Server | Purpose | Command |
-|--------|---------|---------|
-| syn-serena | Code navigation, symbol search | uvx git+https://github.com/oraios/serena |
+|--------|---------|---------| | syn-serena | Code navigation, symbol search | uvx git+https://github.com/oraios/serena |
 | syn-filesystem | File read/write operations | npx @modelcontextprotocol/server-filesystem |
 | syn-git | Git operations (status, diff, log, commit) | uvx mcp-server-git |
 | syn-context7 | Library documentation lookup | npx @upstash/context7-mcp |
@@ -221,8 +221,11 @@ syntropy-mcp/
 ├── src/
 │   ├── index.ts              # Main MCP server
 │   ├── client-manager.ts     # Connection pooling
+│   ├── health-checker.ts     # Health monitoring
+│   ├── tools-definition.ts   # Tool definitions
 │   ├── index.test.ts         # Unit tests
 │   ├── health-checks.test.ts # Server connectivity
+│   ├── health-checker.test.ts # Health checker tests
 │   └── poc.test.ts           # End-to-end forwarding
 ├── build/                    # Compiled JavaScript
 ├── servers.json              # Server configuration
@@ -248,6 +251,74 @@ npm run clean                 # Remove build artifacts
 - **Error handling**: All errors include troubleshooting
 - **Logging**: Structured output to stderr
 - **Testing**: 100% coverage of core functionality
+
+## Health Monitoring
+
+Check the status of all MCP servers:
+
+```bash
+# Via Claude Code
+mcp__syntropy_healthcheck
+
+# Example output
+✅ Syntropy MCP Server: Healthy (v0.1.0)
+
+MCP Server Status:
+  ✅ serena         - Healthy (250ms)
+  ✅ filesystem     - Healthy (120ms)
+  ✅ git            - Healthy (180ms)
+  ✅ context7       - Healthy (300ms)
+  ✅ thinking       - Healthy (500ms)
+  ⚠️ linear         - Degraded (authentication required)
+  ✅ repomix        - Healthy (150ms)
+  ✅ github         - Healthy (200ms)
+  ✅ perplexity     - Healthy (220ms)
+
+Total: 8/9 healthy, 1/9 degraded, 0/9 down
+```
+
+### Detailed Output
+
+For automation/monitoring, use detailed JSON output:
+
+```bash
+mcp__syntropy_healthcheck(detailed=true)
+```
+
+Returns:
+
+```json
+{
+  "syntropy": { "version": "0.1.0", "status": "healthy" },
+  "servers": [
+    {
+      "server": "filesystem",
+      "status": "healthy",
+      "connected": true,
+      "callCount": 0,
+      "checkDuration": 120
+    }
+  ],
+  "summary": { "total": 9, "healthy": 8, "degraded": 1, "down": 0 },
+  "timestamp": "2025-01-20T14:30:00Z"
+}
+```
+
+### Custom Timeout
+
+```bash
+mcp__syntropy_healthcheck(timeout_ms=1000)
+```
+
+Use shorter timeout for faster checks on slower networks.
+
+### Troubleshooting Status
+
+| Status | Meaning | Action |
+|--------|---------|--------|
+| ✅ Healthy | Server connected and responsive | No action needed |
+| ⚠️ Degraded | Server responsive but authentication/config issue | Check environment variables (API keys) |
+| ❌ Down | Server not responding or failed to start | Verify installation and servers.json config |
 
 ## Monitoring
 
@@ -338,3 +409,4 @@ MIT
 2. See [DEPLOYMENT.md](DEPLOYMENT.md) for production details
 3. Run tests: `npm test` to verify setup
 4. Review logs: `npm start 2>&1` for diagnostics
+5. Check health: `mcp__syntropy_healthcheck` for server status
