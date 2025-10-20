@@ -211,13 +211,6 @@
       "/Users/bprzybysz"
     ]
   },
-  "enabledPlugins": {
-    "python-development@claude-code-workflows": true,
-    "agent-orchestration@claude-code-workflows": true,
-    "backend-development@claude-code-workflows": true,
-    "api-scaffolding@claude-code-workflows": true,
-    "llm-application-dev@claude-code-workflows": true
-  },
   "hooks": {
     "SessionStart": [
       {
@@ -225,11 +218,18 @@
         "hooks": [
           {
             "type": "command",
-            "command": "PROJECT_ROOT=$(git rev-parse --show-toplevel 2>/dev/null || pwd) && cd \"$PROJECT_ROOT/tools\" && uv run ce context health --json | jq -r '(.drift_score | . * 100 | round / 100) as $rounded | if .drift_score > 30 then \"\u26a0\ufe0f HIGH DRIFT: \" + ($rounded | tostring) + \"% - Run: ce context sync\" elif .drift_score > 10 then \"\u26a0\ufe0f Moderate drift: \" + ($rounded | tostring) + \"%\" else \"\u2705 Context healthy: \" + ($rounded | tostring) + \"%\" end'",
+            "command": "PROJECT_ROOT=$(git rev-parse --show-toplevel 2>/dev/null || pwd) && cd \"$PROJECT_ROOT/tools\" && uv run ce context health --json | jq -r '(.drift_score | . * 100 | round / 100) as $rounded | if .drift_score > 30 then \"⚠️ HIGH DRIFT: \" + ($rounded | tostring) + \"% - Run: ce context sync\" elif .drift_score > 10 then \"⚠️ Moderate drift: \" + ($rounded | tostring) + \"%\" else \"✅ Context healthy: \" + ($rounded | tostring) + \"%\" end'",
             "timeout": 5
           }
         ]
       }
     ]
+  },
+  "enabledPlugins": {
+    "python-development@claude-code-workflows": true,
+    "agent-orchestration@claude-code-workflows": true,
+    "backend-development@claude-code-workflows": true,
+    "api-scaffolding@claude-code-workflows": true,
+    "llm-application-dev@claude-code-workflows": true
   }
 }
