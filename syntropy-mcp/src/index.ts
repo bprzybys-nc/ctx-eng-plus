@@ -207,13 +207,16 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
 
   const { server: targetServer, tool } = parsed;
 
-  // Convert to underlying MCP tool name (validation only)
+  // Convert to underlying MCP tool name (includes normalization)
   toMcpToolName(targetServer, tool);
+
+  // Normalize tool name for servers that use different naming conventions
+  const normalizedTool = normalizeToolName(targetServer, tool);
 
   // Forward to underlying MCP server using pool key
   const poolKey = getPoolKey(targetServer);
   try {
-    const result = await clientManager.callTool(poolKey, tool, args as Record<string, unknown>);
+    const result = await clientManager.callTool(poolKey, normalizedTool, args as Record<string, unknown>);
     // Return result in MCP ToolResultBlockParam format
     return {
       content: [
