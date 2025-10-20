@@ -30,41 +30,80 @@ version: 1
 - Fail-fast: Report connection issues at startup, not during tool use
 - Only initialize essential servers (reduce overhead)
 
-## Implementation Scope
+## Configuration-Driven Approach
 
-### Critical Servers (Initialize Always)
+### servers.json Schema Update
 
-1. **Serena** (`syn-serena`)
-   - Core code analysis capability
-   - Always needed by context engineering
-   - 🔧 Python binary startup: ~500ms
+Add `lazy` parameter (boolean, default: true) to each server configuration:
 
-2. **Filesystem** (`syn-filesystem`)
-   - File operations required for context sync
-   - Foundation for other operations
-   - 🔧 Node.js startup: ~200ms
+```json
+{
+  "servers": {
+    "syn-serena": {
+      "command": "uvx",
+      "args": ["serena", "--stdio"],
+      "env": { "SOME_VAR": "value" },
+      "lazy": false  // Eager: initialize on startup
+    },
+    "syn-filesystem": {
+      "command": "npx",
+      "args": ["@modelcontextprotocol/server-filesystem", "."],
+      "env": {},
+      "lazy": false  // Eager: initialize on startup
+    },
+    "syn-git": {
+      "command": "uvx",
+      "args": ["mcp-git-server"],
+      "env": {},
+      "lazy": false  // Eager: initialize on startup
+    },
+    "syn-thinking": {
+      "command": "npx",
+      "args": ["@modelcontextprotocol/server-sequential-thinking"],
+      "env": {},
+      "lazy": false  // Eager: initialize on startup
+    },
+    "syn-linear": {
+      "command": "npx",
+      "args": ["@modelcontextprotocol/server-linear"],
+      "env": { "LINEAR_API_KEY": "..." },
+      "lazy": false  // Eager: initialize on startup
+    },
+    "syn-context7": {
+      "command": "npx",
+      "args": ["@modelcontextprotocol/server-context7"],
+      "env": {},
+      "lazy": true  // (default) Lazy: initialize on demand
+    },
+    "syn-repomix": {
+      "command": "npx",
+      "args": ["repomix-mcp"],
+      "env": {},
+      "lazy": true  // (default) Lazy: rarely used
+    },
+    "syn-github": {
+      "command": "npx",
+      "args": ["@modelcontextprotocol/server-github"],
+      "env": { "GITHUB_TOKEN": "..." },
+      "lazy": true  // (default) Lazy: external API
+    },
+    "syn-perplexity": {
+      "command": "npx",
+      "args": ["@modelcontextprotocol/server-perplexity"],
+      "env": { "PERPLEXITY_API_KEY": "..." },
+      "lazy": true  // (default) Lazy: external API
+    }
+  }
+}
+```
 
-3. **Git** (`syn-git`)
-   - Version control operations
-   - Required for drift detection
-   - 🔧 Python binary startup: ~400ms
+### Why Configuration-Driven?
 
-4. **Thinking** (`syn-thinking`)
-   - Sequential reasoning for complex tasks
-   - Often used in analysis workflows
-   - 🔧 Node.js startup: ~300ms
-
-5. **Linear** (`syn-linear`)
-   - Issue tracking integration
-   - Used in PRP generation workflow
-   - 🔧 Node.js startup with API: ~400ms
-
-### Non-Critical Servers (Keep Lazy)
-
-- **Context7**: Documentation lookup, can defer (~300ms)
-- **Repomix**: Codebase packaging, rarely used (~200ms)
-- **GitHub**: External API, high overhead (~400ms)
-- **Perplexity**: External API, high overhead (~400ms)
+✅ **Flexible**: Change eager/lazy without code changes
+✅ **Future-Proof**: Easy to adjust as usage patterns evolve
+✅ **Per-Deployment**: Different settings for dev/prod
+✅ **Discoverable**: Self-documenting via JSON config
+✅ **Auditable**: Track which servers are critical
 
 ## Design
 
@@ -101,22 +140,28 @@ private async healthCheckServer(serverName: string, client: Client): Promise<boo
 ### Changes to MCPClientManager
 
 ```typescript
+interface ServerConfig {
+  command: string;
+  args: string[];
+  env: Record<string, string>;
+  lazy?: boolean;  // NEW: default true (lazy initialization)
+}
+
 class MCPClientManager {
   private eagerInitPromise?: Promise<void>;
 
-  constructor(serversConfigPath: string = "./servers.json", eagerInit: boolean = true) {
+  constructor(serversConfigPath: string = "./servers.json") {
     this.serversConfigPath = serversConfigPath;
     this.loadServerConfigs();
 
-    if (eagerInit) {
-      // Start initialization but don't await - callers can await if needed
-      this.eagerInitPromise = this.initializeEagerServersWithHealthCheck();
-    }
+    // Automatically start eager initialization based on server config
+    // No eagerInit parameter - determined by servers.json `lazy: false`
+    this.eagerInitPromise = this.initializeEagerServersWithHealthCheck();
   }
 
   /**
    * Wait for eager servers to be fully initialized and healthy.
-   * Call this to ensure all critical servers are ready before proceeding.
+   * Call this to ensure all critical servers (lazy: false) are ready before proceeding.
    */
   public async waitForEagerInit(): Promise<void> {
     if (this.eagerInitPromise) {
@@ -125,13 +170,10 @@ class MCPClientManager {
   }
 
   private async initializeEagerServersWithHealthCheck(): Promise<void> {
-    const eagerServers = [
-      "syn-serena",      // Code analysis
-      "syn-filesystem",  // File operations
-      "syn-git",         // Version control
-      "syn-thinking",    // Reasoning
-      "syn-linear"       // Issue tracking
-    ];
+    // Identify servers configured with lazy: false
+    const eagerServers = Array.from(this.serverPools.entries())
+      .filter(([_, pool]) => pool.config.lazy === false)
+      .map(([serverName, _]) => serverName);
 
     logger.info(`🚀 Starting eager initialization of ${eagerServers.length} critical servers...`);
     const startTime = Date.now();
@@ -189,51 +231,44 @@ class MCPClientManager {
 
 **Option 1: Fire-and-Forget (Non-blocking)**
 ```typescript
-// Start initialization in background
-const clientManager = new MCPClientManager(
-  "./servers.json",
-  true  // Enable eager initialization (spawns in background)
-);
+// Configuration-driven: servers.json determines lazy/eager behavior
+const clientManager = new MCPClientManager("./servers.json");
 
-// Server continues immediately - tools will work after servers start
-// Non-critical for immediate startup, but first tool call will still wait
+// MCP server starts immediately
+// Eager servers (lazy: false) initialize in parallel in background
+// Tools available once servers ready (no startup latency)
+server.connect(transport);
 ```
 
 **Option 2: Wait for Ready (Blocking - Recommended)**
 ```typescript
-// Explicit initialization with health checks
-const clientManager = new MCPClientManager(
-  "./servers.json",
-  true  // Enable eager initialization
-);
+// Create manager - automatically starts eager init based on servers.json
+const clientManager = new MCPClientManager("./servers.json");
 
-// Wait for all critical servers to be healthy before starting MCP server
+// Wait for all eager servers (lazy: false) to be healthy before starting
 try {
   await clientManager.waitForEagerInit();
-  console.log("✅ All critical servers ready - MCP server starting");
+  console.log("✅ All eager servers ready - MCP server starting");
 
-  // Now start MCP server - all tools immediately available
+  // All eager tools immediately available
   server.connect(transport);
 } catch (error) {
   console.error(
-    "❌ Eager init failed (non-blocking)\n" +
-    "🔧 Continue with degraded functionality or abort?"
+    "❌ Some eager servers failed health check\n" +
+    "🔧 Check servers.json `lazy` settings and server logs"
   );
   // Decision: retry, continue anyway, or abort
 }
 ```
 
-**Option 3: With Timeout (Safe Blocking)**
+**Option 3: With 9-Second Timeout (Safe Blocking - Recommended for Prod)**
 ```typescript
-const clientManager = new MCPClientManager(
-  "./servers.json",
-  true  // Enable eager initialization
-);
+const clientManager = new MCPClientManager("./servers.json");
 
-// Wait with timeout - don't block forever if servers slow to start
+// Wait with 9s timeout - allows adequate startup time, prevents hanging
 try {
   const timeoutPromise = new Promise((_, reject) =>
-    setTimeout(() => reject(new Error("Startup timeout")), 10000)
+    setTimeout(() => reject(new Error("Startup timeout (9s)")), 9000)
   );
 
   await Promise.race([
@@ -241,16 +276,32 @@ try {
     timeoutPromise
   ]);
 
-  console.log("✅ Servers ready");
+  console.log("✅ All eager servers ready in time");
 } catch (error) {
   console.warn(
     `⚠️ Eager init timeout (${error.message})\n` +
-    `🔧 Continuing with lazy initialization for unavailable servers`
+    `🔧 Check servers.json - adjust lazy settings or increase timeout`
   );
 }
 
-// MCP server starts regardless - degraded start is acceptable
+// MCP server starts regardless - lazy servers will init on demand
 server.connect(transport);
+```
+
+### Configuration-Driven Benefits
+
+**Zero code changes to adjust eager/lazy behavior:**
+
+```bash
+# Before: syn-linear is eager, syn-context7 is lazy
+# To swap them - just edit servers.json:
+
+{
+  "syn-linear": { "lazy": true },  # Changed from false
+  "syn-context7": { "lazy": false }  # Changed from true
+}
+
+# Restart Syntropy - new config applies automatically
 ```
 
 ## Benefits
@@ -293,16 +344,18 @@ server.connect(transport);
 
 ## Success Criteria
 
-✅ All 5 critical servers initialize on startup
-✅ Health checks verify servers are responding (tools/list introspection)
-✅ Parallel initialization + health checks complete in <2.5 seconds
-✅ Failed server initialization reported but doesn't block startup (graceful degradation)
-✅ Non-critical servers still lazy-load on demand
-✅ First tool call has no perceptible startup latency (<100ms)
+✅ Configuration-driven: `lazy: false` determines eager servers (from servers.json)
+✅ All eager servers (lazy: false) initialize on startup
+✅ Health checks verify servers responding (tools/list introspection)
+✅ Parallel initialization + health checks complete in <9 seconds
+✅ Failed eager server initialization reported but doesn't block startup (graceful degradation)
+✅ Non-eager servers still lazy-load on demand (lazy: true or default)
+✅ First tool call has no perceptible startup latency for eager servers (<100ms)
 ✅ Configuration errors reported immediately at startup (not on first use)
 ✅ `waitForEagerInit()` async/await API works correctly
-✅ Three initialization strategies (fire-and-forget, blocking, timeout) all functional
+✅ Three initialization strategies (fire-and-forget, blocking, 9s timeout) all functional
 ✅ Health check failures logged with troubleshooting guidance
+✅ Zero code changes needed to adjust eager/lazy behavior (just edit servers.json)
 
 ## Implementation Plan
 
