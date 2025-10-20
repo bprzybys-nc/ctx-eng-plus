@@ -31,6 +31,7 @@ import {
   McpError
 } from "@modelcontextprotocol/sdk/types.js";
 import { MCPClientManager } from "./client-manager.js";
+import { SYNTROPY_TOOLS } from "./tools-definition.js";
 import path from "path";
 import { fileURLToPath } from "url";
 
@@ -42,35 +43,62 @@ const __dirname = path.dirname(__filename);
 const clientManager = new MCPClientManager(path.join(__dirname, "../servers.json"));
 
 // Tool routing configuration
+// CRITICAL: Keys MUST match servers.json pool keys (syn-XXXX)
+// Maps: syn-XXXX (pool key) -> mcp__XXXX__ (tool name prefix)
 const SERVER_ROUTES: Record<string, string> = {
-  "serena": "mcp__serena__",
-  "filesystem": "mcp__filesystem__",
-  "git": "mcp__git__",
-  "context7": "mcp__context7__",
-  "thinking": "mcp__sequential-thinking__",
-  "linear": "mcp__linear-server__",
-  "repomix": "mcp__repomix__"
+  "syn-serena": "mcp__serena__",
+  "syn-filesystem": "mcp__filesystem__",
+  "syn-git": "mcp__git__",
+  "syn-context7": "mcp__context7__",
+  "syn-thinking": "mcp__sequential-thinking__",
+  "syn-linear": "mcp__linear-server__",
+  "syn-repomix": "mcp__repomix__"
 };
 
 /**
  * Parse syntropy tool name into server and tool components.
+ *
+ * Handles formats:
+ * - mcp__syntropy_server_tool (from Claude Code after prefix is added)
+ * - syntropy_server_tool (direct format for testing)
  */
 function parseSyntropyTool(toolName: string): { server: string; tool: string } | null {
-  const match = toolName.match(/^syntropy:([^:]+):(.+)$/);
-  if (!match) return null;
+  // Handle format: mcp__syntropy_server_tool
+  let match = toolName.match(/^mcp__syntropy_([^_]+)_(.+)$/);
+  if (match) {
+    const [, server, tool] = match;
+    return { server, tool };
+  }
 
-  const [, server, tool] = match;
-  return { server, tool };
+  // Handle format: syntropy_server_tool (direct)
+  match = toolName.match(/^syntropy_([^_]+)_(.+)$/);
+  if (match) {
+    const [, server, tool] = match;
+    return { server, tool };
+  }
+
+  return null;
+}
+
+/**
+ * Map short server name to pool key.
+ * Example: "filesystem" -> "syn-filesystem"
+ */
+function getPoolKey(shortServer: string): string {
+  return `syn-${shortServer}`;
 }
 
 /**
  * Convert syntropy tool name to underlying MCP tool name.
  */
 function toMcpToolName(server: string, tool: string): string {
-  const prefix = SERVER_ROUTES[server];
+  const poolKey = getPoolKey(server);
+  const prefix = SERVER_ROUTES[poolKey];
 
   if (!prefix) {
-    const validServers = Object.keys(SERVER_ROUTES).join(", ");
+    const validServers = Object.keys(SERVER_ROUTES)
+      .map(k => k.replace(/^syn-/, ""))
+      .join(", ");
     throw new McpError(
       ErrorCode.InvalidRequest,
       `Unknown syntropy server: ${server}\n` +
@@ -117,57 +145,20 @@ const server = new Server(
 
 /**
  * Handle tool listing request.
+ *
+ * CRITICAL: Each tool must include inputSchema to be properly registered by Claude Code.
+ * The inputSchema defines the parameters a tool accepts, which is ESSENTIAL for:
+ * 1. Tool discovery and registration
+ * 2. Parameter validation
+ * 3. Claude Code MCP integration
+ *
+ * Tools are exposed in proper MCP format with full JSON Schema definitions.
+ * This ensures compatibility with all MCP clients including Claude Code, Claude Desktop,
+ * and other integrations.
  */
 server.setRequestHandler(ListToolsRequestSchema, async () => {
-  const tools = [
-    // Serena tools
-    { name: "syntropy:serena:find_symbol", description: "Find code symbols by name path" },
-    { name: "syntropy:serena:get_symbols_overview", description: "Get file symbol overview" },
-    { name: "syntropy:serena:search_for_pattern", description: "Search codebase patterns" },
-    { name: "syntropy:serena:find_referencing_symbols", description: "Find symbol references" },
-    { name: "syntropy:serena:write_memory", description: "Store project context" },
-    { name: "syntropy:serena:create_text_file", description: "Create new file" },
-    { name: "syntropy:serena:activate_project", description: "Switch active project" },
-    { name: "syntropy:serena:list_dir", description: "List directory contents" },
-    { name: "syntropy:serena:read_file", description: "Read file contents" },
-
-    // Filesystem tools
-    { name: "syntropy:filesystem:read_file", description: "Read file (deprecated)" },
-    { name: "syntropy:filesystem:read_text_file", description: "Read text file" },
-    { name: "syntropy:filesystem:list_directory", description: "List directory" },
-    { name: "syntropy:filesystem:write_file", description: "Write/overwrite file" },
-    { name: "syntropy:filesystem:edit_file", description: "Line-based file edits" },
-    { name: "syntropy:filesystem:search_files", description: "Recursive file search" },
-    { name: "syntropy:filesystem:directory_tree", description: "JSON directory tree" },
-    { name: "syntropy:filesystem:get_file_info", description: "File metadata" },
-    { name: "syntropy:filesystem:list_allowed_directories", description: "Show allowed paths" },
-
-    // Git tools
-    { name: "syntropy:git:git_status", description: "Repository status" },
-    { name: "syntropy:git:git_diff", description: "Show changes" },
-    { name: "syntropy:git:git_log", description: "Commit history" },
-    { name: "syntropy:git:git_add", description: "Stage files" },
-    { name: "syntropy:git:git_commit", description: "Create commit" },
-
-    // Context7 tools
-    { name: "syntropy:context7:resolve-library-id", description: "Find library ID" },
-    { name: "syntropy:context7:get-library-docs", description: "Fetch library docs" },
-
-    // Sequential thinking
-    { name: "syntropy:thinking:sequentialthinking", description: "Sequential thinking process" },
-
-    // Linear tools
-    { name: "syntropy:linear:create_issue", description: "Create Linear issue" },
-    { name: "syntropy:linear:get_issue", description: "Get issue details" },
-    { name: "syntropy:linear:list_issues", description: "List issues" },
-    { name: "syntropy:linear:update_issue", description: "Update issue" },
-    { name: "syntropy:linear:list_projects", description: "List projects" },
-
-    // Repomix
-    { name: "syntropy:repomix:pack_codebase", description: "Package codebase for AI" }
-  ];
-
-  return { tools };
+  // Use tool definitions with proper inputSchema from tools-definition.ts
+  return { tools: SYNTROPY_TOOLS };
 });
 
 /**
@@ -180,15 +171,19 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
   console.error(`[Syntropy] DEBUG: Received tool call: "${name}"`);
   console.error(`[Syntropy] DEBUG: Tool args:`, JSON.stringify(args));
 
-  // Parse syntropy tool name (format: syntropy:server:tool)
+  // Parse syntropy tool name (format: mcp__syntropy_server_tool, added by Claude Code)
   const parsed = parseSyntropyTool(name);
   if (!parsed) {
     throw new McpError(
       ErrorCode.InvalidRequest,
       `Invalid syntropy tool name: ${name}\n` +
-      `Expected format: mcp__syntropy__server__tool\n` +
-      `Example: mcp__syntropy__serena__find_symbol\n` +
-      `🔧 Troubleshooting: Check tool name format`
+      `Expected format: mcp__syntropy_server_tool (e.g., mcp__syntropy_serena_find_symbol)\n` +
+      `Tool name breakdown:\n` +
+      `  mcp__ = Claude Code prefix\n` +
+      `  syntropy = server name\n` +
+      `  server = underlying server (serena, filesystem, git, context7, thinking, linear, repomix)\n` +
+      `  tool = tool name\n` +
+      `🔧 Troubleshooting: Verify tool name format and that underlying server is configured`
     );
   }
 
@@ -197,9 +192,10 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
   // Convert to underlying MCP tool name (validation only)
   toMcpToolName(targetServer, tool);
 
-  // Forward to underlying MCP server
+  // Forward to underlying MCP server using pool key
+  const poolKey = getPoolKey(targetServer);
   try {
-    const result = await clientManager.callTool(targetServer, tool, args as Record<string, unknown>);
+    const result = await clientManager.callTool(poolKey, tool, args as Record<string, unknown>);
     // Return result in MCP ToolResultBlockParam format
     return {
       content: [
