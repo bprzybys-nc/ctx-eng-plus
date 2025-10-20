@@ -78,14 +78,6 @@
     "syn-linear": {
       "command": "npx",
       "args": ["-y", "mcp-remote", "https://mcp.linear.app/sse"]
-    },
-    "_notes": {
-      "description": "MCP servers available for Syntropy aggregation",
-      "note_serena": "SERENA_PROJECT_ROOT env var sets the active project on startup (autodetect for current workspace)",
-      "note_linear": "Linear provides hosted remote MCP at https://mcp.linear.app/sse (not a downloadable package)",
-      "note_credentials": "For servers requiring API tokens, set environment variables in your shell or .env file",
-      "example_github": "export GITHUB_PERSONAL_ACCESS_TOKEN='ghp_xxxxx'",
-      "example_perplexity": "export PERPLEXITY_API_KEY='pplx_xxxxx'"
     }
   }
 }
