@@ -285,6 +285,28 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
 // Start server only when not running tests
 async function main() {
   const transport = new StdioServerTransport();
+
+  // NEW: Wait for eager servers with 9-second timeout protection
+  try {
+    const timeoutPromise = new Promise<never>((_, reject) =>
+      setTimeout(() => reject(new Error("Startup timeout (9s)")), 9000)
+    );
+
+    await Promise.race([
+      clientManager.waitForEagerInit(),
+      timeoutPromise
+    ]);
+
+    console.error("✅ All eager servers ready - MCP server starting");
+  } catch (error) {
+    console.error(
+      `⚠️ Eager init timeout (${(error as Error).message})\n` +
+      `🔧 Check servers.json - adjust lazy settings or increase timeout\n` +
+      `Continuing with degraded functionality...`
+    );
+  }
+
+  // Connect MCP server (lazy servers will init on demand)
   await server.connect(transport);
   console.error("Syntropy MCP Server running on stdio");
 
@@ -304,7 +326,7 @@ async function main() {
   // Register signal handlers
   process.on("SIGINT", () => shutdown("SIGINT"));
   process.on("SIGTERM", () => shutdown("SIGTERM"));
-  
+
   // Log server startup
   console.error(`[Syntropy] Server initialized with ${Object.keys(SERVER_ROUTES).length} supported MCP servers`);
 }

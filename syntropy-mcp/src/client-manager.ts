@@ -8,6 +8,7 @@
 
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { StdioClientTransport } from "@modelcontextprotocol/sdk/client/stdio.js";
+import { ListToolsResultSchema } from "@modelcontextprotocol/sdk/types.js";
 import fs from "fs";
 
 /**
@@ -35,6 +36,7 @@ interface ServerConfig {
   command: string;
   args: string[];
   env: Record<string, string>;
+  lazy?: boolean;  // NEW: default true (lazy initialization). Set to false for eager init on startup
 }
 
 interface ServerPool {
@@ -49,14 +51,37 @@ interface ServerPool {
 /**
  * Manages MCP client connections to underlying servers.
  * Lazy initialization: spawns process on first tool call.
+ * Eager initialization: optionally spawns critical servers on startup (configured via lazy: false in servers.json).
  */
 class MCPClientManager {
   private serverPools: Map<string, ServerPool> = new Map();
   private serversConfigPath: string;
+  private eagerInitPromise?: Promise<void>;  // NEW: Track eager init status
 
   constructor(serversConfigPath: string = "./servers.json") {
     this.serversConfigPath = serversConfigPath;
     this.loadServerConfigs();
+
+    // NEW: Automatically start eager initialization based on server config
+    // No parameter needed - determined by servers.json `lazy: false`
+    this.eagerInitPromise = this.initializeEagerServersWithHealthCheck();
+  }
+
+  /**
+   * Wait for eager servers to be fully initialized and healthy.
+   * Call this to ensure all critical servers (lazy: false) are ready before proceeding.
+   *
+   * @returns Promise that resolves when all eager servers are initialized
+   *
+   * @example
+   * const manager = new MCPClientManager("./servers.json");
+   * await manager.waitForEagerInit();  // Wait for health verification
+   * // All eager servers verified healthy
+   */
+  public async waitForEagerInit(): Promise<void> {
+    if (this.eagerInitPromise) {
+      await this.eagerInitPromise;
+    }
   }
 
   /**
@@ -188,6 +213,128 @@ class MCPClientManager {
         `Failed to connect to ${server} MCP server: ${error}\n` +
         `Command: ${command} ${args.join(" ")}\n` +
         `🔧 Troubleshooting: Ensure ${server} MCP server is available`
+      );
+    }
+  }
+
+  /**
+   * Health check: Verify server is responding to MCP requests.
+   * Uses tools/list introspection (available on all MCP servers).
+   *
+   * @param serverName - Server identifier
+   * @param client - Connected MCP client
+   * @returns true if server responds with tools list, false otherwise
+   */
+  private async healthCheckServer(serverName: string, client: Client): Promise<boolean> {
+    try {
+      // Call ListTools - lightweight introspection on all MCP servers
+      const result = await client.request(
+        { method: "tools/list" },
+        ListToolsResultSchema
+      );
+
+      // Server is healthy if it responds with tools list
+      logger.info(
+        `✅ Health check passed for ${serverName}: ${result.tools.length} tools available`
+      );
+      return true;
+    } catch (error) {
+      const errorMsg = error instanceof Error ? error.message : String(error);
+      logger.warn(
+        `❌ Health check failed for ${serverName}: ${errorMsg}\n` +
+        `🔧 Troubleshooting: Server started but not responding to MCP requests. ` +
+        `Check server logs, credentials, and network connectivity.`
+      );
+      return false;
+    }
+  }
+
+  /**
+   * Eagerly initialize all servers configured with lazy: false.
+   * Spawns processes in parallel, verifies health, reports results.
+   * Non-blocking: Failed servers don't prevent startup.
+   *
+   * @returns Promise that resolves when all eager servers initialized
+   */
+  private async initializeEagerServersWithHealthCheck(): Promise<void> {
+    // Identify servers configured with lazy: false
+    const eagerServers = Array.from(this.serverPools.entries())
+      .filter(([_, pool]) => pool.config.lazy === false)
+      .map(([serverName, _]) => serverName);
+
+    // Early exit if no eager servers configured
+    if (eagerServers.length === 0) {
+      logger.info("ℹ️ No eager servers configured - all servers will lazy-load on demand");
+      return;
+    }
+
+    // 🐛 DEBUG: Log eager server list
+    logger.info(
+      `🐛 DEBUG: Eager servers configured: ${eagerServers.join(", ")}\n` +
+      `🐛 DEBUG: Starting parallel initialization...`
+    );
+    const startTime = Date.now();
+
+    // Phase 1: Initialize all servers in parallel (spawn processes)
+    logger.info(`🐛 DEBUG: Phase 1 - Spawning ${eagerServers.length} processes...`);
+    const initResults = await Promise.allSettled(
+      eagerServers.map(serverName => this.getClient(serverName))
+    );
+
+    // 🐛 DEBUG: Log spawn results
+    const spawnTime = Date.now() - startTime;
+    const spawnedCount = initResults.filter(r => r.status === "fulfilled").length;
+    logger.info(
+      `🐛 DEBUG: Phase 1 complete - ${spawnedCount}/${eagerServers.length} spawned in ${spawnTime}ms`
+    );
+
+    // Phase 2: Health check each server (verify responding)
+    logger.info(`🐛 DEBUG: Phase 2 - Running health checks...`);
+    const healthCheckResults = await Promise.allSettled(
+      initResults.map(async (result, index) => {
+        if (result.status === "rejected") {
+          // Connection failed - can't health check
+          throw new Error(`Failed to connect: ${result.reason}`);
+        }
+        // result.value is the Client - health check it
+        return this.healthCheckServer(eagerServers[index], result.value);
+      })
+    );
+
+    // Phase 3: Report results
+    let successCount = 0;
+    let failureCount = 0;
+
+    healthCheckResults.forEach((result, index) => {
+      if (result.status === "fulfilled" && result.value === true) {
+        logger.info(`✅ ${eagerServers[index]} - Ready`);
+        successCount++;
+      } else {
+        const reason = result.status === "rejected"
+          ? (result.reason instanceof Error ? result.reason.message : String(result.reason))
+          : "Health check failed";
+        logger.warn(
+          `⚠️ ${eagerServers[index]} - Failed (${reason})\n` +
+          `🔧 Troubleshooting: Check server logs and configuration`
+        );
+        failureCount++;
+      }
+    });
+
+    const duration = Date.now() - startTime;
+
+    // 🐛 DEBUG: Final summary with timing breakdown
+    logger.info(
+      `🐛 DEBUG: Phase 2 complete - ${successCount} healthy, ${failureCount} failed\n` +
+      `🎯 Eager init complete in ${duration}ms: ${successCount}/${eagerServers.length} servers healthy\n` +
+      `   - Spawn time: ${spawnTime}ms\n` +
+      `   - Health check time: ${duration - spawnTime}ms`
+    );
+
+    if (failureCount > 0) {
+      logger.warn(
+        `⚠️ ${failureCount} critical server(s) failed initialization\n` +
+        `🔧 Some features may not work - check configuration and server logs`
       );
     }
   }
