@@ -393,8 +393,13 @@ export const SYNTROPY_TOOLS = [
     description: "Get repository status",
     inputSchema: {
       type: "object" as const,
-      properties: {},
-      required: []
+      properties: {
+        repo_path: {
+          type: "string",
+          description: "Path to git repository"
+        }
+      },
+      required: ["repo_path"]
     }
   },
   {
@@ -403,12 +408,16 @@ export const SYNTROPY_TOOLS = [
     inputSchema: {
       type: "object" as const,
       properties: {
+        repo_path: {
+          type: "string",
+          description: "Path to git repository"
+        },
         staged: {
           type: "boolean",
           description: "Show staged changes only"
         }
       },
-      required: []
+      required: ["repo_path"]
     }
   },
   {
@@ -417,12 +426,16 @@ export const SYNTROPY_TOOLS = [
     inputSchema: {
       type: "object" as const,
       properties: {
+        repo_path: {
+          type: "string",
+          description: "Path to git repository"
+        },
         max_count: {
           type: "number",
           description: "Maximum commits to show"
         }
       },
-      required: []
+      required: ["repo_path"]
     }
   },
   {
@@ -431,13 +444,17 @@ export const SYNTROPY_TOOLS = [
     inputSchema: {
       type: "object" as const,
       properties: {
+        repo_path: {
+          type: "string",
+          description: "Path to git repository"
+        },
         paths: {
           type: "array",
           items: { type: "string" },
           description: "File paths to stage"
         }
       },
-      required: ["paths"]
+      required: ["repo_path", "paths"]
     }
   },
   {
@@ -446,12 +463,16 @@ export const SYNTROPY_TOOLS = [
     inputSchema: {
       type: "object" as const,
       properties: {
+        repo_path: {
+          type: "string",
+          description: "Path to git repository"
+        },
         message: {
           type: "string",
           description: "Commit message"
         }
       },
-      required: ["message"]
+      required: ["repo_path", "message"]
     }
   },
 
@@ -595,12 +616,12 @@ export const SYNTROPY_TOOLS = [
     inputSchema: {
       type: "object" as const,
       properties: {
-        directory_path: {
+        directory: {
           type: "string",
           description: "Directory to package"
         }
       },
-      required: ["directory_path"]
+      required: ["directory"]
     }
   }
 ];
