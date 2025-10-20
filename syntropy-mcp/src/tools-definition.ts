@@ -31,12 +31,12 @@ export const SYNTROPY_TOOLS = [
     inputSchema: {
       type: "object" as const,
       properties: {
-        file_path: {
+        relative_path: {
           type: "string",
-          description: "Path to the file to analyze"
+          description: "Relative path to the file to analyze (relative to project root)"
         }
       },
-      required: ["file_path"]
+      required: ["relative_path"]
     }
   },
   {
@@ -113,12 +113,12 @@ export const SYNTROPY_TOOLS = [
     inputSchema: {
       type: "object" as const,
       properties: {
-        project_path: {
+        project: {
           type: "string",
           description: "Path to project root"
         }
       },
-      required: ["project_path"]
+      required: ["project"]
     }
   },
   {
@@ -129,7 +129,7 @@ export const SYNTROPY_TOOLS = [
       properties: {
         directory_path: {
           type: "string",
-          description: "Path to directory"
+          description: "Relative path to directory (relative to project root)"
         }
       },
       required: ["directory_path"]
@@ -141,12 +141,12 @@ export const SYNTROPY_TOOLS = [
     inputSchema: {
       type: "object" as const,
       properties: {
-        file_path: {
+        relative_path: {
           type: "string",
-          description: "Path to file to read"
+          description: "Relative path to file to read (relative to project root)"
         }
       },
-      required: ["file_path"]
+      required: ["relative_path"]
     }
   },
 
