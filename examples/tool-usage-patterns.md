@@ -5,7 +5,7 @@
 **Target Audience**: AI agents working with Context Engineering codebase
 
 **Last Updated**: 2025-10-20
-**Status**: ✅ Updated for Syntropy MCP
+**Status**: ✅ Updated for Syntropy MCP aggregation layer
 
 ---
 
@@ -305,14 +305,14 @@ py_files = find_files("src", "*.py", exclude=["__pycache__"])
 
 ### Get library documentation
 
-**USE**: `mcp__syntropy__context7__resolve-library-id` + `mcp__syntropy__context7__get-library-docs`
+**USE**: `mcp__syntropy__context7__resolve_library_id` + `mcp__syntropy__context7__get_library_docs`
 
 ```python
 # Step 1: Resolve library ID
-lib_id = resolve_library_id(libraryName="pytest")
+lib_id = mcp__syntropy__context7__resolve_library_id(libraryName="pytest")
 
 # Step 2: Get docs
-docs = get_library_docs(
+docs = mcp__syntropy__context7__get_library_docs(
     context7CompatibleLibraryID=lib_id,
     topic="fixtures"
 )
@@ -462,7 +462,7 @@ Need git operation?
 └─ Use mcp__syntropy__git__* tools (status, diff, log, add, commit)
 
 Need external docs?
-└─ Use mcp__syntropy__context7__* tools
+└─ Use `mcp__syntropy__context7__resolve_library_id` + `mcp__syntropy__context7__get_library_docs`
 
 Need complex reasoning?
 └─ Use mcp__syntropy__thinking__sequentialthinking
@@ -552,8 +552,8 @@ mcp__syntropy__linear__create_issue(
 #### Context7 Documentation (2 tools via `mcp__syntropy__context7__*`)
 
 **Tools**:
-- `mcp__syntropy__context7__resolve-library-id` - Resolve library identifiers
-- `mcp__syntropy__context7__get-library-docs` - Fetch library documentation
+- `mcp__syntropy__context7__resolve_library_id` - Resolve library identifiers
+- `mcp__syntropy__context7__get_library_docs` - Fetch library documentation
 
 **Why Preserved**:
 - Documentation lookup essential for external libraries (FastAPI, pytest, SQLAlchemy)
@@ -564,10 +564,10 @@ mcp__syntropy__linear__create_issue(
 **Example Usage**:
 ```python
 # Fetch framework documentation for integration planning
-lib_id = mcp__syntropy__context7__resolve-library-id(
+lib_id = mcp__syntropy__context7__resolve_library_id(
     libraryName="FastAPI"
 )
-docs = mcp__syntropy__context7__get-library-docs(
+docs = mcp__syntropy__context7__get_library_docs(
     context7CompatibleLibraryID=lib_id,
     topic="dependency_injection"
 )

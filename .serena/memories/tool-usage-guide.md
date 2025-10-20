@@ -4,7 +4,7 @@
 
 **Target Audience**: AI agents working with Context Engineering codebase
 
-**Last Updated**: 2025-10-17
+**Last Updated**: 2025-10-20
 
 ---
 
@@ -304,14 +304,14 @@ py_files = find_files("src", "*.py", exclude=["__pycache__"])
 
 ### Get library documentation
 
-**USE**: `mcp__syntropy__context7__resolve-library-id` + `mcp__syntropy__context7__get-library-docs`
+**USE**: `mcp__syntropy__context7__resolve_library_id` + `mcp__syntropy__context7__get_library_docs`
 
 ```python
 # Step 1: Resolve library ID
-lib_id = resolve_library_id(libraryName="pytest")
+lib_id = mcp__syntropy__context7__resolve_library_id(libraryName="pytest")
 
 # Step 2: Get docs
-docs = get_library_docs(
+docs = mcp__syntropy__context7__get_library_docs(
     context7CompatibleLibraryID=lib_id,
     topic="fixtures"
 )
@@ -461,10 +461,10 @@ Need git operation?
 └─ Use mcp__syntropy__git__* tools (status, diff, log, add, commit)
 
 Need external docs?
-└─ Use mcp__syntropy__context7__* tools
+└─ Use `mcp__syntropy__context7__resolve_library_id` + `mcp__syntropy__context7__get_library_docs`
 
 Need complex reasoning?
-└─ Use mcp__syntropy__thinking__sequentialthinking
+└─ Use `mcp__syntropy__thinking__sequentialthinking`
 
 Need bash?
 └─ ONLY for external tools (git, uv, pytest)
@@ -567,7 +567,7 @@ mcp__syntropy__repomix__*           # Codebase packaging (1)
 - Enables complete feature tracking from conception to completion
 - Without these: Issue tracking breaks, implementation blueprints untracked
 
-**Why Context7 preserved** (2 tools via `mcp__syntropy__context7__*`):
+**Why Context7 preserved** (2 tools: `mcp__syntropy__context7__resolve_library_id`, `mcp__syntropy__context7__get_library_docs`):
 - Documentation lookup essential for external libraries (FastAPI, pytest, etc.)
 - Enables knowledge-grounded PRPs with real API references
 - Required for accurate framework integration patterns

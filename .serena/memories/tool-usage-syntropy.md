@@ -201,14 +201,14 @@ git_commit(repo_path=".", message="feat: add new feature")
 
 ### Get library documentation
 
-**USE**: `mcp__syntropy__context7__resolve-library-id` + `mcp__syntropy__context7__get-library-docs`
+**USE**: `mcp__syntropy__context7__resolve_library_id` + `mcp__syntropy__context7__get_library_docs`
 
 ```python
 # Step 1: Resolve library ID
-lib_id = resolve_library_id(libraryName="pytest")
+lib_id = mcp__syntropy__context7__resolve_library_id(libraryName="pytest")
 
 # Step 2: Get docs
-docs = get_library_docs(
+docs = mcp__syntropy__context7__get_library_docs(
     context7CompatibleLibraryID=lib_id,
     topic="fixtures"
 )
@@ -361,7 +361,7 @@ Need codebase packaging?
 | `mcp__serena__find_symbol` | `mcp__syntropy__serena__find_symbol` | Same functionality, unified MCP |
 | `mcp__filesystem__read_text_file` | `mcp__syntropy__filesystem__read_text_file` | Same functionality, unified MCP |
 | `mcp__git__git_status` | `mcp__syntropy__git__git_status` | Same functionality, unified MCP |
-| `mcp__context7__get-library-docs` | `mcp__syntropy__context7__get-library-docs` | Same functionality, unified MCP |
+| `mcp__context7__get_library_docs` | `mcp__syntropy__context7__get_library_docs` | Same functionality, unified MCP |
 | `mcp__sequential-thinking__sequentialthinking` | `mcp__syntropy__thinking__sequentialthinking` | Same functionality, unified MCP |
 | `mcp__linear-server__create_issue` | `mcp__syntropy__linear__create_issue` | Same functionality, unified MCP |
 | `mcp__repomix__pack_codebase` | `mcp__syntropy__repomix__pack_codebase` | Same functionality, unified MCP |

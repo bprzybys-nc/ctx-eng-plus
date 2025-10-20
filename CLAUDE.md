@@ -155,7 +155,7 @@ ce-drift
 - MCP auth reset: `Bash(rm -rf ~/.mcp-auth)`
 
 #### Serena Essential (8 tools via Syntropy)
-- Code navigation: `mcp__syntropy__serena__find_symbol`, `get_symbols_overview`, `search_for_pattern`
+- Code navigation: `mcp__syntropy__serena__find_symbol`, `mcp__syntropy__serena__get_symbols_overview`, `mcp__syntropy__serena__search_for_pattern`
 - Impact analysis: `mcp__syntropy__serena__find_referencing_symbols`
 - Memory: `mcp__syntropy__serena__write_memory`
 - File creation: `mcp__syntropy__serena__create_text_file`
@@ -163,19 +163,19 @@ ce-drift
 - Regex replacement: `mcp__syntropy__serena__replace_regex` (workaround for denied symbol mutations)
 
 #### Filesystem Core (8 tools via Syntropy)
-- Read/write: `mcp__syntropy__filesystem__read_text_file`, `write_file`, `edit_file`
-- Navigation: `mcp__syntropy__filesystem__list_directory`, `search_files`, `directory_tree`
-- Info: `mcp__syntropy__filesystem__get_file_info`, `list_allowed_directories`
+- Read/write: `mcp__syntropy__filesystem__read_text_file`, `mcp__syntropy__filesystem__write_file`, `mcp__syntropy__filesystem__edit_file`
+- Navigation: `mcp__syntropy__filesystem__list_directory`, `mcp__syntropy__filesystem__search_files`, `mcp__syntropy__filesystem__directory_tree`
+- Info: `mcp__syntropy__filesystem__get_file_info`, `mcp__syntropy__filesystem__list_allowed_directories`
 
 #### Git Essentials (5 tools via Syntropy)
-- `mcp__syntropy__git__git_status`, `git_diff`, `git_log`, `git_add`, `git_commit`
+- `mcp__syntropy__git__git_status`, `mcp__syntropy__git__git_diff`, `mcp__syntropy__git__git_log`, `mcp__syntropy__git__git_add`, `mcp__syntropy__git__git_commit`
 
 #### Documentation & Reasoning (3 tools via Syntropy)
-- Context7 docs: `mcp__syntropy__context7__resolve-library-id`, `get-library-docs`
+- Context7 docs: `mcp__syntropy__context7__resolve_library_id`, `mcp__syntropy__context7__get_library_docs`
 - Complex reasoning: `mcp__syntropy__thinking__sequentialthinking`
 
 #### Project Management - Linear (5 tools via Syntropy)
-- Issues: `mcp__syntropy__linear__create_issue`, `get_issue`, `list_issues`, `update_issue`
+- Issues: `mcp__syntropy__linear__create_issue`, `mcp__syntropy__linear__get_issue`, `mcp__syntropy__linear__list_issues`, `mcp__syntropy__linear__update_issue`
 - Projects: `mcp__syntropy__linear__list_projects`
 
 #### Codebase Analysis (1 tool via Syntropy)
@@ -190,6 +190,7 @@ ce-drift
 - Find symbol: `mcp__syntropy__serena__find_symbol`
 - File overview: `mcp__syntropy__serena__get_symbols_overview`
 - Pattern search: `mcp__syntropy__serena__search_for_pattern`
+- Impact analysis: `mcp__syntropy__serena__find_referencing_symbols`
 
 **File Operations** (Filesystem via Syntropy):
 - Read file: `mcp__syntropy__filesystem__read_text_file` (config/text)
@@ -203,7 +204,7 @@ ce-drift
 - Head/tail: `shell_utils.head()` / `tail()` ❌ NOT `Bash(head/tail)`
 
 **Git Operations** (Git via Syntropy):
-- `mcp__syntropy__git__git_status`, `git_diff`, `git_log`, `git_add`, `git_commit`
+- `mcp__syntropy__git__git_status`, `mcp__syntropy__git__git_diff`, `mcp__syntropy__git__git_log`, `mcp__syntropy__git__git_add`, `mcp__syntropy__git__git_commit`
 
 ### Validation Tool
 
@@ -219,6 +220,95 @@ cd tools && uv run python -m ce.validate_permissions search <pattern> [allow|den
 **Note**: `tools-rationalization-study.md` is outdated reference - current config already empirically optimized
 
 **Optimization Impact**: 60-70% reduction in tool evaluation overhead (46 essential tools vs 100+ previously)
+
+---
+
+## Syntropy Tools Reference - Full Specifications
+
+### Serena Code Navigation & Analysis (8 tools)
+| Tool | Purpose | Use Case |
+|------|---------|----------|
+| `mcp__syntropy__serena__find_symbol` | Find function/class by name with implementation | Know exact symbol name, need to read code |
+| `mcp__syntropy__serena__get_symbols_overview` | List all functions/classes in a file | Exploring file structure, understanding module |
+| `mcp__syntropy__serena__search_for_pattern` | Search code by regex pattern | Find all async functions, error handling patterns |
+| `mcp__syntropy__serena__find_referencing_symbols` | Find all usages of a function | Impact analysis before refactoring |
+| `mcp__syntropy__serena__write_memory` | Store context in agent memory | Remember important project patterns |
+| `mcp__syntropy__serena__create_text_file` | Create new text file | Generate documentation, code scaffolds |
+| `mcp__syntropy__serena__activate_project` | Activate Serena project context | Initialize code analysis for project |
+| `mcp__syntropy__serena__replace_regex` | Replace code using regex | Full function replacement, pattern mutations |
+
+### Filesystem Operations (8 tools)
+| Tool | Purpose | Use Case |
+|------|---------|----------|
+| `mcp__syntropy__filesystem__read_text_file` | Read config/markdown files | .env, .yml, .md documentation |
+| `mcp__syntropy__filesystem__write_file` | Write new file content | Create config files, documentation |
+| `mcp__syntropy__filesystem__edit_file` | Surgical line-level edits | Precise changes to existing files |
+| `mcp__syntropy__filesystem__list_directory` | List files in directory | Explore directory structure |
+| `mcp__syntropy__filesystem__search_files` | Find files by pattern | Locate test files, configs by name |
+| `mcp__syntropy__filesystem__directory_tree` | Show directory tree structure | Visualize project organization |
+| `mcp__syntropy__filesystem__get_file_info` | Get file metadata | Size, timestamp, permissions |
+| `mcp__syntropy__filesystem__list_allowed_directories` | List accessible directories | Check project boundaries |
+
+### Git Version Control (5 tools)
+| Tool | Purpose | Use Case |
+|------|---------|----------|
+| `mcp__syntropy__git__git_status` | Check repository status | See staged/unstaged changes |
+| `mcp__syntropy__git__git_diff` | View recent changes | Review diff before commit |
+| `mcp__syntropy__git__git_log` | View commit history | Find recent commits, understand flow |
+| `mcp__syntropy__git__git_add` | Stage files for commit | Prepare changes |
+| `mcp__syntropy__git__git_commit` | Create commit | Save changes with message |
+
+### Documentation & External Libraries (2 tools)
+| Tool | Purpose | Use Case |
+|------|---------|----------|
+| `mcp__syntropy__context7__resolve_library_id` | Resolve library identifier | Lookup library name to get ID |
+| `mcp__syntropy__context7__get_library_docs` | Fetch library documentation | Get API docs, usage patterns |
+
+### Reasoning & Planning (1 tool)
+| Tool | Purpose | Use Case |
+|------|---------|----------|
+| `mcp__syntropy__thinking__sequentialthinking` | Multi-step decomposition | Complex problems, architectural planning |
+
+### Project Management (5 tools)
+| Tool | Purpose | Use Case |
+|------|---------|----------|
+| `mcp__syntropy__linear__create_issue` | Create Linear issue | New tasks from PRP generation |
+| `mcp__syntropy__linear__get_issue` | Retrieve issue details | Check issue status, description |
+| `mcp__syntropy__linear__list_issues` | List issues with filters | Find assigned work, status checks |
+| `mcp__syntropy__linear__update_issue` | Update issue status/content | Mark done, add details |
+| `mcp__syntropy__linear__list_projects` | List available projects | Check project structure |
+
+### Codebase Packaging (1 tool)
+| Tool | Purpose | Use Case |
+|------|---------|----------|
+| `mcp__syntropy__repomix__pack_codebase` | Package entire codebase | Export for analysis, sharing with AI |
+
+### Quick Tool Selection Guide
+
+**Need to analyze code?**
+- Know symbol name → `find_symbol`
+- Explore file → `get_symbols_overview`
+- Search patterns → `search_for_pattern`
+- Find usages → `find_referencing_symbols`
+
+**Need to modify files?**
+- New file → `write_file`
+- Existing file (surgical) → `edit_file`
+- Config/text files → `read_text_file`
+
+**Need version control?**
+- Check status → `git_status`
+- View changes → `git_diff`
+- Create commits → `git_add` + `git_commit`
+
+**Need external knowledge?**
+- Library docs → `resolve_library_id` + `get_library_docs`
+
+**Need complex reasoning?**
+- Multi-phase planning → `sequentialthinking`
+
+**Need project management?**
+- Track work → Linear tools (create, update, list issues)
 
 ---
 

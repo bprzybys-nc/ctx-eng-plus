@@ -96,8 +96,8 @@ mcp__syntropy__serena__replace_regex(
 - `mcp__syntropy__git__git_commit` - Create commits
 
 **Other Tools** (9):
-- `mcp__syntropy__context7__resolve-library-id` - Resolve library docs
-- `mcp__syntropy__context7__get-library-docs` - Fetch library documentation
+- `mcp__syntropy__context7__resolve_library_id` - Resolve library docs
+- `mcp__syntropy__context7__get_library_docs` - Fetch library documentation
 - `mcp__syntropy__thinking__sequentialthinking` - Complex reasoning
 - `mcp__syntropy__linear__create_issue` - Create Linear issues
 - `mcp__syntropy__linear__get_issue` - Retrieve issues
@@ -159,8 +159,8 @@ mcp__syntropy__linear__update_issue(
 #### Context7 Documentation (2 tools) - Library Integration
 
 **Tools** (via Syntropy):
-- `mcp__syntropy__context7__resolve-library-id` - Resolve library identifiers
-- `mcp__syntropy__context7__get-library-docs` - Fetch library documentation
+- `mcp__syntropy__context7__resolve_library_id` - Resolve library identifiers
+- `mcp__syntropy__context7__get_library_docs` - Fetch library documentation
 
 **Why Preserved**:
 - Essential for integrating external library documentation into PRPs
@@ -170,12 +170,12 @@ mcp__syntropy__linear__update_issue(
 **Usage Example**:
 ```python
 # Step 1: Resolve library ID
-lib_id = mcp__syntropy__context7__resolve-library-id(
+lib_id = mcp__syntropy__context7__resolve_library_id(
     libraryName="FastAPI"
 )
 
 # Step 2: Get documentation for specific topic
-docs = mcp__syntropy__context7__get-library-docs(
+docs = mcp__syntropy__context7__get_library_docs(
     context7CompatibleLibraryID=lib_id,
     topic="dependency_injection"
 )
