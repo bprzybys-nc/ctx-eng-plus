@@ -795,7 +795,7 @@ def run_py(code: Optional[str] = None,
 
 **Core Commands (Implemented):**
 
-- `ce validate --level [1|2|3|all]` - Run validation gates
+- `ce validate --level [1|2|3|all]` - Run validation gates (L1-L4)
 - `ce git status` - Git repository status
 - `ce git diff [options]` - View git changes
 - `ce git checkpoint "message"` - Create git tag checkpoint
@@ -804,34 +804,64 @@ def run_py(code: Optional[str] = None,
 - `ce context prune` - Remove stale context entries
 - `ce run_py` - Execute Python code (3 LOC limit)
 
-**PRP Context Commands (Planned):**
+**PRP Management Commands (Implemented):**
 
-- `ce prp start <prp-id>` - Initialize PRP execution context with namespaced state
-- `ce prp checkpoint <phase>` - Create PRP-scoped checkpoint (e.g., `checkpoint-PRP-003-phase2`)
-- `ce prp cleanup` - Execute state cleanup protocol (Section 5.6)
-- `ce prp restore <prp-id> [phase]` - Restore to PRP checkpoint
-- `ce prp status` - Show current PRP execution state
-- `ce prp list` - List all PRP checkpoints and state
+- `ce prp validate <prp-file>` - Validate PRP structure and sections
+- `ce prp generate <initial-md>` - Generate PRP from INITIAL.md (Slash command wrapper)
+- `ce prp execute <prp-file>` - Execute PRP implementation (Slash command wrapper)
+- `ce prp analyze <prp-file>` - Analyze PRP for complexity, sizing, patterns
+- `ce update-context [--prp file]` - Sync context, generate drift reports, create remediation PRPs
 
-**Drift History Commands (Planned):**
+**PRP State Management (Functions Implemented, CLI Pending):**
 
-- `ce drift history [--last N]` - Show recent drift decisions from last N PRPs
-- `ce drift show <prp-id>` - Display DRIFT_JUSTIFICATION for specific PRP
-- `ce drift summary` - Aggregate drift statistics and patterns
-- `ce drift compare <prp-id-1> <prp-id-2>` - Compare drift decisions between PRPs
+- `ce prp start <prp-id>` - ✅ Function exists, CLI wrapper pending
+- `ce prp checkpoint <phase>` - ✅ Function exists, CLI wrapper pending
+- `ce prp cleanup` - ✅ Function exists, CLI wrapper pending
+- `ce prp restore <prp-id> [phase]` - ✅ Function exists, CLI wrapper pending
+- `ce prp status` - ✅ Function exists, CLI wrapper pending
+- `ce prp list` - ✅ Function exists, CLI wrapper pending
+
+**Drift History Commands (Functions Implemented, CLI Pending):**
+
+- `ce drift history [--last N]` - ✅ Function exists, CLI wrapper pending
+- `ce drift show <prp-id>` - ✅ Function exists, CLI wrapper pending
+- `ce drift summary` - ✅ Function exists, CLI wrapper pending
+- `ce drift compare <prp-id-1> <prp-id-2>` - ✅ Function exists, CLI wrapper pending
+
+**Pipeline & Infrastructure Commands (Implemented):**
+
+- `ce pipeline validate <yaml>` - Validate abstract pipeline YAML schema
+- `ce pipeline render <yaml>` - Render pipeline to concrete format (GitHub Actions, etc.)
+- `ce metrics [options]` - Collect and display metrics
+- `ce analyze-context` / `ce analyse-context` - Fast drift check without metadata sync
 
 **Implementation Status:**
 
 ```python
-# Implemented in tools/ce/
+# Core operations (fully implemented)
 ✅ core.py: run_cmd, git_status, git_diff, git_checkpoint, run_py
-✅ validate.py: validate_level_1, validate_level_2, validate_level_3, validate_all
+✅ validate.py: validate_level_1-4 (all 4 levels with L4 drift detection)
 ✅ context.py: sync, health, prune
+✅ update_context.py: drift remediation workflow automation
 
-# Planned (not yet implemented)
-🔜 prp.py: start, checkpoint, cleanup, restore, status, list
-🔜 drift.py: history, show, summary, compare
+# PRP system (functions implemented, most CLI exposed)
+✅ prp.py: start_prp, checkpoint, cleanup, restore, status, list (functions)
+✅ generate.py: research + synthesize (via /generate-prp)
+✅ execute.py: phase execution + validation loops (via /execute-prp)
+✅ prp_analyzer.py: complexity analysis (ce prp analyze)
+
+# Drift tracking (functions implemented, CLI wrappers pending)
+✅ drift.py: get_drift_history, show_drift_decision, drift_summary, compare
+✅ drift_analyzer.py: automated pattern detection
+
+# Pipeline & infrastructure (partial)
+⚠️ pipeline.py: schema validation + abstract definition only
+✅ metrics.py: collection and reporting
+✅ linear_utils.py: issue creation + defaults
+✅ testing/: strategy pattern + builder (for PRP validation)
 ```
+
+**Architecture Note:** Execution driven by slash commands (`/generate-prp`, `/execute-prp`) with state managed internally. CLI commands provide validation, analysis, and utility functions. This differs from model's planned interactive CLI state management but achieves same functionality through delegation.
 
 **PRP Context Command Examples:**
 
@@ -907,12 +937,135 @@ ce drift compare PRP-003 PRP-005
 
 - `sequentialthinking(thought, thought_number, total_thoughts)` - Step-by-step analysis
 
+#### 4.1.4 Linear Integration
+
+**Purpose:** Automated issue tracking for PRP lifecycle management
+
+**Status:** ✅ **IMPLEMENTED** (PRP-24 integration, not in prior model)
+
+**Functionality:**
+
+- **Auto-issue creation**: `/generate-prp` creates Linear issue automatically
+- **Default configuration**: `.ce/linear-defaults.yml` stores project, assignee, labels
+- **PRP metadata**: YAML header stores `issue: {LINEAR-ISSUE-ID}` for tracking
+- **Multi-PRP join**: `--join-prp` flag links multiple PRPs to same issue
+- **Status tracking**: Update issue as PRP progresses through phases
+
+**Configuration:**
+
+```yaml
+# .ce/linear-defaults.yml
+project: "Context Engineering"
+assignee: "user@example.com"
+team: "TeamID"
+default_labels:
+  - "feature"
+```
+
+**Usage:**
+
+```bash
+# Auto-create Linear issue during PRP generation
+/generate-prp INITIAL.md
+# → Creates PRP-NN + Linear issue BLA-XXX
+# → Updates PRP YAML with issue ID
+
+# Join related PRPs to same Linear issue
+/generate-prp part2.md --join-prp PRP-10
+# → Creates PRP-NN + links to BLA-XXX (from PRP-10)
+```
+
+#### 4.1.5 Metrics & Performance Monitoring
+
+**Purpose:** Collect, analyze, and report execution metrics
+
+**Status:** ✅ **IMPLEMENTED** (not in prior model)
+
+**Components:**
+
+- **metrics.py**: Collection framework (execution time, success rate, quality scores)
+- **profiling.py**: Performance profiling (memory, CPU, timing analysis)
+- **Linear integration**: Track metrics per issue for productivity analysis
+
+**CLI:**
+
+```bash
+ce metrics --type prp          # PRP execution metrics
+ce metrics --type validation   # Validation gate performance
+ce metrics --format json       # JSON output for CI/CD
+```
+
+#### 4.1.6 Syntropy MCP Aggregation Layer
+
+**Purpose:** Unified interface for all MCP tools via single server
+
+**Status:** ✅ **IMPLEMENTED** (PRP-24, transforms tool ecosystem)
+
+**Architecture:**
+
+- **Single MCP Server**: `syntropy-mcp/` wraps 7 underlying servers
+- **Unified namespace**: `mcp__syntropy__<server>__<tool>` format
+- **Connection pooling**: Lazy initialization + automatic cleanup
+- **Zero breaking changes**: Existing tools preserved, just aggregated
+
+**Servers Managed:**
+
+1. Serena (code navigation)
+2. Filesystem (file operations)
+3. Git (version control)
+4. Context7 (documentation)
+5. Sequential Thinking (reasoning)
+6. Linear (issue tracking)
+7. Repomix (codebase packaging)
+
+**Benefits:**
+
+- Single connection point instead of 8 servers
+- Structured logging with timing
+- Consistent error handling
+- Easy extensibility (new servers via servers.json)
+
+**Configuration:**
+
+```json
+// syntropy-mcp/servers.json
+{
+  "servers": {
+    "syn-serena": {
+      "command": "uvx",
+      "args": ["--from", "git+https://...", "serena"]
+    },
+    // ... other servers
+  }
+}
+```
+
+#### 4.1.7 Quality & Validation Utilities
+
+**Purpose:** Markdown linting, Mermaid validation, code quality checks
+
+**Status:** ✅ **IMPLEMENTED** (not in prior model)
+
+**Components:**
+
+- **markdown_lint.py**: Style enforcement for markdown docs
+- **mermaid_validator.py**: Diagram validation and color compatibility
+- **code_analyzer.py**: Pattern analysis for drift detection
+- **pattern_extractor.py**: Example extraction for EXAMPLES sections
+
+**Integration:**
+
+- **L1 validation**: Linter + formatter auto-fix
+- **Pre-commit**: Markdown linting via git hooks
+- **PRP validation**: Mermaid color specs in diagrams
+
 ### See Also
 
 - [Product Requirements Prompt (PRP) System](../docs/research/01-prp-system.md) - Complete PRP templates, validation gates, and self-healing patterns
 - [MCP Orchestration](../docs/research/03-mcp-orchestration.md) - Strategic integration of Serena, Context7, and Sequential Thinking MCPs
 - [Command Reference](../docs/research/07-commands-reference.md) - Complete CLI tool documentation and command workflows
 - [Tooling and Configuration](../docs/research/10-tooling-configuration.md) - Setup guides for UV, git, validation commands, and MCP servers
+- [Syntropy Examples](../tools/ce/examples/syntropy/README.md) - Complete pattern library for Syntropy MCP servers
 
 ---
 
