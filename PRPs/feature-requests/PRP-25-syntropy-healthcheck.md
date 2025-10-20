@@ -1,15 +1,18 @@
 ---
-name: "Syntropy MCP Healthcheck Tool"
-description: "Add healthcheck tool to verify Syntropy server and all underlying MCP servers are healthy, with structured status reporting and troubleshooting guidance"
-prp_id: "PRP-25"
-issue: "TBD"
-status: "new"
-created_date: "2025-10-20T14:30:00Z"
-last_updated: "2025-10-20T14:35:00Z"
-updated_by: "manual-update"
 context_sync:
   ce_updated: false
+  last_sync: '2025-10-20T12:50:51.283247+00:00'
   serena_updated: false
+created_date: '2025-10-20T14:30:00Z'
+description: Add healthcheck tool to verify Syntropy server and all underlying MCP
+  servers are healthy, with structured status reporting and troubleshooting guidance
+issue: TBD
+last_updated: '2025-10-20T12:40:00Z'
+name: Syntropy MCP Healthcheck Tool
+prp_id: PRP-25
+status: executed
+updated: '2025-10-20T12:50:51.283260+00:00'
+updated_by: update-context-command
 version: 1
 ---
 

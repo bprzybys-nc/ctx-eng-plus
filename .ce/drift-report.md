@@ -1,8 +1,8 @@
 ## Context Drift Report - Examples/ Patterns
 
-**Drift Score**: 4.2% (✅ OK)
-**Generated**: 2025-10-19T17:04:23.443325+00:00
-**Violations Found**: 5
+**Drift Score**: 4.8% (✅ OK)
+**Generated**: 2025-10-20T12:50:54.069266+00:00
+**Violations Found**: 6
 **Missing Examples**: 0
 
 ### Part 1: Code Violating Documented Patterns
@@ -23,7 +23,7 @@ All critical PRPs have corresponding examples/ documentation.
    - Review and fix: File tools/ce/validation_loop.py has missing_troubleshooting (violates examples/patterns/error-handling.py): Add 🔧 Troubleshooting guidance
    - Review and fix: File tools/ce/execute.py has missing_troubleshooting (violates examples/patterns/error-handling.py): Add 🔧 Troubleshooting guidance
    - Review and fix: File tools/ce/core.py has missing_troubleshooting (violates examples/patterns/error-handling.py): Add 🔧 Troubleshooting guidance
-   - Review 2 other files listed in Part 1
+   - Review 3 other files listed in Part 1
 
 2. **Missing Examples** (documentation needed):
    - No missing examples
