@@ -146,52 +146,55 @@ ce-drift
 
 ### Allowed Tools by Category
 
+**Status**: ✅ Updated 2025-10-20 for Syntropy MCP aggregation layer
+
 #### Bash Patterns (11 tools)
 - Version control: `Bash(git:*)`, `git add:*`, `git commit:*`, `git diff-tree:*`
 - Package management: `Bash(uv run:*)`, `uv run pytest:*`, `uv add:*`, `uvx:*`
 - System: `Bash(env:*)`, `brew install:*`
 - MCP auth reset: `Bash(rm -rf ~/.mcp-auth)`
 
-#### Serena Essential (7 tools)
-- Code navigation: `mcp__serena__find_symbol`, `get_symbols_overview`, `search_for_pattern`
-- Impact analysis: `mcp__serena__find_referencing_symbols`
-- Memory: `mcp__serena__write_memory`
-- File creation: `mcp__serena__create_text_file`
-- Project management: `mcp__serena__activate_project`
+#### Serena Essential (8 tools via Syntropy)
+- Code navigation: `mcp__syntropy__serena__find_symbol`, `get_symbols_overview`, `search_for_pattern`
+- Impact analysis: `mcp__syntropy__serena__find_referencing_symbols`
+- Memory: `mcp__syntropy__serena__write_memory`
+- File creation: `mcp__syntropy__serena__create_text_file`
+- Project management: `mcp__syntropy__serena__activate_project`
+- Regex replacement: `mcp__syntropy__serena__replace_regex` (workaround for denied symbol mutations)
 
-#### Filesystem Core (8 tools)
-- Read/write: `mcp__filesystem__read_text_file`, `write_file`, `edit_file`
-- Navigation: `mcp__filesystem__list_directory`, `search_files`, `directory_tree`
-- Info: `mcp__filesystem__get_file_info`, `list_allowed_directories`
+#### Filesystem Core (8 tools via Syntropy)
+- Read/write: `mcp__syntropy__filesystem__read_text_file`, `write_file`, `edit_file`
+- Navigation: `mcp__syntropy__filesystem__list_directory`, `search_files`, `directory_tree`
+- Info: `mcp__syntropy__filesystem__get_file_info`, `list_allowed_directories`
 
-#### Git Essentials (5 tools)
-- `mcp__git__git_status`, `git_diff`, `git_log`, `git_add`, `git_commit`
+#### Git Essentials (5 tools via Syntropy)
+- `mcp__syntropy__git__git_status`, `git_diff`, `git_log`, `git_add`, `git_commit`
 
-#### Documentation & Reasoning (3 tools)
-- Context7 docs: `mcp__context7__resolve-library-id`, `get-library-docs`
-- Complex reasoning: `mcp__sequential-thinking__sequentialthinking`
+#### Documentation & Reasoning (3 tools via Syntropy)
+- Context7 docs: `mcp__syntropy__context7__resolve-library-id`, `get-library-docs`
+- Complex reasoning: `mcp__syntropy__thinking__sequentialthinking`
 
-#### Project Management - Linear (5 tools)
-- Issues: `mcp__linear-server__create_issue`, `get_issue`, `list_issues`, `update_issue`
-- Projects: `mcp__linear-server__list_projects`
+#### Project Management - Linear (5 tools via Syntropy)
+- Issues: `mcp__syntropy__linear__create_issue`, `get_issue`, `list_issues`, `update_issue`
+- Projects: `mcp__syntropy__linear__list_projects`
 
-#### Codebase Analysis (1 tool)
-- `mcp__repomix__pack_codebase`
+#### Codebase Analysis (1 tool via Syntropy)
+- `mcp__syntropy__repomix__pack_codebase`
 
 #### Special Permissions (6 patterns)
 - Read paths, WebFetch(domain:github.com), SlashCommand(/generate-prp, /peer-review)
 
-### Quick Patterns
+### Quick Patterns (via Syntropy MCP)
 
-**Code Navigation**:
-- Find symbol: `mcp__serena__find_symbol`
-- File overview: `mcp__serena__get_symbols_overview`
-- Pattern search: `mcp__serena__search_for_pattern`
+**Code Navigation** (Serena via Syntropy):
+- Find symbol: `mcp__syntropy__serena__find_symbol`
+- File overview: `mcp__syntropy__serena__get_symbols_overview`
+- Pattern search: `mcp__syntropy__serena__search_for_pattern`
 
-**File Operations**:
-- Read file: `mcp__filesystem__read_text_file` (config/text)
-- Edit file: `mcp__filesystem__edit_file`
-- List dir: `mcp__filesystem__list_directory`
+**File Operations** (Filesystem via Syntropy):
+- Read file: `mcp__syntropy__filesystem__read_text_file` (config/text)
+- Edit file: `mcp__syntropy__filesystem__edit_file`
+- List dir: `mcp__syntropy__filesystem__list_directory`
 
 **Text Processing** (always use Python shell_utils, NOT bash):
 - Search: `shell_utils.grep_text()` ❌ NOT `Bash(grep)`
@@ -199,8 +202,8 @@ ce-drift
 - Count lines: `shell_utils.count_lines()` ❌ NOT `Bash(wc)`
 - Head/tail: `shell_utils.head()` / `tail()` ❌ NOT `Bash(head/tail)`
 
-**Git Operations**:
-- `mcp__git__git_status`, `git_diff`, `git_log`, `git_add`, `git_commit`
+**Git Operations** (Git via Syntropy):
+- `mcp__syntropy__git__git_status`, `git_diff`, `git_log`, `git_add`, `git_commit`
 
 ### Validation Tool
 

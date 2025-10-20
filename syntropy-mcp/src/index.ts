@@ -31,9 +31,15 @@ import {
   McpError
 } from "@modelcontextprotocol/sdk/types.js";
 import { MCPClientManager } from "./client-manager.js";
+import path from "path";
+import { fileURLToPath } from "url";
+
+// Get the directory of this file for resolving servers.json
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 // Initialize client manager for forwarding
-const clientManager = new MCPClientManager("./servers.json");
+const clientManager = new MCPClientManager(path.join(__dirname, "../servers.json"));
 
 // Tool routing configuration
 const SERVER_ROUTES: Record<string, string> = {
@@ -170,14 +176,18 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
 server.setRequestHandler(CallToolRequestSchema, async (request) => {
   const { name, arguments: args } = request.params;
 
-  // Parse syntropy tool name
+  // DEBUG: Log the incoming tool name
+  console.error(`[Syntropy] DEBUG: Received tool call: "${name}"`);
+  console.error(`[Syntropy] DEBUG: Tool args:`, JSON.stringify(args));
+
+  // Parse syntropy tool name (format: syntropy:server:tool)
   const parsed = parseSyntropyTool(name);
   if (!parsed) {
     throw new McpError(
       ErrorCode.InvalidRequest,
       `Invalid syntropy tool name: ${name}\n` +
-      `Expected format: syntropy:server:tool\n` +
-      `Example: syntropy:serena:find_symbol\n` +
+      `Expected format: mcp__syntropy__server__tool\n` +
+      `Example: mcp__syntropy__serena__find_symbol\n` +
       `🔧 Troubleshooting: Check tool name format`
     );
   }
