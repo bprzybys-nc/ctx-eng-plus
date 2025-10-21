@@ -12,7 +12,7 @@
 
 ### Find function/class definition
 
-**USE**: `mcp__syntropy__serena__find_symbol`
+**USE**: `mcp__syntropy_serena_find_symbol`
 
 ```python
 # Find function by name
@@ -26,7 +26,7 @@ find_symbol(name_path="UserAuth/validate", include_body=True)
 
 ### Understand file structure
 
-**USE**: `mcp__syntropy__serena__get_symbols_overview`
+**USE**: `mcp__syntropy_serena_get_symbols_overview`
 
 ```python
 # Get top-level overview
@@ -37,7 +37,7 @@ get_symbols_overview(path="src/auth.py")
 
 ### Search for pattern in codebase
 
-**USE**: `mcp__syntropy__serena__search_for_pattern`
+**USE**: `mcp__syntropy_serena_search_for_pattern`
 
 ```python
 # Find async functions
@@ -51,7 +51,7 @@ search_for_pattern(pattern="except.*ValueError", path="src/")
 
 ### Find all usages of function
 
-**USE**: `mcp__syntropy__serena__find_referencing_symbols`
+**USE**: `mcp__syntropy_serena_find_referencing_symbols`
 
 ```python
 # Find everywhere validate_token is called
@@ -67,8 +67,8 @@ find_referencing_symbols(name_path="validate_token", path="src/auth.py")
 ### Read file contents
 
 **USE**:
-- `mcp__syntropy__filesystem__read_text_file` - For config files, markdown, non-code
-- `mcp__syntropy__serena__read_file` - For Python/code files (indexed by LSP)
+- `mcp__syntropy_filesystem_read_text_file` - For config files, markdown, non-code
+- `mcp__syntropy_serena_read_file` - For Python/code files (indexed by LSP)
 
 ```python
 # Read config file
@@ -82,7 +82,7 @@ read_file(relative_path="ce/core.py")
 
 ### List directory contents
 
-**USE**: `mcp__syntropy__filesystem__list_directory`
+**USE**: `mcp__syntropy_filesystem_list_directory`
 
 ```python
 list_directory(path="examples/")
@@ -92,7 +92,7 @@ list_directory(path="examples/")
 
 ### Find files by pattern
 
-**USE**: `mcp__syntropy__filesystem__search_files`
+**USE**: `mcp__syntropy_filesystem_search_files`
 
 ```python
 # Find all test files
@@ -103,7 +103,7 @@ search_files(path="tests", pattern="test_*.py")
 
 ### Edit file with line-based changes
 
-**USE**: `mcp__syntropy__filesystem__edit_file`
+**USE**: `mcp__syntropy_filesystem_edit_file`
 
 ```python
 edit_file(
@@ -119,7 +119,7 @@ edit_file(
 
 ### Insert code after specific symbol
 
-**USE**: `mcp__syntropy__serena__insert_after_symbol`
+**USE**: `mcp__syntropy_serena_insert_after_symbol`
 
 ```python
 # Add new method after existing one
@@ -138,7 +138,7 @@ insert_after_symbol(
 
 ### Check git status
 
-**USE**: `mcp__syntropy__git__git_status`
+**USE**: `mcp__syntropy_git_git_status`
 
 ```python
 git_status(repo_path=".")
@@ -148,7 +148,7 @@ git_status(repo_path=".")
 
 ### View recent changes
 
-**USE**: `mcp__syntropy__git__git_diff`
+**USE**: `mcp__syntropy_git_git_diff`
 
 ```python
 git_diff(repo_path=".", target="HEAD")
@@ -158,7 +158,7 @@ git_diff(repo_path=".", target="HEAD")
 
 ### See commit history
 
-**USE**: `mcp__syntropy__git__git_log`
+**USE**: `mcp__syntropy_git_git_log`
 
 ```python
 git_log(repo_path=".", max_count=10)
@@ -168,7 +168,7 @@ git_log(repo_path=".", max_count=10)
 
 ### Stage and commit changes
 
-**USE**: `mcp__syntropy__git__git_add` + `mcp__syntropy__git__git_commit`
+**USE**: `mcp__syntropy_git_git_add` + `mcp__syntropy_git_git_commit`
 
 ```python
 # Stage files
@@ -304,14 +304,14 @@ py_files = find_files("src", "*.py", exclude=["__pycache__"])
 
 ### Get library documentation
 
-**USE**: `mcp__syntropy__context7__resolve_library_id` + `mcp__syntropy__context7__get_library_docs`
+**USE**: `mcp__syntropy_context7_resolve_library_id` + `mcp__syntropy_context7_get_library_docs`
 
 ```python
 # Step 1: Resolve library ID
-lib_id = mcp__syntropy__context7__resolve_library_id(libraryName="pytest")
+lib_id = mcp__syntropy_context7_resolve_library_id(libraryName="pytest")
 
 # Step 2: Get docs
-docs = mcp__syntropy__context7__get_library_docs(
+docs = mcp__syntropy_context7_get_library_docs(
     context7CompatibleLibraryID=lib_id,
     topic="fixtures"
 )
@@ -325,7 +325,7 @@ docs = mcp__syntropy__context7__get_library_docs(
 
 ### Multi-step problem decomposition
 
-**USE**: `mcp__syntropy__thinking__sequentialthinking`
+**USE**: `mcp__syntropy_thinking_sequentialthinking`
 
 ```python
 sequentialthinking(
@@ -344,7 +344,7 @@ sequentialthinking(
 
 ### Create/update Linear issue
 
-**USE**: `mcp__syntropy__linear__create_issue` / `mcp__syntropy__linear__update_issue`
+**USE**: `mcp__syntropy_linear_create_issue` / `mcp__syntropy_linear_update_issue`
 
 ```python
 # Create issue
@@ -366,7 +366,7 @@ update_issue(
 
 ### List issues
 
-**USE**: `mcp__syntropy__linear__list_issues`
+**USE**: `mcp__syntropy_linear_list_issues`
 
 ```python
 list_issues(
@@ -386,7 +386,7 @@ list_issues(
 
 | Instead of... | Use... | Reason |
 |---------------|--------|---------|
-| `Bash(cat file.py)` | `mcp__syntropy__filesystem__read_text_file` | No subprocess overhead |
+| `Bash(cat file.py)` | `mcp__syntropy_filesystem_read_text_file` | No subprocess overhead |
 | `Bash(grep "pattern" file)` | `shell_utils.grep_text()` | 10-50x faster |
 | `Bash(head -n 10 file)` | `shell_utils.head(file, 10)` | Python stdlib, no fork |
 | `Bash(tail -n 10 file)` | `shell_utils.tail(file, 10)` | Python stdlib, no fork |
@@ -445,26 +445,26 @@ Bash(find . -name "*.py" | wc -l)  # ❌ Use shell_utils.find_files() + len()
 
 ```
 Need to work with code?
-├─ Know symbol name? → mcp__syntropy__serena__find_symbol
-├─ Exploring file? → mcp__syntropy__serena__get_symbols_overview
-├─ Pattern search? → mcp__syntropy__serena__search_for_pattern
-└─ Find usages? → mcp__syntropy__serena__find_referencing_symbols
+├─ Know symbol name? → mcp__syntropy_serena_find_symbol
+├─ Exploring file? → mcp__syntropy_serena_get_symbols_overview
+├─ Pattern search? → mcp__syntropy_serena_search_for_pattern
+└─ Find usages? → mcp__syntropy_serena_find_referencing_symbols
 
 Need to read file?
-├─ Code file? → mcp__syntropy__serena__read_file
-└─ Config/text? → mcp__syntropy__filesystem__read_text_file
+├─ Code file? → mcp__syntropy_serena_read_file
+└─ Config/text? → mcp__syntropy_filesystem_read_text_file
 
 Need text processing?
 └─ Always use shell_utils (grep_text, extract_fields, etc.)
 
 Need git operation?
-└─ Use mcp__syntropy__git__* tools (status, diff, log, add, commit)
+└─ Use mcp__syntropy_git_* tools (status, diff, log, add, commit)
 
 Need external docs?
-└─ Use `mcp__syntropy__context7__resolve_library_id` + `mcp__syntropy__context7__get_library_docs`
+└─ Use `mcp__syntropy_context7_resolve_library_id` + `mcp__syntropy_context7_get_library_docs`
 
 Need complex reasoning?
-└─ Use `mcp__syntropy__thinking__sequentialthinking`
+└─ Use `mcp__syntropy_thinking_sequentialthinking`
 
 Need bash?
 └─ ONLY for external tools (git, uv, pytest)
@@ -526,16 +526,16 @@ This guide exists to **reduce query tree complexity** and **accelerate tool sele
 
 ### Allow List - Syntropy Forwarded Tools
 
-**All tools now route through Syntropy MCP with unified `mcp__syntropy__<server>__<tool>` format**:
+**All tools now route through Syntropy MCP with unified `mcp__syntropy_<server>_<tool>` format** (permissions):
 
 ```
-mcp__syntropy__serena__*            # Serena tools (8)
-mcp__syntropy__filesystem__*        # Filesystem tools (8)
-mcp__syntropy__git__*               # Git tools (5)
-mcp__syntropy__context7__*          # Context7 documentation (2)
-mcp__syntropy__thinking__*          # Sequential thinking (1)
-mcp__syntropy__linear__*            # Linear integration (5)
-mcp__syntropy__repomix__*           # Codebase packaging (1)
+mcp__syntropy_serena_*            # Serena tools (8)
+mcp__syntropy_filesystem_*        # Filesystem tools (8)
+mcp__syntropy_git_*               # Git tools (5)
+mcp__syntropy_context7_*          # Context7 documentation (2)
+mcp__syntropy_thinking_*          # Sequential thinking (1)
+mcp__syntropy_linear_*            # Linear integration (5)
+mcp__syntropy_repomix_*           # Codebase packaging (1)
 ```
 
 **Benefits of Syntropy Aggregation**:
@@ -561,19 +561,19 @@ mcp__syntropy__repomix__*           # Codebase packaging (1)
 
 ### Rationale - Critical Workflow Tools
 
-**Why Linear tools preserved** (5 tools via `mcp__syntropy__linear__*`):
+**Why Linear tools preserved** (5 tools via `mcp__syntropy_linear_*`):
 - The `/generate-prp` command automatically creates Linear issues to track implementation
 - Essential for documented PRP workflow (see CLAUDE.md lines 498-554)
 - Enables complete feature tracking from conception to completion
 - Without these: Issue tracking breaks, implementation blueprints untracked
 
-**Why Context7 preserved** (2 tools: `mcp__syntropy__context7__resolve_library_id`, `mcp__syntropy__context7__get_library_docs`):
+**Why Context7 preserved** (2 tools: `mcp__syntropy_context7_resolve_library_id`, `mcp__syntropy_context7_get_library_docs`):
 - Documentation lookup essential for external libraries (FastAPI, pytest, etc.)
 - Enables knowledge-grounded PRPs with real API references
 - Required for accurate framework integration patterns
 - Without these: External library integration impossible, PRPs lack real-world docs
 
-**Why Sequential-thinking preserved** (1 tool via `mcp__syntropy__thinking__*`):
+**Why Sequential-thinking preserved** (1 tool via `mcp__syntropy_thinking_*`):
 - Complex reasoning for PRP generation and multi-phase implementations
 - Enables structured decomposition of large features into manageable parts
 - Essential for architectural decision-making

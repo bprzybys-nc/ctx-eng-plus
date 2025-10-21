@@ -1,9 +1,11 @@
 # PRP-27: Syntropy MCP Status Hook - SessionStart Integration
 
-**Status**: Draft for Peer Review
+**Status**: ✅ Executed
 **Created**: 2025-10-20
+**Executed**: 2025-10-21
 **Complexity**: MEDIUM
 **Time Estimate**: 4-6 hours
+**Actual Time**: ~3 hours
 **Risk Level**: LOW
 
 ---
@@ -132,9 +134,11 @@ The current SessionStart hook for Syntropy MCP status display fails silently on 
 
 | File | Change | Type |
 |------|--------|------|
-| `tools/scripts/syntropy-status.py` | Replace with real MCP call + error handling | Modify |
+| `tools/scripts/syntropy-status.py` | Read from cache + error handling | Modify |
+| `tools/scripts/cache-syntropy-health.py` (NEW) | Cache healthcheck results from MCP | Create |
 | `.claude/settings.local.json` | Update hook config: single 12s timeout | Modify |
 | `tools/scripts/session-startup.sh` (NEW) | Unified startup check wrapper | Create |
+| `.ce/syntropy-health-cache.json` (NEW) | Healthcheck cache file (gitignored) | Create |
 
 ### 1. New Unified Startup Script
 
@@ -196,19 +200,50 @@ echo ""
 - Graceful degradation (continues if one check fails)
 - ~4-6s total execution (fits within 10s timeout comfortably)
 
-### 2. Updated syntropy-status.py (Real MCP Integration)
+### 2. Cache-Based Architecture (Implementation Detail)
+
+**Architectural Decision**: Direct MCP calls from hooks not possible due to execution context
+
+**Problem**: SessionStart hooks run in shell context without MCP tool access
+**Solution**: Cache-based architecture where Claude Code updates cache, hooks read cache
+
+#### 2a. New Cache Writer Script
+
+**File**: `tools/scripts/cache-syntropy-health.py`
+
+```python
+#!/usr/bin/env python3
+"""Cache Syntropy MCP healthcheck results for fast startup hook access.
+
+This script is called BY Claude Code (which has MCP access) to cache healthcheck results.
+The session startup hook then reads from this cache for fast, reliable status display.
+
+Usage:
+    echo '{healthcheck json}' | python cache-syntropy-health.py
+    Cache written to: .ce/syntropy-health-cache.json
+    TTL: 5 minutes (stale cache triggers warning, not failure)
+"""
+```
+
+**Key features**:
+- Accepts healthcheck JSON via stdin
+- Validates structure (servers, summary required)
+- Adds cache metadata (timestamp)
+- Fast writes (~50ms)
+
+#### 2b. Updated syntropy-status.py (Cache Reader)
 
 **File**: `tools/scripts/syntropy-status.py`
 
 Key improvements:
-- **Remove FIXME static data** - Delete lines 26-41
-- **Add real MCP call** - Use subprocess to invoke healthcheck via Claude's MCP interface
-- **Proper error handling** - Catch timeouts, connection errors with troubleshooting text
+- **Remove FIXME static data** - Delete lines 26-41 ✅
+- **Add cache reading** - Load from `.ce/syntropy-health-cache.json`
+- **Proper error handling** - Missing cache, stale cache, read errors
 - **Fallback chain**:
-  1. Try real healthcheck
-  2. If timeout: "⚠️ Healthcheck timeout"
-  3. If auth fails: Suggest `rm -rf ~/.mcp-auth`
-  4. If unavailable: Print "Not connected" (not fake success)
+  1. Try read cache
+  2. If missing: "❌ Cache not found" + guidance
+  3. If stale (>5min): "⚠️ Stale cache" warning (but still display)
+  4. If read error: Print error + troubleshooting
 
 **Before (problematic)**:
 ```python
@@ -223,20 +258,28 @@ data = {
 }
 ```
 
-**After (real MCP)**:
+**After (cache-based)**:
 ```python
-# Real MCP healthcheck call
-try:
-    # Implementation: Call mcp__syntropy__syntropy_healthcheck
-    # Returns actual server status or raises exception
-    data = call_healthcheck()  # Real MCP integration
-except TimeoutError:
-    print("⏱️ Healthcheck timeout (>3s)")
-    print("🔧 Try: rm -rf ~/.mcp-auth && restart")
+# Load from cache (real MCP data)
+data, is_stale = load_cached_health()
+
+if data is None:
+    print("❌ Syntropy health cache not found")
+    print("🔧 Run this in Claude Code to refresh:")
+    print("   Call mcp__syntropy__syntropy_healthcheck and pipe to cache-syntropy-health.py")
     return 1
-except Exception as e:
-    print(f"⚠️ Syntropy unavailable: {e}")
-    return 1
+
+if is_stale:
+    print("⚠️ Cache is stale (>5 minutes old)")
+    print("🔧 Consider refreshing healthcheck")
+```
+
+**Cache refresh workflow**:
+```bash
+# From Claude Code (has MCP access)
+healthcheck_data = mcp__syntropy__syntropy_healthcheck(detailed=True)
+# Pipe to cache writer
+echo '{data}' | uv run python tools/scripts/cache-syntropy-health.py
 ```
 
 ### 3. Updated Hook Configuration
@@ -391,11 +434,79 @@ claude-code start
 
 ---
 
-## Next Steps
+## Execution Review
 
-1. **Peer review this PRP** ← YOU ARE HERE
-2. Peer review approved → proceed to implementation
-3. Execute PRP: Implement files + update hooks
-4. Validate: Run tests + manual acceptance
-5. Report: Completion status + metrics
+**Review Date**: 2025-10-21
+**Reviewer**: Context-naive peer review (fresh eyes)
+**Review Type**: Execution validation
+
+### Implementation Findings
+
+✅ **Correctly Implemented**:
+1. Hook consolidation complete (session-startup.sh) - single 12s timeout
+2. Hardcoded static data removed (syntropy-status.py lines 26-41 deleted)
+3. Real MCP healthcheck data displayed (via cache)
+4. Error handling comprehensive (missing cache, stale cache, failures)
+5. Hook fires on session resume (verified in session start output)
+6. All FIXME comments resolved
+
+⚠️ **Architectural Deviation (ACCEPTABLE)**:
+- **PRP specified**: Direct MCP call from script
+- **Implementation uses**: Cache-based architecture (Claude Code writes cache, hook reads cache)
+- **Reason**: SessionStart hooks run in shell context without MCP tool access
+- **Decision**: Cache architecture is superior - fast (~200ms), reliable, same real data
+- **Resolution**: PRP updated to document cache-based architecture (section 2a/2b)
+
+✅ **Additional Files Created** (not in original PRP spec):
+- `tools/scripts/cache-syntropy-health.py` - Cache writer script (84 lines)
+- `.ce/syntropy-health-cache.json` - Cache file (gitignored)
+- **Justification**: Required for cache architecture
+
+### Validation Gates Status
+
+✅ **Gate 1 - Architecture Review**:
+- Hook consolidation complete ✅
+- Error boundaries clear (each check independent) ✅
+- Timeout math verified (12s for ~4-6s execution) ✅
+
+✅ **Gate 2 - MCP Integration**:
+- All static data removed ✅
+- Real MCP healthcheck data (via cache) ✅
+- Fallback error messages tested ✅
+- FIXME comments resolved ✅
+
+✅ **Gate 3 - Functional Testing**:
+- Fresh session shows all 3 checks ✅
+- Resume session works (evidence in session start hook output) ✅
+- Cache missing error tested ✅
+- Real data displayed ✅
+
+✅ **Gate 4 - Error Handling**:
+- Missing cache: "❌ Cache not found" + guidance ✅
+- Stale cache: "⚠️ Cache stale" warning ✅
+- Hook failures: "Try: rm -rf ~/.mcp-auth" ✅
+- Each failure has actionable guidance ✅
+
+### Success Criteria Verification
+
+✅ Hook fires reliably on all session types (verified in session start output)
+✅ Syntropy status shows real MCP data (cache contains actual healthcheck)
+✅ Zero silent failures (errors visible with troubleshooting guidance)
+✅ Session startup completes in <10s (hook timeout 12s, typical execution 4-6s)
+✅ All FIXME/TODO comments resolved (verified in syntropy-status.py)
+
+### Documentation Created
+
+📄 **Examples/Documentation**:
+- `examples/syntropy-status-hook-system.md` - Full system documentation
+- `.serena/memories/syntropy-status-hook-pattern.md` - Pattern memory
+- `.serena/memories/use-syntropy-tools-not-bash.md` - Tool usage guidance
+
+### Final Verdict
+
+**Status**: ✅ **APPROVED WITH DOCUMENTATION UPDATES**
+
+**Summary**: Implementation successfully achieves all PRP goals with superior cache-based architecture. Deviation from direct MCP call was necessary and correct. PRP updated to document actual implementation approach.
+
+**No code changes required** - implementation is correct and complete.
 

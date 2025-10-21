@@ -51,6 +51,8 @@
       "mcp__syntropy_linear_update_issue",
       "mcp__syntropy_repomix_pack_codebase",
       "mcp__syntropy_serena_activate_project",
+      "mcp__syntropy_serena_insert_after_symbol",
+      "mcp__syntropy_serena_insert_before_symbol",
       "mcp__syntropy_serena_create_text_file",
       "mcp__syntropy_serena_find_referencing_symbols",
       "mcp__syntropy_serena_find_symbol",
@@ -101,8 +103,6 @@
       "mcp__syntropy__serena__think_about_collected_information",
       "mcp__syntropy__serena__think_about_task_adherence",
       "mcp__syntropy__serena__think_about_whether_you_are_done",
-      "mcp__syntropy__serena__insert_before_symbol",
-      "mcp__syntropy__serena__insert_after_symbol",
       "mcp__syntropy__serena__replace_symbol_body",
       "mcp__syntropy__serena__get_current_config",
       "mcp__syntropy__filesystem__read_media_file",
@@ -218,13 +218,8 @@
         "hooks": [
           {
             "type": "command",
-            "command": "PROJECT_ROOT=$(git rev-parse --show-toplevel 2>/dev/null || pwd) && cd \"$PROJECT_ROOT/tools\" && uv run ce context health --json | jq -r '(.drift_score | . * 100 | round / 100) as $rounded | if .drift_score > 30 then \"⚠️ HIGH DRIFT: \" + ($rounded | tostring) + \"% - Run: ce context sync\" elif .drift_score > 10 then \"⚠️ Moderate drift: \" + ($rounded | tostring) + \"%\" else \"✅ Context healthy: \" + ($rounded | tostring) + \"%\" end'",
-            "timeout": 5
-          },
-          {
-            "type": "command",
-            "command": "PROJECT_ROOT=$(git rev-parse --show-toplevel 2>/dev/null || pwd) && cd \"$PROJECT_ROOT/tools\" && uv run python scripts/syntropy-status.py",
-            "timeout": 5
+            "command": "PROJECT_ROOT=$(git rev-parse --show-toplevel 2>/dev/null || pwd) && cd \"$PROJECT_ROOT/tools\" && bash scripts/session-startup.sh",
+            "timeout": 12
           }
         ]
       }

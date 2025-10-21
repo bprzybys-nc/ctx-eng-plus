@@ -1,0 +1,81 @@
+{
+  "cached_at": "2025-10-21T07:20:22.324Z",
+  "data": {
+    "syntropy": {
+      "version": "0.1.0",
+      "status": "healthy"
+    },
+    "servers": [
+      {
+        "server": "serena",
+        "status": "healthy",
+        "connected": true,
+        "callCount": 0,
+        "checkDuration": 0
+      },
+      {
+        "server": "filesystem",
+        "status": "healthy",
+        "connected": true,
+        "callCount": 0,
+        "checkDuration": 0
+      },
+      {
+        "server": "git",
+        "status": "healthy",
+        "connected": true,
+        "callCount": 0,
+        "checkDuration": 0
+      },
+      {
+        "server": "context7",
+        "status": "healthy",
+        "connected": true,
+        "callCount": 0,
+        "checkDuration": 0
+      },
+      {
+        "server": "thinking",
+        "status": "healthy",
+        "connected": true,
+        "callCount": 0,
+        "checkDuration": 0
+      },
+      {
+        "server": "repomix",
+        "status": "healthy",
+        "connected": true,
+        "callCount": 0,
+        "checkDuration": 0
+      },
+      {
+        "server": "github",
+        "status": "healthy",
+        "connected": true,
+        "callCount": 0,
+        "checkDuration": 0
+      },
+      {
+        "server": "perplexity",
+        "status": "healthy",
+        "connected": true,
+        "callCount": 0,
+        "checkDuration": 0
+      },
+      {
+        "server": "linear",
+        "status": "healthy",
+        "connected": true,
+        "callCount": 0,
+        "checkDuration": 0
+      }
+    ],
+    "summary": {
+      "total": 9,
+      "healthy": 9,
+      "degraded": 0,
+      "down": 0
+    },
+    "timestamp": "2025-10-21T07:20:22.324Z"
+  }
+}
