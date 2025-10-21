@@ -1,7 +1,7 @@
 ---
 name: "Documentation Consolidation & Drift Reduction (Pre-1.0 Finalization)"
 description: "Complete remaining documentation gaps to reduce drift and finalize pre-1.0 release readiness by adding Security section, documenting PRP-21/22 improvements, and verifying all 28 PRPs"
-prp_id: "PRP-26"
+prp_id: "PRP-28"
 status: "new"
 created_date: "2025-10-21T07:58:09Z"
 last_updated: "2025-10-21T07:58:09Z"
@@ -21,7 +21,7 @@ context_sync:
 version: 1
 ---
 
-# PRP-26: Documentation Consolidation & Drift Reduction (Pre-1.0 Finalization)
+# PRP-28: Documentation Consolidation & Drift Reduction (Pre-1.0 Finalization)
 
 ## 🎯 TL;DR
 
@@ -301,7 +301,7 @@ grep -A 10 "PRP-21" examples/model/SystemModel.md | grep -c "reliability\|bug\|f
 | PRP-23 | Haiku-optimized PRP guidelines | § 3.2 PRP System | ✅ Documented | Lines 367-482 |
 | PRP-24 | Syntropy MCP aggregation | § 4.1.4 Syntropy MCP Integration | ✅ Documented | Lines 1050-1100 |
 | PRP-25 | Syntropy healthcheck | § 4.1.4 Syntropy Healthcheck | 🔜 Design Only | Implementation deferred to post-1.0 |
-| PRP-26 | Documentation consolidation | § 11 Summary | ✅ This PRP | Meta-documentation |
+| PRP-28 | Documentation consolidation | § 11 Summary | ✅ This PRP | Meta-documentation |
 
 **Summary**:
 - **Total PRPs**: 26 (1-26)
@@ -828,7 +828,7 @@ DRIFT_AFTER=$(cd tools && uv run ce analyze-context --json | jq -r '.drift_score
 1. **Commit changes**: `git add examples/model/SystemModel.md docs/*.md PRPs/GRAND-PLAN.md`
 2. **Run validation**: `cd tools && uv run ce validate --level all`
 3. **Verify drift**: `cd tools && uv run ce analyze-context`
-4. **Create PR**: Title: "docs: Complete pre-1.0 documentation (PRP-26)"
+4. **Create PR**: Title: "docs: Complete pre-1.0 documentation (PRP-28)"
 5. **Review checklist**: Confirm GO decision for 1.0 release
 6. **Tag release**: `git tag -a v1.0 -m "Context Engineering Management System v1.0"`
 
