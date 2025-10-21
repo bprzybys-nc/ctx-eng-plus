@@ -12,7 +12,7 @@
 export const SYNTROPY_TOOLS = [
   // ============ SERENA TOOLS (9) ============
   {
-    name: "syntropy_serena_find_symbol",
+    name: "serena_find_symbol",
     description: "Find code symbols by name path in the codebase",
     inputSchema: {
       type: "object" as const,
@@ -30,7 +30,7 @@ export const SYNTROPY_TOOLS = [
     }
   },
   {
-    name: "syntropy_serena_get_symbols_overview",
+    name: "serena_get_symbols_overview",
     description: "Get overview of all symbols in a file",
     inputSchema: {
       type: "object" as const,
@@ -44,7 +44,7 @@ export const SYNTROPY_TOOLS = [
     }
   },
   {
-    name: "syntropy_serena_search_for_pattern",
+    name: "serena_search_for_pattern",
     description: "Search codebase for specific patterns",
     inputSchema: {
       type: "object" as const,
@@ -62,7 +62,7 @@ export const SYNTROPY_TOOLS = [
     }
   },
   {
-    name: "syntropy_serena_find_referencing_symbols",
+    name: "serena_find_referencing_symbols",
     description: "Find all symbols that reference a given symbol",
     inputSchema: {
       type: "object" as const,
@@ -76,7 +76,7 @@ export const SYNTROPY_TOOLS = [
     }
   },
   {
-    name: "syntropy_serena_write_memory",
+    name: "serena_write_memory",
     description: "Store project context and knowledge in memory",
     inputSchema: {
       type: "object" as const,
@@ -94,7 +94,7 @@ export const SYNTROPY_TOOLS = [
     }
   },
   {
-    name: "syntropy_serena_create_text_file",
+    name: "serena_create_text_file",
     description: "Create a new text file in the project",
     inputSchema: {
       type: "object" as const,
@@ -112,7 +112,7 @@ export const SYNTROPY_TOOLS = [
     }
   },
   {
-    name: "syntropy_serena_activate_project",
+    name: "serena_activate_project",
     description: "Switch active project for Serena to work with",
     inputSchema: {
       type: "object" as const,
@@ -126,7 +126,7 @@ export const SYNTROPY_TOOLS = [
     }
   },
   {
-    name: "syntropy_serena_list_dir",
+    name: "serena_list_dir",
     description: "List directory contents with symbols",
     inputSchema: {
       type: "object" as const,
@@ -140,7 +140,7 @@ export const SYNTROPY_TOOLS = [
     }
   },
   {
-    name: "syntropy_serena_read_file",
+    name: "serena_read_file",
     description: "Read file contents",
     inputSchema: {
       type: "object" as const,
@@ -157,7 +157,7 @@ export const SYNTROPY_TOOLS = [
 
   // ============ FILESYSTEM TOOLS (13) ============
   {
-    name: "syntropy_filesystem_read_file",
+    name: "filesystem_read_file",
     description: "Read file (deprecated - use read_text_file)",
     inputSchema: {
       type: "object" as const,
@@ -179,7 +179,7 @@ export const SYNTROPY_TOOLS = [
     }
   },
   {
-    name: "syntropy_filesystem_read_text_file",
+    name: "filesystem_read_text_file",
     description: "Read text file contents",
     inputSchema: {
       type: "object" as const,
@@ -201,7 +201,7 @@ export const SYNTROPY_TOOLS = [
     }
   },
   {
-    name: "syntropy_filesystem_read_media_file",
+    name: "filesystem_read_media_file",
     description: "Read media file (images, etc.)",
     inputSchema: {
       type: "object" as const,
@@ -215,7 +215,7 @@ export const SYNTROPY_TOOLS = [
     }
   },
   {
-    name: "syntropy_filesystem_read_multiple_files",
+    name: "filesystem_read_multiple_files",
     description: "Read multiple files at once",
     inputSchema: {
       type: "object" as const,
@@ -230,7 +230,7 @@ export const SYNTROPY_TOOLS = [
     }
   },
   {
-    name: "syntropy_filesystem_list_directory",
+    name: "filesystem_list_directory",
     description: "List directory contents",
     inputSchema: {
       type: "object" as const,
@@ -244,7 +244,7 @@ export const SYNTROPY_TOOLS = [
     }
   },
   {
-    name: "syntropy_filesystem_list_directory_with_sizes",
+    name: "filesystem_list_directory_with_sizes",
     description: "List directory contents with file sizes",
     inputSchema: {
       type: "object" as const,
@@ -262,7 +262,7 @@ export const SYNTROPY_TOOLS = [
     }
   },
   {
-    name: "syntropy_filesystem_create_directory",
+    name: "filesystem_create_directory",
     description: "Create a directory",
     inputSchema: {
       type: "object" as const,
@@ -276,7 +276,7 @@ export const SYNTROPY_TOOLS = [
     }
   },
   {
-    name: "syntropy_filesystem_move_file",
+    name: "filesystem_move_file",
     description: "Move or rename a file",
     inputSchema: {
       type: "object" as const,
@@ -294,7 +294,7 @@ export const SYNTROPY_TOOLS = [
     }
   },
   {
-    name: "syntropy_filesystem_write_file",
+    name: "filesystem_write_file",
     description: "Write or overwrite file",
     inputSchema: {
       type: "object" as const,
@@ -312,7 +312,7 @@ export const SYNTROPY_TOOLS = [
     }
   },
   {
-    name: "syntropy_filesystem_edit_file",
+    name: "filesystem_edit_file",
     description: "Edit file using line-based operations",
     inputSchema: {
       type: "object" as const,
@@ -342,7 +342,7 @@ export const SYNTROPY_TOOLS = [
     }
   },
   {
-    name: "syntropy_filesystem_search_files",
+    name: "filesystem_search_files",
     description: "Recursively search for files matching pattern",
     inputSchema: {
       type: "object" as const,
@@ -360,7 +360,7 @@ export const SYNTROPY_TOOLS = [
     }
   },
   {
-    name: "syntropy_filesystem_directory_tree",
+    name: "filesystem_directory_tree",
     description: "Get JSON directory tree structure",
     inputSchema: {
       type: "object" as const,
@@ -378,7 +378,7 @@ export const SYNTROPY_TOOLS = [
     }
   },
   {
-    name: "syntropy_filesystem_get_file_info",
+    name: "filesystem_get_file_info",
     description: "Get file metadata and information",
     inputSchema: {
       type: "object" as const,
@@ -392,7 +392,7 @@ export const SYNTROPY_TOOLS = [
     }
   },
   {
-    name: "syntropy_filesystem_list_allowed_directories",
+    name: "filesystem_list_allowed_directories",
     description: "List directories allowed for access",
     inputSchema: {
       type: "object" as const,
@@ -404,7 +404,7 @@ export const SYNTROPY_TOOLS = [
 
   // ============ GIT TOOLS (5) ============
   {
-    name: "syntropy_git_git_status",
+    name: "git_git_status",
     description: "Get repository status",
     inputSchema: {
       type: "object" as const,
@@ -418,7 +418,7 @@ export const SYNTROPY_TOOLS = [
     }
   },
   {
-    name: "syntropy_git_git_diff",
+    name: "git_git_diff",
     description: "Show git differences",
     inputSchema: {
       type: "object" as const,
@@ -436,7 +436,7 @@ export const SYNTROPY_TOOLS = [
     }
   },
   {
-    name: "syntropy_git_git_log",
+    name: "git_git_log",
     description: "Show commit history",
     inputSchema: {
       type: "object" as const,
@@ -454,7 +454,7 @@ export const SYNTROPY_TOOLS = [
     }
   },
   {
-    name: "syntropy_git_git_add",
+    name: "git_git_add",
     description: "Stage files for commit",
     inputSchema: {
       type: "object" as const,
@@ -473,7 +473,7 @@ export const SYNTROPY_TOOLS = [
     }
   },
   {
-    name: "syntropy_git_git_commit",
+    name: "git_git_commit",
     description: "Create git commit",
     inputSchema: {
       type: "object" as const,
@@ -494,7 +494,7 @@ export const SYNTROPY_TOOLS = [
 
   // ============ CONTEXT7 TOOLS (2) ============
   {
-    name: "syntropy_context7_resolve_library_id",
+    name: "context7_resolve_library_id",
     description: "Find library ID for documentation lookup",
     inputSchema: {
       type: "object" as const,
@@ -508,7 +508,7 @@ export const SYNTROPY_TOOLS = [
     }
   },
   {
-    name: "syntropy_context7_get_library_docs",
+    name: "context7_get_library_docs",
     description: "Fetch library documentation",
     inputSchema: {
       type: "object" as const,
@@ -533,7 +533,7 @@ export const SYNTROPY_TOOLS = [
 
   // ============ THINKING TOOLS (1) ============
   {
-    name: "syntropy_thinking_sequentialthinking",
+    name: "thinking_sequentialthinking",
     description: "Sequential thinking process for complex reasoning",
     inputSchema: {
       type: "object" as const,
@@ -582,7 +582,7 @@ export const SYNTROPY_TOOLS = [
 
   // ============ LINEAR TOOLS (5) ============
   {
-    name: "syntropy_linear_create_issue",
+    name: "linear_create_issue",
     description: "Create Linear issue",
     inputSchema: {
       type: "object" as const,
@@ -604,7 +604,7 @@ export const SYNTROPY_TOOLS = [
     }
   },
   {
-    name: "syntropy_linear_get_issue",
+    name: "linear_get_issue",
     description: "Get issue details",
     inputSchema: {
       type: "object" as const,
@@ -618,7 +618,7 @@ export const SYNTROPY_TOOLS = [
     }
   },
   {
-    name: "syntropy_linear_list_issues",
+    name: "linear_list_issues",
     description: "List issues",
     inputSchema: {
       type: "object" as const,
@@ -636,7 +636,7 @@ export const SYNTROPY_TOOLS = [
     }
   },
   {
-    name: "syntropy_linear_update_issue",
+    name: "linear_update_issue",
     description: "Update issue",
     inputSchema: {
       type: "object" as const,
@@ -655,7 +655,7 @@ export const SYNTROPY_TOOLS = [
     }
   },
   {
-    name: "syntropy_linear_list_projects",
+    name: "linear_list_projects",
     description: "List projects",
     inputSchema: {
       type: "object" as const,
@@ -667,7 +667,7 @@ export const SYNTROPY_TOOLS = [
 
   // ============ REPOMIX TOOLS (1) ============
   {
-    name: "syntropy_repomix_pack_codebase",
+    name: "repomix_pack_codebase",
     description: "Package codebase for AI processing",
     inputSchema: {
       type: "object" as const,
@@ -684,7 +684,7 @@ export const SYNTROPY_TOOLS = [
 
   // ============ GITHUB TOOLS (27) ============
   {
-    name: "syntropy_github_create_or_update_file",
+    name: "github_create_or_update_file",
     description: "Create or update a single file in a GitHub repository",
     inputSchema: {
       type: "object" as const,
@@ -701,7 +701,7 @@ export const SYNTROPY_TOOLS = [
     }
   },
   {
-    name: "syntropy_github_search_repositories",
+    name: "github_search_repositories",
     description: "Search for GitHub repositories",
     inputSchema: {
       type: "object" as const,
@@ -714,7 +714,7 @@ export const SYNTROPY_TOOLS = [
     }
   },
   {
-    name: "syntropy_github_create_repository",
+    name: "github_create_repository",
     description: "Create a new GitHub repository in your account",
     inputSchema: {
       type: "object" as const,
@@ -728,7 +728,7 @@ export const SYNTROPY_TOOLS = [
     }
   },
   {
-    name: "syntropy_github_get_file_contents",
+    name: "github_get_file_contents",
     description: "Get the contents of a file or directory from a GitHub repository",
     inputSchema: {
       type: "object" as const,
@@ -742,7 +742,7 @@ export const SYNTROPY_TOOLS = [
     }
   },
   {
-    name: "syntropy_github_push_files",
+    name: "github_push_files",
     description: "Push multiple files to a GitHub repository in a single commit",
     inputSchema: {
       type: "object" as const,
@@ -768,7 +768,7 @@ export const SYNTROPY_TOOLS = [
     }
   },
   {
-    name: "syntropy_github_create_issue",
+    name: "github_create_issue",
     description: "Create a new issue in a GitHub repository",
     inputSchema: {
       type: "object" as const,
@@ -793,7 +793,7 @@ export const SYNTROPY_TOOLS = [
     }
   },
   {
-    name: "syntropy_github_create_pull_request",
+    name: "github_create_pull_request",
     description: "Create a new pull request in a GitHub repository",
     inputSchema: {
       type: "object" as const,
@@ -811,7 +811,7 @@ export const SYNTROPY_TOOLS = [
     }
   },
   {
-    name: "syntropy_github_fork_repository",
+    name: "github_fork_repository",
     description: "Fork a GitHub repository to your account or specified organization",
     inputSchema: {
       type: "object" as const,
@@ -824,7 +824,7 @@ export const SYNTROPY_TOOLS = [
     }
   },
   {
-    name: "syntropy_github_create_branch",
+    name: "github_create_branch",
     description: "Create a new branch in a GitHub repository",
     inputSchema: {
       type: "object" as const,
@@ -838,7 +838,7 @@ export const SYNTROPY_TOOLS = [
     }
   },
   {
-    name: "syntropy_github_list_commits",
+    name: "github_list_commits",
     description: "Get list of commits of a branch in a GitHub repository",
     inputSchema: {
       type: "object" as const,
@@ -853,7 +853,7 @@ export const SYNTROPY_TOOLS = [
     }
   },
   {
-    name: "syntropy_github_list_issues",
+    name: "github_list_issues",
     description: "List issues in a GitHub repository with filtering options",
     inputSchema: {
       type: "object" as const,
@@ -876,7 +876,7 @@ export const SYNTROPY_TOOLS = [
     }
   },
   {
-    name: "syntropy_github_update_issue",
+    name: "github_update_issue",
     description: "Update an existing issue in a GitHub repository",
     inputSchema: {
       type: "object" as const,
@@ -903,7 +903,7 @@ export const SYNTROPY_TOOLS = [
     }
   },
   {
-    name: "syntropy_github_add_issue_comment",
+    name: "github_add_issue_comment",
     description: "Add a comment to an existing issue",
     inputSchema: {
       type: "object" as const,
@@ -917,7 +917,7 @@ export const SYNTROPY_TOOLS = [
     }
   },
   {
-    name: "syntropy_github_search_code",
+    name: "github_search_code",
     description: "Search for code across GitHub repositories",
     inputSchema: {
       type: "object" as const,
@@ -931,7 +931,7 @@ export const SYNTROPY_TOOLS = [
     }
   },
   {
-    name: "syntropy_github_search_issues",
+    name: "github_search_issues",
     description: "Search for issues and pull requests across GitHub repositories",
     inputSchema: {
       type: "object" as const,
@@ -946,7 +946,7 @@ export const SYNTROPY_TOOLS = [
     }
   },
   {
-    name: "syntropy_github_search_users",
+    name: "github_search_users",
     description: "Search for users on GitHub",
     inputSchema: {
       type: "object" as const,
@@ -961,7 +961,7 @@ export const SYNTROPY_TOOLS = [
     }
   },
   {
-    name: "syntropy_github_get_issue",
+    name: "github_get_issue",
     description: "Get details of a specific issue in a GitHub repository",
     inputSchema: {
       type: "object" as const,
@@ -974,7 +974,7 @@ export const SYNTROPY_TOOLS = [
     }
   },
   {
-    name: "syntropy_github_get_pull_request",
+    name: "github_get_pull_request",
     description: "Get details of a specific pull request",
     inputSchema: {
       type: "object" as const,
@@ -987,7 +987,7 @@ export const SYNTROPY_TOOLS = [
     }
   },
   {
-    name: "syntropy_github_list_pull_requests",
+    name: "github_list_pull_requests",
     description: "List and filter repository pull requests",
     inputSchema: {
       type: "object" as const,
@@ -1006,7 +1006,7 @@ export const SYNTROPY_TOOLS = [
     }
   },
   {
-    name: "syntropy_github_create_pull_request_review",
+    name: "github_create_pull_request_review",
     description: "Create a review on a pull request",
     inputSchema: {
       type: "object" as const,
@@ -1035,7 +1035,7 @@ export const SYNTROPY_TOOLS = [
     }
   },
   {
-    name: "syntropy_github_merge_pull_request",
+    name: "github_merge_pull_request",
     description: "Merge a pull request",
     inputSchema: {
       type: "object" as const,
@@ -1051,7 +1051,7 @@ export const SYNTROPY_TOOLS = [
     }
   },
   {
-    name: "syntropy_github_get_pull_request_files",
+    name: "github_get_pull_request_files",
     description: "Get the list of files changed in a pull request",
     inputSchema: {
       type: "object" as const,
@@ -1064,7 +1064,7 @@ export const SYNTROPY_TOOLS = [
     }
   },
   {
-    name: "syntropy_github_get_pull_request_status",
+    name: "github_get_pull_request_status",
     description: "Get the combined status of all status checks for a pull request",
     inputSchema: {
       type: "object" as const,
@@ -1077,7 +1077,7 @@ export const SYNTROPY_TOOLS = [
     }
   },
   {
-    name: "syntropy_github_update_pull_request_branch",
+    name: "github_update_pull_request_branch",
     description: "Update a pull request branch with the latest changes from the base branch",
     inputSchema: {
       type: "object" as const,
@@ -1091,7 +1091,7 @@ export const SYNTROPY_TOOLS = [
     }
   },
   {
-    name: "syntropy_github_get_pull_request_comments",
+    name: "github_get_pull_request_comments",
     description: "Get the review comments on a pull request",
     inputSchema: {
       type: "object" as const,
@@ -1104,7 +1104,7 @@ export const SYNTROPY_TOOLS = [
     }
   },
   {
-    name: "syntropy_github_get_pull_request_reviews",
+    name: "github_get_pull_request_reviews",
     description: "Get the reviews on a pull request",
     inputSchema: {
       type: "object" as const,
@@ -1120,7 +1120,7 @@ export const SYNTROPY_TOOLS = [
 
   // ============ PERPLEXITY TOOLS (1) ============
   {
-    name: "syntropy_perplexity_perplexity_ask",
+    name: "perplexity_perplexity_ask",
     description: "Engages in a conversation using the Sonar API. Accepts an array of messages (each with a role and content) and returns a ask completion response from the Perplexity model",
     inputSchema: {
       type: "object" as const,
@@ -1145,7 +1145,7 @@ export const SYNTROPY_TOOLS = [
 
   // ============ SYNTROPY TOOLS (1) ============
   {
-    name: "syntropy_healthcheck",
+    name: "healthcheck",
     description: "Check health status of Syntropy server and all underlying MCP servers",
     inputSchema: {
       type: "object" as const,

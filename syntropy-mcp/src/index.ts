@@ -65,19 +65,21 @@ const SERVER_ROUTES: Record<string, string> = {
  * Parse syntropy tool name into server and tool components.
  *
  * Handles formats:
- * - mcp__syntropy_server_tool (from Claude Code after prefix is added)
- * - syntropy_server_tool (direct format for testing)
+ * - mcp__syntropy_server_tool (from Claude Code: mcp__ + server name "syntropy" + tool name)
+ * - server_tool (direct format for testing)
  */
 function parseSyntropyTool(toolName: string): { server: string; tool: string } | null {
   // Handle format: mcp__syntropy_server_tool
+  // Claude Code sees: MCP server name="syntropy" + tool name="serena_find_symbol"
+  // Result: mcp__syntropy_serena_find_symbol
   let match = toolName.match(/^mcp__syntropy_([^_]+)_(.+)$/);
   if (match) {
     const [, server, tool] = match;
     return { server, tool };
   }
 
-  // Handle format: syntropy_server_tool (direct)
-  match = toolName.match(/^syntropy_([^_]+)_(.+)$/);
+  // Handle format: server_tool (direct, for testing)
+  match = toolName.match(/^([^_]+)_(.+)$/);
   if (match) {
     const [, server, tool] = match;
     return { server, tool };
@@ -241,9 +243,9 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
       `Invalid syntropy tool name: ${name}\n` +
       `Expected format: mcp__syntropy_server_tool (e.g., mcp__syntropy_serena_find_symbol)\n` +
       `Tool name breakdown:\n` +
-      `  mcp__ = Claude Code prefix\n` +
-      `  syntropy = server name\n` +
-      `  server = underlying server (serena, filesystem, git, context7, thinking, linear, repomix)\n` +
+      `  mcp__ = Claude Code MCP prefix\n` +
+      `  syntropy = MCP server name\n` +
+      `  server = underlying server (serena, filesystem, git, context7, thinking, linear, repomix, github, perplexity)\n` +
       `  tool = tool name\n` +
       `🔧 Troubleshooting: Verify tool name format and that underlying server is configured`
     );
