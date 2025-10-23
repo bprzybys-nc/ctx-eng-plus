@@ -17,11 +17,11 @@ Syntropy provides context sync functionality that replaces `ce update-context`, 
 **Goals:**
 1. Implement `syntropy_sync_context` MCP tool
 2. Integrate drift detection from `ce analyze-context`
-3. Update PRP YAML headers (context_sync flags: ce_updated, serena_updated, last_sync)
-4. Incremental reindexing (only scan changed files)
+3. Update PRP YAML headers in BOTH `.ce/PRPs/system/` AND `PRPs/` (context_sync flags)
+4. Incremental reindexing (only scan changed files in .ce/ + root)
 5. Cache optimization (5-min TTL, avoid full scans)
 6. Delegate `ce update-context` to Syntropy tool
-7. Generate drift report at `.ce/drift-report.md`
+7. Generate drift report at `.ce/drift-report.md` (system + user violations)
 
 **Current Problems:**
 - `ce update-context` complex (multiple tools: ce + Serena + drift detection)
@@ -31,11 +31,12 @@ Syntropy provides context sync functionality that replaces `ce update-context`, 
 
 **Expected Outcome:**
 - Single tool: `syntropy_sync_context` (replaces ce update-context)
-- Incremental reindexing: Only changed files scanned
-- Drift detection integrated: Auto-generated `.ce/drift-report.md`
-- PRP YAML headers updated: context_sync flags + timestamps
+- Incremental reindexing: Only changed files in `.ce/` + `PRPs/` + `examples/`
+- Drift detection integrated: Auto-generated `.ce/drift-report.md` (system + user)
+- PRP YAML headers updated: Both system and user PRPs
 - Performance: <2s for incremental, <10s for full scan
 - Backward compat: `ce update-context` delegates to Syntropy
+- Separate system vs user drift tracking
 
 ---
 

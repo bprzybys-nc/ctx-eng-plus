@@ -14,11 +14,11 @@ Syntropy provides a unified index and query interface for all project knowledge 
 
 **Goals:**
 1. Implement unified index schema (`.ce/syntropy-index.json`)
-2. Knowledge scanner (PRPs, examples, Serena memories, CLAUDE.md rules)
-3. Framework doc accessor: `get_framework_doc(path)`
-4. Unified search: `knowledge_search(query)` across all sources
+2. Knowledge scanner (`.ce/PRPs/system/`, `.ce/examples/system/`, user PRPs/, examples/, Serena memories)
+3. System doc accessor: `get_system_doc(path)` (reads from `.ce/`)
+4. Unified search: `knowledge_search(query)` across system + user sources
 5. Auto-index on project init (extends PRP-29.1)
-6. Support flexible directory discovery
+6. Support `.ce/` system + root user structure
 7. Track patterns, PRP learnings, and memories in index
 
 **Current Problems:**
@@ -29,9 +29,10 @@ Syntropy provides a unified index and query interface for all project knowledge 
 
 **Expected Outcome:**
 - Single index file: `.ce/syntropy-index.json`
-- Framework docs queryable: `get_framework_doc('research/01-prp-system')`
-- Unified search: `knowledge_search("error handling")` → PRPs + examples + memories
-- Auto-indexed on init
+- System docs queryable: `get_system_doc('PRPs/system/executed/PRP-1.md')`
+- User docs queryable: `get_user_doc('PRPs/executed/PRP-29.md')`
+- Unified search: `knowledge_search("error handling")` → system + user PRPs + examples + memories
+- Auto-indexed on init (scans `.ce/` + root)
 - Fast lookups (no full directory scans)
 
 ---
@@ -50,37 +51,59 @@ Syntropy provides a unified index and query interface for all project knowledge 
   "framework_version": "1.0",
 
   "paths": {
-    "prps": ["PRPs", "context-engineering/PRPs"],
-    "examples": ["examples"],
-    "memories": [".serena/memories"],
+    "system_prps": ".ce/PRPs/system",
+    "system_examples": ".ce/examples/system",
+    "user_prps": "PRPs",
+    "user_examples": "examples",
+    "memories": ".serena/memories",
     "claude_md": "CLAUDE.md",
-    "layout": "root"
+    "system_rules": ".ce/RULES.md"
   },
 
   "knowledge": {
-    "patterns": {
-      "api-error-handling": {
-        "source": "examples/patterns/api-error.md",
-        "tags": ["api", "error", "fastapi"],
-        "referenced_by": ["PRP-15"],
-        "excerpt": "FastAPI error handling with HTTPException..."
+    "system_patterns": {
+      "error-recovery": {
+        "source": ".ce/examples/system/patterns/error-recovery.py",
+        "tags": ["resilience", "retry", "circuit-breaker"],
+        "referenced_by": ["PRP-14"],
+        "excerpt": "Retry with exponential backoff..."
       },
-      "uv-package-management": {
-        "source": "examples/patterns/uv-usage.md",
-        "tags": ["uv", "dependencies"],
-        "referenced_by": ["PRP-8", "PRP-12"],
-        "excerpt": "Use uv add for dependencies..."
+      "strategy-testing": {
+        "source": ".ce/examples/system/patterns/strategy-testing.py",
+        "tags": ["testing", "mocks", "pipeline"],
+        "referenced_by": ["PRP-10"],
+        "excerpt": "Strategy pattern for composable testing..."
       }
     },
 
-    "prp_learnings": {
-      "PRP-15": {
-        "source": "PRPs/executed/PRP-15-drift-analyzer.md",
-        "title": "Context Drift Analyzer",
-        "implementations": ["ce/drift_analyzer.py"],
+    "user_patterns": {
+      "api-error-handling": {
+        "source": "examples/patterns/api-error.md",
+        "tags": ["api", "error", "project-specific"],
+        "referenced_by": ["PRP-29"],
+        "excerpt": "Project-specific error handling..."
+      }
+    },
+
+    "system_prps": {
+      "PRP-1": {
+        "source": ".ce/PRPs/system/executed/PRP-1-validation.md",
+        "title": "Core Validation Framework",
+        "implementations": ["ce/validate.py"],
         "verified": true,
-        "tags": ["drift", "validation"],
-        "excerpt": "Detects pattern violations and missing examples..."
+        "tags": ["validation", "L1-L4"],
+        "excerpt": "4-level validation gates..."
+      }
+    },
+
+    "user_prps": {
+      "PRP-29": {
+        "source": "PRPs/executed/PRP-29-syntropy-init.md",
+        "title": "Syntropy Init",
+        "implementations": ["syntropy-mcp/src/tools/init.ts"],
+        "verified": true,
+        "tags": ["init", "scaffolding"],
+        "excerpt": "Project initialization workflow..."
       }
     },
 
@@ -92,11 +115,11 @@ Syntropy provides a unified index and query interface for all project knowledge 
       }
     },
 
-    "rules": {
+    "system_rules": {
       "no-fishy-fallbacks": {
-        "source": "CLAUDE.md",
-        "line": 42,
-        "excerpt": "No fishy fallbacks - fast failure with actionable errors"
+        "source": ".ce/RULES.md",
+        "line": 15,
+        "excerpt": "Fast Failure: Let exceptions bubble up"
       }
     }
   },
