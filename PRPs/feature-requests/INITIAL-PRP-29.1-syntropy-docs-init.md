@@ -1,6 +1,6 @@
 # INITIAL: Syntropy Documentation Migration & Init Foundation
 
-**Feature:** Move Context Engineering framework documentation to Syntropy and implement project initialization with slash command upsert.
+**Feature:** Copy CE framework boilerplate from syntropy/ce/ to project .ce/ directory and implement automated project initialization.
 
 **Prerequisites:** None (foundational PRP - implements base functionality for PRP-29.2 and PRP-29.3)
 
@@ -10,70 +10,75 @@
 
 ## FEATURE
 
-Syntropy ships with CE framework documentation and provides automated project scaffolding with slash command management.
+Syntropy provides automated project scaffolding by copying CE framework boilerplate from `syntropy/ce/` to project `.ce/` directory, with slash command upsert and Serena activation.
 
 **Repository Context:**
-- **Syntropy MCP:** `~/syntropy-mcp` (separate repository, MCP server aggregator)
-- **ctx-eng-plus:** Current project (Context Engineering reference implementation)
-- **Relationship:** Syntropy provides framework tooling, ctx-eng-plus uses it as a project
+- **ctx-eng-plus:** Contains `syntropy/ce/` boilerplate (static copy-paste content)
+- **Target Projects:** Any project using Context Engineering framework
+- **Relationship:** ctx-eng-plus provides reference boilerplate, projects copy to `.ce/`
 
 **Goals:**
-1. Move framework docs from ctx-eng-plus to syntropy-mcp (research/, templates/, docs/)
-2. Move slash command definitions to syntropy-mcp/commands/
+1. Copy `syntropy/ce/` boilerplate to project `.ce/` directory
+2. Structure includes: `.ce/PRPs/system/`, `.ce/examples/system/`, `.ce/tools/`
 3. Implement `syntropy_init_project` tool for project scaffolding
 4. Auto-upsert slash commands on init (ALWAYS overwrite to keep in sync)
-5. Detect project structure (root-level vs context-engineering/ subdirectory)
+5. Keep user PRPs/ and examples/ at root (separate from system)
 6. Activate Serena project on init for code navigation
-7. Clean up ctx-eng-plus (delete duplicate docs)
+7. Support self-contained, auto-healing workflow
 
 **Current Problems:**
-- CE framework docs duplicated in every project
+- CE framework content scattered across projects
 - No standardized project initialization
 - Slash commands manually maintained per project
 - No automatic framework updates
+- System PRPs mixed with user PRPs
 
 **Expected Outcome:**
-- Framework docs live in `syntropy-mcp/docs/` (single source of truth)
+- Framework boilerplate in `.ce/` (copied from syntropy/ce/)
 - Slash commands auto-installed: `/generate-prp`, `/execute-prp`, `/update-context`
-- `syntropy_init_project` creates: PRPs/, examples/, .serena/, CLAUDE.md, .claude/commands/
-- Supports both layouts: root-level OR context-engineering/ subdirectory
+- `syntropy_init_project` creates: `.ce/PRPs/system/`, `.ce/examples/system/`, `.ce/tools/`
+- User content stays at root: `PRPs/`, `examples/`, `CLAUDE.md`
 - ⚠️ Slash commands ALWAYS overwritten on init (user customizations lost)
+- Self-contained workflow with RULES.md embedded
 
 ---
 
 ## EXAMPLES
 
-### Example 1: Documentation Structure in Syntropy
+### Example 1: Boilerplate Structure in syntropy/ce/
 
-**Target Structure:**
+**Source Structure (ctx-eng-plus):**
 ```
-syntropy-mcp/
-├── docs/
-│   ├── research/           # 00-11 documentation suite
-│   │   ├── 00-prp-overview.md
-│   │   ├── 01-prp-system.md
-│   │   └── ...
-│   ├── templates/          # PRP templates
-│   │   ├── self-healing.md
-│   │   └── kiss.md
-│   └── *.md               # Top-level docs (prp-yaml-schema.md, etc.)
-└── commands/              # Slash command definitions
-    ├── generate-prp.md
-    ├── execute-prp.md
-    └── update-context.md
+syntropy/ce/                  # Static boilerplate
+├── PRPs/                     # System PRPs
+│   ├── executed/             # PRP-1-28
+│   └── templates/            # self-healing.md, kiss.md
+├── examples/                 # System examples
+│   ├── model/                # SystemModel.md
+│   └── patterns/             # Code patterns
+├── serena/                   # Empty (for project-specific memories)
+├── tools/                    # CE CLI tooling
+│   ├── ce/                   # Python package
+│   ├── tests/                # Test suite
+│   └── pyproject.toml        # UV config
+├── RULES.md                  # Distilled CE rules
+└── README.md                 # Boilerplate guide
 ```
 
-**Migration:**
-```bash
-# Move from ctx-eng-plus to syntropy-mcp
-mv ctx-eng-plus/docs/research/* → syntropy-mcp/docs/research/
-mv ctx-eng-plus/PRPs/templates/* → syntropy-mcp/docs/templates/
-mv ctx-eng-plus/docs/*.md → syntropy-mcp/docs/
-mv ctx-eng-plus/.claude/commands/*.md → syntropy-mcp/commands/
-
-# Clean up ctx-eng-plus
-rm -rf ctx-eng-plus/docs/
-rm -rf ctx-eng-plus/PRPs/templates/
+**Target Structure (after init):**
+```
+my-project/
+├── .ce/                      # System (copied from syntropy/ce/)
+│   ├── PRPs/system/
+│   ├── examples/system/
+│   ├── tools/
+│   └── config.yml
+├── PRPs/                     # User project PRPs
+│   ├── feature-requests/
+│   └── executed/
+├── examples/                 # User project examples
+├── .serena/memories/         # Serena knowledge
+└── .claude/commands/         # Slash commands (auto-upserted)
 ```
 
 ### Example 2: Project Structure Detection
@@ -82,42 +87,37 @@ rm -rf ctx-eng-plus/PRPs/templates/
 
 ```typescript
 interface ProjectLayout {
-  prpsDir: string;        // "PRPs" or "context-engineering/PRPs"
-  examplesDir: string;    // "examples" or "context-engineering/examples"
-  memoriesDir: string;    // Always ".serena/memories"
-  claudeMd: string;       // "CLAUDE.md" location
-  commandsDir: string;    // Always ".claude/commands"
-  layout: "root" | "context-engineering";
+  ceDir: string;            // ".ce" (system content)
+  prpsDir: string;          // "PRPs" (user content)
+  examplesDir: string;      // "examples" (user content)
+  memoriesDir: string;      // ".serena/memories"
+  claudeMd: string;         // "CLAUDE.md" location
+  commandsDir: string;      // ".claude/commands"
 }
 
 function detectProjectLayout(projectRoot: string): ProjectLayout {
-  // Check for context-engineering subdirectory
-  const ceDir = path.join(projectRoot, "context-engineering");
-  const hasContextEngineering = fs.existsSync(ceDir);
-
-  if (hasContextEngineering) {
-    return {
-      prpsDir: "context-engineering/PRPs",
-      examplesDir: "context-engineering/examples",
-      memoriesDir: ".serena/memories",
-      claudeMd: findCLAUDEmd(projectRoot),  // Search root first, then subdirs
-      commandsDir: ".claude/commands",
-      layout: "context-engineering"
-    };
-  }
-
+  // Standard layout: .ce/ for system, root for user
   return {
-    prpsDir: "PRPs",
-    examplesDir: "examples",
-    memoriesDir: ".serena/memories",
+    ceDir: ".ce",                      // System content
+    prpsDir: "PRPs",                   // User PRPs
+    examplesDir: "examples",           // User examples
+    memoriesDir: ".serena/memories",   // Serena knowledge
     claudeMd: findCLAUDEmd(projectRoot),
-    commandsDir: ".claude/commands",
-    layout: "root"
+    commandsDir: ".claude/commands"    // Slash commands
   };
+}
+
+function findCLAUDEmd(projectRoot: string): string {
+  // Check root first, then subdirectories
+  const rootClaude = path.join(projectRoot, "CLAUDE.md");
+  if (fs.existsSync(rootClaude)) return "CLAUDE.md";
+
+  // Default location
+  return "CLAUDE.md";
 }
 ```
 
-**Pattern:** Support both layouts, always check `.serena/memories/` and `.claude/commands/` at root.
+**Pattern:** Simple layout with `.ce/` for system, root for user content.
 
 ### Example 3: Slash Command Upsert
 
@@ -173,37 +173,53 @@ export async function initProject(args: InitProjectArgs): Promise<object> {
   try {
     // 1. Detect existing layout
     const layout = detectProjectLayout(projectRoot);
-    console.log(`✅ Detected layout: ${layout.layout}`);
+    console.log(`✅ Detected standard layout`);
 
-    // 2. Create missing directories
-    await scaffoldStructure(projectRoot, layout);
+    // 2. Copy syntropy/ce/ boilerplate to .ce/
+    await copyBoilerplate(projectRoot, layout);
 
-    // 3. Upsert slash commands (ALWAYS overwrite)
+    // 3. Create user directories (PRPs/, examples/)
+    await scaffoldUserStructure(projectRoot, layout);
+
+    // 4. Upsert slash commands (ALWAYS overwrite)
     await upsertSlashCommands(projectRoot);
 
-    // 4. Activate Serena project
+    // 5. Activate Serena project
     await activateSerenaProject(projectRoot);
 
     return {
       success: true,
-      layout: layout.layout,
-      message: "Project initialized successfully"
+      message: "Project initialized successfully",
+      structure: ".ce/ (system) + PRPs/examples/ (user)"
     };
   } catch (error) {
     throw new Error(
       `Failed to initialize project: ${error.message}\n` +
-      `🔧 Troubleshooting: Ensure directory is writable and not in use`
+      `🔧 Troubleshooting: Ensure directory is writable and syntropy/ce/ exists`
     );
   }
 }
 
-async function scaffoldStructure(projectRoot: string, layout: ProjectLayout): Promise<void> {
+async function copyBoilerplate(projectRoot: string, layout: ProjectLayout): Promise<void> {
+  // Find syntropy/ce/ boilerplate (in ctx-eng-plus or specified path)
+  const boilerplatePath = path.join(__dirname, "../../syntropy/ce");
+  const targetCeDir = path.join(projectRoot, layout.ceDir);
+
+  // Copy entire syntropy/ce/ to .ce/
+  await fs.cp(boilerplatePath, targetCeDir, { recursive: true });
+  console.log(`✅ Copied boilerplate to ${layout.ceDir}/`);
+  console.log(`   - PRPs/system/ (PRP-1-28 + templates)`);
+  console.log(`   - examples/system/ (model, patterns)`);
+  console.log(`   - tools/ (CE CLI)`);
+  console.log(`   - RULES.md (framework rules)`);
+}
+
+async function scaffoldUserStructure(projectRoot: string, layout: ProjectLayout): Promise<void> {
   const dirs = [
     path.join(projectRoot, layout.prpsDir, "feature-requests"),
     path.join(projectRoot, layout.prpsDir, "executed"),
     path.join(projectRoot, layout.examplesDir),
     path.join(projectRoot, layout.memoriesDir),
-    path.join(projectRoot, ".ce"),
   ];
 
   for (const dir of dirs) {
@@ -212,7 +228,7 @@ async function scaffoldStructure(projectRoot: string, layout: ProjectLayout): Pr
   }
 
   // Create CLAUDE.md if missing
-  const claudeMd = path.join(projectRoot, "CLAUDE.md");
+  const claudeMd = path.join(projectRoot, layout.claudeMd);
   if (!await fs.access(claudeMd).then(() => true).catch(() => false)) {
     await fs.writeFile(claudeMd, "# Project Guide\n\nAdd project-specific instructions here.\n");
     console.log(`✅ Created: CLAUDE.md`);
@@ -260,12 +276,17 @@ async function activateSerenaProject(projectRoot: string): Promise<void> {
 - **Client manager:** `syntropy-mcp/src/client-manager.ts`
 - **Main server:** `syntropy-mcp/src/index.ts`
 
-### Framework Docs to Move
+### Boilerplate Structure
 ```
-ctx-eng-plus/docs/research/*.md → syntropy-mcp/docs/research/
-ctx-eng-plus/PRPs/templates/*.md → syntropy-mcp/docs/templates/
-ctx-eng-plus/docs/*.md → syntropy-mcp/docs/
-ctx-eng-plus/.claude/commands/*.md → syntropy-mcp/commands/
+Source (ctx-eng-plus):
+  syntropy/ce/ → Contains static boilerplate
+
+Target (after init):
+  .ce/ → Copied from syntropy/ce/
+    - PRPs/system/ (executed + templates)
+    - examples/system/ (model + patterns)
+    - tools/ (CE CLI)
+    - RULES.md
 ```
 
 ---
@@ -367,16 +388,16 @@ test -f syntropy-mcp/commands/generate-prp.md && echo "✅ Commands migrated" ||
 
 ## SUCCESS CRITERIA
 
-1. ⬜ Framework docs moved to `syntropy-mcp/docs/` (research, templates, docs)
-2. ⬜ Slash commands moved to `syntropy-mcp/commands/`
-3. ⬜ Duplicates deleted from ctx-eng-plus
-4. ⬜ `syntropy_init_project` tool implemented
-5. ⬜ Init creates: PRPs/, examples/, .serena/, CLAUDE.md, .claude/commands/
-6. ⬜ Slash commands auto-installed: /generate-prp, /execute-prp, /update-context
-7. ⬜ Overwrite warning displayed clearly
-8. ⬜ Works with both layouts (root + context-engineering/)
-9. ⬜ Serena project activated on init
-10. ⬜ All tests passing (unit + integration)
+1. ⬜ Boilerplate structured in `syntropy/ce/` (PRPs, examples, tools, RULES.md)
+2. ⬜ `syntropy_init_project` tool implemented
+3. ⬜ Init copies `syntropy/ce/` → `.ce/` (system content)
+4. ⬜ Init creates user directories: PRPs/, examples/, .serena/, CLAUDE.md
+5. ⬜ Slash commands auto-installed: /generate-prp, /execute-prp, /update-context
+6. ⬜ Overwrite warning displayed clearly
+7. ⬜ Serena project activated on init
+8. ⬜ Self-contained workflow (RULES.md embedded in .ce/)
+9. ⬜ All tests passing (unit + integration)
+10. ⬜ Documentation updated (README in syntropy/ce/)
 
 ---
 
@@ -399,17 +420,18 @@ test -f syntropy-mcp/commands/generate-prp.md && echo "✅ Commands migrated" ||
 - Serena MCP (existing, for activation)
 
 **Files to Create:**
-- `syntropy-mcp/docs/research/*` (moved from ctx-eng-plus)
-- `syntropy-mcp/docs/templates/*` (moved from ctx-eng-plus)
-- `syntropy-mcp/docs/*.md` (moved from ctx-eng-plus)
-- `syntropy-mcp/commands/*.md` (moved from ctx-eng-plus)
-- `syntropy-mcp/src/scanner.ts`
-- `syntropy-mcp/src/tools/init.ts`
-- `syntropy-mcp/src/tools-definition.ts` (update with init tool)
+- ✅ `syntropy/ce/PRPs/` (system PRPs boilerplate)
+- ✅ `syntropy/ce/examples/` (system examples boilerplate)
+- ✅ `syntropy/ce/tools/` (CE CLI boilerplate)
+- ✅ `syntropy/ce/serena/` (empty, for project memories)
+- ✅ `syntropy/ce/RULES.md` (distilled framework rules)
+- ✅ `syntropy/ce/README.md` (boilerplate guide)
+- ⬜ `syntropy-mcp/src/scanner.ts` (layout detection)
+- ⬜ `syntropy-mcp/src/tools/init.ts` (init tool implementation)
+- ⬜ `syntropy-mcp/src/tools-definition.ts` (register init tool)
 
 **Files to Modify:**
-- `ctx-eng-plus/CLAUDE.md` (update doc references)
+- ⬜ Project CLAUDE.md (update with .ce/ references after init)
 
-**Files to Delete:**
-- `ctx-eng-plus/docs/` (entire directory)
-- `ctx-eng-plus/PRPs/templates/` (moved to syntropy-mcp)
+**No Files to Delete:**
+- Keep existing structure (no migrations, only new boilerplate)
