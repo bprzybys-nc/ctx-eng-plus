@@ -1,641 +1,520 @@
-# INITIAL-PRP-29.2: Syntropy Unified Knowledge Query
+# INITIAL: Syntropy Knowledge Management & Query Interface
 
-**Feature:** Implement unified knowledge query interface across framework docs, project PRPs, examples, and Serena memories.
+**Feature:** Unified knowledge indexing and query system across framework docs, PRPs, examples, and Serena memories.
+
+**Prerequisites:** PRP-29.1 must be completed first (provides init tool and structure detection)
+
+**Dependencies:** PRP-29.3 depends on this PRP (uses knowledge index for drift detection)
 
 ---
 
 ## FEATURE
 
-Provide a single query interface that searches all knowledge sources (framework docs, PRPs, examples, Serena memories) with semantic search capabilities.
+Syntropy provides a unified index and query interface for all project knowledge sources, enabling fast access to framework documentation and project-specific learnings.
 
 **Goals:**
-1. Implement `syntropy_get_framework_doc(doc_path)` - Fetch specific framework doc
-2. Implement `syntropy_knowledge_search(query, sources?)` - Unified search across all knowledge
-3. Support semantic search (not just text matching)
-4. Return results with context (file location, tags, references)
-5. Integrate with existing Serena memories
-6. Cache frequently accessed docs (5-min TTL)
-7. Support filtering by source type (framework, prp, example, memory)
+1. Implement unified index schema (`.ce/syntropy-index.json`)
+2. Knowledge scanner (PRPs, examples, Serena memories, CLAUDE.md rules)
+3. Framework doc accessor: `get_framework_doc(path)`
+4. Unified search: `knowledge_search(query)` across all sources
+5. Auto-index on project init (extends PRP-29.1)
+6. Support flexible directory discovery
+7. Track patterns, PRP learnings, and memories in index
 
 **Current Problems:**
-- Framework docs scattered (shipped with Syntropy, but no query tool)
-- Project knowledge fragmented (PRPs separate from examples separate from memories)
-- No unified search interface
-- Can't find patterns across knowledge sources
-- Manual grep/find commands for knowledge discovery
+- Knowledge scattered (files + Serena memories + framework docs)
+- No unified query interface
+- Manual search across multiple locations
+- Framework docs not programmatically accessible
 
 **Expected Outcome:**
-- MCP tool: `syntropy_get_framework_doc('research/01-prp-system')` → returns doc content
-- MCP tool: `syntropy_knowledge_search('error handling')` → searches all sources
-- Results include: source type, file path, excerpt, tags, references
-- Fast queries via cached index (`.ce/syntropy-index.json`)
-- Support natural language queries: "How do I handle API errors?"
-
-**Prerequisite:** PRP-29.1 must be completed (init tool creates index)
+- Single index file: `.ce/syntropy-index.json`
+- Framework docs queryable: `get_framework_doc('research/01-prp-system')`
+- Unified search: `knowledge_search("error handling")` → PRPs + examples + memories
+- Auto-indexed on init
+- Fast lookups (no full directory scans)
 
 ---
 
 ## EXAMPLES
 
-### Example 1: Framework Doc Retrieval Tool
+### Example 1: Unified Index Schema
 
-**Location:** `syntropy-mcp/src/tools/knowledge.ts`
+**Location:** `.ce/syntropy-index.json`
 
-```typescript
-interface FrameworkDocResult {
-  success: boolean;
-  doc_path: string;
-  content: string;
-  metadata: {
-    title: string;
-    tags: string[];
-    last_modified: string;
-  };
-}
+```json
+{
+  "version": "1.0",
+  "project_root": "/Users/user/my-project",
+  "synced_at": "2025-10-22T10:00:00Z",
+  "framework_version": "1.0",
 
-export async function getFrameworkDoc(docPath: string): Promise<FrameworkDocResult> {
-  // Resolve doc path relative to syntropy-mcp/docs/
-  const docsRoot = path.join(__dirname, '../../docs');
-  const fullPath = path.join(docsRoot, `${docPath}.md`);
+  "paths": {
+    "prps": ["PRPs", "context-engineering/PRPs"],
+    "examples": ["examples"],
+    "memories": [".serena/memories"],
+    "claude_md": "CLAUDE.md",
+    "layout": "root"
+  },
 
-  // Validate path (prevent directory traversal)
-  const resolvedPath = path.resolve(fullPath);
-  if (!resolvedPath.startsWith(path.resolve(docsRoot))) {
-    throw new Error(
-      `Invalid doc path: ${docPath}\n` +
-      `🔧 Path must be relative to docs/ (e.g., 'research/01-prp-system')`
-    );
-  }
+  "knowledge": {
+    "patterns": {
+      "api-error-handling": {
+        "source": "examples/patterns/api-error.md",
+        "tags": ["api", "error", "fastapi"],
+        "referenced_by": ["PRP-15"],
+        "excerpt": "FastAPI error handling with HTTPException..."
+      },
+      "uv-package-management": {
+        "source": "examples/patterns/uv-usage.md",
+        "tags": ["uv", "dependencies"],
+        "referenced_by": ["PRP-8", "PRP-12"],
+        "excerpt": "Use uv add for dependencies..."
+      }
+    },
 
-  // Check if file exists
-  if (!await exists(resolvedPath)) {
-    throw new Error(
-      `Framework doc not found: ${docPath}\n` +
-      `🔧 Available docs:\n` +
-      `    - research/00-overview\n` +
-      `    - research/01-prp-system\n` +
-      `    - templates/self-healing`
-    );
-  }
+    "prp_learnings": {
+      "PRP-15": {
+        "source": "PRPs/executed/PRP-15-drift-analyzer.md",
+        "title": "Context Drift Analyzer",
+        "implementations": ["ce/drift_analyzer.py"],
+        "verified": true,
+        "tags": ["drift", "validation"],
+        "excerpt": "Detects pattern violations and missing examples..."
+      }
+    },
 
-  // Read content
-  const content = await fs.readFile(resolvedPath, 'utf-8');
+    "memories": {
+      "tool-usage-guide": {
+        "source": ".serena/memories/tool-usage-guide.md",
+        "tags": ["tools", "mcp", "syntropy"],
+        "excerpt": "Syntropy MCP tool naming convention..."
+      }
+    },
 
-  // Parse metadata from frontmatter or heading
-  const metadata = parseDocMetadata(content);
-
-  return {
-    success: true,
-    doc_path: docPath,
-    content,
-    metadata
-  };
-}
-```
-
-**Pattern:** Secure path validation, clear error messages, metadata extraction.
-
-### Example 2: Unified Knowledge Search Tool
-
-**Location:** `syntropy-mcp/src/tools/knowledge.ts`
-
-```typescript
-interface SearchOptions {
-  sources?: ('framework' | 'prp' | 'example' | 'memory')[];
-  limit?: number;
-  tags?: string[];
-}
-
-interface SearchResult {
-  source_type: string;
-  title: string;
-  file_path: string;
-  excerpt: string;
-  score: number;
-  tags: string[];
-  referenced_by: string[];
-}
-
-interface KnowledgeSearchResult {
-  success: boolean;
-  query: string;
-  results: SearchResult[];
-  total_found: number;
-  sources_searched: string[];
-}
-
-export async function knowledgeSearch(
-  query: string,
-  projectRoot: string,
-  options?: SearchOptions
-): Promise<KnowledgeSearchResult> {
-  // Load cached index
-  const indexPath = path.join(projectRoot, '.ce', 'syntropy-index.json');
-  const index = await loadIndex(indexPath);
-
-  // Default: search all sources
-  const sources = options?.sources || ['framework', 'prp', 'example', 'memory'];
-  const limit = options?.limit || 10;
-
-  const results: SearchResult[] = [];
-
-  // Search framework docs
-  if (sources.includes('framework')) {
-    const frameworkResults = await searchFrameworkDocs(query, options?.tags);
-    results.push(...frameworkResults);
-  }
-
-  // Search project PRPs
-  if (sources.includes('prp')) {
-    const prpResults = await searchIndex(
-      query,
-      index.knowledge.prp_learnings,
-      'prp',
-      options?.tags
-    );
-    results.push(...prpResults);
-  }
-
-  // Search examples
-  if (sources.includes('example')) {
-    const exampleResults = await searchIndex(
-      query,
-      index.knowledge.patterns,
-      'example',
-      options?.tags
-    );
-    results.push(...exampleResults);
-  }
-
-  // Search Serena memories
-  if (sources.includes('memory')) {
-    const memoryResults = await searchIndex(
-      query,
-      index.knowledge.memories,
-      'memory',
-      options?.tags
-    );
-    results.push(...memoryResults);
-  }
-
-  // Sort by relevance score
-  results.sort((a, b) => b.score - a.score);
-
-  // Apply limit
-  const limitedResults = results.slice(0, limit);
-
-  return {
-    success: true,
-    query,
-    results: limitedResults,
-    total_found: results.length,
-    sources_searched: sources
-  };
-}
-```
-
-**Pattern:** Unified interface, relevance scoring, source filtering, limit control.
-
-### Example 3: Semantic Search Implementation
-
-**Location:** `syntropy-mcp/src/tools/search.ts`
-
-```typescript
-interface SemanticSearcher {
-  search(query: string): ScoredResult[];
-}
-
-// Simple TF-IDF based semantic search (no external deps)
-export class TFIDFSearcher implements SemanticSearcher {
-  private idf: Map<string, number> = new Map();
-  private corpus: Document[];
-
-  constructor(documents: Document[]) {
-    this.corpus = documents;
-    this.buildIDF(documents);
-  }
-
-  search(query: string): ScoredResult[] {
-    // Search across constructor corpus only (IDF pre-built)
-    const queryTokens = this.tokenize(query);
-    const scores: ScoredResult[] = [];
-
-    for (const doc of this.corpus) {
-      const docTokens = this.tokenize(doc.content);
-      const score = this.computeScore(queryTokens, docTokens);
-
-      scores.push({
-        document: doc,
-        score,
-        excerpt: this.extractExcerpt(doc.content, queryTokens)
-      });
-    }
-
-    return scores.sort((a, b) => b.score - a.score);
-  }
-
-  private tokenize(text: string): string[] {
-    return text
-      .toLowerCase()
-      .replace(/[^\w\s]/g, ' ')
-      .split(/\s+/)
-      .filter(token => token.length > 2);
-  }
-
-  private computeScore(queryTokens: string[], docTokens: string[]): number {
-    let score = 0;
-
-    for (const token of queryTokens) {
-      const tf = docTokens.filter(t => t === token).length / docTokens.length;
-      const idf = this.idf.get(token) || 0;
-      score += tf * idf;
-    }
-
-    return score;
-  }
-
-  private extractExcerpt(content: string, queryTokens: string[]): string {
-    // Find sentence containing most query tokens
-    const sentences = content.split(/[.!?]+/);
-    let bestSentence = sentences[0];
-    let maxMatches = 0;
-
-    for (const sentence of sentences) {
-      const matches = queryTokens.filter(token =>
-        sentence.toLowerCase().includes(token)
-      ).length;
-
-      if (matches > maxMatches) {
-        maxMatches = matches;
-        bestSentence = sentence;
+    "rules": {
+      "no-fishy-fallbacks": {
+        "source": "CLAUDE.md",
+        "line": 42,
+        "excerpt": "No fishy fallbacks - fast failure with actionable errors"
       }
     }
+  },
 
-    return bestSentence.trim().substring(0, 200) + '...';
-  }
-
-  private buildIDF(documents: Document[]): void {
-    const tokenDocs = new Map<string, number>();
-
-    for (const doc of documents) {
-      const tokens = new Set(this.tokenize(doc.content));
-      for (const token of tokens) {
-        tokenDocs.set(token, (tokenDocs.get(token) || 0) + 1);
-      }
-    }
-
-    for (const [token, docCount] of tokenDocs.entries()) {
-      this.idf.set(token, Math.log(documents.length / docCount));
-    }
+  "drift": {
+    "score": 0.05,
+    "violations": []
   }
 }
 ```
 
-**Pattern:** Simple semantic search, no external dependencies, TF-IDF scoring, excerpt extraction.
+**Pattern:** Single index, all sources tracked, fast lookups by key, excerpt for quick reference.
 
-### Example 4: Index Cache with TTL
+### Example 2: Knowledge Scanner
 
-**Location:** `syntropy-mcp/src/tools/cache.ts`
+**Location:** `syntropy-mcp/src/indexer.ts`
 
 ```typescript
-interface CachedIndex {
-  index: KnowledgeIndex;
-  loaded_at: number;
-  ttl_ms: number;
+interface KnowledgeIndex {
+  version: string;
+  project_root: string;
+  synced_at: string;
+  framework_version: string;
+  paths: PathsConfig;
+  knowledge: {
+    patterns: Record<string, PatternEntry>;
+    prp_learnings: Record<string, PRPEntry>;
+    memories: Record<string, MemoryEntry>;
+    rules: Record<string, RuleEntry>;
+  };
+  drift: DriftInfo;
 }
 
-export class IndexCache {
-  private cache: Map<string, CachedIndex> = new Map();
-  private defaultTTL = 5 * 60 * 1000; // 5 minutes
+export class KnowledgeIndexer {
+  async scanProject(projectRoot: string): Promise<KnowledgeIndex> {
+    const layout = detectProjectLayout(projectRoot);
 
-  async loadIndex(indexPath: string, ttl?: number): Promise<KnowledgeIndex> {
-    const cached = this.cache.get(indexPath);
-
-    // Check if cached and not expired
-    if (cached) {
-      const age = Date.now() - cached.loaded_at;
-      if (age < cached.ttl_ms) {
-        return cached.index;
-      }
-    }
-
-    // Load from disk
-    const content = await fs.readFile(indexPath, 'utf-8');
-    const index = JSON.parse(content) as KnowledgeIndex;
-
-    // Cache with TTL
-    this.cache.set(indexPath, {
-      index,
-      loaded_at: Date.now(),
-      ttl_ms: ttl || this.defaultTTL
-    });
+    const index: KnowledgeIndex = {
+      version: "1.0",
+      project_root: projectRoot,
+      synced_at: new Date().toISOString(),
+      framework_version: "1.0",
+      paths: layout,
+      knowledge: {
+        patterns: await this.scanPatterns(projectRoot, layout),
+        prp_learnings: await this.scanPRPs(projectRoot, layout),
+        memories: await this.scanMemories(projectRoot, layout),
+        rules: await this.scanRules(projectRoot, layout)
+      },
+      drift: { score: 0, violations: [] }
+    };
 
     return index;
   }
 
-  invalidate(indexPath: string): void {
-    this.cache.delete(indexPath);
+  private async scanPatterns(root: string, layout: ProjectLayout): Promise<Record<string, PatternEntry>> {
+    const patternsDir = path.join(root, layout.examplesDir, "patterns");
+    const patterns: Record<string, PatternEntry> = {};
+
+    if (!await exists(patternsDir)) return patterns;
+
+    const files = await glob("*.md", { cwd: patternsDir });
+
+    for (const file of files) {
+      try {
+        const fullPath = path.join(patternsDir, file);
+        const content = await fs.readFile(fullPath, "utf-8");
+        const key = path.basename(file, ".md");
+
+        patterns[key] = {
+          source: path.relative(root, fullPath),
+          tags: extractTags(content),
+          referenced_by: await findReferences(key, root),
+          excerpt: extractExcerpt(content, 200)
+        };
+      } catch (error) {
+        console.warn(`⚠️  Failed to scan pattern ${file}: ${error.message}`);
+        // Continue with other files
+      }
+    }
+
+    return patterns;
   }
 
-  invalidateAll(): void {
-    this.cache.clear();
+  private async scanPRPs(root: string, layout: ProjectLayout): Promise<Record<string, PRPEntry>> {
+    const prpsDir = path.join(root, layout.prpsDir, "executed");
+    const prps: Record<string, PRPEntry> = {};
+
+    if (!await exists(prpsDir)) return prps;
+
+    const files = await glob("PRP-*.md", { cwd: prpsDir });
+
+    for (const file of files) {
+      try {
+        const fullPath = path.join(prpsDir, file);
+        const content = await fs.readFile(fullPath, "utf-8");
+        const prpId = file.match(/PRP-(\d+)/)?.[0] || file;
+
+        prps[prpId] = {
+          source: path.relative(root, fullPath),
+          title: extractTitle(content),
+          implementations: await findImplementations(content, root),
+          verified: checkVerified(content),
+          tags: extractTags(content),
+          excerpt: extractExcerpt(content, 200)
+        };
+      } catch (error) {
+        console.warn(`⚠️  Failed to scan PRP ${file}: ${error.message}`);
+        // Continue with other files
+      }
+    }
+
+    return prps;
   }
+
+  private async scanMemories(root: string, layout: ProjectLayout): Promise<Record<string, MemoryEntry>> {
+    const memoriesDir = path.join(root, layout.memoriesDir);
+    const memories: Record<string, MemoryEntry> = {};
+
+    if (!await exists(memoriesDir)) return memories;
+
+    const files = await glob("*.md", { cwd: memoriesDir });
+
+    for (const file of files) {
+      try {
+        const fullPath = path.join(memoriesDir, file);
+        const content = await fs.readFile(fullPath, "utf-8");
+        const key = path.basename(file, ".md");
+
+        memories[key] = {
+          source: path.relative(root, fullPath),
+          tags: extractTags(content),
+          excerpt: extractExcerpt(content, 200)
+        };
+      } catch (error) {
+        console.warn(`⚠️  Failed to scan memory ${file}: ${error.message}`);
+        // Continue with other files
+      }
+    }
+
+    return memories;
+  }
+
+  private async scanRules(root: string, layout: ProjectLayout): Promise<Record<string, RuleEntry>> {
+    const claudeMd = path.join(root, layout.claudeMd);
+    const rules: Record<string, RuleEntry> = {};
+
+    if (!await exists(claudeMd)) return rules;
+
+    const content = await fs.readFile(claudeMd, "utf-8");
+    const lines = content.split("\n");
+
+    // Extract rules from CLAUDE.md (headers + important statements)
+    for (let i = 0; i < lines.length; i++) {
+      const line = lines[i];
+
+      // Check for rule indicators
+      if (line.includes("MANDATORY") || line.includes("REQUIRED") || line.includes("FORBIDDEN")) {
+        const key = slugify(line.replace(/[#*]/g, "").trim());
+        rules[key] = {
+          source: layout.claudeMd,
+          line: i + 1,
+          excerpt: line.substring(0, 100)
+        };
+      }
+    }
+
+    return rules;
+  }
+}
+
+// Helper: Extract tags from markdown content
+function extractTags(content: string): string[] {
+  // Strategy 1: Try YAML frontmatter tags
+  const yamlMatch = content.match(/^---\n([\s\S]*?)\n---/);
+  if (yamlMatch) {
+    const tagsMatch = yamlMatch[1].match(/tags:\s*\[(.*?)\]/);
+    if (tagsMatch) {
+      return tagsMatch[1].split(",").map(t => t.trim().replace(/['"]/g, ""));
+    }
+  }
+
+  // Strategy 2: Extract from inline tags (e.g., "Tags: api, error, fastapi")
+  const inlineMatch = content.match(/Tags?:\s*([^\n]+)/i);
+  if (inlineMatch) {
+    return inlineMatch[1].split(",").map(t => t.trim());
+  }
+
+  // Strategy 3: Extract from markdown headers (use as tags)
+  const headers = content.match(/^#{2,3}\s+(.+)$/gm);
+  if (headers && headers.length > 0) {
+    return headers
+      .slice(0, 3)  // Max 3 header-based tags
+      .map(h => h.replace(/^#+\s+/, "").trim().toLowerCase());
+  }
+
+  return [];
 }
 ```
 
-**Pattern:** TTL-based caching, manual invalidation, per-path cache entries.
+**Pattern:** Modular scanning (patterns, PRPs, memories, rules), extract metadata, async/await, graceful degradation if dirs missing.
 
-### Example 5: Query Tool Definition
+### Example 3: Framework Doc Accessor
 
-**Location:** `syntropy-mcp/src/tools-definition.ts`
+**Location:** `syntropy-mcp/src/tools/knowledge.ts`
 
 ```typescript
-{
-  name: "syntropy_get_framework_doc",
-  description: "Retrieve specific Context Engineering framework documentation",
-  inputSchema: {
-    type: "object",
-    properties: {
-      doc_path: {
-        type: "string",
-        description: "Path to doc relative to docs/ (e.g., 'research/01-prp-system')"
-      }
-    },
-    required: ["doc_path"]
-  }
-},
-{
-  name: "syntropy_knowledge_search",
-  description: "Search across all knowledge sources (framework, PRPs, examples, memories)",
-  inputSchema: {
-    type: "object",
-    properties: {
-      query: {
-        type: "string",
-        description: "Search query (natural language or keywords)"
-      },
-      project_root: {
-        type: "string",
-        description: "Absolute path to project root"
-      },
-      options: {
-        type: "object",
-        properties: {
-          sources: {
-            type: "array",
-            items: {
-              type: "string",
-              enum: ["framework", "prp", "example", "memory"]
-            },
-            description: "Knowledge sources to search (default: all)"
-          },
-          limit: {
-            type: "number",
-            description: "Maximum results to return (default: 10)"
-          },
-          tags: {
-            type: "array",
-            items: { type: "string" },
-            description: "Filter by tags"
-          }
-        }
-      }
-    },
-    required: ["query", "project_root"]
+interface GetFrameworkDocArgs {
+  path: string;  // e.g., "research/01-prp-system" or "templates/self-healing"
+}
+
+export async function getFrameworkDoc(args: GetFrameworkDocArgs): Promise<object> {
+  const docsRoot = path.join(__dirname, "../../docs");
+  const docPath = path.join(docsRoot, args.path + ".md");
+
+  try {
+    // Security: prevent directory traversal
+    const resolvedPath = path.resolve(docPath);
+    if (!resolvedPath.startsWith(docsRoot)) {
+      throw new Error("Invalid path: directory traversal detected");
+    }
+
+    // Check if file exists
+    await fs.access(resolvedPath);
+
+    // Read content
+    const content = await fs.readFile(resolvedPath, "utf-8");
+
+    return {
+      success: true,
+      path: args.path,
+      content: content,
+      size: content.length
+    };
+  } catch (error) {
+    throw new Error(
+      `Framework doc not found: ${args.path}\n` +
+      `🔧 Troubleshooting: Check available docs with knowledge_list_docs`
+    );
   }
 }
 ```
 
-**Pattern:** Clear input schemas, optional parameters with defaults, enum validation.
+**Pattern:** Security (prevent traversal), fast failure, actionable errors.
+
+### Example 4: Unified Search
+
+**Location:** `syntropy-mcp/src/tools/knowledge.ts`
+
+```typescript
+interface KnowledgeSearchArgs {
+  query: string;       // Search query
+  sources?: string[];  // Optional: ["patterns", "prps", "memories", "rules"]
+  limit?: number;      // Max results (default 20)
+}
+
+interface SearchResult {
+  key: string;
+  source: string;
+  excerpt: string;
+  tags?: string[];
+  score: number;  // Relevance score (0-1)
+}
+
+export async function knowledgeSearch(args: KnowledgeSearchArgs): Promise<object> {
+  const projectRoot = process.cwd();  // Or get from Syntropy context
+  const indexPath = path.join(projectRoot, ".ce/syntropy-index.json");
+
+  try {
+    // Load index (with staleness check)
+    const index = await loadIndexWithCache(indexPath);
+    if (!index) {
+      throw new Error("Index not found or stale, please run syntropy_init_project");
+    }
+
+    // Search across sources
+    const sources = args.sources || ["patterns", "prps", "memories", "rules"];
+    const results: SearchResult[] = [];
+
+    for (const source of sources) {
+      const entries = index.knowledge[source];
+      if (!entries) continue;
+
+      for (const [key, entry] of Object.entries(entries)) {
+        const score = calculateRelevance(args.query, entry);
+        if (score > 0.3) {  // Threshold
+          results.push({
+            key,
+            source: entry.source,
+            excerpt: entry.excerpt,
+            tags: entry.tags,
+            score
+          });
+        }
+      }
+    }
+
+    // Sort by score (descending)
+    results.sort((a, b) => b.score - a.score);
+
+    // Limit results
+    const limit = args.limit || 20;
+    const limited = results.slice(0, limit);
+
+    return {
+      success: true,
+      query: args.query,
+      count: limited.length,
+      results: limited
+    };
+  } catch (error) {
+    throw new Error(
+      `Knowledge search failed: ${error.message}\n` +
+      `🔧 Troubleshooting: Ensure project is initialized with syntropy_init_project`
+    );
+  }
+}
+
+// Helper: Load index with staleness check (5-min TTL)
+async function loadIndexWithCache(indexPath: string): Promise<KnowledgeIndex | null> {
+  try {
+    const stats = await fs.stat(indexPath);
+    const age = (Date.now() - stats.mtime.getTime()) / 1000 / 60;  // Minutes
+
+    if (age > 5) {  // TTL: 5 minutes
+      console.log("⚠️  Index stale (>5 min), recommend running syntropy_sync_context");
+      // Still return stale index (graceful degradation), but warn user
+    }
+
+    const content = await fs.readFile(indexPath, "utf-8");
+    return JSON.parse(content);
+  } catch {
+    return null;  // Index missing
+  }
+}
+
+function calculateRelevance(query: string, entry: any): number {
+  const q = query.toLowerCase();
+  const queryTokens = q.split(/\s+/).filter(t => t.length > 2);  // Split and filter short words
+  let score = 0;
+
+  // Multi-word query support (all tokens must match for bonus)
+  const excerpt = entry.excerpt?.toLowerCase() || "";
+  const allTokensMatch = queryTokens.every(token => excerpt.includes(token));
+  if (allTokensMatch && queryTokens.length > 1) {
+    score += 0.6;  // Bonus for multi-word match
+  } else if (excerpt.includes(q)) {
+    score += 0.5;  // Exact phrase match
+  } else {
+    // Partial token matches
+    const matchedTokens = queryTokens.filter(token => excerpt.includes(token)).length;
+    score += (matchedTokens / queryTokens.length) * 0.3;
+  }
+
+  // Match in tags
+  if (entry.tags?.some(tag => queryTokens.some(token => tag.toLowerCase().includes(token)))) {
+    score += 0.3;
+  }
+
+  // Match in source path
+  if (entry.source?.toLowerCase().includes(q)) score += 0.2;
+
+  return Math.min(score, 1.0);
+}
+```
+
+**Pattern:** Load index, search all sources, score relevance, sort, limit results.
 
 ---
 
 ## DOCUMENTATION
 
+### TypeScript/Node.js
+- File system: `fs/promises` async operations
+- Glob patterns: `glob` package for file discovery
+- JSON: `JSON.parse()`, `JSON.stringify()`
+- Path security: Check `path.resolve()` vs allowed root
+
+### Indexing Strategy
+- **Patterns:** Scan `examples/patterns/*.md`
+- **PRPs:** Scan `PRPs/executed/PRP-*.md`
+- **Memories:** Scan `.serena/memories/*.md`
+- **Rules:** Extract from `CLAUDE.md` (MANDATORY, REQUIRED, FORBIDDEN)
+
 ### Search Algorithm
-
-**TF-IDF (Term Frequency-Inverse Document Frequency):**
-- **TF**: How often term appears in document (relevance)
-- **IDF**: How rare term is across all documents (importance)
-- **Score**: TF × IDF (higher = more relevant)
-
-**No External Dependencies:**
-- Implement TF-IDF from scratch (stdlib only)
-- Avoid vector DB complexity (overkill for <1000 docs)
-- Fast enough for real-time queries (<100ms)
-
-### Framework Docs Structure
-
-**Available Docs (from PRP-29.1):**
-- `syntropy-mcp/docs/research/00-overview.md`
-- `syntropy-mcp/docs/research/01-prp-system.md`
-- `syntropy-mcp/docs/research/02-11-*.md`
-- `syntropy-mcp/docs/templates/self-healing.md`
-- `syntropy-mcp/docs/templates/kiss.md`
-- `syntropy-mcp/docs/prp-yaml-schema.md`
-
-**Doc Path Format:**
-- Relative to `syntropy-mcp/docs/`
-- Omit `.md` extension
-- Examples: `research/01-prp-system`, `templates/self-healing`
-
-### Index Schema (from PRP-29.1)
-
-**Location:** `.ce/syntropy-index.json`
-
-```typescript
-interface KnowledgeIndex {
-  knowledge: {
-    patterns: Record<string, PatternInfo>;      // examples/
-    prp_learnings: Record<string, PRPInfo>;     // PRPs/
-    memories: Record<string, MemoryInfo>;       // .serena/memories/
-  };
-}
-```
-
-**Search targets:**
-- Framework docs: `syntropy-mcp/docs/**/*.md`
-- Patterns: `index.knowledge.patterns`
-- PRPs: `index.knowledge.prp_learnings`
-- Memories: `index.knowledge.memories`
+- Simple keyword matching (phase 1)
+- Future: Full-text search with vector embeddings (phase 2)
+- Relevance scoring: excerpt match (0.5) + tags (0.3) + path (0.2)
 
 ---
 
 ## OTHER CONSIDERATIONS
 
 ### Performance
-
-- Cache index in memory (5-min TTL)
-- Lazy load framework docs (on first access)
-- Build TF-IDF index once per search (reuse for multiple queries)
-- Limit search results (default 10, max 100)
-- Extract excerpts efficiently (sentence-level matching)
+- Index cached in `.ce/syntropy-index.json` (5-min TTL)
+- Avoid full directory scans on every query
+- Incremental updates (track file mtimes)
+- Lazy loading (only scan when index stale)
 
 ### Security
-
-- Validate doc paths (prevent directory traversal)
-- Sanitize query input (prevent injection)
-- No secret exposure in results
-- Validate project_root exists and is readable
+- Prevent directory traversal in `get_framework_doc`
+- Validate all file paths against allowed roots
+- Sanitize user queries (escape special chars)
 
 ### Error Handling
+- Fast failure with 🔧 troubleshooting
+- Clear messages: "Index not found → run syntropy_init_project"
+- No fishy fallbacks (no silent failures)
 
-- Framework doc not found → suggest available docs
-- Index missing → prompt to run init
-- Index stale (>5 min old) → auto-reload
-- Empty query → return error with guidance
-- No results found → suggest broader query
-
-### Cache Invalidation
-
-**Automatic:**
-- TTL expiration (5 minutes)
-- Index file modification detected
-
-**Manual:**
-- After `/update-context` runs
-- After new PRP created
-- After example added
-
-### Search Quality
-
-**Ranking Formula:**
-```
-final_score = tfidf_score × (1 + tag_boost + title_boost + recency_boost)
-
-Where:
-- tfidf_score: Base TF-IDF relevance (0.0 - 1.0)
-- tag_boost: +0.2 if query terms match document tags
-- title_boost: +0.3 if query terms appear in document title
-- recency_boost: +0.1 for documents modified in last 30 days
-```
-
-**Ranking Factors:**
-- TF-IDF score (primary relevance measure)
-- Tag matches (boost +0.2) - query terms in document tags
-- Title matches (boost +0.3) - query terms in document title
-- Recent documents (recency bias +0.1) - modified within 30 days
-
-**Excerpt Quality:**
-- Sentence containing most query tokens
-- Max 200 chars
-- Trim at word boundary
-
-### Integration with Serena
-
-**Serena Memories:**
-- Indexed in `.ce/syntropy-index.json` by init tool (PRP-29.1)
-- Searchable via `knowledge_search(sources=['memory'])`
-- No duplicate storage (reference memory files directly)
-
-**Memory Format:**
-```json
-{
-  "tool-usage-guide": {
-    "source": ".serena/memories/tool-usage-guide.md",
-    "tags": ["tools", "mcp"],
-    "content": "..." // Cached excerpt
-  }
-}
-```
+### Integration with PRP-29.1
+- Init tool calls `KnowledgeIndexer.scanProject()` on first run
+- Creates `.ce/syntropy-index.json`
+- Subsequent searches use cached index
 
 ### Testing Strategy
-
-**Unit Tests:**
-```typescript
-describe('TFIDFSearcher', () => {
-  it('ranks documents by relevance', () => {
-    const docs = [
-      { id: '1', content: 'error handling patterns' },
-      { id: '2', content: 'API client implementation' },
-      { id: '3', content: 'error recovery and retry logic' }
-    ];
-    const searcher = new TFIDFSearcher(docs);
-    const results = searcher.search('error handling');
-
-    expect(results[0].document.id).toBe('1'); // Best match
-    expect(results[0].score).toBeGreaterThan(results[1].score);
-  });
-
-  it('extracts relevant excerpt', () => {
-    const searcher = new TFIDFSearcher([{
-      id: '1',
-      content: 'Some intro text. Error handling is critical. More text.'
-    }]);
-    const results = searcher.search('error handling');
-    expect(results[0].excerpt).toContain('Error handling is critical');
-  });
-});
-
-describe('knowledgeSearch', () => {
-  it('searches all sources by default', async () => {
-    const result = await knowledgeSearch('API errors', '/tmp/project');
-    expect(result.sources_searched).toEqual(['framework', 'prp', 'example', 'memory']);
-  });
-
-  it('filters by source type', async () => {
-    const result = await knowledgeSearch('API errors', '/tmp/project', {
-      sources: ['framework', 'prp']
-    });
-    expect(result.sources_searched).toEqual(['framework', 'prp']);
-  });
-
-  it('respects result limit', async () => {
-    const result = await knowledgeSearch('error', '/tmp/project', { limit: 5 });
-    expect(result.results.length).toBeLessThanOrEqual(5);
-  });
-});
-```
-
-**Integration Tests:**
-```bash
-# Test framework doc retrieval
-syntropy get_framework_doc 'research/01-prp-system' > output.json
-jq -e '.success == true' output.json
-jq -e '.content | length > 100' output.json  # Has content
-
-# Test knowledge search
-syntropy knowledge_search 'error handling' /tmp/test-project > results.json
-jq -e '.total_found > 0' results.json
-jq -e '.results[0].excerpt | length > 0' results.json
-
-# Test source filtering
-syntropy knowledge_search 'API' /tmp/test-project --sources framework,prp
-jq -e '.sources_searched == ["framework", "prp"]' results.json
-```
-
-**E2E Tests:**
-```bash
-# Full workflow: init → query → verify results
-syntropy init /tmp/test-project
-cd /tmp/test-project
-
-# Create test knowledge
-echo "# API Error Handling\nUse try-catch blocks" > examples/api-errors.md
-
-# Reindex
-syntropy sync .
-
-# Search should find example
-syntropy knowledge_search 'API error' . > results.json
-jq -e '.results[] | select(.source_type == "example")' results.json
-```
-
-### Constraints
-
-- No external search dependencies (TF-IDF implementation from scratch)
-- Index cached locally (5-min TTL)
-- Fast queries (<100ms for typical case)
-- Works offline (no network required)
-
-### Gotchas
-
-1. **Framework docs path:** Relative to `syntropy-mcp/docs/`, omit `.md`
-2. **Index prerequisite:** PRP-29.1 must complete first (creates index)
-3. **Cache invalidation:** Manual invalidation needed after knowledge changes
-4. **Search scope:** Default searches ALL sources (can be expensive)
-5. **Result limit:** Default 10, max 100 (prevent overwhelming output)
-6. **Excerpt extraction:** Sentence-level, not paragraph (better context)
+- **Unit:** Scanner functions (patterns, PRPs, memories, rules)
+- **Integration:** Full indexing on test projects
+- **E2E:** Query tools with real index
 
 ---
 
@@ -644,104 +523,94 @@ jq -e '.results[] | select(.source_type == "example")' results.json
 ### Level 1: Syntax & Type Checking
 ```bash
 cd syntropy-mcp && npm run build
-cd syntropy-mcp && npm run lint
 ```
 
 ### Level 2: Unit Tests
 ```bash
-cd syntropy-mcp && npm test src/tools/search.test.ts
-cd syntropy-mcp && npm test src/tools/cache.test.ts
+cd syntropy-mcp && npm test src/indexer.test.ts
 cd syntropy-mcp && npm test src/tools/knowledge.test.ts
 ```
 
+**Specific Test Scenarios:**
+- `test_scanPatterns_valid`: Index valid pattern files
+- `test_scanPatterns_corrupt`: Gracefully handle corrupt markdown (warning, continue)
+- `test_scanPRPs_withImplementations`: Extract implementation files from PRPs
+- `test_scanPRPs_noYAML`: Handle PRPs without YAML frontmatter
+- `test_scanMemories_serenaFormat`: Extract Serena memory format
+- `test_scanRules_claudeMd`: Extract MANDATORY/REQUIRED/FORBIDDEN rules
+- `test_extractTags_yaml`: Extract tags from YAML frontmatter
+- `test_extractTags_inline`: Extract from "Tags: api, error" format
+- `test_extractTags_headers`: Use markdown headers as fallback tags
+- `test_loadIndexWithCache_fresh`: Load index within TTL (no warning)
+- `test_loadIndexWithCache_stale`: Load stale index with warning
+- `test_calculateRelevance_multiWord`: Score "error handling" query correctly
+- `test_calculateRelevance_tokens`: Handle tokenized matching
+- `test_knowledgeSearch_sources`: Filter by specific sources (patterns only)
+- `test_knowledgeSearch_limit`: Respect result limit parameter
+- `test_getFrameworkDoc_valid`: Return doc content successfully
+- `test_getFrameworkDoc_traversal`: Prevent directory traversal attack
+
 ### Level 3: Integration Tests
 ```bash
-# Framework doc retrieval
-syntropy get_framework_doc 'research/01-prp-system' --json
+# Test indexing
+syntropy_init_project /tmp/test-project  # Should create index
 
-# Knowledge search (all sources)
-syntropy knowledge_search 'error handling' /tmp/test-project --json
+# Test framework doc access
+get_framework_doc "research/01-prp-system"  # Should return content
 
-# Filtered search
-syntropy knowledge_search 'API' /tmp/test-project --sources framework,prp --limit 5
-
-# E2E test on test-certinia (commit 9137b61)
-# IMPORTANT: Run on branch or ensure index is gitignored
-cd ~/nc-rc/test-certinia && git checkout -b test-prp-29-2-query
-
-# Prerequisite: Run init first to create index (PRP-29.1)
-syntropy init . --json
-
-# Search existing PRPs (context-engineering/PRPs/)
-syntropy knowledge_search 'job isolation' . --sources prp --json
-# Expected: Find PRP-8.6, PRP-8.7 job isolation PRPs
-
-# Search existing examples (context-engineering/examples/)
-syntropy knowledge_search 'certinia output' . --sources example --json
-# Expected: Find certinia-output-example.md
-
-# Search Serena memories (.serena/memories/)
-syntropy knowledge_search 'architecture patterns' . --sources memory --json
-# Expected: Find unified_architecture_patterns.md, dual_path_architecture_pattern.md
-
-# Unified search across all sources
-syntropy knowledge_search 'multi-tab' . --json
-# Expected: Results from PRPs (PRP-7.1, PRP-7.2), examples, and memories
-
-# Cleanup after validation:
-cd ~/nc-rc/test-certinia && git checkout main && git branch -D test-prp-29-2-query
-git clean -fd .ce .claude docs
+# Test unified search
+knowledge_search "error handling"  # Should return results from all sources
 ```
 
 ### Level 4: Pattern Conformance
-- Error handling: Fast failure with 🔧 troubleshooting ✅
-- No fishy fallbacks: All errors actionable ✅
-- Security: Path validation prevents traversal ✅
-- Performance: Cache with TTL, no unnecessary reloads ✅
+- Security: Path validation (no directory traversal)
+- Error handling: Fast failure, actionable errors
+- Performance: Index caching (no redundant scans)
+- No fishy fallbacks
 
 ---
 
 ## SUCCESS CRITERIA
 
-1. ⬜ MCP tool `syntropy_get_framework_doc` functional
-2. ⬜ MCP tool `syntropy_knowledge_search` functional
-3. ⬜ Framework docs accessible via tool
-4. ⬜ Search returns results from all sources
-5. ⬜ Source filtering works (framework, prp, example, memory)
-6. ⬜ Results include excerpt + score + metadata
-7. ⬜ Cache with 5-min TTL working
-8. ⬜ Search quality validated (relevant results ranked higher)
-9. ⬜ Integration with Serena memories verified
-10. ⬜ All tests passing (unit + integration + E2E)
+1. ⬜ Unified index schema implemented (`.ce/syntropy-index.json`)
+2. ⬜ Knowledge scanner indexes: patterns, PRPs, memories, rules
+3. ⬜ `get_framework_doc(path)` returns framework documentation
+4. ⬜ `knowledge_search(query)` searches all sources
+5. ⬜ Index auto-generated on `syntropy_init_project`
+6. ⬜ Relevance scoring works (excerpt + tags + path + multi-word queries)
+7. ⬜ Security: path validation prevents traversal
+8. ⬜ Performance: index cached, no redundant scans
+9. ⬜ Performance target: Knowledge search <100ms for cached index (project with <100 PRPs)
+10. ⬜ Error handling: Scanner gracefully handles corrupt files
+11. ⬜ Tag extraction: Supports YAML frontmatter, inline tags, and headers
+12. ⬜ All tests passing (unit + integration)
 
 ---
 
 ## IMPLEMENTATION NOTES
 
-**Estimated Complexity:** Medium (4-5 days)
-- TF-IDF implementation: 1 day
-- Framework doc tool: 0.5 days
-- Knowledge search tool: 1.5 days
-- Cache implementation: 0.5 days
-- Testing: 1-1.5 days
+**Estimated Complexity:** Medium-High (4-5 days)
+- Index schema design: 0.5 day
+- Knowledge scanner: 2 days (patterns, PRPs, memories, rules)
+- Framework doc accessor: 0.5 day
+- Unified search: 1 day (query, scoring, limiting)
+- Integration with init: 0.5 day
+- Testing: 1 day
 
-**Risk Level:** Low-Medium
-- TF-IDF implementation straightforward (no ML complexity)
-- Index schema already defined (PRP-29.1)
-- No external dependencies (stdlib only)
+**Risk Level:** Medium
+- Complex scanning logic (multiple sources)
+- Index schema must be extensible
+- Search relevance tuning
 
 **Dependencies:**
-- PRP-29.1 (init tool must complete first)
+- PRP-29.1 (init tool must be implemented first)
 - Syntropy MCP server (existing)
-- Node.js fs/promises, path (stdlib)
+- Serena MCP (optional, for memories)
 
 **Files to Create:**
-- `syntropy-mcp/src/tools/knowledge.ts` - get_framework_doc, knowledge_search
-- `syntropy-mcp/src/tools/search.ts` - TF-IDF searcher
-- `syntropy-mcp/src/tools/cache.ts` - Index cache with TTL
-- `syntropy-mcp/tests/tools/knowledge.test.ts` - Unit tests
-- `syntropy-mcp/tests/tools/search.test.ts` - Search tests
+- `syntropy-mcp/src/indexer.ts`
+- `syntropy-mcp/src/tools/knowledge.ts`
+- `syntropy-mcp/src/tools-definition.ts` (add knowledge tools)
 
 **Files to Modify:**
-- `syntropy-mcp/src/tools-definition.ts` - Add knowledge tools
-- `syntropy-mcp/src/index.ts` - Register knowledge handlers
+- `syntropy-mcp/src/tools/init.ts` (call indexer on init)

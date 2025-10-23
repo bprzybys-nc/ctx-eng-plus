@@ -1,800 +1,615 @@
-# INITIAL-PRP-29.3: Syntropy Context Sync
+# INITIAL: Syntropy Context Sync Tool & Optimization
 
-**Feature:** Implement context sync tool in Syntropy MCP that replaces `ce update-context` with unified sync across PRPs, examples, and Serena memories.
+**Feature:** Replace ce update-context with Syntropy-based sync tool including drift detection, incremental reindexing, and performance optimization.
+
+**Prerequisites:**
+- PRP-29.1 must be completed first (provides init tool and structure detection)
+- PRP-29.2 must be completed first (provides knowledge index and indexer)
+
+**Dependencies:** None (final PRP in series, consolidates functionality)
 
 ---
 
 ## FEATURE
 
-Syntropy provides a unified context sync tool that updates PRP metadata, verifies implementations, detects drift, and maintains knowledge index consistency.
+Syntropy provides context sync functionality that replaces `ce update-context`, with drift detection, YAML header updates, and optimized incremental reindexing.
 
 **Goals:**
-1. Implement `syntropy_sync_context(project_root, options?)` MCP tool
-2. Update PRP YAML headers (context_sync flags, last_sync timestamps)
-3. Verify implementations exist (function extraction from code)
-4. Auto-transition PRPs from feature-requests/ to executed/ when verified
-5. Detect pattern drift (code violations + missing examples)
-6. Generate drift report at `.ce/drift-report.md`
-7. Invalidate and rebuild knowledge index
-8. Delegate from `ce update-context` CLI to Syntropy MCP tool
-9. Support both universal mode (all PRPs) and targeted mode (specific PRP)
+1. Implement `syntropy_sync_context` MCP tool
+2. Integrate drift detection from `ce analyze-context`
+3. Update PRP YAML headers (context_sync flags: ce_updated, serena_updated, last_sync)
+4. Incremental reindexing (only scan changed files)
+5. Cache optimization (5-min TTL, avoid full scans)
+6. Delegate `ce update-context` to Syntropy tool
+7. Generate drift report at `.ce/drift-report.md`
 
 **Current Problems:**
-- Context sync complex (multiple tools: ce + Serena + drift detection)
-- Manual PRP transitions error-prone
-- Drift detection scattered across tools
-- No single source of truth for sync operations
-- ce CLI reimplements logic already in Serena MCP
+- `ce update-context` complex (multiple tools: ce + Serena + drift detection)
+- No incremental updates (always full scan)
+- No caching (redundant work)
+- Drift detection separate from sync
 
 **Expected Outcome:**
-- MCP tool: `syntropy_sync_context(project_root)` - Full sync
-- MCP tool: `syntropy_sync_context(project_root, {prp: 'PRP-15'})` - Targeted sync
-- `ce update-context` delegates to Syntropy (thin wrapper)
-- PRP YAML updated: `ce_updated: true`, `serena_updated: true`, `last_sync: 2025-10-21T10:00:00Z`
-- PRPs auto-moved: feature-requests/ → executed/ when verified
-- Drift report: `.ce/drift-report.md` with violations + solutions
-- Index rebuilt: `.ce/syntropy-index.json` refreshed
-
-**Prerequisite:** PRP-29.1 and PRP-29.2 must be completed (init creates index, query tools access it)
+- Single tool: `syntropy_sync_context` (replaces ce update-context)
+- Incremental reindexing: Only changed files scanned
+- Drift detection integrated: Auto-generated `.ce/drift-report.md`
+- PRP YAML headers updated: context_sync flags + timestamps
+- Performance: <2s for incremental, <10s for full scan
+- Backward compat: `ce update-context` delegates to Syntropy
 
 ---
 
 ## EXAMPLES
 
-### Example 1: Sync Tool Definition
+### Example 1: Sync Tool Implementation
 
 **Location:** `syntropy-mcp/src/tools/sync.ts`
 
 ```typescript
-interface SyncOptions {
-  prp?: string;           // Target specific PRP (ID or filename)
-  force?: boolean;        // Force sync even if recently synced
-  skip_drift?: boolean;   // Skip drift detection
-  dry_run?: boolean;      // Preview changes without applying them
+interface SyncContextArgs {
+  project_root?: string;  // Optional (defaults to cwd)
+  prp_path?: string;      // Optional: sync specific PRP only
+  force?: boolean;        // Force full rescan (ignore cache)
 }
 
 interface SyncResult {
   success: boolean;
-  project_root: string;
-  synced_at: string;
-
-  prps_updated: {
-    id: string;
-    file: string;
-    ce_updated: boolean;
-    serena_updated: boolean;
-    transitioned: boolean;  // Moved from feature-requests to executed
-  }[];
-
-  drift: {
-    score: number;
-    violations: DriftViolation[];
-    report_path: string;
+  mode: "incremental" | "full";
+  files_scanned: number;
+  files_updated: number;
+  drift_score: number;
+  duration_ms: number;
+  changes: {
+    prps_updated: string[];
+    index_updated: boolean;
+    drift_report_updated: boolean;
   };
-
-  index: {
-    path: string;
-    rebuilt: boolean;
-    entries: number;
-  };
-
-  errors: string[];
-  warnings: string[];
 }
 
-export async function syncContext(
-  projectRoot: string,
-  options?: SyncOptions
-): Promise<SyncResult> {
-  const result: SyncResult = {
-    success: true,
-    project_root: projectRoot,
-    synced_at: new Date().toISOString(),
-    prps_updated: [],
-    drift: { score: 0, violations: [], report_path: '' },
-    index: { path: '', rebuilt: false, entries: 0 },
-    errors: [],
-    warnings: []
-  };
+export async function syncContext(args: SyncContextArgs): Promise<SyncResult> {
+  const projectRoot = args.project_root || process.cwd();
+  const startTime = Date.now();
 
   try {
-    // Step 1: Find PRPs to sync
-    const prpsToSync = options?.prp
-      ? [await findPRP(projectRoot, options.prp)]
-      : await findAllPRPs(projectRoot);
+    // 1. Load existing index
+    const indexPath = path.join(projectRoot, ".ce/syntropy-index.json");
+    let index = await loadIndex(indexPath);
 
-    // Step 2: Update PRP metadata + verify implementations (parallel processing)
-    const updatePromises = prpsToSync.map(prpPath =>
-      updatePRPMetadata(prpPath, projectRoot, options?.dry_run)
-    );
-    const updateResults = await Promise.all(updatePromises);
-    result.prps_updated = updateResults;
+    // 2. Determine sync mode (incremental vs full)
+    const mode = determineSyncMode(index, args.force);
 
-    // Step 3: Auto-transition verified PRPs (unless dry-run)
-    if (!options?.dry_run) {
-      for (let i = 0; i < prpsToSync.length; i++) {
-        const updateResult = updateResults[i];
-        if (updateResult.ce_updated && updateResult.serena_updated) {
-          const transitioned = await transitionPRP(prpsToSync[i]);
-          updateResult.transitioned = transitioned;
-        }
-      }
-    } else {
-      result.warnings.push('Dry-run mode: No PRPs transitioned');
-    }
+    // 3. Scan for changes
+    const changes = await scanChanges(projectRoot, index, mode);
 
-    // Step 4: Detect drift (unless skipped)
-    if (!options?.skip_drift) {
-      const driftResult = await detectDrift(projectRoot);
-      result.drift = driftResult;
-    }
+    // 4. Update PRP YAML headers (context_sync flags)
+    const prpsUpdated = await updatePRPHeaders(projectRoot, changes, args.prp_path);
 
-    // Step 5: Rebuild index (unless dry-run)
-    if (!options?.dry_run) {
-      const indexResult = await rebuildIndex(projectRoot);
-      result.index = indexResult;
-    } else {
-      result.warnings.push('Dry-run mode: Index not rebuilt');
-    }
+    // 5. Update index (incremental or full)
+    index = await updateIndex(projectRoot, index, changes, mode);
 
-  } catch (error) {
-    result.success = false;
-    result.errors.push(error.message);
-  }
+    // 6. Run drift detection
+    const drift = await detectDrift(projectRoot, index);
 
-  return result;
-}
-```
+    // 7. Generate drift report
+    await generateDriftReport(projectRoot, drift);
 
-**Pattern:** Comprehensive sync, auto-transitions, drift detection, index rebuild.
+    const duration = Date.now() - startTime;
 
-### Example 2: PRP Metadata Update
-
-**Location:** `syntropy-mcp/src/tools/sync.ts`
-
-```typescript
-interface PRPMetadata {
-  id: string;
-  file: string;
-  ce_updated: boolean;
-  serena_updated: boolean;
-  last_sync: string;
-  implementations_verified: boolean;
-}
-
-async function updatePRPMetadata(
-  prpPath: string,
-  projectRoot: string,
-  dryRun: boolean = false
-): Promise<PRPMetadata> {
-  // Read PRP file
-  const content = await fs.readFile(prpPath, 'utf-8');
-  const { yaml, body, preamble } = parseYAMLFrontmatter(content);
-
-  const metadata: PRPMetadata = {
-    id: yaml.id || extractPRPId(prpPath),
-    file: prpPath,
-    ce_updated: false,
-    serena_updated: false,
-    last_sync: new Date().toISOString(),
-    implementations_verified: false
-  };
-
-  // Extract implementation files from PRP
-  const implFiles = extractImplementationFiles(body);
-
-  // Verify implementations exist
-  let allImplemented = true;
-  for (const file of implFiles) {
-    const fullPath = path.join(projectRoot, file);
-    if (!await exists(fullPath)) {
-      allImplemented = false;
-      break;
-    }
-  }
-
-  metadata.implementations_verified = allImplemented;
-  metadata.ce_updated = allImplemented; // CE sync = files exist
-
-  // Verify via Serena (function extraction)
-  try {
-    const functionsExtracted = await verifyViaSerena(projectRoot, implFiles);
-    metadata.serena_updated = functionsExtracted.length > 0;
-  } catch (error) {
-    // Graceful degradation if Serena unavailable
-    metadata.serena_updated = false;
-  }
-
-  // Update PRP YAML header (unless dry-run)
-  if (!dryRun) {
-    const updatedYAML = {
-      ...yaml,
-      context_sync: {
-        ce_updated: metadata.ce_updated,
-        serena_updated: metadata.serena_updated,
-        last_sync: metadata.last_sync
+    return {
+      success: true,
+      mode,
+      files_scanned: changes.filesScanned,
+      files_updated: prpsUpdated.length,
+      drift_score: drift.score,
+      duration_ms: duration,
+      changes: {
+        prps_updated: prpsUpdated,
+        index_updated: true,
+        drift_report_updated: true
       }
     };
-
-    // Preserve preamble when reconstructing
-    const updatedContent = stringifyYAMLFrontmatter(updatedYAML, body, preamble);
-    await fs.writeFile(prpPath, updatedContent, 'utf-8');
+  } catch (error) {
+    throw new Error(
+      `Context sync failed: ${error.message}\n` +
+      `🔧 Troubleshooting: Ensure project is initialized (syntropy_init_project)`
+    );
   }
+}
 
-  return metadata;
+function determineSyncMode(index: KnowledgeIndex | null, force: boolean): "incremental" | "full" {
+  if (force) return "full";
+  if (!index) return "full";
+
+  const now = Date.now();
+  const syncedAt = new Date(index.synced_at).getTime();
+  const age = (now - syncedAt) / 1000 / 60;  // Minutes
+
+  // Full scan if index older than 30 minutes
+  return age > 30 ? "full" : "incremental";
 }
 ```
 
-**Pattern:** YAML frontmatter parsing, implementation verification, graceful degradation.
+**Pattern:** Incremental by default, full scan when forced or stale, update headers + index + drift.
 
-### Example 3: Auto-Transition PRPs
+### Example 2: Incremental Change Detection
 
 **Location:** `syntropy-mcp/src/tools/sync.ts`
 
 ```typescript
-async function transitionPRP(prpPath: string): Promise<boolean> {
-  // Check if PRP in feature-requests/
-  if (!prpPath.includes('feature-requests')) {
-    return false; // Already in executed/ or elsewhere
+interface ChangeSet {
+  filesScanned: number;
+  prps: { added: string[]; modified: string[]; deleted: string[] };
+  examples: { added: string[]; modified: string[]; deleted: string[] };
+  memories: { added: string[]; modified: string[]; deleted: string[] };
+}
+
+async function scanChanges(
+  projectRoot: string,
+  index: KnowledgeIndex,
+  mode: "incremental" | "full"
+): Promise<ChangeSet> {
+  const changes: ChangeSet = {
+    filesScanned: 0,
+    prps: { added: [], modified: [], deleted: [] },
+    examples: { added: [], modified: [], deleted: [] },
+    memories: { added: [], modified: [], deleted: [] }
+  };
+
+  if (mode === "full") {
+    // Full scan: re-index everything
+    return await fullScan(projectRoot);
   }
 
-  // Compute new path (feature-requests → executed)
-  const newPath = prpPath.replace('feature-requests', 'executed');
+  // Incremental: check file mtimes
+  const layout = detectProjectLayout(projectRoot);
 
-  // Ensure executed/ directory exists
-  const executedDir = path.dirname(newPath);
-  await fs.mkdir(executedDir, { recursive: true });
+  // Check PRPs
+  const prpDir = path.join(projectRoot, layout.prpsDir, "executed");
+  const currentPRPs = await glob("PRP-*.md", { cwd: prpDir });
 
-  // Move file
-  await fs.rename(prpPath, newPath);
+  for (const prp of currentPRPs) {
+    const prpPath = path.join(prpDir, prp);
+    const stats = await fs.stat(prpPath);
+    const mtime = stats.mtime.getTime();
+    const syncedAt = new Date(index.synced_at).getTime();
 
-  console.log(`✅ Transitioned: ${path.basename(prpPath)} → executed/`);
+    if (mtime > syncedAt) {
+      const prpId = prp.match(/PRP-(\d+)/)?.[0];
+      if (prpId && index.knowledge.prp_learnings[prpId]) {
+        changes.prps.modified.push(prpPath);
+      } else {
+        changes.prps.added.push(prpPath);
+      }
+      changes.filesScanned++;
+    }
+  }
 
-  return true;
+  // Check for deleted PRPs
+  for (const prpId of Object.keys(index.knowledge.prp_learnings)) {
+    const prpFile = `${prpId}.md`;  // Simplified
+    if (!currentPRPs.includes(prpFile)) {
+      changes.prps.deleted.push(prpId);
+    }
+  }
+
+  // Similar for examples and memories...
+
+  return changes;
 }
 ```
 
-**Pattern:** Safe directory creation, rename operation, clear logging.
+**Pattern:** Compare file mtimes vs last sync timestamp, track added/modified/deleted.
 
-### Example 4: Drift Detection
+### Example 3: PRP YAML Header Updates
 
-**Location:** `syntropy-mcp/src/tools/drift.ts`
+**Location:** `syntropy-mcp/src/tools/sync.ts`
 
 ```typescript
+async function updatePRPHeaders(
+  projectRoot: string,
+  changes: ChangeSet,
+  specificPRP?: string
+): Promise<string[]> {
+  const prpsUpdated: string[] = [];
+
+  // Determine which PRPs to update
+  const prpsToUpdate = specificPRP
+    ? [specificPRP]
+    : [...changes.prps.added, ...changes.prps.modified];
+
+  for (const prpPath of prpsToUpdate) {
+    try {
+      // Read PRP file
+      const content = await fs.readFile(prpPath, "utf-8");
+
+      // Parse YAML header using proper YAML parser
+      const parts = content.split("---\n");
+      if (parts.length < 3) {
+        console.warn(`⚠️  No YAML header in ${prpPath}`);
+        continue;
+      }
+
+      const yamlHeader = parts[1];
+      const bodyContent = parts.slice(2).join("---\n");
+
+      // Parse YAML to object
+      const yamlData = yaml.parse(yamlHeader);
+
+      // Update context_sync section
+      const now = new Date().toISOString();
+      yamlData.context_sync = {
+        ce_updated: true,
+        serena_updated: true,
+        last_sync: now
+      };
+
+      // Stringify back to YAML
+      const updatedYaml = yaml.stringify(yamlData);
+
+      // Reconstruct file
+      const updatedContent = `---\n${updatedYaml}---\n${bodyContent}`;
+
+      // Atomic write: write to temp file, then rename
+      const tempPath = `${prpPath}.tmp`;
+      await fs.writeFile(tempPath, updatedContent);
+      await fs.rename(tempPath, prpPath);
+
+      prpsUpdated.push(prpPath);
+    } catch (error) {
+      console.error(`❌ Failed to update ${prpPath}: ${error.message}`);
+    }
+  }
+
+  return prpsUpdated;
+}
+```
+
+**Pattern:** Parse YAML with proper parser (not regex), update context_sync flags, atomic write (temp + rename), track updated files.
+
+**Important:** Uses `yaml` npm package for robust parsing. Atomic writes prevent data corruption if user edits file during sync (old content preserved if write fails).
+
+### Example 4: Drift Detection Integration
+
+**Location:** `syntropy-mcp/src/tools/sync.ts`
+
+```typescript
+interface DriftInfo {
+  score: number;
+  violations: DriftViolation[];
+}
+
 interface DriftViolation {
+  type: "code_violation" | "missing_example";
+  severity: "high" | "medium" | "low";
   file: string;
-  line: number;
+  line?: number;
   issue: string;
-  pattern: string;
   solution: string;
 }
 
-interface DriftResult {
-  score: number;
-  violations: DriftViolation[];
-  report_path: string;
-}
-
-async function detectDrift(projectRoot: string): Promise<DriftResult> {
+async function detectDrift(projectRoot: string, index: KnowledgeIndex): Promise<DriftInfo> {
   const violations: DriftViolation[] = [];
 
-  // Part 1: Code violating documented patterns
+  // Part 1: Code violations (anti-patterns in codebase)
   const codeViolations = await scanCodeViolations(projectRoot);
   violations.push(...codeViolations);
 
-  // Part 2: Critical PRPs missing examples/
-  const missingExamples = await scanMissingExamples(projectRoot);
+  // Part 2: Missing examples (PRPs without documentation)
+  const missingExamples = await scanMissingExamples(projectRoot, index);
   violations.push(...missingExamples);
 
-  // Compute drift score (% of analyzed files with violations)
-  // Only count source files (Python, TypeScript, etc), not all project files
-  const analyzedFiles = await countAnalyzedFiles(projectRoot);
-  const filesWithViolations = new Set(violations.map(v => v.file)).size;
-  const driftScore = filesWithViolations / analyzedFiles;
+  // Calculate drift score
+  const score = calculateDriftScore(violations);
 
-  // Generate drift report
-  const reportPath = path.join(projectRoot, '.ce', 'drift-report.md');
-  await generateDriftReport(reportPath, violations, driftScore);
-
-  return {
-    score: driftScore,
-    violations,
-    report_path: reportPath
-  };
+  return { score, violations };
 }
 
 async function scanCodeViolations(projectRoot: string): Promise<DriftViolation[]> {
   const violations: DriftViolation[] = [];
 
-  // Scan Python files for anti-patterns
-  const pyFiles = await glob('**/*.py', { cwd: projectRoot, ignore: ['**/node_modules/**', '**/.venv/**'] });
+  // Anti-pattern checks
+  const patterns = [
+    {
+      regex: /except\s*:/g,
+      issue: "Bare except clause (catches all exceptions)",
+      solution: "Use specific exception types: except ValueError:",
+      severity: "high" as const
+    },
+    {
+      regex: /pip install/g,
+      issue: "Using pip instead of uv",
+      solution: "Use: uv add package-name",
+      severity: "medium" as const
+    },
+    {
+      regex: /return \{"success": True\}/g,
+      issue: "Hardcoded success (fishy fallback)",
+      solution: "Remove fallback, let exceptions propagate",
+      severity: "high" as const
+    }
+  ];
+
+  // Scan Python files
+  const pyFiles = await glob("**/*.py", {
+    cwd: projectRoot,
+    ignore: ["**/node_modules/**", "**/.venv/**"]
+  });
 
   for (const file of pyFiles) {
-    const content = await fs.readFile(path.join(projectRoot, file), 'utf-8');
-    const lines = content.split('\n');
+    const fullPath = path.join(projectRoot, file);
+    const content = await fs.readFile(fullPath, "utf-8");
+    const lines = content.split("\n");
 
-    lines.forEach((line, idx) => {
-      if (/^\s*except:\s*$/.test(line)) {
-        violations.push({
-          file,
-          line: idx + 1,
-          issue: 'Bare except clause (catches all exceptions)',
-          pattern: 'error-handling',
-          solution: 'Replace with: except SpecificException as e:'
-        });
+    for (const pattern of patterns) {
+      for (let i = 0; i < lines.length; i++) {
+        if (pattern.regex.test(lines[i])) {
+          violations.push({
+            type: "code_violation",
+            severity: pattern.severity,
+            file,
+            line: i + 1,
+            issue: pattern.issue,
+            solution: pattern.solution
+          });
+        }
       }
-    });
+    }
   }
 
   return violations;
 }
 
-async function countAnalyzedFiles(projectRoot: string): Promise<number> {
-  // Count source files only (Python, TypeScript, JavaScript)
-  const pyFiles = await glob('**/*.py', { cwd: projectRoot, ignore: ['**/node_modules/**', '**/.venv/**'] });
-  const tsFiles = await glob('**/*.ts', { cwd: projectRoot, ignore: ['**/node_modules/**', '**/dist/**'] });
-  const jsFiles = await glob('**/*.js', { cwd: projectRoot, ignore: ['**/node_modules/**', '**/dist/**'] });
+async function scanMissingExamples(projectRoot: string, index: KnowledgeIndex): Promise<DriftViolation[]> {
+  const violations: DriftViolation[] = [];
 
-  return pyFiles.length + tsFiles.length + jsFiles.length;
+  // Check for PRPs with implementations but no examples
+  for (const [prpId, prp] of Object.entries(index.knowledge.prp_learnings)) {
+    if (prp.implementations.length > 0 && !prp.verified) {
+      violations.push({
+        type: "missing_example",
+        severity: "medium",
+        file: prp.source,
+        issue: `PRP ${prpId} has implementations but no examples/ documentation`,
+        solution: `Create examples/patterns/${prpId}-pattern.md`
+      });
+    }
+  }
+
+  return violations;
+}
+
+function calculateDriftScore(violations: DriftViolation[]): number {
+  // Drift score is percentage (0.0-1.0 = 0%-100%)
+  // Each violation adds to score based on severity:
+  //   High: 10% per violation (critical issues requiring immediate fix)
+  //   Medium: 5% per violation (quality issues, should fix soon)
+  //   Low: 2% per violation (minor issues, fix when convenient)
+  // Score capped at 100% (1.0)
+  const weights = { high: 0.1, medium: 0.05, low: 0.02 };
+  const totalScore = violations.reduce((sum, v) => sum + weights[v.severity], 0);
+  return Math.min(totalScore, 1.0);
 }
 ```
 
-**Pattern:** Multi-phase drift detection, violation extraction, actionable solutions.
+**Pattern:** Scan code anti-patterns, check missing examples, calculate weighted drift score.
 
-### Example 5: CLI Delegation Pattern
+### Example 5: Drift Report Generation
+
+**Location:** `syntropy-mcp/src/tools/sync.ts`
+
+```typescript
+async function generateDriftReport(projectRoot: string, drift: DriftInfo): Promise<void> {
+  const reportPath = path.join(projectRoot, ".ce/drift-report.md");
+
+  // Group violations by severity and file
+  const grouped = groupViolations(drift.violations);
+
+  const report = `# Context Drift Report
+
+**Generated:** ${new Date().toISOString()}
+**Drift Score:** ${(drift.score * 100).toFixed(2)}%
+**Status:** ${getDriftStatus(drift.score)}
+
+---
+
+## Summary
+
+- **Total Violations:** ${drift.violations.length}
+- **High Severity:** ${drift.violations.filter(v => v.severity === "high").length}
+- **Medium Severity:** ${drift.violations.filter(v => v.severity === "medium").length}
+- **Low Severity:** ${drift.violations.filter(v => v.severity === "low").length}
+
+---
+
+${generateGroupedViolations(grouped)}
+
+---
+
+## Next Steps
+
+${drift.score < 0.05 ? "✅ Context is healthy. No immediate action required." : ""}
+${drift.score >= 0.05 && drift.score < 0.15 ? "⚠️  Review violations and create action plan." : ""}
+${drift.score >= 0.15 ? "🚨 CRITICAL: High drift detected. Immediate action required." : ""}
+`;
+
+  await fs.writeFile(reportPath, report);
+}
+
+// Helper: Group violations by severity and file
+function groupViolations(violations: DriftViolation[]): Map<string, Map<string, DriftViolation[]>> {
+  const grouped = new Map<string, Map<string, DriftViolation[]>>();
+
+  for (const v of violations) {
+    if (!grouped.has(v.severity)) {
+      grouped.set(v.severity, new Map());
+    }
+    const severityGroup = grouped.get(v.severity)!;
+    if (!severityGroup.has(v.file)) {
+      severityGroup.set(v.file, []);
+    }
+    severityGroup.get(v.file)!.push(v);
+  }
+
+  return grouped;
+}
+
+// Helper: Generate grouped violation markdown
+function generateGroupedViolations(grouped: Map<string, Map<string, DriftViolation[]>>): string {
+  const sections: string[] = [];
+
+  for (const severity of ["high", "medium", "low"]) {
+    const severityGroup = grouped.get(severity);
+    if (!severityGroup || severityGroup.size === 0) continue;
+
+    const icon = severity === "high" ? "🚨" : severity === "medium" ? "⚠️" : "ℹ️";
+    sections.push(`## ${icon} ${severity.toUpperCase()} Priority (${Array.from(severityGroup.values()).flat().length} violations)\n`);
+
+    for (const [file, violations] of severityGroup.entries()) {
+      sections.push(`### File: \`${file}\`\n`);
+      for (const v of violations) {
+        sections.push(`- **Line ${v.line || "N/A"}:** ${v.issue}`);
+        sections.push(`  - **Solution:** ${v.solution}\n`);
+      }
+    }
+  }
+
+  return sections.join("\n");
+}
+
+function getDriftStatus(score: number): string {
+  if (score < 0.05) return "✅ Healthy";
+  if (score < 0.15) return "⚠️  Warning";
+  return "🚨 Critical";
+}
+```
+
+**Pattern:** Markdown report, grouped by severity, actionable next steps.
+
+### Example 6: Python Delegation
 
 **Location:** `tools/ce/update_context.py`
 
 ```python
-import json
-import subprocess
-from pathlib import Path
-from typing import Dict, Any, Optional
+def update_context(prp_path: Optional[str] = None) -> Dict[str, Any]:
+    """Delegate to Syntropy sync tool via MCP protocol.
 
-def update_context(
-    project_root: Optional[Path] = None,
-    prp: Optional[str] = None,
-    json_output: bool = False
-) -> Dict[str, Any]:
-    """Delegate to Syntropy MCP sync tool.
-
-    Args:
-        project_root: Project root path (default: current directory)
-        prp: Specific PRP to sync (ID or filename)
-        json_output: Return JSON output
-
-    Returns:
-        Sync result from Syntropy MCP tool
-
-    Raises:
-        RuntimeError: If Syntropy sync fails
+    Note: This is a simplified example. Actual implementation would use
+    MCP client library to communicate with Syntropy server.
     """
-    project_root = project_root or Path.cwd()
+    try:
+        # In practice, this would use MCP client to call tool:
+        # from syntropy_client import SyntropyClient
+        # client = SyntropyClient()
+        # result = client.call_tool("syntropy_sync_context", {
+        #     "project_root": os.getcwd(),
+        #     "prp_path": prp_path
+        # })
 
-    # Build MCP tool call (via Claude Code)
-    # Note: This is a placeholder - actual implementation uses MCP client
-    result = call_syntropy_tool(
-        tool="syntropy_sync_context",
-        args={
-            "project_root": str(project_root),
-            "options": {
-                "prp": prp
-            } if prp else {}
-        }
-    )
+        # For now, use subprocess to call via Claude Code MCP interface
+        # This assumes Syntropy MCP is registered in Claude Code settings
+        import subprocess
+        import json
 
-    if not result["success"]:
-        errors = "\n".join(result.get("errors", []))
-        raise RuntimeError(
-            f"Context sync failed:\n{errors}\n"
-            f"🔧 Check Syntropy MCP server status: mcp__syntropy_healthcheck"
+        # Use mcp_cli or similar tool to invoke MCP tool
+        cmd = [
+            "mcp_cli",  # Hypothetical MCP CLI tool
+            "call",
+            "syntropy_sync_context",
+            "--project_root", os.getcwd(),
+        ]
+        if prp_path:
+            cmd.extend(["--prp_path", prp_path])
+
+        result = subprocess.run(
+            cmd,
+            capture_output=True,
+            text=True,
+            timeout=30
         )
 
-    # Format output
-    if json_output:
-        return result
+        if result.returncode != 0:
+            raise RuntimeError(
+                f"Syntropy sync failed: {result.stderr}\n"
+                f"🔧 Troubleshooting: Check Syntropy MCP server status with /mcp health"
+            )
 
-    # Human-readable summary
-    print(f"✅ Context sync complete ({len(result['prps_updated'])} PRPs)")
-    print(f"📊 Drift score: {result['drift']['score']:.1%}")
+        # Parse JSON output from MCP tool
+        output = json.loads(result.stdout)
+        return output
 
-    if result['drift']['violations']:
-        print(f"⚠️  {len(result['drift']['violations'])} violations found")
-        print(f"    See: {result['drift']['report_path']}")
-
-    return result
-
-def call_syntropy_tool(tool: str, args: Dict[str, Any]) -> Dict[str, Any]:
-    """Call Syntropy MCP tool via subprocess.
-
-    Note: In production, this would use MCP client library.
-    For now, placeholder implementation.
-    """
-    # TODO: Implement actual MCP client call
-    # This is simplified for illustration
-    cmd = ["syntropy", tool, json.dumps(args)]
-    proc = subprocess.run(cmd, capture_output=True, text=True, check=False)
-
-    if proc.returncode != 0:
-        raise RuntimeError(f"MCP tool failed: {proc.stderr}")
-
-    return json.loads(proc.stdout)
+    except Exception as e:
+        raise RuntimeError(
+            f"Failed to sync context: {str(e)}\n"
+            f"🔧 Troubleshooting:\n"
+            f"   1. Check Syntropy MCP running: /mcp health\n"
+            f"   2. Verify MCP server config in .claude/settings.local.json\n"
+            f"   3. Try reinitializing: syntropy_init_project"
+        )
 ```
 
-**Pattern:** Thin CLI wrapper, delegates to MCP tool, formats output for users.
+**Pattern:** Delegate to Syntropy via MCP protocol, parse JSON response, fast failure with detailed troubleshooting steps.
 
-### Example 6: Drift Report Format
-
-**Location:** `.ce/drift-report.md`
-
-```markdown
-# Context Drift Report
-
-**Generated:** 2025-10-21T10:15:00Z
-**Drift Score:** 8.5%
-**Status:** ⚠️ WARNING (5-15% range)
-
-## Summary
-
-- **Total Files:** 120
-- **Files with Violations:** 10
-- **Total Violations:** 15
-
-## Violations
-
-### Part 1: Code Violating Documented Patterns (12 violations)
-
-#### 1. Bare except clause
-**File:** `tools/ce/core.py:45`
-**Issue:** Catches all exceptions without specific handling
-**Pattern:** error-handling
-**Solution:** Replace with `except SpecificException as e:`
-
-#### 2. Hardcoded success message
-**File:** `tools/ce/validate.py:102`
-**Issue:** Returns fake success without real validation
-**Pattern:** real-functionality-testing
-**Solution:** Return actual validation result, throw on failure
-
-### Part 2: Critical PRPs Missing Examples (3 violations)
-
-#### 1. PRP-15: Data Validation System
-**Issue:** Implemented but no example in `examples/`
-**Solution:** Add `examples/patterns/data-validation.md` with usage patterns
-
-## Recommended Actions
-
-1. **High Priority** (5 violations): Fix bare except clauses
-2. **Medium Priority** (7 violations): Remove hardcoded success messages
-3. **Low Priority** (3 violations): Add missing examples for completed PRPs
-
-## Thresholds
-
-- ✅ **OK:** <5% drift
-- ⚠️ **WARNING:** 5-15% drift (current)
-- ❌ **CRITICAL:** >15% drift
-```
-
-**Pattern:** Clear status, categorized violations, actionable recommendations.
+**Note:** Actual MCP client implementation depends on available MCP client libraries. This example shows the conceptual approach.
 
 ---
 
 ## DOCUMENTATION
 
-### YAML Frontmatter Parsing
+### Context Sync Flow
+1. Load existing index (`.ce/syntropy-index.json`)
+2. Determine mode: incremental (mtime check) vs full (forced/stale)
+3. Scan changes: added/modified/deleted files
+4. Update PRP YAML headers: context_sync flags + timestamps
+5. Update index: incremental (changed files) or full (rescan all)
+6. Detect drift: code violations + missing examples
+7. Generate drift report: `.ce/drift-report.md`
 
-**Libraries:**
-- Use `js-yaml` for parsing/stringifying
-- Handle missing frontmatter gracefully
-- Preserve non-sync fields in YAML
-- Preserve preamble content (title/header before YAML)
+### Performance Optimization
+- **Incremental mode:** Only scan files modified since last sync (mtime check)
+- **Cache:** 5-minute TTL for index (avoid redundant scans)
+- **Target Performance (for projects with <100 PRPs, <50 examples):**
+  - Incremental sync: <2s (only changed files)
+  - Full sync: <10s (complete rescan)
+  - Drift detection: <3s (code + examples scan)
 
-**Example:**
-```typescript
-import yaml from 'js-yaml';
-
-interface ParsedDocument {
-  yaml: any;
-  body: string;
-  preamble: string;  // Content before YAML frontmatter
-}
-
-function parseYAMLFrontmatter(content: string): ParsedDocument {
-  // Match optional preamble + YAML frontmatter + body
-  // Pattern: (preamble)---\n(yaml)\n---\n(body)
-  const match = content.match(/^([\s\S]*?)^---\s*\n([\s\S]*?)\n---\s*\n([\s\S]*)$/m);
-
-  if (!match) {
-    // No YAML frontmatter found
-    return { yaml: {}, body: content, preamble: '' };
-  }
-
-  const [, preamble, yamlContent, bodyContent] = match;
-
-  return {
-    yaml: yaml.load(yamlContent) || {},
-    body: bodyContent,
-    preamble: preamble  // Preserve separately
-  };
-}
-
-function stringifyYAMLFrontmatter(yamlData: any, body: string, preamble: string = ''): string {
-  const yamlStr = yaml.dump(yamlData, { lineWidth: -1 });
-
-  // Reconstruct: preamble + YAML + body
-  return preamble + `---\n${yamlStr}---\n${body}`;
-}
-```
-
-**Usage Pattern:**
-```typescript
-// Parse PRP
-const { yaml, body, preamble } = parseYAMLFrontmatter(prpContent);
-
-// Update YAML metadata
-yaml.context_sync = { ce_updated: true, serena_updated: true };
-
-// Reconstruct with preserved preamble
-const updatedContent = stringifyYAMLFrontmatter(yaml, body, preamble);
-```
-
-### Implementation Verification
-
-**CE Verification:**
-- Extract file paths from PRP body using `extractImplementationFiles()`
-- Check each file exists in project
-- Mark `ce_updated: true` if all files present
-
-**Implementation File Extraction:**
-```typescript
-function extractImplementationFiles(prpBody: string): string[] {
-  const files: string[] = [];
-
-  // Match markdown sections: ## Files to Create, ## Files to Modify
-  const sections = [
-    /## Files to Create\n([\s\S]*?)(?=\n## |$)/,
-    /## Files to Modify\n([\s\S]*?)(?=\n## |$)/
-  ];
-
-  for (const sectionRegex of sections) {
-    const match = prpBody.match(sectionRegex);
-    if (!match) continue;
-
-    const sectionContent = match[1];
-
-    // Extract file paths from markdown list items
-    // Format: - `path/to/file.ext` - Description
-    //     or: - path/to/file.ext - Description
-    const fileMatches = sectionContent.matchAll(/^- `?([^`\n-]+\.(?:ts|py|js|md|json|yml|yaml))`?/gm);
-
-    for (const fileMatch of fileMatches) {
-      files.push(fileMatch[1].trim());
-    }
-  }
-
-  return files;
-}
-```
-
-**Serena Verification:**
-- Call `mcp__syntropy_serena_find_symbol` for key functions
-- If functions found → `serena_updated: true`
-- If Serena unavailable → `serena_updated: false` (graceful degradation)
-
-### Drift Detection Patterns
-
-**Code Violations:**
-- Bare except clauses: `except:\s*$`
-- Hardcoded success: `return {"success": True}` without real logic
-- Missing error messages: `raise Exception()` without message
-- pip install usage: `pip install` instead of `uv add`
-
-**Missing Examples:**
-- Scan executed PRPs
-- Check if `examples/` has corresponding pattern file
-- Violation if critical PRP missing example
-
-### Index Rebuild
-
-**When:**
-- After every sync operation
-- After PRP transitions
-- After drift detection
-
-**How:**
-- Reuse scanner/indexer from PRP-29.1
-- Write to `.ce/syntropy-index.json`
-- Update `synced_at` timestamp
+### Drift Detection
+- **Code violations:** Anti-patterns (bare except, pip install, fishy fallbacks)
+- **Missing examples:** PRPs with implementations but no examples/ docs
+- **Scoring:** High (0.1), Medium (0.05), Low (0.02) weighted sum
 
 ---
 
 ## OTHER CONSIDERATIONS
 
 ### Backward Compatibility
-
-- `ce update-context` CLI preserved (delegates to Syntropy)
-- Existing YAML format supported (only add context_sync field)
-- PRPs without YAML frontmatter handled gracefully
-- Works with both project layouts (root + context-engineering/)
-
-### Performance
-
-- Targeted sync faster than universal (skip irrelevant PRPs)
-- Cache drift patterns (don't rescan unchanged files)
-- Parallel PRP metadata updates (Promise.all)
-- Incremental index rebuild (only changed entries)
-
-### Security
-
-- Validate project_root path (prevent traversal)
-- Sanitize PRP file paths before moving
-- No shell injection in subprocess calls
-- No secret exposure in drift reports
+- `ce update-context` delegates to Syntropy (no breaking changes)
+- Existing PRPs work (add context_sync section if missing)
+- Supports both layouts (root + context-engineering/)
 
 ### Error Handling
-
-- Graceful degradation if Serena unavailable
-- Continue sync even if some PRPs fail (collect errors)
-- Clear troubleshooting for missing implementations
-- Warn if drift score critical (>15%)
-
-### Cache Invalidation
-
-**Automatic:**
-- After sync completes (invalidate index cache)
-- After PRP transitions (reindex affected directories)
-
-**Manual:**
-- CLI flag: `ce update-context --force` (bypass checks)
-
-### Drift Thresholds
-
-**Levels:**
-- **OK (<5%)**: Green, healthy context
-- **WARNING (5-15%)**: Yellow, review recommended
-- **CRITICAL (>15%)**: Red, immediate action required
-
-**Actions:**
-- OK: No action needed
-- WARNING: Generate report, continue
-- CRITICAL: Generate report, warn user loudly
+- Fast failure with 🔧 troubleshooting
+- Clear messages: "Index not found → run syntropy_init_project"
+- No fishy fallbacks
 
 ### Testing Strategy
+- **Unit:** Change detection, YAML updates, drift calculation
+- **Integration:** Full sync workflow on test projects
+- **E2E:** Verify ce update-context delegation works
 
-**Unit Tests:**
-```typescript
-describe('parseYAMLFrontmatter', () => {
-  it('parses PRP with preamble', () => {
-    const content = '# INITIAL: Feature Name\n\n---\nid: PRP-1\n---\n\nBody content';
-    const { yaml, body, preamble } = parseYAMLFrontmatter(content);
+### Cache Management
+- Index cached in `.ce/syntropy-index.json`
+- TTL: 5 minutes (configurable in `.ce/config.yml`)
+- Force refresh: `--force` flag
 
-    expect(preamble).toBe('# INITIAL: Feature Name\n\n');
-    expect(yaml.id).toBe('PRP-1');
-    expect(body).toBe('\nBody content');
-  });
-
-  it('handles PRPs without preamble', () => {
-    const content = '---\nid: PRP-2\n---\n\nBody content';
-    const { yaml, body, preamble } = parseYAMLFrontmatter(content);
-
-    expect(preamble).toBe('');
-    expect(yaml.id).toBe('PRP-2');
-  });
-
-  it('handles PRPs without YAML', () => {
-    const content = '# Feature\n\nBody content without YAML';
-    const { yaml, body, preamble } = parseYAMLFrontmatter(content);
-
-    expect(preamble).toBe('');
-    expect(yaml).toEqual({});
-    expect(body).toBe(content);
-  });
-});
-
-describe('updatePRPMetadata', () => {
-  it('updates YAML header with sync flags', async () => {
-    const prpPath = '/tmp/test-prp.md';
-    const metadata = await updatePRPMetadata(prpPath, '/tmp/project');
-
-    expect(metadata.ce_updated).toBe(true);
-    expect(metadata.last_sync).toBeTruthy();
-
-    // Verify YAML updated in file
-    const content = await fs.readFile(prpPath, 'utf-8');
-    expect(content).toContain('ce_updated: true');
-  });
-
-  it('preserves preamble when updating YAML', async () => {
-    const prpContent = '# INITIAL: Test\n\n---\nid: PRP-1\n---\n\nBody';
-    await fs.writeFile('/tmp/test-prp.md', prpContent);
-
-    await updatePRPMetadata('/tmp/test-prp.md', '/tmp/project');
-
-    const updated = await fs.readFile('/tmp/test-prp.md', 'utf-8');
-    expect(updated).toContain('# INITIAL: Test\n\n---');
-  });
-
-  it('verifies implementations exist', async () => {
-    // Create test implementation file
-    await fs.writeFile('/tmp/project/impl.py', 'def test(): pass');
-
-    const metadata = await updatePRPMetadata(prpPath, '/tmp/project');
-    expect(metadata.implementations_verified).toBe(true);
-  });
-});
-
-describe('transitionPRP', () => {
-  it('moves PRP from feature-requests to executed', async () => {
-    const prpPath = '/tmp/project/PRPs/feature-requests/PRP-1.md';
-    const transitioned = await transitionPRP(prpPath);
-
-    expect(transitioned).toBe(true);
-    expect(await exists('/tmp/project/PRPs/executed/PRP-1.md')).toBe(true);
-    expect(await exists(prpPath)).toBe(false);
-  });
-
-  it('skips if already in executed/', async () => {
-    const prpPath = '/tmp/project/PRPs/executed/PRP-1.md';
-    const transitioned = await transitionPRP(prpPath);
-    expect(transitioned).toBe(false);
-  });
-});
-```
-
-**Integration Tests:**
-```bash
-# Test universal sync
-syntropy sync /tmp/test-project --json > result.json
-jq -e '.success == true' result.json
-jq -e '.prps_updated | length > 0' result.json
-
-# Test targeted sync
-syntropy sync /tmp/test-project --prp PRP-15 --json
-jq -e '.prps_updated | length == 1' result.json
-jq -e '.prps_updated[0].id == "PRP-15"' result.json
-
-# Test drift detection
-syntropy sync /tmp/test-project --json
-jq -e '.drift.score >= 0' result.json
-test -f /tmp/test-project/.ce/drift-report.md
-```
-
-**E2E Tests:**
-```bash
-# Full workflow: init → implement → sync → verify
-syntropy init /tmp/test-project
-cd /tmp/test-project
-
-# Create test PRP
-echo "# PRP-1\n## Files to Create\n- test.py" > PRPs/feature-requests/PRP-1.md
-
-# Create implementation
-echo "def test(): pass" > test.py
-
-# Sync should verify implementation
-syntropy sync . --json > result.json
-jq -e '.prps_updated[0].ce_updated == true' result.json
-
-# PRP should transition to executed/
-test -f PRPs/executed/PRP-1.md
-test ! -f PRPs/feature-requests/PRP-1.md
-```
-
-### Constraints
-
-- No breaking changes to existing PRP format
-- Works without Serena (graceful degradation)
-- Offline-first (no network required)
-- Fast targeted sync (<1s for single PRP)
-
-### Gotchas
-
-1. **YAML parsing:** Handle PRPs without frontmatter gracefully
-2. **File transitions:** Ensure executed/ directory exists before moving
-3. **Serena unavailable:** Don't fail sync, just set serena_updated=false
-4. **Drift score:** Normalize by total project files, not just Python
-5. **Index rebuild:** Always invalidate cache after sync
-6. **CLI delegation:** `ce update-context` is thin wrapper only
+### Concurrent Edit Protection
+- **Atomic writes:** Use temp file + rename to prevent corruption
+- **Limitation:** User edits during sync may be overwritten
+- **Recommendation:** Document in user-facing messages:
+  ```
+  ⚠️  Do not edit PRP files while sync is running.
+     Changes may be overwritten. Wait for sync to complete.
+  ```
+- **Future:** Consider file locking (e.g., `lockfile` npm package) for robust protection
 
 ---
 
@@ -803,121 +618,106 @@ test ! -f PRPs/feature-requests/PRP-1.md
 ### Level 1: Syntax & Type Checking
 ```bash
 cd syntropy-mcp && npm run build
-cd syntropy-mcp && npm run lint
-cd tools && uv run mypy ce/update_context.py
+cd tools && uv run mypy ce/
 ```
 
 ### Level 2: Unit Tests
 ```bash
 cd syntropy-mcp && npm test src/tools/sync.test.ts
-cd syntropy-mcp && npm test src/tools/drift.test.ts
 cd tools && uv run pytest tests/test_update_context.py
 ```
 
+**Specific Test Scenarios (TypeScript):**
+- `test_determineSyncMode_force`: Always full scan when --force
+- `test_determineSyncMode_stale`: Full scan when index >30 min old
+- `test_determineSyncMode_fresh`: Incremental when index <30 min
+- `test_scanChanges_added`: Detect new PRPs added since last sync
+- `test_scanChanges_modified`: Detect PRPs modified (mtime check)
+- `test_scanChanges_deleted`: Detect PRPs removed from directory
+- `test_updatePRPHeaders_yaml`: Parse and update YAML with yaml package
+- `test_updatePRPHeaders_atomic`: Verify temp file + rename pattern
+- `test_updatePRPHeaders_noYAML`: Handle PRPs without YAML (warn, skip)
+- `test_scanCodeViolations_bareExcept`: Detect bare except clauses
+- `test_scanCodeViolations_pipInstall`: Detect pip install usage
+- `test_scanCodeViolations_fishyFallback`: Detect hardcoded success returns
+- `test_scanMissingExamples_implemented`: Find PRPs with code but no examples
+- `test_calculateDriftScore_weights`: Verify high=10%, medium=5%, low=2%
+- `test_groupViolations_severityFile`: Group by severity then file
+- `test_generateDriftReport_format`: Verify grouped markdown output
+
+**Specific Test Scenarios (Python):**
+- `test_update_context_delegation`: Verify MCP tool invocation
+- `test_update_context_error`: Handle Syntropy unavailable gracefully
+- `test_update_context_json`: Parse JSON response correctly
+
 ### Level 3: Integration Tests
 ```bash
-# Universal sync
-syntropy sync /tmp/test-project --json
+# Test sync tool
+syntropy_sync_context /tmp/test-project
 
-# Targeted sync
-syntropy sync /tmp/test-project --prp PRP-15 --json
+# Test incremental mode
+touch /tmp/test-project/PRPs/executed/PRP-1.md
+syntropy_sync_context /tmp/test-project  # Should scan only PRP-1
 
-# CLI delegation
+# Test drift detection
+syntropy_sync_context /tmp/test-project  # Should generate drift report
+
+# Test Python delegation
 cd tools && uv run ce update-context --json
-
-# E2E test on test-certinia (commit 9137b61)
-# IMPORTANT: Always run on branch - sync modifies PRP YAML headers
-cd ~/nc-rc/test-certinia && git checkout -b test-prp-29-3-sync
-
-# Prerequisite: Run init first to create index (PRP-29.1)
-syntropy init . --json
-
-# Universal sync - all PRPs in context-engineering/PRPs/
-syntropy sync . --json > sync-result.json
-
-# Verify sync results:
-jq -e '.prps_updated | length > 0' sync-result.json  # Multiple PRPs processed
-jq -e '.drift.score >= 0' sync-result.json           # Drift score calculated
-jq -e '.index.rebuilt == true' sync-result.json      # Index rebuilt
-test -f .ce/syntropy-index.json                      # Index file created
-test -f .ce/drift-report.md                          # Drift report generated
-
-# Targeted sync - specific PRP
-syntropy sync . --prp PRP-8.7 --json > targeted-result.json
-jq -e '.prps_updated | length == 1' targeted-result.json
-jq -e '.prps_updated[0].id == "PRP-8.7"' targeted-result.json
-
-# Dry-run mode (safe - doesn't modify files)
-syntropy sync . --dry-run --json > dryrun-result.json
-jq -e '.warnings | any(contains("Dry-run"))' dryrun-result.json
-
-# Verify YAML metadata updated in PRP files
-grep -q "ce_updated:" context-engineering/PRPs/executed/PRP-8.7-job-isolation-architecture.md
-grep -q "last_sync:" context-engineering/PRPs/executed/PRP-8.7-job-isolation-architecture.md
-
-# MANDATORY cleanup - sync modifies PRP files:
-cd ~/nc-rc/test-certinia && git checkout main && git branch -D test-prp-29-3-sync
-git reset --hard HEAD  # Revert all PRP YAML changes
-git clean -fd .ce      # Remove generated files
 ```
 
 ### Level 4: Pattern Conformance
-- Error handling: Fast failure with 🔧 troubleshooting ✅
-- No fishy fallbacks: All errors actionable ✅
-- Graceful degradation: Works without Serena ✅
-- CLI delegation: Thin wrapper pattern ✅
+- Incremental updates (no redundant scans)
+- Drift detection (code + examples)
+- Error handling (fast failure, actionable)
+- Performance (<2s incremental, <10s full)
 
 ---
 
 ## SUCCESS CRITERIA
 
-1. ⬜ MCP tool `syntropy_sync_context` functional
-2. ⬜ PRP YAML headers updated with sync flags
-3. ⬜ Implementation verification working (CE + Serena)
-4. ⬜ Auto-transition PRPs to executed/ when verified
-5. ⬜ Drift detection generates report with violations
-6. ⬜ Knowledge index rebuilt after sync
-7. ⬜ `ce update-context` delegates to Syntropy correctly
-8. ⬜ Universal mode syncs all PRPs
-9. ⬜ Targeted mode syncs specific PRP only
-10. ⬜ All tests passing (unit + integration + E2E)
+1. ⬜ `syntropy_sync_context` tool implemented
+2. ⬜ Incremental mode works (mtime-based change detection)
+3. ⬜ PRP YAML headers updated via proper YAML parser (not regex)
+4. ⬜ Atomic writes prevent data corruption (temp file + rename)
+5. ⬜ Drift detection integrated (code violations + missing examples)
+6. ⬜ Drift report generated (`.ce/drift-report.md`) with severity grouping
+7. ⬜ Drift score calculation documented (percentage-based with weights)
+8. ⬜ Index updated (incremental or full)
+9. ⬜ `ce update-context` delegates to Syntropy via MCP
+10. ⬜ Performance: <2s incremental, <10s full scan (projects with <100 PRPs)
+11. ⬜ Concurrent edit protection: Document limitation or implement file locking
+12. ⬜ All tests passing (unit + integration)
 
 ---
 
 ## IMPLEMENTATION NOTES
 
 **Estimated Complexity:** Medium (3-4 days)
-- Sync tool implementation: 1.5 days
-- Drift detection: 1 day
-- CLI delegation: 0.5 days
+- Sync tool core: 1 day
+- Incremental change detection: 0.5 day
+- PRP YAML updates: 0.5 day
+- Drift detection: 1 day (code violations + missing examples)
+- Drift report generation: 0.5 day
+- Python delegation: 0.5 day
 - Testing: 1 day
 
-**Risk Level:** Low-Medium
-- YAML parsing straightforward (js-yaml library)
-- File transitions safe (rename operation)
-- Graceful degradation if Serena unavailable
-- No breaking changes to existing PRP format
+**Risk Level:** Medium
+- Complex change detection logic
+- YAML parsing/updating must be robust
+- Drift detection anti-pattern matching
 
 **Dependencies:**
-- PRP-29.1 (index schema defined)
-- PRP-29.2 (query tools for framework docs)
+- PRP-29.1 (init tool, structure detection)
+- PRP-29.2 (knowledge index, indexer)
 - Syntropy MCP server (existing)
-- Serena MCP (existing, optional)
-- js-yaml for YAML parsing
+- ce CLI tools (existing)
 
 **Files to Create:**
-- `syntropy-mcp/src/tools/sync.ts` - MCP sync tool
-- `syntropy-mcp/src/tools/drift.ts` - Drift detection
-- `syntropy-mcp/src/tools/yaml-parser.ts` - YAML frontmatter helpers
-- `syntropy-mcp/tests/tools/sync.test.ts` - Unit tests
-- `tools/ce/update_context.py` - CLI delegation (replace existing)
+- `syntropy-mcp/src/tools/sync.ts`
+- `syntropy-mcp/src/drift-detector.ts`
 
 **Files to Modify:**
-- `syntropy-mcp/src/tools-definition.ts` - Add sync tool
-- `syntropy-mcp/src/index.ts` - Register sync handler
-- `tools/ce/__main__.py` - Update CLI entry point
-
-**Files to Keep:**
-- All existing PRPs (metadata updated in place)
-- `.ce/syntropy-index.json` (rebuilt by sync)
-- `.ce/drift-report.md` (generated by drift detection)
+- `tools/ce/update_context.py` (delegate to Syntropy)
+- `tools/ce/core.py` (Syntropy helpers)
+- `syntropy-mcp/src/tools-definition.ts` (add sync tool)
