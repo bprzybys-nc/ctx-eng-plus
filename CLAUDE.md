@@ -152,7 +152,7 @@ ce-drift
 
 **IMPORTANT - Tool Naming Convention**:
 - **Permissions format**: `mcp__syntropy_{server}_{function}` (single underscore before server)
-- **Actual callable format**: `mcp__syntropy__syntropy_{server}_{function}` (double underscore + "syntropy" prefix)
+- **Actual callable format**: `mcp__syntropy__{server}__{function}` (double underscores between each component)
 - **All tool names in this doc use the PERMISSIONS format** - Claude Code automatically translates to callable format
 
 ### Allowed Tools by Category

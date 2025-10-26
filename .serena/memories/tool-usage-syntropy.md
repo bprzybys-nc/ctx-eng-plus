@@ -14,8 +14,8 @@
 
 **What changed**: All MCP tools now route through Syntropy MCP server with unified interface
 
-**Permissions Format**: `mcp__syntropy_<server>_<tool>`
-**Actual Callable**: `mcp__syntropy__syntropy_<server>_<tool>` (auto-translated by Claude Code)
+**Permissions Format**: `mcp__syntropy_<server>_<tool>` (for settings.local.json)
+**Actual Callable**: `mcp__syntropy__<server>__<tool>` (double underscores between components)
 
 **Examples**:
 - `mcp__syntropy_serena_find_symbol` (was: `mcp__serena__find_symbol`)

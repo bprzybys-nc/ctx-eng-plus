@@ -532,7 +532,7 @@ Check the status of all MCP servers:
 
 \`\`\`bash
 # Via Claude Code
-mcp__syntropy__syntropy_healthcheck
+mcp__syntropy__healthcheck
 
 # Example output
 ✅ Syntropy MCP Server: Healthy (v0.1.0)
@@ -657,35 +657,35 @@ npm test -- health-checker.test.ts
 1. **Healthy Systems**:
 ```bash
 # All servers available
-mcp__syntropy__syntropy_healthcheck
+mcp__syntropy__healthcheck
 # Expected: All ✅ healthy
 ```
 
 2. **Missing Server**:
 ```bash
 # Remove a server from servers.json
-mcp__syntropy__syntropy_healthcheck
+mcp__syntropy__healthcheck
 # Expected: Server shows ❌ down with error
 ```
 
 3. **Authentication Issue**:
 ```bash
 # Remove GITHUB_PERSONAL_ACCESS_TOKEN
-mcp__syntropy__syntropy_healthcheck
+mcp__syntropy__healthcheck
 # Expected: GitHub shows ⚠️ degraded
 ```
 
 4. **Detailed Output**:
 ```bash
 # Request JSON format
-mcp__syntropy__syntropy_healthcheck(detailed=true)
+mcp__syntropy__healthcheck(detailed=true)
 # Expected: Valid JSON with all fields
 ```
 
 5. **Custom Timeout**:
 ```bash
 # Use 1 second timeout
-mcp__syntropy__syntropy_healthcheck(timeout_ms=1000)
+mcp__syntropy__healthcheck(timeout_ms=1000)
 # Expected: Completes faster, may show more timeouts
 ```
 
@@ -759,7 +759,7 @@ try {
 
 ## Success Criteria
 
-- ✅ Tool accessible via `mcp__syntropy__syntropy_healthcheck`
+- ✅ Tool accessible via `mcp__syntropy__healthcheck`
 - ✅ Tests Syntropy server (always reports healthy)
 - ✅ Tests all 9 underlying MCP servers
 - ✅ Returns human-readable text format (default)

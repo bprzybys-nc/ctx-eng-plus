@@ -12,7 +12,7 @@
 
 ```
 Claude Code (MCP access)
-  → mcp__syntropy__syntropy_healthcheck
+  → mcp__syntropy__healthcheck
   → cache-syntropy-health.py (writes JSON)
   → .ce/syntropy-health-cache.json
 
@@ -68,7 +68,7 @@ SessionStart Hook (no MCP access)
 ```bash
 # The healthcheck is called automatically and cached
 # Manual refresh if needed:
-mcp__syntropy__syntropy_healthcheck(detailed=True)
+mcp__syntropy__healthcheck(detailed=True)
 # Results written to .ce/syntropy-health-cache.json
 ```
 
@@ -113,7 +113,7 @@ mcp__syntropy__syntropy_healthcheck(detailed=True)
 ```
 ❌ Syntropy health cache not found
 🔧 Run this in Claude Code to refresh:
-   Call mcp__syntropy__syntropy_healthcheck and pipe to cache-syntropy-health.py
+   Call mcp__syntropy__healthcheck and pipe to cache-syntropy-health.py
 ```
 
 **Stale cache** (>5 minutes):

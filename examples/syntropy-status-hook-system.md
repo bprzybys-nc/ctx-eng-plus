@@ -23,7 +23,7 @@ SessionStart Hook → session-startup.sh
 ### Cache Update Flow
 
 ```
-Claude Code → mcp__syntropy__syntropy_healthcheck
+Claude Code → mcp__syntropy__healthcheck
             → cache-syntropy-health.py (via stdin)
             → .ce/syntropy-health-cache.json
 ```

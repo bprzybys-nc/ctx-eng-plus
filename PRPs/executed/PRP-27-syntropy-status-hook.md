@@ -266,7 +266,7 @@ data, is_stale = load_cached_health()
 if data is None:
     print("❌ Syntropy health cache not found")
     print("🔧 Run this in Claude Code to refresh:")
-    print("   Call mcp__syntropy__syntropy_healthcheck and pipe to cache-syntropy-health.py")
+    print("   Call mcp__syntropy__healthcheck and pipe to cache-syntropy-health.py")
     return 1
 
 if is_stale:
@@ -277,7 +277,7 @@ if is_stale:
 **Cache refresh workflow**:
 ```bash
 # From Claude Code (has MCP access)
-healthcheck_data = mcp__syntropy__syntropy_healthcheck(detailed=True)
+healthcheck_data = mcp__syntropy__healthcheck(detailed=True)
 # Pipe to cache writer
 echo '{data}' | uv run python tools/scripts/cache-syntropy-health.py
 ```
@@ -420,7 +420,7 @@ claude-code start
 
 ## Dependencies
 
-- MCP Syntropy aggregator (`mcp__syntropy__syntropy_healthcheck` available)
+- MCP Syntropy aggregator (`mcp__syntropy__healthcheck` available)
 - uv venv working (`uv run python` functional)
 - Git root detectable in project
 
@@ -430,7 +430,7 @@ claude-code start
 
 - Current issue: SessionStart hook fails silently on resume
 - Related: CLAUDE.md "No Fishy Fallbacks" policy (line 47)
-- MCP tool: `mcp__syntropy__syntropy_healthcheck` (available in permissions)
+- MCP tool: `mcp__syntropy__healthcheck` (available in permissions)
 
 ---
 
