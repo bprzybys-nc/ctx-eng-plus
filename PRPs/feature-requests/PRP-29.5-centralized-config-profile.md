@@ -17,7 +17,12 @@ related_prps:
 issue: null
 implementation_summary: null
 last_updated: '2025-10-27'
-updated_by: implementation
+updated_by: prp-requirements-update
+execution_requirements:
+  active_project: ctx-eng-plus
+  working_directory: /Users/bprzybysz/nc-src/ctx-eng-plus
+  language_context: Python
+  reason: Implements config system in Python tools (tools/ce/config_utils.py, tools/ce/migration_utils.py)
 ---
 
 # PRP-29.5: Centralized Configuration Profile System
