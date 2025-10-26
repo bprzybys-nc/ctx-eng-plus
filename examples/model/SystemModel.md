@@ -23,7 +23,13 @@
 
 **Context Engineering Management** is a systematic framework for autonomous AI-driven software development that achieves 10-100x improvement over prompt engineering through complete context provision (baseline: 10x via structured prompts, up to 100x with full MCP integration and self-healing). The system eliminates hallucinations by treating missing context as compilation errors, enabling AI agents to deliver production-ready code without human intervention during implementation.
 
-**Performance Claims:** 10x improvement is consistently achievable with prompt engineering over vibe coding. 100x improvement represents exceptional cases combining context engineering + Serena MCP + self-healing loops. Typical range: 10-24x for production features. See [Section 8.3](#83-productivity-impact) for detailed breakdown.
+**Performance Claims:**
+
+- **Research-Backed Baseline:** Traditional AI code generation achieves 35-45% success rate (GitHub Copilot evaluation studies)
+- **Internal Observations (n=4 case studies):** Context Engineering framework achieves 85-97% success rate and 10-24x productivity improvement for production features
+- **Exceptional Cases:** Up to 100x speedup when combining context engineering + Serena MCP + self-healing (documented in Section 8.1 case study)
+
+See [Section 8](#8-performance-metrics) for detailed methodology and case studies.
 
 ### 1.2 Core Principle: Context-as-Compiler
 
@@ -141,6 +147,18 @@ graph LR
 
 **Implication:** Provide complete context upfront, not iteratively.
 
+#### 2.2.1 Concrete Mappings
+
+| Traditional Compiler | Context Engineering | Consequence |
+|---------------------|---------------------|----|
+| Missing header file | Missing validation gate | Compilation fails → Systematic validation failure |
+| Unresolved symbol | Missing MCP context | Linker error → Hallucinated implementation |
+| Type mismatch | Schema mismatch | Type error → Invalid data structure |
+| No optimization flags | No quality gates (L1-L4) | Slow build → Low confidence code |
+| Runtime crash | No self-healing loop | Debug cycle → Automatic fixing |
+
+**Application:** When designing PRP context, ask: "What information would a compiler need to ensure compilation succeeds?" Then provide it exhaustively.
+
 ### 2.3 Philosophical Principles
 
 1. **No Fishy Fallbacks**
@@ -215,6 +233,41 @@ graph LR
     style E2 fill:#ffccbc,color:#000
     style E3 fill:#ffccbc,color:#000
 ```
+
+#### 3.1.0 Pillar Interaction Patterns
+
+The Four Pillars work together in a continuous cycle:
+
+```mermaid
+graph TB
+    W["WRITE<br/>Persist insights"] -->|"Enables retrieval from"| S["SELECT<br/>Find context"]
+    S -->|"Informs optimization of"| C["COMPRESS<br/>Reduce tokens"]
+    C -->|"Respects boundaries from"| I["ISOLATE<br/>Safety gates"]
+    I -->|"Validates and stores in"| W
+
+    W1["Examples: Memories,<br/>Checkpoints, Logs"] -.-> W
+    S1["Examples: find_symbol,<br/>search_for_pattern"] -.-> S
+    C1["Examples: Overview-first,<br/>Targeted reads"] -.-> C
+    I1["Examples: Validation gates,<br/>Error boundaries"] -.-> I
+
+    style W fill:#fff8e1,color:#000
+    style S fill:#f3e5f5,color:#000
+    style C fill:#b2ebf2,color:#000
+    style I fill:#ffe0b2,color:#000
+    style W1 fill:#fff9c4,color:#000
+    style S1 fill:#e1f5fe,color:#000
+    style C1 fill:#b2dfdb,color:#000
+    style I1 fill:#ffccbc,color:#000
+```
+
+**Usage Patterns:**
+
+| Scenario | Pillar Sequence | Outcome |
+|----------|-----------------|---------|
+| Implementing new feature | WRITE context → SELECT similar patterns → COMPRESS → ISOLATE test | Complete implementation with precedents |
+| Debugging failure | SELECT error info → ISOLATE root cause → WRITE findings → COMPRESS learnings | Fast diagnosis with documented patterns |
+| Refactoring code | SELECT impact analysis → WRITE rollback point → COMPRESS changes → ISOLATE validation | Safe refactoring with checkpoints |
+| Context recovery (crashed session) | SELECT from git → WRITE to memory → COMPRESS overview → ISOLATE validation | Resume from last checkpoint |
 
 #### 3.1.1 WRITE: Persistence Layer
 

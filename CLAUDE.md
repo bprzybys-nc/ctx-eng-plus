@@ -17,6 +17,9 @@ Direct, token-efficient. No fluff.
 
 ## Core Principles (From Global)
 
+### PREFER SYNTROPY MCP TOOLS OVER CMDLINE/BASH TOOLS
+- Use Syntropy MCP 
+
 ### No Fishy Fallbacks - MANDATORY
 
 - ✅ Fast Failure: Let exceptions bubble up
@@ -62,7 +65,8 @@ rm -rf ~/.mcp-auth
 - ❌ FORBIDDEN: Proposing 5+ line scripts without running
 - ✅ REQUIRED: Longer code → tmp/ file and execute
 
-# ❌ NEVER OVERWRITE .claude/settings.local.json PERMISSIONS OR I WILL BE UNHAPPY AND NO REWARD FOR YOU
+# ❌ NEVER REPLACE ALL PERMISSIONS WITH ONE PERMISSION ENTRY IN .claude/settings.local.json
+# Surgical edits to individual permissions are allowed - bulk replacement is forbidden
 
 # ⬇️ COMPACT CONVERSATION WITH CLAUDE HAIKU - claude-3-haiku-20240307
 

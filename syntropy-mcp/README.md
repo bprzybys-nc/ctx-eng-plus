@@ -191,6 +191,27 @@ Edit to add/remove servers or change spawn commands.
 
 See [DEPLOYMENT.md](DEPLOYMENT.md) for complete tool reference.
 
+### Project Initialization
+
+**New in PRP-29.1**: Initialize Context Engineering projects with boilerplate and framework structure.
+
+```javascript
+{
+  "name": "syntropy:syntropy:init_project",
+  "arguments": {
+    "project_root": "/path/to/project"
+  }
+}
+```
+
+Initializes:
+- ✅ Copy boilerplate from `syntropy/ce/` to `.ce/`
+- ✅ Create user directories: `PRPs/`, `examples/`, `.serena/memories/`
+- ✅ Generate `CLAUDE.md` project guide
+- ✅ Upsert slash commands: `generate-prp`, `execute-prp`, `update-context`, `peer-review`
+
+See [PRP-29.1](../PRPs/executed/PRP-29.1-syntropy-docs-init.md) for implementation details.
+
 ## Performance
 
 ### Connection Times
