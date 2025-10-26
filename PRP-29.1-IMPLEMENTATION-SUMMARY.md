@@ -154,7 +154,7 @@ interface InitProjectResult {
 2. **`syntropy-mcp/src/index.ts`**
    - Added import: `import { initProject } from \"./tools/init.js\";`
    - Added handler in `CallToolRequestSchema`
-   - Detects: `mcp__syntropy_syntropy_init_project` or `syntropy_init_project`
+   - Detects: `mcp__syntropy__syntropy_init_project` or `syntropy_init_project`
    - Calls: `initProject(args)` directly (no forwarding)
    - Returns: JSON formatted result
    - Error handling: McpError with troubleshooting guidance

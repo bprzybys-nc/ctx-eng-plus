@@ -14,13 +14,13 @@
 
 **What changed**: All MCP tools now route through Syntropy MCP server with unified interface
 
-**Permissions Format**: `mcp__syntropy_<server>_<tool>` (for settings.local.json)
-**Actual Callable**: `mcp__syntropy__<server>__<tool>` (double underscores between components)
+**Permissions Format**: `mcp__syntropy__<server>_<tool>` (for settings.local.json)
+**Actual Callable**: `mcp__syntropy___<server>__<tool>` (double underscores between components)
 
 **Examples**:
-- `mcp__syntropy_serena_find_symbol` (was: `mcp__serena__find_symbol`)
-- `mcp__syntropy_filesystem_read_text_file` (was: `mcp__filesystem__read_text_file`)
-- `mcp__syntropy_git_git_status` (was: `mcp__git__git_status`)
+- `mcp__syntropy__serena_find_symbol` (was: `mcp__serena__find_symbol`)
+- `mcp__syntropy__filesystem_read_text_file` (was: `mcp__filesystem__read_text_file`)
+- `mcp__syntropy__git_git_status` (was: `mcp__git__git_status`)
 
 **Benefit**: Single MCP server managing 6 underlying servers with connection pooling and lifecycle management
 
@@ -30,7 +30,7 @@
 
 ### Find function/class definition
 
-**USE**: `mcp__syntropy_serena_find_symbol`
+**USE**: `mcp__syntropy__serena_find_symbol`
 
 ```python
 # Find function by name
@@ -44,7 +44,7 @@ find_symbol(name_path="UserAuth/validate", include_body=True)
 
 ### Understand file structure
 
-**USE**: `mcp__syntropy_serena_get_symbols_overview`
+**USE**: `mcp__syntropy__serena_get_symbols_overview`
 
 ```python
 # Get top-level overview
@@ -55,7 +55,7 @@ get_symbols_overview(path="src/auth.py")
 
 ### Search for pattern in codebase
 
-**USE**: `mcp__syntropy_serena_search_for_pattern`
+**USE**: `mcp__syntropy__serena_search_for_pattern`
 
 ```python
 # Find async functions
@@ -69,7 +69,7 @@ search_for_pattern(pattern="except.*ValueError", path="src/")
 
 ### Find all usages of function
 
-**USE**: `mcp__syntropy_serena_find_referencing_symbols`
+**USE**: `mcp__syntropy__serena_find_referencing_symbols`
 
 ```python
 # Find everywhere validate_token is called
@@ -85,8 +85,8 @@ find_referencing_symbols(name_path="validate_token", path="src/auth.py")
 ### Read file contents
 
 **USE**:
-- `mcp__syntropy_filesystem_read_text_file` - For config files, markdown, non-code
-- `mcp__syntropy_serena_read_file` - For Python/code files (indexed by LSP)
+- `mcp__syntropy__filesystem_read_text_file` - For config files, markdown, non-code
+- `mcp__syntropy__serena_read_file` - For Python/code files (indexed by LSP)
 
 ```python
 # Read config file
@@ -100,7 +100,7 @@ read_file(relative_path="ce/core.py")
 
 ### List directory contents
 
-**USE**: `mcp__syntropy_filesystem_list_directory`
+**USE**: `mcp__syntropy__filesystem_list_directory`
 
 ```python
 list_directory(path="examples/")
@@ -110,7 +110,7 @@ list_directory(path="examples/")
 
 ### Find files by pattern
 
-**USE**: `mcp__syntropy_filesystem_search_files`
+**USE**: `mcp__syntropy__filesystem_search_files`
 
 ```python
 # Find all test files
@@ -121,7 +121,7 @@ search_files(path="tests", pattern="test_*.py")
 
 ### Edit file with line-based changes
 
-**USE**: `mcp__syntropy_filesystem_edit_file`
+**USE**: `mcp__syntropy__filesystem_edit_file`
 
 ```python
 edit_file(
@@ -137,7 +137,7 @@ edit_file(
 
 ### Write new file
 
-**USE**: `mcp__syntropy_serena_create_text_file`
+**USE**: `mcp__syntropy__serena_create_text_file`
 
 ```python
 create_text_file(
@@ -154,7 +154,7 @@ create_text_file(
 
 ### Check git status
 
-**USE**: `mcp__syntropy_git_git_status`
+**USE**: `mcp__syntropy__git_git_status`
 
 ```python
 git_status(repo_path=".")
@@ -164,7 +164,7 @@ git_status(repo_path=".")
 
 ### View recent changes
 
-**USE**: `mcp__syntropy_git_git_diff`
+**USE**: `mcp__syntropy__git_git_diff`
 
 ```python
 git_diff(repo_path=".", target="HEAD")
@@ -174,7 +174,7 @@ git_diff(repo_path=".", target="HEAD")
 
 ### See commit history
 
-**USE**: `mcp__syntropy_git_git_log`
+**USE**: `mcp__syntropy__git_git_log`
 
 ```python
 git_log(repo_path=".", max_count=10)
@@ -184,7 +184,7 @@ git_log(repo_path=".", max_count=10)
 
 ### Stage and commit changes
 
-**USE**: `mcp__syntropy_git_git_add` + `mcp__syntropy_git_git_commit`
+**USE**: `mcp__syntropy__git_git_add` + `mcp__syntropy__git_git_commit`
 
 ```python
 # Stage files
@@ -202,14 +202,14 @@ git_commit(repo_path=".", message="feat: add new feature")
 
 ### Get library documentation
 
-**USE**: `mcp__syntropy_context7_resolve_library_id` + `mcp__syntropy_context7_get_library_docs`
+**USE**: `mcp__syntropy__context7_resolve_library_id` + `mcp__syntropy__context7_get_library_docs`
 
 ```python
 # Step 1: Resolve library ID
-lib_id = mcp__syntropy_context7_resolve_library_id(libraryName="pytest")
+lib_id = mcp__syntropy__context7_resolve_library_id(libraryName="pytest")
 
 # Step 2: Get docs
-docs = mcp__syntropy_context7_get_library_docs(
+docs = mcp__syntropy__context7_get_library_docs(
     context7CompatibleLibraryID=lib_id,
     topic="fixtures"
 )
@@ -223,7 +223,7 @@ docs = mcp__syntropy_context7_get_library_docs(
 
 ### Multi-step problem decomposition
 
-**USE**: `mcp__syntropy_thinking_sequentialthinking`
+**USE**: `mcp__syntropy__thinking_sequentialthinking`
 
 ```python
 sequentialthinking(
@@ -242,7 +242,7 @@ sequentialthinking(
 
 ### Pack entire codebase for AI
 
-**USE**: `mcp__syntropy_repomix_pack_codebase`
+**USE**: `mcp__syntropy__repomix_pack_codebase`
 
 ```python
 pack_codebase(
@@ -258,7 +258,7 @@ pack_codebase(
 
 ### Create/update Linear issue
 
-**USE**: `mcp__syntropy_linear_create_issue` / `mcp__syntropy_linear_update_issue`
+**USE**: `mcp__syntropy__linear_create_issue` / `mcp__syntropy__linear_update_issue`
 
 ```python
 # Create issue
@@ -280,7 +280,7 @@ update_issue(
 
 ### List issues
 
-**USE**: `mcp__syntropy_linear_list_issues`
+**USE**: `mcp__syntropy__linear_list_issues`
 
 ```python
 list_issues(
@@ -324,33 +324,33 @@ New MCP servers can be added by:
 
 ```
 Need to work with code?
-├─ Know symbol name? → mcp__syntropy_serena_find_symbol
-├─ Exploring file? → mcp__syntropy_serena_get_symbols_overview
-├─ Pattern search? → mcp__syntropy_serena_search_for_pattern
-└─ Find usages? → mcp__syntropy_serena_find_referencing_symbols
+├─ Know symbol name? → mcp__syntropy__serena_find_symbol
+├─ Exploring file? → mcp__syntropy__serena_get_symbols_overview
+├─ Pattern search? → mcp__syntropy__serena_search_for_pattern
+└─ Find usages? → mcp__syntropy__serena_find_referencing_symbols
 
 Need to read file?
-├─ Code file? → mcp__syntropy_serena_read_file
-└─ Config/text? → mcp__syntropy_filesystem_read_text_file
+├─ Code file? → mcp__syntropy__serena_read_file
+└─ Config/text? → mcp__syntropy__filesystem_read_text_file
 
 Need to write/edit?
-├─ Create file? → mcp__syntropy_serena_create_text_file
-└─ Edit existing? → mcp__syntropy_filesystem_edit_file
+├─ Create file? → mcp__syntropy__serena_create_text_file
+└─ Edit existing? → mcp__syntropy__filesystem_edit_file
 
 Need git operation?
-└─ Use mcp__syntropy_git_* tools (status, diff, log, add, commit)
+└─ Use mcp__syntropy__git_* tools (status, diff, log, add, commit)
 
 Need external docs?
-└─ Use mcp__syntropy_context7_* tools
+└─ Use mcp__syntropy__context7_* tools
 
 Need complex reasoning?
-└─ Use mcp__syntropy_thinking_sequentialthinking
+└─ Use mcp__syntropy__thinking_sequentialthinking
 
 Need project management?
-└─ Use mcp__syntropy_linear_* tools
+└─ Use mcp__syntropy__linear_* tools
 
 Need codebase packaging?
-└─ Use mcp__syntropy_repomix_pack_codebase
+└─ Use mcp__syntropy__repomix_pack_codebase
 ```
 
 ---
@@ -359,13 +359,13 @@ Need codebase packaging?
 
 | Old Tool | New Tool (Syntropy) | Notes |
 |----------|-------------------|-------|
-| `mcp__serena__find_symbol` | `mcp__syntropy_serena_find_symbol` | Same functionality, unified MCP |
-| `mcp__filesystem__read_text_file` | `mcp__syntropy_filesystem_read_text_file` | Same functionality, unified MCP |
-| `mcp__git__git_status` | `mcp__syntropy_git_git_status` | Same functionality, unified MCP |
-| `mcp__context7__get_library_docs` | `mcp__syntropy_context7_get_library_docs` | Same functionality, unified MCP |
-| `mcp__sequential-thinking__sequentialthinking` | `mcp__syntropy_thinking_sequentialthinking` | Same functionality, unified MCP |
-| `mcp__linear-server__create_issue` | `mcp__syntropy_linear_create_issue` | Same functionality, unified MCP |
-| `mcp__repomix__pack_codebase` | `mcp__syntropy_repomix_pack_codebase` | Same functionality, unified MCP |
+| `mcp__serena__find_symbol` | `mcp__syntropy__serena_find_symbol` | Same functionality, unified MCP |
+| `mcp__filesystem__read_text_file` | `mcp__syntropy__filesystem_read_text_file` | Same functionality, unified MCP |
+| `mcp__git__git_status` | `mcp__syntropy__git_git_status` | Same functionality, unified MCP |
+| `mcp__context7__get_library_docs` | `mcp__syntropy__context7_get_library_docs` | Same functionality, unified MCP |
+| `mcp__sequential-thinking__sequentialthinking` | `mcp__syntropy__thinking_sequentialthinking` | Same functionality, unified MCP |
+| `mcp__linear-server__create_issue` | `mcp__syntropy__linear_create_issue` | Same functionality, unified MCP |
+| `mcp__repomix__pack_codebase` | `mcp__syntropy__repomix_pack_codebase` | Same functionality, unified MCP |
 
 **All tools now route through Syntropy MCP server for unified management and connection pooling.**
 
@@ -393,13 +393,13 @@ Need codebase packaging?
 
 ### Allow List - Syntropy Tools
 ```
-mcp__syntropy_serena_*
-mcp__syntropy_filesystem_*
-mcp__syntropy_git_*
-mcp__syntropy_context7_*
-mcp__syntropy_thinking_*
-mcp__syntropy_linear_*
-mcp__syntropy_repomix_*
+mcp__syntropy__serena_*
+mcp__syntropy__filesystem_*
+mcp__syntropy__git_*
+mcp__syntropy__context7_*
+mcp__syntropy__thinking_*
+mcp__syntropy__linear_*
+mcp__syntropy__repomix_*
 ```
 
 All legacy `mcp__*` permissions replaced with Syntropy unified interface.
@@ -411,7 +411,7 @@ All legacy `mcp__*` permissions replaced with Syntropy unified interface.
 ### Tool Not Found
 - Restart Claude Code to refresh tool list
 - Check Syntropy MCP server is connected (visible in `/mcp` menu)
-- Verify tool name format: `mcp__syntropy_<server>_<tool>` (permissions)
+- Verify tool name format: `mcp__syntropy__<server>_<tool>` (permissions)
 
 ### Connection Timeout
 - First connection may take 1-2 seconds (server spawn)
