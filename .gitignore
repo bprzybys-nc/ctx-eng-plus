@@ -21,6 +21,8 @@ tools/uv.lock
 
 node_modules/
 tests/__pycache__/
-syntropy-mcp/scripts/__pycache__/
-syntropy-mcp/build/
+
+# Syntropy MCP - separate git repository
+syntropy-mcp/
+
 repomix-output.xml

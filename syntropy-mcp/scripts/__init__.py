@@ -1,1 +1,0 @@
-# Syntropy MCP Scripts module
