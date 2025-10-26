@@ -1,8 +1,62 @@
 # Context Engineering Configuration
 
-# Cache settings
+# PROFILE SECTION - Project-specific settings
+# Configured for ctx-eng-plus project
+profile:
+  # Project identification
+  # Used by Serena MCP for code navigation
+  project_name: "ctx-eng-plus"
+
+  # Optional - Project description for documentation
+  description: "Context Engineering framework and tools"
+
+  # Linear integration settings
+  linear:
+    # Linear project name to assign issues to
+    project: "Context Engineering"
+
+    # Default assignee email for PRP-generated issues
+    assignee: "blazej.przybyszewski@gmail.com"
+
+    # Linear team identifier
+    team: "Blaise78"
+
+    # Default labels applied to new issues
+    default_labels:
+      - "feature"
+
+  # Git defaults (optional - falls back to git config if empty)
+  git:
+    # Optional - Override git config user.name
+    author_name: "Blazej Przybyszewski"
+
+    # Optional - Override git config user.email
+    author_email: "blazej.przybyszewski@nordcloud.com"
+
+  # Repository information (optional)
+  repository:
+    # Optional - Remote repository URL
+    url: "https://github.com/nordcloud/ctx-eng-plus.git"
+
+    # Optional - Default branch name
+    main_branch: "main"
+
+# Framework settings
 cache:
   # TTL for drift analysis cache in minutes
   # Used by: ce analyze-context
   # Can be overridden with --cache-ttl flag
   analysis_ttl_minutes: 5
+
+# Validation metadata (DO NOT EDIT)
+# Used by framework to validate configuration completeness
+_validation:
+  # Required fields that must be filled (not <missing>)
+  required_fields:
+    - profile.project_name
+    - profile.linear.project
+    - profile.linear.assignee
+    - profile.linear.team
+
+  # Schema version for migration compatibility
+  schema_version: "1.0.0"
