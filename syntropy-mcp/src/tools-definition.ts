@@ -1161,5 +1161,19 @@ export const SYNTROPY_TOOLS = [
       },
       required: []
     }
+  },
+  {
+    name: "syntropy_init_project",
+    description: "Initialize Context Engineering project structure with boilerplate copy and slash command upsert",
+    inputSchema: {
+      type: "object" as const,
+      properties: {
+        project_root: {
+          type: "string",
+          description: "Absolute path to project root directory"
+        }
+      },
+      required: ["project_root"]
+    }
   }
 ];

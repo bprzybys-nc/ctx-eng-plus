@@ -33,6 +33,7 @@ import {
 import { MCPClientManager } from "./client-manager.js";
 import { SYNTROPY_TOOLS } from "./tools-definition.js";
 import { runHealthCheck, formatHealthCheckText } from "./health-checker.js";
+import { initProject } from "./tools/init.js";
 // After SYNTROPY_TOOLS import
 console.error(`[SYNTROPY DEBUG] Registering ${SYNTROPY_TOOLS.length} tools`);
 console.error(`[SYNTROPY DEBUG] Tool 58: ${SYNTROPY_TOOLS[57]?.name || 'N/A'}`);
@@ -231,6 +232,27 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
         ErrorCode.InternalError,
         `Health check failed: ${error}\n` +
         `🔧 Troubleshooting: Check Syntropy server logs`
+      );
+    }
+  }
+
+  // Handle init project tool (special case - direct implementation, no forwarding)
+  if (name === "mcp__syntropy_syntropy_init_project" || name === "syntropy_init_project") {
+    try {
+      const result = await initProject(args as { project_root: string });
+      return {
+        content: [
+          {
+            type: "text" as const,
+            text: JSON.stringify(result, null, 2),
+          },
+        ],
+      };
+    } catch (error) {
+      throw new McpError(
+        ErrorCode.InternalError,
+        `Project initialization failed: ${error}\n` +
+        `🔧 Troubleshooting: Check project path and permissions`
       );
     }
   }
