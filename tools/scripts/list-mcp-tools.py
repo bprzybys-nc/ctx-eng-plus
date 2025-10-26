@@ -48,9 +48,9 @@ def main():
     print("📋 Available MCP Tools (Syntropy Aggregator)")
     print("=" * 60)
     print()
-    print("⚠️  Naming Pattern: mcp__syntropy__syntropy_{server}_{function}")
+    print("⚠️  Naming Pattern: mcp__syntropy__{server}__{function}")
     print("⚠️  Permissions show: mcp__syntropy_{server}_{function}")
-    print("⚠️  Actual callable: mcp__syntropy__syntropy_{server}_{function}")
+    print("⚠️  Actual callable: mcp__syntropy__{server}__{function}")
     print()
 
     # Print tools by server

@@ -5,7 +5,7 @@ This script is called BY Claude Code (which has MCP access) to cache healthcheck
 The session startup hook then reads from this cache for fast, reliable status display.
 
 Usage:
-    Called automatically by Claude Code when mcp__syntropy__syntropy_healthcheck is invoked.
+    Called automatically by Claude Code when mcp__syntropy__healthcheck is invoked.
     Cache written to: .ce/syntropy-health-cache.json
     TTL: 5 minutes (stale cache triggers warning, not failure)
 """

@@ -2,7 +2,7 @@
 """Display Syntropy MCP aggregator health status.
 
 Reads from cache file (.ce/syntropy-health-cache.json) written by cache-syntropy-health.py.
-Cache is updated by Claude Code calling mcp__syntropy__syntropy_healthcheck.
+Cache is updated by Claude Code calling mcp__syntropy__healthcheck.
 """
 
 import json
@@ -72,7 +72,7 @@ def main():
     if data is None:
         print("❌ Syntropy health cache not found")
         print("🔧 Run this in Claude Code to refresh:")
-        print("   Call mcp__syntropy__syntropy_healthcheck and pipe to cache-syntropy-health.py")
+        print("   Call mcp__syntropy__healthcheck and pipe to cache-syntropy-health.py")
         return 1
 
     if is_stale:
