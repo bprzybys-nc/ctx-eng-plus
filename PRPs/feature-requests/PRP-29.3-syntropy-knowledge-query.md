@@ -2,7 +2,7 @@
 name: Syntropy Knowledge Management & Query Interface
 description: Unified knowledge indexing and query system across framework docs, PRPs,
   examples, and Serena memories
-prp_id: PRP-29.2
+prp_id: PRP-29.3
 status: new
 created_date: '2025-10-24T09:44:26.297820'
 last_updated: '2025-10-24T09:44:26.297828'

@@ -151,9 +151,12 @@ ce-drift
 **Current Configuration**: 48 allowed tools, 122 denied patterns
 
 **IMPORTANT - Tool Naming Convention**:
-- **Permissions format**: `mcp__syntropy_{server}_{function}` (single underscore before server)
-- **Actual callable format**: `mcp__syntropy__{server}__{function}` (double underscores between each component)
-- **All tool names in this doc use the PERMISSIONS format** - Claude Code automatically translates to callable format
+- **Correct format**: `mcp__syntropy__<server>_<tool_name>`
+  - `mcp__` - MCP prefix (double underscore)
+  - `syntropy__` - Syntropy server (double underscore)
+  - `<server>_` - Server name + single underscore
+  - `<tool_name>` - Tool name
+- **Example**: `mcp__syntropy__serena_find_symbol`
 
 ### Allowed Tools by Category
 
@@ -166,32 +169,32 @@ ce-drift
 - MCP auth reset: `Bash(rm -rf ~/.mcp-auth)`
 
 #### Serena Essential (11 tools via Syntropy)
-- Code navigation: `mcp__syntropy_serena_find_symbol`, `mcp__syntropy_serena_get_symbols_overview`, `mcp__syntropy_serena_search_for_pattern`
-- Impact analysis: `mcp__syntropy_serena_find_referencing_symbols`
-- Memory: `mcp__syntropy_serena_write_memory`
-- File operations: `mcp__syntropy_serena_create_text_file`, `mcp__syntropy_serena_read_file`, `mcp__syntropy_serena_list_dir`
-- Code insertion: `mcp__syntropy_serena_insert_after_symbol`, `mcp__syntropy_serena_insert_before_symbol`
-- Project management: `mcp__syntropy_serena_activate_project`
+- Code navigation: `mcp__syntropy__serena_find_symbol`, `mcp__syntropy__serena_get_symbols_overview`, `mcp__syntropy__serena_search_for_pattern`
+- Impact analysis: `mcp__syntropy__serena_find_referencing_symbols`
+- Memory: `mcp__syntropy__serena_write_memory`
+- File operations: `mcp__syntropy__serena_create_text_file`, `mcp__syntropy__serena_read_file`, `mcp__syntropy__serena_list_dir`
+- Code insertion: `mcp__syntropy__serena_insert_after_symbol`, `mcp__syntropy__serena_insert_before_symbol`
+- Project management: `mcp__syntropy__serena_activate_project`
 
 #### Filesystem Core (8 tools via Syntropy)
-- Read/write: `mcp__syntropy_filesystem_read_text_file`, `mcp__syntropy_filesystem_write_file`, `mcp__syntropy_filesystem_edit_file`
-- Navigation: `mcp__syntropy_filesystem_list_directory`, `mcp__syntropy_filesystem_search_files`, `mcp__syntropy_filesystem_directory_tree`
-- Info: `mcp__syntropy_filesystem_get_file_info`, `mcp__syntropy_filesystem_list_allowed_directories`
-- Legacy: `mcp__syntropy_filesystem_read_file` (deprecated, use read_text_file)
+- Read/write: `mcp__syntropy__filesystem_read_text_file`, `mcp__syntropy__filesystem_write_file`, `mcp__syntropy__filesystem_edit_file`
+- Navigation: `mcp__syntropy__filesystem_list_directory`, `mcp__syntropy__filesystem_search_files`, `mcp__syntropy__filesystem_directory_tree`
+- Info: `mcp__syntropy__filesystem_get_file_info`, `mcp__syntropy__filesystem_list_allowed_directories`
+- Legacy: `mcp__syntropy__filesystem_read_file` (deprecated, use read_text_file)
 
 #### Git Essentials (5 tools via Syntropy)
-- `mcp__syntropy_git_git_status`, `mcp__syntropy_git_git_diff`, `mcp__syntropy_git_git_log`, `mcp__syntropy_git_git_add`, `mcp__syntropy_git_git_commit`
+- `mcp__syntropy__git_git_status`, `mcp__syntropy__git_git_diff`, `mcp__syntropy__git_git_log`, `mcp__syntropy__git_git_add`, `mcp__syntropy__git_git_commit`
 
 #### Documentation & Reasoning (3 tools via Syntropy)
-- Context7 docs: `mcp__syntropy_context7_resolve_library_id`, `mcp__syntropy_context7_get_library_docs`
-- Complex reasoning: `mcp__syntropy_thinking_sequentialthinking`
+- Context7 docs: `mcp__syntropy__context7_resolve_library_id`, `mcp__syntropy__context7_get_library_docs`
+- Complex reasoning: `mcp__syntropy__thinking_sequentialthinking`
 
 #### Project Management - Linear (5 tools via Syntropy)
-- Issues: `mcp__syntropy_linear_create_issue`, `mcp__syntropy_linear_get_issue`, `mcp__syntropy_linear_list_issues`, `mcp__syntropy_linear_update_issue`
-- Projects: `mcp__syntropy_linear_list_projects`
+- Issues: `mcp__syntropy__linear_create_issue`, `mcp__syntropy__linear_get_issue`, `mcp__syntropy__linear_list_issues`, `mcp__syntropy__linear_update_issue`
+- Projects: `mcp__syntropy__linear_list_projects`
 
 #### Codebase Analysis (1 tool via Syntropy)
-- `mcp__syntropy_repomix_pack_codebase`
+- `mcp__syntropy__repomix_pack_codebase`
 
 #### Special Permissions (6 patterns)
 - Read paths, WebFetch(domain:github.com), SlashCommand(/generate-prp, /peer-review)
@@ -199,15 +202,15 @@ ce-drift
 ### Quick Patterns (via Syntropy MCP)
 
 **Code Navigation** (Serena via Syntropy):
-- Find symbol: `mcp__syntropy_serena_find_symbol`
-- File overview: `mcp__syntropy_serena_get_symbols_overview`
-- Pattern search: `mcp__syntropy_serena_search_for_pattern`
-- Impact analysis: `mcp__syntropy_serena_find_referencing_symbols`
+- Find symbol: `mcp__syntropy__serena_find_symbol`
+- File overview: `mcp__syntropy__serena_get_symbols_overview`
+- Pattern search: `mcp__syntropy__serena_search_for_pattern`
+- Impact analysis: `mcp__syntropy__serena_find_referencing_symbols`
 
 **File Operations** (Filesystem via Syntropy):
-- Read file: `mcp__syntropy_filesystem_read_text_file` (config/text)
-- Edit file: `mcp__syntropy_filesystem_edit_file`
-- List dir: `mcp__syntropy_filesystem_list_directory`
+- Read file: `mcp__syntropy__filesystem_read_text_file` (config/text)
+- Edit file: `mcp__syntropy__filesystem_edit_file`
+- List dir: `mcp__syntropy__filesystem_list_directory`
 
 **Text Processing** (always use Python shell_utils, NOT bash):
 - Search: `shell_utils.grep_text()` ❌ NOT `Bash(grep)`
@@ -216,7 +219,7 @@ ce-drift
 - Head/tail: `shell_utils.head()` / `tail()` ❌ NOT `Bash(head/tail)`
 
 **Git Operations** (Git via Syntropy):
-- `mcp__syntropy_git_git_status`, `mcp__syntropy_git_git_diff`, `mcp__syntropy_git_git_log`, `mcp__syntropy_git_git_add`, `mcp__syntropy_git_git_commit`
+- `mcp__syntropy__git_git_status`, `mcp__syntropy__git_git_diff`, `mcp__syntropy__git_git_log`, `mcp__syntropy__git_git_add`, `mcp__syntropy__git_git_commit`
 
 ### Validation Tool
 
@@ -240,64 +243,64 @@ cd tools && uv run python -m ce.validate_permissions search <pattern> [allow|den
 ### Serena Code Navigation & Analysis (11 tools)
 | Tool | Purpose | Use Case |
 |------|---------|----------|
-| `mcp__syntropy_serena_find_symbol` | Find function/class by name with implementation | Know exact symbol name, need to read code |
-| `mcp__syntropy_serena_get_symbols_overview` | List all functions/classes in a file | Exploring file structure, understanding module |
-| `mcp__syntropy_serena_search_for_pattern` | Search code by regex pattern | Find all async functions, error handling patterns |
-| `mcp__syntropy_serena_find_referencing_symbols` | Find all usages of a function | Impact analysis before refactoring |
-| `mcp__syntropy_serena_write_memory` | Store context in agent memory | Remember important project patterns |
-| `mcp__syntropy_serena_create_text_file` | Create new text file | Generate documentation, code scaffolds |
-| `mcp__syntropy_serena_read_file` | Read file contents | Alternative to filesystem read |
-| `mcp__syntropy_serena_list_dir` | List directory with symbol info | Browse project structure with code context |
-| `mcp__syntropy_serena_insert_after_symbol` | Insert code after a symbol | Add new method after existing one |
-| `mcp__syntropy_serena_insert_before_symbol` | Insert code before a symbol | Add imports, decorators before symbols |
-| `mcp__syntropy_serena_activate_project` | Activate Serena project context | Initialize code analysis for project |
+| `mcp__syntropy__serena_find_symbol` | Find function/class by name with implementation | Know exact symbol name, need to read code |
+| `mcp__syntropy__serena_get_symbols_overview` | List all functions/classes in a file | Exploring file structure, understanding module |
+| `mcp__syntropy__serena_search_for_pattern` | Search code by regex pattern | Find all async functions, error handling patterns |
+| `mcp__syntropy__serena_find_referencing_symbols` | Find all usages of a function | Impact analysis before refactoring |
+| `mcp__syntropy__serena_write_memory` | Store context in agent memory | Remember important project patterns |
+| `mcp__syntropy__serena_create_text_file` | Create new text file | Generate documentation, code scaffolds |
+| `mcp__syntropy__serena_read_file` | Read file contents | Alternative to filesystem read |
+| `mcp__syntropy__serena_list_dir` | List directory with symbol info | Browse project structure with code context |
+| `mcp__syntropy__serena_insert_after_symbol` | Insert code after a symbol | Add new method after existing one |
+| `mcp__syntropy__serena_insert_before_symbol` | Insert code before a symbol | Add imports, decorators before symbols |
+| `mcp__syntropy__serena_activate_project` | Activate Serena project context | Initialize code analysis for project |
 
 ### Filesystem Operations (8 tools)
 | Tool | Purpose | Use Case |
 |------|---------|----------|
-| `mcp__syntropy_filesystem_read_text_file` | Read config/markdown files | .env, .yml, .md documentation |
-| `mcp__syntropy_filesystem_read_file` | Read file (deprecated) | Legacy - use read_text_file instead |
-| `mcp__syntropy_filesystem_write_file` | Write new file content | Create config files, documentation |
-| `mcp__syntropy_filesystem_edit_file` | Surgical line-level edits | Precise changes to existing files |
-| `mcp__syntropy_filesystem_list_directory` | List files in directory | Explore directory structure |
-| `mcp__syntropy_filesystem_search_files` | Find files by pattern | Locate test files, configs by name |
-| `mcp__syntropy_filesystem_directory_tree` | Show directory tree structure | Visualize project organization |
-| `mcp__syntropy_filesystem_get_file_info` | Get file metadata | Size, timestamp, permissions |
-| `mcp__syntropy_filesystem_list_allowed_directories` | List accessible directories | Check project boundaries |
+| `mcp__syntropy__filesystem_read_text_file` | Read config/markdown files | .env, .yml, .md documentation |
+| `mcp__syntropy__filesystem_read_file` | Read file (deprecated) | Legacy - use read_text_file instead |
+| `mcp__syntropy__filesystem_write_file` | Write new file content | Create config files, documentation |
+| `mcp__syntropy__filesystem_edit_file` | Surgical line-level edits | Precise changes to existing files |
+| `mcp__syntropy__filesystem_list_directory` | List files in directory | Explore directory structure |
+| `mcp__syntropy__filesystem_search_files` | Find files by pattern | Locate test files, configs by name |
+| `mcp__syntropy__filesystem_directory_tree` | Show directory tree structure | Visualize project organization |
+| `mcp__syntropy__filesystem_get_file_info` | Get file metadata | Size, timestamp, permissions |
+| `mcp__syntropy__filesystem_list_allowed_directories` | List accessible directories | Check project boundaries |
 
 ### Git Version Control (5 tools)
 | Tool | Purpose | Use Case |
 |------|---------|----------|
-| `mcp__syntropy_git_git_status` | Check repository status | See staged/unstaged changes |
-| `mcp__syntropy_git_git_diff` | View recent changes | Review diff before commit |
-| `mcp__syntropy_git_git_log` | View commit history | Find recent commits, understand flow |
-| `mcp__syntropy_git_git_add` | Stage files for commit | Prepare changes |
-| `mcp__syntropy_git_git_commit` | Create commit | Save changes with message |
+| `mcp__syntropy__git_git_status` | Check repository status | See staged/unstaged changes |
+| `mcp__syntropy__git_git_diff` | View recent changes | Review diff before commit |
+| `mcp__syntropy__git_git_log` | View commit history | Find recent commits, understand flow |
+| `mcp__syntropy__git_git_add` | Stage files for commit | Prepare changes |
+| `mcp__syntropy__git_git_commit` | Create commit | Save changes with message |
 
 ### Documentation & External Libraries (2 tools)
 | Tool | Purpose | Use Case |
 |------|---------|----------|
-| `mcp__syntropy_context7_resolve_library_id` | Resolve library identifier | Lookup library name to get ID |
-| `mcp__syntropy_context7_get_library_docs` | Fetch library documentation | Get API docs, usage patterns |
+| `mcp__syntropy__context7_resolve_library_id` | Resolve library identifier | Lookup library name to get ID |
+| `mcp__syntropy__context7_get_library_docs` | Fetch library documentation | Get API docs, usage patterns |
 
 ### Reasoning & Planning (1 tool)
 | Tool | Purpose | Use Case |
 |------|---------|----------|
-| `mcp__syntropy_thinking_sequentialthinking` | Multi-step decomposition | Complex problems, architectural planning |
+| `mcp__syntropy__thinking_sequentialthinking` | Multi-step decomposition | Complex problems, architectural planning |
 
 ### Project Management (5 tools)
 | Tool | Purpose | Use Case |
 |------|---------|----------|
-| `mcp__syntropy_linear_create_issue` | Create Linear issue | New tasks from PRP generation |
-| `mcp__syntropy_linear_get_issue` | Retrieve issue details | Check issue status, description |
-| `mcp__syntropy_linear_list_issues` | List issues with filters | Find assigned work, status checks |
-| `mcp__syntropy_linear_update_issue` | Update issue status/content | Mark done, add details |
-| `mcp__syntropy_linear_list_projects` | List available projects | Check project structure |
+| `mcp__syntropy__linear_create_issue` | Create Linear issue | New tasks from PRP generation |
+| `mcp__syntropy__linear_get_issue` | Retrieve issue details | Check issue status, description |
+| `mcp__syntropy__linear_list_issues` | List issues with filters | Find assigned work, status checks |
+| `mcp__syntropy__linear_update_issue` | Update issue status/content | Mark done, add details |
+| `mcp__syntropy__linear_list_projects` | List available projects | Check project structure |
 
 ### Codebase Packaging (1 tool)
 | Tool | Purpose | Use Case |
 |------|---------|----------|
-| `mcp__syntropy_repomix_pack_codebase` | Package entire codebase | Export for analysis, sharing with AI |
+| `mcp__syntropy__repomix_pack_codebase` | Package entire codebase | Export for analysis, sharing with AI |
 
 ### Quick Tool Selection Guide
 

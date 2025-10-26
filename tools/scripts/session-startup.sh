@@ -3,7 +3,8 @@
 # Runs on SessionStart (startup, resume, clear)
 # Tolerates failures gracefully, prints diagnostics
 
-set -e  # Fast fail on critical errors
+# Remove set -e to prevent hook failures during early session init
+set +e  # Continue on errors (graceful degradation)
 PROJECT_ROOT=$(git rev-parse --show-toplevel 2>/dev/null || pwd)
 cd "$PROJECT_ROOT/tools"
 
