@@ -4,15 +4,20 @@ description: Integrate mcp__syntropy__thinking__sequentialthinking into INITIAL.
 prp_id: PRP-29.4
 status: new
 created_date: '2025-10-26T00:15:00.000000'
-last_updated: '2025-10-26T00:15:00.000000'
-updated_by: manual
+last_updated: '2025-10-27T00:00:00.000000'
+updated_by: prp-requirements-update
 dependencies:
 - PRP-3 (generate-prp foundation)
 - PRP-29.1 (Syntropy MCP infrastructure)
 context_sync:
   ce_updated: false
   serena_updated: false
-version: 1
+version: 1.1
+execution_requirements:
+  active_project: ctx-eng-plus
+  working_directory: /Users/bprzybysz/nc-src/ctx-eng-plus
+  language_context: Python
+  reason: Modifies Python generate-prp tool (tools/ce/prp/generate.py) for thinking integration
 ---
 
 # Sequential Thinking Integration for PRP Generation

@@ -5,14 +5,19 @@ description: Unified knowledge indexing and query system across framework docs, 
 prp_id: PRP-29.3
 status: new
 created_date: '2025-10-24T09:44:26.297820'
-last_updated: '2025-10-24T09:44:26.297828'
-updated_by: generate-prp-command
+last_updated: '2025-10-27T00:00:00.000000'
+updated_by: prp-requirements-update
 dependencies:
 - PRP-29.1
 context_sync:
   ce_updated: false
   serena_updated: false
-version: 1
+version: 1.1
+execution_requirements:
+  active_project: syntropy-mcp
+  working_directory: syntropy-mcp/
+  language_context: TypeScript
+  reason: Implements MCP server tools for knowledge indexing and query interface
 ---
 
 # Syntropy Knowledge Management & Query Interface
