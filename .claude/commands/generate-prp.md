@@ -174,6 +174,9 @@ uv run ce prp generate <path-to-initial.md> --join-prp 12
 uv run ce prp generate <path-to-initial.md> --join-prp PRP-12
 uv run ce prp generate <path-to-initial.md> --join-prp PRPs/executed/PRP-12-feature.md
 
+# Disable sequential thinking (use heuristics only)
+uv run ce prp generate <path-to-initial.md> --no-thinking
+
 # Custom output directory
 uv run ce prp generate <path-to-initial.md> -o /custom/path
 
