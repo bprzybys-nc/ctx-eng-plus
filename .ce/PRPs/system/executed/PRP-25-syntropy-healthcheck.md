@@ -6,8 +6,8 @@ context_sync:
 created_date: '2025-10-20T14:30:00Z'
 description: Add healthcheck tool to verify Syntropy server and all underlying MCP
   servers are healthy, with structured status reporting and troubleshooting guidance
-implementation_status: FULLY EXECUTED - Design + validation checklist complete via
-  /generate-prp
+implementation_status: IMPLEMENTED + FIXED - Handler updated to accept double underscore
+  format (mcp__syntropy__healthcheck)
 issue: TBD
 last_updated: '2025-10-20T15:45:00Z'
 name: Syntropy MCP Healthcheck Tool
@@ -400,8 +400,8 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
   const { name, arguments: args } = request.params;
 
   // Handle healthcheck tool (special case - doesn't forward to underlying servers)
-  // Note: Claude Code adds 'mcp__syntropy_' prefix automatically
-  if (name === "mcp__syntropy_healthcheck" || name === "syntropy_healthcheck") {
+  // FIXED 2025-10-27: Claude Code uses double underscore (mcp__syntropy__) not single
+  if (name === "mcp__syntropy__healthcheck" || name === "mcp__syntropy_healthcheck" || name === "syntropy_healthcheck" || name === "healthcheck") {
     const detailed = (args as { detailed?: boolean }).detailed ?? false;
     const timeoutMs = (args as { timeout_ms?: number }).timeout_ms ?? 2000;
 
