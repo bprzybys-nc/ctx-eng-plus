@@ -118,6 +118,8 @@ Example: `mcp__syntropy__serena_find_symbol`
 
 **Project management**: Linear tools
 
+**System health**: `healthcheck` (detailed diagnostics with `detailed=true`)
+
 ## Project Structure
 
 ```

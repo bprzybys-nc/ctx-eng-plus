@@ -354,6 +354,30 @@ docs = mcp__syntropy_context7_get_library_docs(
 
 ---
 
+## System Health & Monitoring
+
+### Check MCP server health
+
+**USE**: `mcp__syntropy__healthcheck`
+
+```python
+# Quick status check
+healthcheck(detailed=False)
+
+# Detailed diagnostics
+healthcheck(detailed=True, timeout_ms=2000)
+```
+
+**When**:
+- Session startup (auto-runs via hook)
+- Debugging MCP connection issues
+- Verifying server availability
+- Monitoring system health
+
+**Output**: Human-readable status or JSON (detailed mode)
+
+---
+
 ## Complex Reasoning
 
 ### Multi-step problem decomposition

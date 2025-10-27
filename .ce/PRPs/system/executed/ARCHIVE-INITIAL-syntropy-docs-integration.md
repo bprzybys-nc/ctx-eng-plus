@@ -58,12 +58,14 @@ Syntropy becomes the single source of truth for Context Engineering framework do
 }
 ```
 
-**Pattern:** Tools defined as `syntropy_server_tool` format. Claude Code adds `mcp__` prefix → callable as `mcp__syntropy_server_tool`.
+**Pattern:** Tools defined as `server_tool` format. Claude Code transforms to `mcp__syntropy__server_tool` (double underscore).
 
 **Examples from permissions file:**
-- `mcp__syntropy_serena_find_symbol`
-- `mcp__syntropy_github_create_issue`
-- `mcp__syntropy_healthcheck`
+- Tool defined: `serena_find_symbol` → Claude Code: `mcp__syntropy__serena_find_symbol`
+- Tool defined: `github_create_issue` → Claude Code: `mcp__syntropy__github_create_issue`
+- Tool defined: `healthcheck` → Claude Code: `mcp__syntropy__healthcheck`
+
+**CRITICAL**: Parser handles BOTH double and single underscore for backwards compatibility
 
 ### Example 2: MCP Client Manager Pattern
 
