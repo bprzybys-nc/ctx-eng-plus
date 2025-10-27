@@ -62,6 +62,12 @@ Your INITIAL.md must follow this structure:
 ## FEATURE
 <What to build - user story, acceptance criteria>
 
+## PLANNING CONTEXT
+**Complexity Assessment**: <simple|medium|complex>
+**Architectural Impact**: <isolated|moderate|cross-cutting>
+**Risk Factors**: <list key risks>
+**Success Metrics**: <how to measure success>
+
 ## EXAMPLES
 <Similar code patterns from codebase, inline code blocks, or file references>
 
@@ -73,7 +79,38 @@ Your INITIAL.md must follow this structure:
 ```
 
 **Required sections**: FEATURE, EXAMPLES
-**Optional sections**: DOCUMENTATION, OTHER CONSIDERATIONS
+**Optional sections**: PLANNING CONTEXT, DOCUMENTATION, OTHER CONSIDERATIONS
+
+### New: PLANNING CONTEXT Section
+
+Helps sequential thinking analyze feature complexity:
+
+```markdown
+## PLANNING CONTEXT
+**Complexity Assessment**: medium
+- 2-3 files needed
+- 100-150 LOC estimated
+- Uses existing auth patterns
+
+**Architectural Impact**: moderate
+- Touches auth layer and API endpoints
+- No database schema changes
+
+**Risk Factors**:
+- JWT token expiration handling
+- Rate limiting integration
+- Password reset flow complexity
+
+**Success Metrics**:
+- Auth success rate >99.9%
+- Token refresh <100ms
+- Zero security vulnerabilities in audit
+```
+
+Sequential thinking uses this to:
+- Generate realistic time estimates
+- Identify hidden complexity
+- Propose validation gates based on risks
 
 ## Example
 

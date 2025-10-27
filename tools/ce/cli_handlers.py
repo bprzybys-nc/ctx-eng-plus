@@ -503,6 +503,11 @@ def cmd_prp_validate(args) -> int:
 def cmd_prp_generate(args) -> int:
     """Execute prp generate command."""
     try:
+        # Set environment variable for sequential thinking
+        import os
+        if hasattr(args, 'use_thinking'):
+            os.environ['CE_USE_SEQUENTIAL_THINKING'] = 'true' if args.use_thinking else 'false'
+
         output_dir = args.output or "PRPs/feature-requests"
         join_prp = getattr(args, 'join_prp', None)
         prp_path = generate_prp(args.initial_md, output_dir, join_prp=join_prp)

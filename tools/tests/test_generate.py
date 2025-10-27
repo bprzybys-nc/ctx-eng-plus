@@ -318,3 +318,39 @@ def test_generate_prp_end_to_end(tmp_path):
     # Verify completeness
     completeness = check_prp_completeness(prp_path)
     assert completeness["complete"] is True
+
+
+def test_parse_initial_md_with_planning_context(tmp_path):
+    """Test parsing INITIAL.md with PLANNING CONTEXT section."""
+    initial_md = tmp_path / "INITIAL.md"
+    initial_md.write_text("""
+# Feature: User Auth
+
+## FEATURE
+Build JWT authentication
+
+## PLANNING CONTEXT
+**Complexity Assessment**: medium
+**Architectural Impact**: moderate
+**Risk Factors**:
+- Token expiration
+- Rate limiting
+
+## EXAMPLES
+```python
+def auth():
+    pass
+```
+
+## DOCUMENTATION
+- [JWT](https://jwt.io)
+
+## OTHER CONSIDERATIONS
+Security concerns
+""")
+
+    result = parse_initial_md(str(initial_md))
+
+    assert result["planning_context"]
+    assert "medium" in result["planning_context"]
+    assert "Token expiration" in result["planning_context"]
