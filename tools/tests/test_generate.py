@@ -354,3 +354,49 @@ Security concerns
     assert result["planning_context"]
     assert "medium" in result["planning_context"]
     assert "Token expiration" in result["planning_context"]
+
+
+def test_extract_planning_context():
+    """Test planning context extraction directly."""
+    from ce.generate import _extract_planning_context
+
+    parsed_data = {
+        "raw_content": """
+# Feature: Test
+
+## PLANNING CONTEXT
+**Complexity Assessment**: complex
+**Architectural Impact**: moderate
+**Risk Factors**:
+- Database migration required
+- Breaking API changes
+"""
+    }
+
+    result = _extract_planning_context(parsed_data)
+
+    assert result["complexity"] == "complex"
+    assert result["architectural_impact"] == "moderate"
+    assert len(result["risk_factors"]) == 2
+    assert "Database migration required" in result["risk_factors"]
+    assert "Breaking API changes" in result["risk_factors"]
+
+
+def test_extract_planning_context_missing():
+    """Test planning context extraction when section missing."""
+    from ce.generate import _extract_planning_context
+
+    parsed_data = {
+        "raw_content": """
+# Feature: Test
+
+## FEATURE
+Some feature
+"""
+    }
+
+    result = _extract_planning_context(parsed_data)
+
+    assert result["complexity"] == "unknown"
+    assert result["architectural_impact"] == "unknown"
+    assert result["risk_factors"] == []
