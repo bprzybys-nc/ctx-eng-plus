@@ -592,6 +592,14 @@ def extract_topics_from_feature(
     """
     logger.info("Extracting topics from feature text using Sequential Thinking")
 
+    # Check if sequential thinking is enabled
+    import os
+    use_thinking = os.environ.get('CE_USE_SEQUENTIAL_THINKING', 'true').lower() == 'true'
+
+    if not use_thinking:
+        logger.info("Sequential thinking disabled via --no-thinking flag")
+        return _extract_topics_heuristic(feature_text)
+
     try:
         from .mcp_utils import call_syntropy_mcp
 
@@ -1224,6 +1232,14 @@ def generate_implementation_phases_with_thinking(
         4. Fall back to template-based if unavailable
     """
     logger.info("Generating implementation phases with sequential thinking")
+
+    # Check if sequential thinking is enabled
+    import os
+    use_thinking = os.environ.get('CE_USE_SEQUENTIAL_THINKING', 'true').lower() == 'true'
+
+    if not use_thinking:
+        logger.info("Sequential thinking disabled via --no-thinking flag")
+        return ""  # Empty string triggers fallback in synthesize_implementation
 
     try:
         from .mcp_utils import call_syntropy_mcp
