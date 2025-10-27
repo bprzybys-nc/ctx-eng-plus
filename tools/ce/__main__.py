@@ -265,6 +265,18 @@ Examples:
         "--join-prp",
         help="Update existing PRP's Linear issue (PRP number, ID like 'PRP-12', or file path)"
     )
+    prp_generate_parser.add_argument(
+        "--use-thinking",
+        action="store_true",
+        default=True,
+        help="Use sequential thinking for analysis (default: True)"
+    )
+    prp_generate_parser.add_argument(
+        "--no-thinking",
+        dest="use_thinking",
+        action="store_false",
+        help="Disable sequential thinking (use heuristics)"
+    )
 
     # prp execute subcommand
     prp_execute_parser = prp_subparsers.add_parser(

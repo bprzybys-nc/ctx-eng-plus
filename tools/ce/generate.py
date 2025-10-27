@@ -20,6 +20,7 @@ logger = logging.getLogger(__name__)
 # Section markers for INITIAL.md parsing
 SECTION_MARKERS = {
     "feature": r"^##\s*FEATURE\s*$",
+    "planning": r"^##\s*PLANNING\s+CONTEXT\s*$",
     "examples": r"^##\s*EXAMPLES\s*$",
     "documentation": r"^##\s*DOCUMENTATION\s*$",
     "other": r"^##\s*OTHER\s+CONSIDERATIONS\s*$"
@@ -123,6 +124,7 @@ def parse_initial_md(filepath: str) -> Dict[str, Any]:
     return {
         "feature_name": feature_name,
         "feature": sections.get("feature", ""),
+        "planning_context": sections.get("planning", ""),
         "examples": extract_code_examples(sections.get("examples", "")),
         "documentation": extract_documentation_links(sections.get("documentation", "")),
         "other_considerations": sections.get("other", ""),
@@ -573,7 +575,7 @@ def extract_topics_from_feature(
 ) -> List[str]:
     """Extract documentation topics using Sequential Thinking MCP.
 
-    Uses: mcp__sequential-thinking__sequentialthinking
+    Uses: mcp__syntropy__thinking__sequentialthinking
 
     Args:
         feature_text: FEATURE section from INITIAL.md
@@ -583,16 +585,126 @@ def extract_topics_from_feature(
         List of topics (e.g., ["routing", "security", "async", "testing"])
 
     Process:
-        1. Call Sequential Thinking MCP with prompt:
-           "Analyze this feature description and identify key technical topics
-            that would need documentation: {feature_text}"
-        2. Extract topics from thinking chain
+        1. Call Sequential Thinking MCP with feature analysis prompt
+        2. Extract topics from reasoning chain
         3. Deduplicate and filter to 3-5 most relevant topics
+        4. Fall back to heuristic if MCP unavailable
     """
     logger.info("Extracting topics from feature text using Sequential Thinking")
 
-    # Graceful degradation - return heuristic-based topics
-    # Extract technical terms and common patterns
+    try:
+        from .mcp_utils import call_syntropy_mcp
+
+        prompt = f"""Analyze this feature description and identify 3-5 key technical topics that would need documentation:
+
+Feature: {feature_text}
+
+Codebase Context:
+- Related patterns: {len(serena_research.get('patterns', []))}
+- Test framework: {serena_research.get('test_patterns', [{}])[0].get('framework', 'unknown') if serena_research.get('test_patterns') else 'unknown'}
+
+Think step-by-step about:
+1. What technical areas does this feature touch? (e.g., authentication, async, database)
+2. What documentation would help implement this? (e.g., library guides, API docs)
+3. What are the 3-5 most critical topics to focus documentation on?
+
+Return final answer as: TOPICS: topic1, topic2, topic3"""
+
+        result = call_syntropy_mcp(
+            "thinking",
+            "sequentialthinking",
+            {
+                "thought": prompt,
+                "thoughtNumber": 1,
+                "totalThoughts": 5,
+                "nextThoughtNeeded": True
+            }
+        )
+
+        # Log reasoning chain
+        _log_thinking_chain(result, "Topic Extraction")
+
+        # Extract topics from result
+        topics = _extract_topics_from_thinking_result(result)
+
+        if topics:
+            logger.info(f"Extracted topics (sequential thinking): {topics}")
+            return topics
+
+    except Exception as e:
+        logger.warning(f"Sequential thinking unavailable: {e}")
+        logger.warning("Falling back to heuristic topic extraction")
+
+    # Graceful degradation - heuristic approach
+    return _extract_topics_heuristic(feature_text)
+
+
+def _extract_topics_from_thinking_result(result: Dict[str, Any]) -> List[str]:
+    """Parse topics from sequential thinking result.
+
+    Args:
+        result: MCP tool result
+
+    Returns:
+        List of topics extracted from thinking chain
+    """
+    # Extract content from MCP result
+    content = ""
+    if isinstance(result, dict) and "content" in result:
+        if isinstance(result["content"], list):
+            for item in result["content"]:
+                if isinstance(item, dict) and "text" in item:
+                    content += item["text"] + " "
+        elif isinstance(result["content"], str):
+            content = result["content"]
+
+    # Look for TOPICS: pattern in result
+    topics_match = re.search(r"TOPICS:\s*(.+)", content, re.IGNORECASE)
+    if topics_match:
+        topics_str = topics_match.group(1)
+        # Split by comma and clean
+        topics = [t.strip() for t in topics_str.split(",")]
+        return topics[:5]  # Limit to 5
+
+    return []
+
+
+def _log_thinking_chain(result: Dict[str, Any], context: str) -> None:
+    """Log sequential thinking reasoning chain.
+
+    Args:
+        result: MCP result with thinking chain
+        context: Context label (e.g., "Topic Extraction")
+    """
+    logger.info(f"🧠 Sequential Thinking Chain - {context}")
+
+    # Extract content
+    content = ""
+    if isinstance(result, dict) and "content" in result:
+        if isinstance(result["content"], list):
+            for item in result["content"]:
+                if isinstance(item, dict) and "text" in item:
+                    content += item["text"] + "\n"
+
+    # Log each thought
+    thoughts = re.finditer(r"Thought (\d+):\s*(.+?)(?=Thought \d+:|\Z)", content, re.DOTALL)
+    for thought in thoughts:
+        thought_num = thought.group(1)
+        thought_text = thought.group(2).strip()[:200]  # First 200 chars
+        logger.info(f"  Thought {thought_num}: {thought_text}...")
+
+    logger.info(f"🧠 End of thinking chain - {context}")
+
+
+def _extract_topics_heuristic(feature_text: str) -> List[str]:
+    """Heuristic-based topic extraction (fallback).
+
+    Args:
+        feature_text: Feature description text
+
+    Returns:
+        List of topics based on keyword matching
+    """
     technical_terms = []
 
     # Common technical patterns to look for
@@ -1022,11 +1134,208 @@ def synthesize_context(
     return context
 
 
+def _extract_planning_context(parsed_data: Dict[str, Any]) -> Dict[str, Any]:
+    """Extract PLANNING CONTEXT from INITIAL.md.
+
+    Args:
+        parsed_data: Parsed INITIAL.md data
+
+    Returns:
+        {
+            "complexity": "medium",
+            "architectural_impact": "moderate",
+            "risk_factors": ["..."],
+            "success_metrics": ["..."]
+        }
+    """
+    raw_content = parsed_data.get("raw_content", "")
+
+    # Extract PLANNING CONTEXT section
+    planning_match = re.search(
+        r"##\s*PLANNING\s+CONTEXT\s*\n(.*?)(?=\n##|\Z)",
+        raw_content,
+        re.DOTALL | re.IGNORECASE
+    )
+
+    if not planning_match:
+        return {
+            "complexity": "unknown",
+            "architectural_impact": "unknown",
+            "risk_factors": [],
+            "success_metrics": []
+        }
+
+    planning_text = planning_match.group(1)
+
+    # Extract complexity
+    complexity_match = re.search(
+        r"\*\*Complexity Assessment\*\*:\s*(\w+)",
+        planning_text,
+        re.IGNORECASE
+    )
+    complexity = complexity_match.group(1) if complexity_match else "unknown"
+
+    # Extract architectural impact
+    arch_match = re.search(
+        r"\*\*Architectural Impact\*\*:\s*(\w+)",
+        planning_text,
+        re.IGNORECASE
+    )
+    arch_impact = arch_match.group(1) if arch_match else "unknown"
+
+    # Extract risk factors (lines starting with - after "Risk Factors")
+    risk_section = re.search(
+        r"\*\*Risk Factors\*\*:\s*\n((?:- .+\n?)+)",
+        planning_text,
+        re.MULTILINE
+    )
+    risk_factors = []
+    if risk_section:
+        risk_lines = risk_section.group(1).strip().split("\n")
+        risk_factors = [line.lstrip("- ").strip() for line in risk_lines if line.strip()]
+
+    return {
+        "complexity": complexity,
+        "architectural_impact": arch_impact,
+        "risk_factors": risk_factors,
+        "success_metrics": []  # TODO: Extract if needed
+    }
+
+
+def generate_implementation_phases_with_thinking(
+    parsed_data: Dict[str, Any],
+    serena_research: Dict[str, Any]
+) -> str:
+    """Generate implementation phases using sequential thinking.
+
+    Uses: mcp__syntropy__thinking__sequentialthinking
+
+    Args:
+        parsed_data: INITIAL.md structured data
+        serena_research: Codebase research findings
+
+    Returns:
+        Implementation phases markdown
+
+    Process:
+        1. Extract planning context from INITIAL.md
+        2. Call sequential thinking with implementation planning prompt
+        3. Parse phases from reasoning chain
+        4. Fall back to template-based if unavailable
+    """
+    logger.info("Generating implementation phases with sequential thinking")
+
+    try:
+        from .mcp_utils import call_syntropy_mcp
+
+        # Extract planning context
+        planning_context = _extract_planning_context(parsed_data)
+
+        prompt = f"""Plan implementation phases for this feature:
+
+Feature: {parsed_data['feature_name']}
+Description: {parsed_data['feature'][:300]}...
+
+Planning Context:
+- Complexity: {planning_context.get('complexity', 'unknown')}
+- Architectural Impact: {planning_context.get('architectural_impact', 'unknown')}
+- Risk Factors: {', '.join(planning_context.get('risk_factors', ['unknown']))}
+
+Codebase Context:
+- Similar patterns: {len(serena_research.get('patterns', []))}
+- Test framework: {serena_research.get('test_patterns', [{}])[0].get('framework', 'pytest') if serena_research.get('test_patterns') else 'pytest'}
+
+Think step-by-step:
+1. What are the logical implementation phases?
+2. What dependencies exist between phases?
+3. What time estimates are realistic?
+4. What validation should happen at each phase?
+
+Provide phases in format:
+PHASE 1: <name> (<time estimate>)
+- Step 1
+- Step 2
+
+PHASE 2: ..."""
+
+        result = call_syntropy_mcp(
+            "thinking",
+            "sequentialthinking",
+            {
+                "thought": prompt,
+                "thoughtNumber": 1,
+                "totalThoughts": 8,
+                "nextThoughtNeeded": True
+            }
+        )
+
+        # Log reasoning chain
+        _log_thinking_chain(result, "Implementation Planning")
+
+        # Extract phases from thinking result
+        phases = _extract_phases_from_thinking_result(result)
+
+        if phases:
+            logger.info(f"Generated {len(phases.split('Phase'))-1} implementation phases")
+            return phases
+
+    except Exception as e:
+        logger.warning(f"Sequential thinking unavailable: {e}")
+        logger.warning("Falling back to template-based phases")
+
+    # Graceful degradation
+    return ""  # Empty string triggers fallback in synthesize_implementation
+
+
+def _extract_phases_from_thinking_result(result: Dict[str, Any]) -> str:
+    """Parse implementation phases from sequential thinking result.
+
+    Args:
+        result: MCP tool result
+
+    Returns:
+        Markdown formatted phases
+    """
+    # Extract content
+    content = ""
+    if isinstance(result, dict) and "content" in result:
+        if isinstance(result["content"], list):
+            for item in result["content"]:
+                if isinstance(item, dict) and "text" in item:
+                    content += item["text"] + "\n"
+        elif isinstance(result["content"], str):
+            content = result["content"]
+
+    # Extract phases (PHASE 1: ... format)
+    phases_text = ""
+    phase_matches = re.finditer(
+        r"PHASE (\d+):\s*([^\n]+)\n((?:- .+\n?)+)",
+        content,
+        re.MULTILINE
+    )
+
+    for match in phase_matches:
+        phase_num = match.group(1)
+        phase_name = match.group(2).strip()
+        phase_steps = match.group(3).strip()
+
+        phases_text += f"### Phase {phase_num}: {phase_name}\n\n"
+        phases_text += f"{phase_steps}\n\n"
+
+    if phases_text:
+        return phases_text
+
+    # If no phases found, return empty to trigger fallback
+    return ""
+
+
 def synthesize_implementation(
     parsed_data: Dict[str, Any],
     serena_research: Dict[str, Any]
 ) -> str:
     """Generate Implementation Steps section.
+
+    Tries sequential thinking first, falls back to template-based.
 
     Args:
         parsed_data: INITIAL.md data
@@ -1035,6 +1344,16 @@ def synthesize_implementation(
     Returns:
         Implementation steps markdown
     """
+    # Try sequential thinking first
+    phases_with_thinking = generate_implementation_phases_with_thinking(
+        parsed_data,
+        serena_research
+    )
+
+    if phases_with_thinking:
+        return phases_with_thinking
+
+    # Fallback: Template-based phases (current implementation)
     examples = parsed_data["examples"]
 
     steps = """### Phase 1: Setup and Research (30 min)
