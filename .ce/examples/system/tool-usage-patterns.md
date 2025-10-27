@@ -11,6 +11,38 @@
 
 ## Code Navigation & Analysis
 
+### Fast repository exploration (repomix + grep)
+
+**USE**: `mcp__syntropy__repomix_pack_codebase` + `Grep`
+
+```python
+# Pack entire codebase into single file
+pack_codebase(directory="/path/to/project")
+
+# Then grep the packed output efficiently
+Grep(
+    pattern="function.*validate",
+    path="/tmp/repomix-output-{timestamp}.txt",
+    output_mode="content"
+)
+```
+
+**When**:
+- Initial codebase exploration (entire repo structure at once)
+- Fast pattern searches across entire codebase (single file grep)
+- Understanding project conventions before detailed analysis
+- Token-efficient repo scanning (1 pack + multiple greps)
+
+**Advantages**:
+- ✅ Single file contains entire codebase structure
+- ✅ Extremely fast grep searches (no multi-file overhead)
+- ✅ Great for PRP research phase
+- ✅ Can be cached and reused multiple times
+
+**After repomix**: Use targeted Serena tools for detailed symbol analysis
+
+---
+
 ### Find function/class definition
 
 **USE**: `mcp__syntropy_serena_find_symbol`
