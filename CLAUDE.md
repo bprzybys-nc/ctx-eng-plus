@@ -262,7 +262,8 @@ brew install --cask karabiner-elements
 
 ## GitButler Integration
 
-**Virtual branch management for multi-PRP development**
+**Virtual branch management for parallel multi-PRP development**
+**Use it to work on multiple PRPs at the same time**
 
 📖 **Command Reference**: [examples/GITBUTLER-BUT-COMMAND-REFERENCE.md](examples/GITBUTLER-BUT-COMMAND-REFERENCE.md)
 📚 **Full Guide**: [test-target/GITBUTLER-INTEGRATION-GUIDE.md](test-target/GITBUTLER-INTEGRATION-GUIDE.md)
