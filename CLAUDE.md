@@ -260,9 +260,12 @@ brew install --cask karabiner-elements
 # Enable rule in Karabiner-Elements UI → Complex Modifications
 ```
 
-## GitButler Integration (Optional)
+## GitButler Integration
 
 **Virtual branch management for multi-PRP development**
+
+📖 **Command Reference**: [examples/GITBUTLER-BUT-COMMAND-REFERENCE.md](examples/GITBUTLER-BUT-COMMAND-REFERENCE.md)
+📚 **Full Guide**: [test-target/GITBUTLER-INTEGRATION-GUIDE.md](test-target/GITBUTLER-INTEGRATION-GUIDE.md)
 
 ### Quick Start
 ```bash
