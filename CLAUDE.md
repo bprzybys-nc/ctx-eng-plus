@@ -81,56 +81,146 @@ Example: `mcp__syntropy__serena_find_symbol`
 
 ## Allowed Tools Summary
 
-**Bash** (11): git, uv run, uv add, uvx, env, brew install, rm -rf ~/.mcp-auth
+**Post-Lockdown State** (after PRP-A & PRP-D):
+- **Before**: 87 MCP tools (via Syntropy aggregator)
+- **After**: 32 MCP tools (55 denied for native tool preference)
+- **Token reduction**: ~44k tokens (96% reduction from 46k→2k)
 
-**Serena** (11): find_symbol, get_symbols_overview, search_for_pattern, find_referencing_symbols, write_memory, create_text_file, read_file, list_dir, insert_after/before_symbol, activate_project
+### Kept Tools by Category
 
-**Filesystem** (8): read_text_file, write_file, edit_file, list_directory, search_files, directory_tree, get_file_info, list_allowed_directories
+**Serena** (11 tools): Code symbol navigation
+- find_symbol, get_symbols_overview, search_for_pattern
+- find_referencing_symbols, write_memory, read_memory, list_memories
+- create_text_file, read_file, list_dir, delete_memory
 
-**Git** (5): git_status, git_diff, git_log, git_add, git_commit
+**Linear** (9 tools): Project management integration
+- create_issue, get_issue, list_issues, update_issue
+- list_projects, list_teams, list_users, get_team, create_project
 
-**GitHub** (26): create_or_update_file, search_repositories, create_repository, get_file_contents, push_files, create_issue, create_pull_request, fork_repository, create_branch, list_commits, list_issues, update_issue, add_issue_comment, search_code, search_issues, search_users, get_issue, get_pull_request, list_pull_requests, create_pull_request_review, merge_pull_request, get_pull_request_files, get_pull_request_status, update_pull_request_branch, get_pull_request_comments, get_pull_request_reviews
+**Context7** (2 tools): Library documentation
+- resolve_library_id, get_library_docs
 
-**Context7** (2): resolve_library_id, get_library_docs
+**Thinking** (1 tool): Complex reasoning
+- sequentialthinking
 
-**Thinking** (1): sequentialthinking
+**Syntropy System** (2 tools): System utilities
+- healthcheck (MCP diagnostics)
+- knowledge_search (semantic search across PRPs, memories)
 
-**Linear** (5): create_issue, get_issue, list_issues, update_issue, list_projects
+**Bash Commands** (~50 patterns): See "Command Permissions" section below
+**Native Tools**: Read, Write, Edit, Glob, Grep, WebSearch, WebFetch
 
-**Perplexity** (1): perplexity_ask
+### Denied Tools (55 total)
 
-**Repomix** (1): pack_codebase
+**Rationale**: Native Claude Code tools provide equivalent or better functionality
 
-**Syntropy** (7): init_project, get_system_doc, get_user_doc, knowledge_search, get_summary, healthcheck, denoise
+**Categories**:
+- Filesystem (8): Use Read, Write, Edit, Glob instead
+- Git (5): Use Bash(git:*) instead
+- GitHub (26): Use Bash(gh:*) instead
+- Repomix (4): Use incremental Glob/Grep/Read instead
+- Playwright (6): Use WebFetch or Bash(playwright CLI) instead
+- Perplexity (1): Use WebSearch instead
+- Syntropy (5): Use Read for docs, rare-use tools
+
+**Full details**: See [TOOL-USAGE-GUIDE.md](TOOL-USAGE-GUIDE.md)
+
+## Command Permissions
+
+**Permission Model**: Auto-allow safe commands, ask-first for potentially destructive operations.
+
+### Auto-Allow Patterns (~50 patterns)
+
+Commands that never prompt:
+
+**File Inspection**:
+- `ls`, `cat`, `head`, `tail`, `less`, `more`, `file`, `stat`
+
+**Navigation**:
+- `cd`, `pwd`, `which`, `whereis`
+
+**Search**:
+- `find`, `grep`, `tree`
+
+**Text Processing**:
+- `sed`, `awk`, `sort`, `uniq`, `cut`, `paste`, `tr`
+- `diff`, `comm`, `cmp`, `wc`
+
+**Hashing/Encoding**:
+- `md5`, `sha256sum`, `base64`, `xxd`, `strings`, `hexdump`
+
+**System Info**:
+- `env`, `ps`, `whoami`, `hostname`, `date`, `cal`, `bc`
+
+**Development**:
+- `git` (all operations), `uv run`, `uv add`, `uvx`
+- `cat`, `grep`, `echo`, `jq`, `du`, `df`, `brew install`
+
+**Special Cases**:
+- `rm -rf ~/.mcp-auth` (MCP troubleshooting)
+
+**Full list**: See `.claude/settings.local.json` "allow" array
+
+### Ask-First Patterns (14 patterns)
+
+Commands that require confirmation:
+
+**File Operations** (potentially destructive):
+- `rm`, `mv`, `cp`
+
+**Network Operations**:
+- `curl`, `wget`, `nc`, `telnet`, `ssh`, `scp`, `rsync`
+
+**System Operations**:
+- `sudo` (any sudo command)
+- `npm install`, `pip install`, `gem install`
+
+**Rationale**: Safety gate for operations that modify files, access network, or require elevated privileges.
+
+**Full list**: See `.claude/settings.local.json` "ask" array
+
+### Permission Behavior
+
+**Unlisted commands**: Prompt by default (ask before execution)
+**Workaround**: Add to allow list in `.claude/settings.local.json` if frequently used
 
 ## Quick Tool Selection
 
+**🔗 Comprehensive Guide**: See [TOOL-USAGE-GUIDE.md](TOOL-USAGE-GUIDE.md) for:
+- Decision tree (flowchart for tool selection)
+- Common tasks with right/wrong examples
+- Anti-patterns to avoid
+- Migration table (55 denied tools → alternatives)
+
+**Quick Reference**:
+
 **Analyze code**:
-- Know symbol → `find_symbol`
-- Explore file → `get_symbols_overview`
-- Search patterns → `search_for_pattern`
-- Find usages → `find_referencing_symbols`
+- Know symbol → `serena_find_symbol`
+- Explore file → `serena_get_symbols_overview`
+- Search patterns → `Grep` (native, not serena_search_for_pattern)
+- Find usages → `serena_find_referencing_symbols`
 
 **Modify files**:
-- New → `write_file`
-- Existing (surgical) → `edit_file`
-- Config/text → `read_text_file`
+- New → `Write` (native)
+- Existing (surgical) → `Edit` (native)
+- Config/text → `Read` (native)
 
-**Version control**: `git_status`, `git_diff`, `git_add`, `git_commit`
+**Version control**:
+- Use `Bash(git:*)` (native git commands)
+- NOT `mcp__syntropy__git_git_status` (denied)
 
 **GitHub operations**:
-- File ops → `create_or_update_file`, `get_file_contents`, `push_files`
-- Issues → `create_issue`, `list_issues`, `get_issue`, `update_issue`
-- PRs → `create_pull_request`, `list_pull_requests`, `merge_pull_request`
-- Search → `search_code`, `search_repositories`, `search_issues`
+- Use `Bash(gh:*)` (native gh CLI)
+- NOT `mcp__syntropy__github_*` (denied)
 
 **External knowledge**:
-- Documentation → `resolve_library_id`, `get_library_docs`
-- AI search → `perplexity_ask`
+- Documentation → `context7_get_library_docs`
+- Web search → `WebSearch` (native)
+- Web content → `WebFetch` (native)
 
 **Complex reasoning**: `sequentialthinking`
 
-**Project management**: Linear tools
+**Project management**: Linear tools (all 9 kept)
 
 **System health**: `healthcheck` (detailed diagnostics with `detailed=true`)
 
@@ -537,6 +627,45 @@ rm -rf ~/.mcp-auth
 
 # Check PRP's Linear issue ID
 grep "^issue:" PRPs/executed/PRP-12-feature.md
+```
+
+**New Issues** (added after lockdown):
+
+### Issue: "Permission prompt for safe command"
+
+**Symptom**: Commands like `ls` or `cat` prompt for permission
+
+**Cause**: Command not in auto-allow list
+
+**Solution**:
+1. Check if command matches pattern: `grep 'Bash(ls' .claude/settings.local.json`
+2. If missing, add pattern to allow list
+3. Or approve once (permission remembered for session)
+
+### Issue: "Command denied" or "tool not found"
+
+**Symptom**: MCP tool like `mcp__syntropy__filesystem_read_file` fails
+
+**Cause**: Tool in deny list (post-lockdown)
+
+**Solution**:
+1. Check TOOL-USAGE-GUIDE.md for alternative
+2. Example: `filesystem_read_file` → Use `Read` (native) instead
+3. If tool should be allowed, remove from deny list (rare)
+
+### Issue: "MCP tools context too large"
+
+**Symptom**: Token usage warning for MCP tools
+
+**Cause**: Deny list not applied (MCP not reconnected)
+
+**Solution**:
+```bash
+# Reconnect MCP servers
+/mcp
+
+# Verify token reduction
+# Expected: ~2k tokens for MCP tools (was ~46k)
 ```
 
 ## Permissions
