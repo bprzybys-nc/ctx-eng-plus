@@ -89,13 +89,19 @@ Example: `mcp__syntropy__serena_find_symbol`
 
 **Git** (5): git_status, git_diff, git_log, git_add, git_commit
 
+**GitHub** (26): create_or_update_file, search_repositories, create_repository, get_file_contents, push_files, create_issue, create_pull_request, fork_repository, create_branch, list_commits, list_issues, update_issue, add_issue_comment, search_code, search_issues, search_users, get_issue, get_pull_request, list_pull_requests, create_pull_request_review, merge_pull_request, get_pull_request_files, get_pull_request_status, update_pull_request_branch, get_pull_request_comments, get_pull_request_reviews
+
 **Context7** (2): resolve_library_id, get_library_docs
 
 **Thinking** (1): sequentialthinking
 
 **Linear** (5): create_issue, get_issue, list_issues, update_issue, list_projects
 
+**Perplexity** (1): perplexity_ask
+
 **Repomix** (1): pack_codebase
+
+**Syntropy** (7): init_project, get_system_doc, get_user_doc, knowledge_search, get_summary, healthcheck, denoise
 
 ## Quick Tool Selection
 
@@ -112,7 +118,15 @@ Example: `mcp__syntropy__serena_find_symbol`
 
 **Version control**: `git_status`, `git_diff`, `git_add`, `git_commit`
 
-**External knowledge**: `resolve_library_id`, `get_library_docs`
+**GitHub operations**:
+- File ops → `create_or_update_file`, `get_file_contents`, `push_files`
+- Issues → `create_issue`, `list_issues`, `get_issue`, `update_issue`
+- PRs → `create_pull_request`, `list_pull_requests`, `merge_pull_request`
+- Search → `search_code`, `search_repositories`, `search_issues`
+
+**External knowledge**:
+- Documentation → `resolve_library_id`, `get_library_docs`
+- AI search → `perplexity_ask`
 
 **Complex reasoning**: `sequentialthinking`
 
@@ -245,6 +259,68 @@ cd tools && uv run ce prp analyze <path-to-prp.md>
 brew install --cask karabiner-elements
 # Enable rule in Karabiner-Elements UI → Complex Modifications
 ```
+
+## GitButler Integration (Optional)
+
+**Virtual branch management for multi-PRP development**
+
+### Quick Start
+```bash
+# Install (if not already installed)
+brew install --cask gitbutler
+# Install CLI via GitButler app: Settings → General → Install CLI
+
+# Initialize repo
+but init
+
+# Check status
+but status
+```
+
+### Commands
+- `but status` - Check virtual branches
+- `but branch new <name>` - Create branch
+- `but commit <branch> -m "msg"` - Commit to specific branch
+- `but branch list` - List all branches
+- `but branch delete <name>` - Delete branch
+
+### Workflow
+1. Create branch per PRP: `but branch new "prp-XX-feature"`
+2. Make changes with Claude (Edit/Write)
+3. Commit: `but commit prp-XX-feature -m "Implement X"`
+4. Review/merge in GitButler UI
+
+### Benefits
+- Work on multiple PRPs simultaneously
+- No branch switching (`git checkout`)
+- Conflict detection without blocking (🔒 icon)
+- Visual branch management in UI
+- Changes auto-merged in `gitbutler/workspace` branch
+
+### Hooks (Already Configured)
+- **SessionStart**: Shows status if repo is GitButler-initialized
+- **PreToolUse**: Shows status before git commits
+- **Edit/Write**: Reminds to target correct branch
+
+### Example: Multi-PRP Development
+```bash
+# Work on PRP-30 and PRP-31 simultaneously
+but branch new "prp-30-keyboard"
+# Make changes...
+but commit prp-30-keyboard -m "Add cmd+v"
+
+but branch new "prp-31-validation"  # No checkout needed!
+# Make changes...
+but commit prp-31-validation -m "Add validation"
+
+# Both branches coexist cleanly
+but status
+```
+
+### Documentation
+See: [test-target/GITBUTLER-INTEGRATION-GUIDE.md](test-target/GITBUTLER-INTEGRATION-GUIDE.md)
+
+---
 
 ## Troubleshooting
 
