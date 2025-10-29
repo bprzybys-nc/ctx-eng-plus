@@ -1,7 +1,7 @@
 ## Context Drift Report - Examples/ Patterns
 
-**Drift Score**: 4.8% (✅ OK)
-**Generated**: 2025-10-26T21:55:33.098591+00:00
+**Drift Score**: 4.7% (✅ OK)
+**Generated**: 2025-10-29T19:12:43.648501+00:00
 **Violations Found**: 6
 **Missing Examples**: 0
 
