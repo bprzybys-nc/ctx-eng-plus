@@ -1,15 +1,20 @@
 ---
-name: "Enable cmd+v for Image Pasting in Claude Code"
-description: "Implement Karabiner-Elements configuration to remap cmd+v to ctrl+v in terminal applications for seamless Claude Code image pasting workflow"
-prp_id: "PRP-30"
-status: "executed"
-execution_notes: "Successfully implemented and tested. Karabiner-Elements installed, rule enabled, cmd+v image pasting confirmed working in Kitty terminal. Configuration supports Terminal, iTerm2, Kitty, Hyper, Alacritty, and Warp."
-created_date: "2025-10-27T04:00:00Z"
-last_updated: "2025-10-27T02:54:20Z"
-updated_by: "execute-prp-command"
 context_sync:
-  ce_updated: true
+  ce_updated: false
+  last_sync: '2025-10-29T19:12:53.685147+00:00'
   serena_updated: false
+created_date: '2025-10-27T04:00:00Z'
+description: Implement Karabiner-Elements configuration to remap cmd+v to ctrl+v in
+  terminal applications for seamless Claude Code image pasting workflow
+execution_notes: Successfully implemented and tested. Karabiner-Elements installed,
+  rule enabled, cmd+v image pasting confirmed working in Kitty terminal. Configuration
+  supports Terminal, iTerm2, Kitty, Hyper, Alacritty, and Warp.
+last_updated: '2025-10-27T02:54:20Z'
+name: Enable cmd+v for Image Pasting in Claude Code
+prp_id: PRP-30
+status: executed
+updated: '2025-10-29T19:12:53.685154+00:00'
+updated_by: update-context-command
 version: 1
 ---
 
