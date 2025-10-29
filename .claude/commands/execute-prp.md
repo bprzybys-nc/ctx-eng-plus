@@ -22,12 +22,20 @@ Automates PRP execution with phase-by-phase implementation, L1-L4 validation loo
    - Identifies files to create/modify and functions to implement
    - Extracts validation commands and checkpoint instructions
 
-2. **Initializes PRP Context** (via PRP-2):
+2. **Creates GitButler Virtual Branch** (if GitButler initialized):
+   - Checks if repo is GitButler-enabled: `but status`
+   - Creates virtual branch: `but branch new "prp-{prp_id}-{sanitized-name}"`
+   - Format example: `prp-6-user-authentication`
+   - Enables parallel PRP execution (see GITBUTLER-REFERENCE.md)
+   - **Pattern 1**: Branch created BEFORE any file modifications
+
+3. **Initializes PRP Context** (via PRP-2):
    - Creates active PRP session in `.ce/active_prp_session`
    - Initializes state tracking for phases
    - Sets up checkpoint namespace: `checkpoint-{prp_id}-{phase}`
+   - Stores GitButler branch name if created
 
-3. **Executes Each Phase**:
+4. **Executes Each Phase**:
    - Creates/modifies files using Serena MCP
    - Implements functions from blueprint
    - Logs progress to console
@@ -38,6 +46,7 @@ Automates PRP execution with phase-by-phase implementation, L1-L4 validation loo
    - **L2 (Unit Tests)**: Runs phase validation command (e.g., `pytest tests/test_auth.py`)
    - **L3 (Integration)**: `validate_level_3()` - Integration tests
    - **L4 (Pattern Conformance)**: `validate_level_4(prp_path)` - Drift detection (<30%)
+   - **GitButler Conflict Check**: `but status | grep 🔒` - Halts if conflicts detected
 
    **Self-Healing** (L1-L2 only, max 3 attempts):
    - Parses error output (type, file, line, message)
@@ -46,9 +55,15 @@ Automates PRP execution with phase-by-phase implementation, L1-L4 validation loo
    - Re-runs validation
    - Escalates to human if persistent/ambiguous
 
+   **Conflict Escalation**:
+   - If 🔒 icon detected: Escalates to user with UI resolution instructions
+   - Displays: "Conflict detected with commit {hash}. Resolve in GitButler UI before continuing."
+   - Pauses execution until conflicts resolved
+
 5. **Creates Checkpoints** (via PRP-2):
    - Git tag after each validation gate: `checkpoint-{prp_id}-phase{N}-{timestamp}`
-   - Preserves rollback points
+   - GitButler commit after each phase: `but commit prp-{prp_id}-{name} -m "Phase N: {goal}"`
+   - Preserves rollback points for both git and GitButler
 
 6. **Post-Execution Sync** (if auto-sync enabled via PRP-5):
    - Runs cleanup protocol (archives memories, deletes ephemeral state)
@@ -255,18 +270,23 @@ With auto-sync enabled (`ce context auto-sync --enable`):
 4. Creates final checkpoint
 5. Removes active PRP session
 
-## Claude Code Hooks (Optional)
+## Claude Code Hooks
 
-**Proactive context monitoring** during interactive sessions:
+**Integrated GitButler & Context Monitoring** (configured in `.claude/settings.local.json`):
 
-**Working hook** (configured in `.claude/settings.local.json`):
-- **SessionStart health check** - Warns about drift on session start
+**Active Hooks**:
+
+- **SessionStart**: Context health check - Warns about drift on session start
+- **PreToolUse (git_git_commit)**: Runs `but status` before git commits - Shows conflicts (🔒)
+- **PreToolUse (Edit|Write)**: Reminds to commit to appropriate virtual branch
 
 **Additional hooks available** (add to settings.local.json as needed):
+
 - **UserPromptSubmit**: Auto-sync reminder (checks if auto-sync disabled)
 - **PostToolUse**: Drift spike detector (alerts after Edit/Write if drift >40%)
 
 **Current hook configuration**:
+
 ```json
 {
   "hooks": {
@@ -287,35 +307,40 @@ With auto-sync enabled (`ce context auto-sync --enable`):
 ```
 
 **Use cases**:
+
 - Daily development: SessionStart health check (drift warning)
 - Long sessions: PostToolUse drift spike detector (alerts >40% drift)
 - Exploration: Complements auto-sync for non-PRP work
 
 **Note**: Hooks are optional. Auto-sync mode handles PRP workflow automatically.
 
-**More info**: See official docs at https://docs.claude.com/en/docs/claude-code/hooks
+**More info**: See official docs at <https://docs.claude.com/en/docs/claude-code/hooks>
 
 ## Common Issues
 
 ### Issue: "PRP file not found: PRP-5"
+
 ```bash
 # Solution: Use full path or ensure PRP is in PRPs/feature-requests/
 /execute-prp PRPs/feature-requests/PRP-5-context-sync-integration.md
 ```
 
 ### Issue: Validation fails with "command not found"
+
 ```bash
 # Solution: Ensure validation command is correct in PRP blueprint
 # Example: Use "uv run pytest tests/" not just "pytest tests/"
 ```
 
 ### Issue: Self-healing stuck in loop
+
 ```bash
 # Solution: Same error 3 times triggers escalation
 # Review escalation message for troubleshooting guidance
 ```
 
 ### Issue: "Auto-sync failed"
+
 ```bash
 # Solution: Post-sync is non-blocking, execution still completes
 # Run manual sync: cd tools && uv run ce context post-sync PRP-5
@@ -363,18 +388,21 @@ With auto-sync enabled (`ce context auto-sync --enable`):
    - Address any escalated errors
 
 3. **Rollback if Needed** (via PRP-2):
+
    ```bash
    cd tools
    uv run ce prp restore PRP-6 phase2
    ```
 
 4. **Context Sync** (if auto-sync disabled):
+
    ```bash
    cd tools
    uv run ce context post-sync PRP-6
    ```
 
 5. **Peer Review**:
+
    ```bash
    /peer-review exe PRPs/feature-requests/PRP-6-user-authentication-system.md
    ```
