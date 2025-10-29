@@ -41,6 +41,11 @@ For each PRP, analyzes complexity and assigns optimal model (unless `--model` ov
 
 **Complexity Analysis**:
 ```python
+def complexity_weight(complexity):
+    """Convert complexity label to numeric weight"""
+    weights = {"low": 0.5, "medium": 1.0, "high": 1.5}
+    return weights.get(complexity, 1.0)  # Default to medium
+
 def analyze_prp_complexity(prp_path):
     # Read PRP file
     prp = read_prp(prp_path)
@@ -52,8 +57,13 @@ def analyze_prp_complexity(prp_path):
     phases = count_phases(prp.implementation_blueprint)
 
     # Calculate complexity score (0-100)
+    # Score breakdown:
+    # - Complexity weight: 0-60 points (low=20, medium=40, high=60)
+    # - Hours: 0-30 points (capped at 3 hours)
+    # - Files: 0-20 points (capped at 4 files)
+    # - Phases: 0-10 points (capped at 3+ phases)
     score = (
-        complexity_weight(complexity) * 40 +  # 40 points
+        complexity_weight(complexity) * 40 +  # 20/40/60 points
         min(estimated_hours * 10, 30) +       # 30 points max
         min(files_modified * 5, 20) +         # 20 points max
         min(phases * 3, 10)                   # 10 points max
@@ -62,9 +72,9 @@ def analyze_prp_complexity(prp_path):
     return score
 
 def assign_model(score):
-    if score < 30:
+    if score < 40:
         return "haiku"    # Simple: single-file edits, <0.5h, low complexity
-    elif score < 60:
+    elif score < 70:
         return "sonnet"   # Medium: multi-file, 0.5-2h, some judgment
     else:
         return "opus"     # High: architectural, >2h, critical decisions
@@ -76,20 +86,24 @@ def assign_model(score):
 ============================================================
 PRP-A: Tool Deny List Implementation
   Complexity: low | Hours: 0.25-0.33 | Files: 1 | Phases: 3
-  Score: 25/100 → Model: haiku ✓
+  Score: 37/100 → Model: haiku ✓
   Rationale: Simple JSON edit, single file, no architectural decisions
+  Calculation: (0.5*40) + (0.29*10) + (1*5) + (3*3) = 20+2.9+5+9 = 37
 
 PRP-B: Tool Usage Guide Creation
   Complexity: low | Hours: 0.33-0.42 | Files: 1 | Phases: 3
-  Score: 28/100 → Model: haiku ✓
+  Score: 38/100 → Model: haiku ✓
   Rationale: Straightforward doc creation, clear structure
+  Calculation: (0.5*40) + (0.38*10) + (1*5) + (3*3) = 20+3.8+5+9 = 38
 
 PRP-C: Worktree Migration
   Complexity: medium | Hours: 0.42-0.50 | Files: 3 | Phases: 3
-  Score: 52/100 → Model: sonnet ✓
+  Score: 69/100 → Model: sonnet ✓
   Rationale: Multi-file, doc structuring requires judgment
+  Calculation: (1.0*40) + (0.46*10) + (3*5) + (3*3) = 40+4.6+15+9 = 69
 
 ============================================================
+Thresholds: Haiku <40, Sonnet 40-69, Opus ≥70
 Cost estimate: $0.05 (vs $0.25 all-sonnet = 80% savings)
 ```
 
@@ -279,50 +293,73 @@ Task(
 - **Health monitoring**: Agents output health signals every 5 minutes
 - **Parallel launch**: All Task calls in single message for true parallelism
 
-### 5. Monitor Execution (Real-time)
+### 5. Monitor Execution (Git Log Polling)
 **Time**: Continuous during execution
 
-**Monitoring Dashboard** (updates every 30 seconds):
+**Monitoring Mechanism**: Poll git logs every 60 seconds for checkpoint commits
+
+**Polling Logic**:
+```bash
+# For each worktree
+for worktree in worktrees:
+    latest_commit=$(git -C $worktree log -1 --oneline)
+    commit_time=$(git -C $worktree log -1 --format=%ct)
+    current_time=$(date +%s)
+    age=$((current_time - commit_time))
+
+    if [ $age -lt 300 ]; then
+        echo "HEALTHY: Latest commit ${age}s ago"
+    elif [ $age -lt 600 ]; then
+        echo "WARNING: Last commit ${age}s ago (may be stalled)"
+    else
+        echo "STALLED: No commits for ${age}s (likely hung)"
+    fi
+done
+```
+
+**Monitoring Dashboard** (updates every 60 seconds):
 ```
 📊 Batch Execution Status (Updated: 10:45:23)
 ============================================================
 Elapsed: 12m 34s / Estimated: 45m (28% complete)
 
-PRP-A: Tool Deny List Implementation [EXECUTING]
-  Phase: 3/3 (Validation)
-  Status: L4 pattern conformance check (drift: 4.2%)
-  Health: OK (last check: 23s ago)
-  Progress: ██████████████████░░ 75%
+PRP-A: Tool Deny List Implementation [HEALTHY]
+  Last commit: 2m ago "Phase 3: Validation complete"
+  Branch: prp-a-tool-deny-list
+  Status: Likely completing final phase
 
-PRP-B: Tool Usage Guide Creation [EXECUTING]
-  Phase: 2/3 (Implementation)
-  Status: Creating TOOL-USAGE-GUIDE.md
-  Health: OK (last check: 18s ago)
-  Progress: ████████████░░░░░░░░ 60%
+PRP-B: Tool Usage Guide Creation [HEALTHY]
+  Last commit: 1m ago "Phase 2: Implementation complete"
+  Branch: prp-b-tool-usage-guide
+  Status: Moving to Phase 3
 
-PRP-C: Worktree Migration [EXECUTING]
-  Phase: 1/3 (Preparation)
-  Status: Archiving GitButler docs
-  Health: OK (last check: 15s ago)
-  Progress: ████░░░░░░░░░░░░░░░░ 20%
+PRP-C: Worktree Migration [WARNING]
+  Last commit: 8m ago "Phase 1: Preparation complete"
+  Branch: prp-c-worktree-migration
+  Status: May be stalled on Phase 2 (long-running step)
 
 ============================================================
-Active agents: 3 | Completed: 0 | Failed: 0
+Active: 3 | HEALTHY: 2 | WARNING: 1 | STALLED: 0
+Timeout: 60m per PRP (fallback if no commits for >10m)
 ```
 
-**Health Check Protocol**:
-- Every 30 seconds: Query each agent's last output for "HEALTH:OK"
-- If no health signal for >2 minutes: Mark as STALLED, escalate
-- If "HEALTH:ERROR" detected: Mark as UNHEALTHY, attempt recovery
-- If agent crashes: Log stack trace, mark as FAILED
+**Health Status Criteria**:
+- **HEALTHY**: Last commit <5m ago
+- **WARNING**: Last commit 5-10m ago (may be long-running phase)
+- **STALLED**: Last commit >10m ago (likely hung, check agent timeout)
+- **FAILED**: Agent returned error or timeout exceeded
 
-**Agent Recovery**:
+**Stall Handling**:
 ```
-⚠️ PRP-B agent stalled (no health signal for 2m 15s)
-🔧 Attempting recovery:
-  1. Check agent process status
-  2. Send wake-up signal
-  3. If unresponsive after 1 minute: ABORT and mark FAILED
+⚠️ PRP-B stalled (no commits for 12m)
+Actions:
+  1. Check Task agent timeout (60m default)
+  2. Agent still running → wait for timeout
+  3. Agent timed out → mark FAILED, preserve worktree
+  4. Review partial work: cd ../ctx-eng-plus-prp-b && git log
+
+Note: Cannot forcibly abort Task agents mid-execution
+Rely on Task timeout mechanism for automatic abort
 ```
 
 ### 6. Aggregate Results (Sequential)
@@ -462,9 +499,9 @@ cd tools && uv run ce update-context
 **Default Behavior**: Automatic model assignment based on complexity analysis (see Step 1)
 
 The batch executor analyzes each PRP and assigns the optimal model:
-- **Haiku**: Score <30 (simple, single-file, <0.5h)
-- **Sonnet**: Score 30-60 (medium, multi-file, 0.5-2h)
-- **Opus**: Score >60 (complex, architectural, >2h)
+- **Haiku**: Score <40 (simple, single-file, <0.5h)
+- **Sonnet**: Score 40-69 (medium, multi-file, 0.5-2h)
+- **Opus**: Score ≥70 (complex, architectural, >2h)
 
 ### When to Override with `--model` Flag
 
