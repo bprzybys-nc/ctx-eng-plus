@@ -207,33 +207,6 @@
             "type": "command",
             "command": "PROJECT_ROOT=$(git rev-parse --show-toplevel 2>/dev/null || pwd) && cd \"$PROJECT_ROOT/tools\" && bash scripts/session-startup.sh",
             "timeout": 12
-          },
-          {
-            "type": "command",
-            "command": "PROJECT_ROOT=$(git rev-parse --show-toplevel 2>/dev/null || pwd) && if [ -d \"$PROJECT_ROOT/.git/gitbutler\" ]; then but -C \"$PROJECT_ROOT\" status; fi",
-            "timeout": 5
-          }
-        ]
-      }
-    ],
-    "PreToolUse": [
-      {
-        "matcher": "mcp__syntropy__git_git_commit",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "but -C $(git rev-parse --show-toplevel) status",
-            "timeout": 5
-          }
-        ]
-      },
-      {
-        "matcher": "Edit|Write",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "echo '[GitButler] File changes detected. Remember to commit to appropriate virtual branch.'",
-            "timeout": 2
           }
         ]
       }
