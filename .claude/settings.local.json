@@ -185,11 +185,5 @@
       }
     ]
   },
-  "enabledPlugins": {
-    "python-development@claude-code-workflows": true,
-    "agent-orchestration@claude-code-workflows": true,
-    "backend-development@claude-code-workflows": true,
-    "api-scaffolding@claude-code-workflows": true,
-    "llm-application-dev@claude-code-workflows": true
-  }
+  "enabledPlugins": {}
 }
