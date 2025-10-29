@@ -2,6 +2,8 @@
 
 Automates PRP execution with phase-by-phase implementation, L1-L4 validation loops, self-healing error recovery, and automatic escalation triggers.
 
+**Note**: This command defines the PRP execution protocol. `/batch-exe-prp` launches parallel agents that follow this protocol independently in separate git worktrees.
+
 ## Usage
 
 ```
@@ -22,18 +24,18 @@ Automates PRP execution with phase-by-phase implementation, L1-L4 validation loo
    - Identifies files to create/modify and functions to implement
    - Extracts validation commands and checkpoint instructions
 
-2. **Creates GitButler Virtual Branch** (if GitButler initialized):
-   - Checks if repo is GitButler-enabled: `but status`
-   - Creates virtual branch: `but branch new "prp-{prp_id}-{sanitized-name}"`
+2. **Creates Git Branch** (in worktree if specified):
+   - If executing in git worktree: Uses existing branch from worktree setup
+   - If executing in main repo: Creates branch `prp-{prp_id}-{sanitized-name}`
    - Format example: `prp-6-user-authentication`
-   - Enables parallel PRP execution (see GITBUTLER-REFERENCE.md)
-   - **Pattern 1**: Branch created BEFORE any file modifications
+   - Enables parallel PRP execution (see CLAUDE.md "Git Worktree" section)
+   - **Pattern**: Branch created/verified BEFORE any file modifications
 
-3. **Initializes PRP Context** (via PRP-2):
+3. **Initializes PRP Context**:
    - Creates active PRP session in `.ce/active_prp_session`
    - Initializes state tracking for phases
    - Sets up checkpoint namespace: `checkpoint-{prp_id}-{phase}`
-   - Stores GitButler branch name if created
+   - Stores branch name and worktree path if applicable
 
 4. **Executes Each Phase**:
    - Creates/modifies files using Serena MCP
@@ -46,7 +48,6 @@ Automates PRP execution with phase-by-phase implementation, L1-L4 validation loo
    - **L2 (Unit Tests)**: Runs phase validation command (e.g., `pytest tests/test_auth.py`)
    - **L3 (Integration)**: `validate_level_3()` - Integration tests
    - **L4 (Pattern Conformance)**: `validate_level_4(prp_path)` - Drift detection (<30%)
-   - **GitButler Conflict Check**: `but status | grep 🔒` - Halts if conflicts detected
 
    **Self-Healing** (L1-L2 only, max 3 attempts):
    - Parses error output (type, file, line, message)
@@ -55,15 +56,17 @@ Automates PRP execution with phase-by-phase implementation, L1-L4 validation loo
    - Re-runs validation
    - Escalates to human if persistent/ambiguous
 
-   **Conflict Escalation**:
-   - If 🔒 icon detected: Escalates to user with UI resolution instructions
-   - Displays: "Conflict detected with commit {hash}. Resolve in GitButler UI before continuing."
-   - Pauses execution until conflicts resolved
+   **Error Escalation Triggers**:
+   - **Persistent**: Same error after 3 attempts
+   - **Ambiguous**: Generic error with no file/line info
+   - **Architectural**: Keywords: refactor, redesign, circular import
+   - **External**: Network errors, package issues
+   - **Security**: CVE, credentials, permissions
 
-5. **Creates Checkpoints** (via PRP-2):
-   - Git tag after each validation gate: `checkpoint-{prp_id}-phase{N}-{timestamp}`
-   - GitButler commit after each phase: `but commit prp-{prp_id}-{name} -m "Phase N: {goal}"`
-   - Preserves rollback points for both git and GitButler
+5. **Creates Checkpoints**:
+   - Git commit after each phase: `git commit -m "Phase N: {goal}"`
+   - Git tag after validation gate: `checkpoint-{prp_id}-phase{N}-{timestamp}`
+   - Preserves rollback points for easy recovery
 
 6. **Post-Execution Sync** (if auto-sync enabled via PRP-5):
    - Runs cleanup protocol (archives memories, deletes ephemeral state)
@@ -81,6 +84,90 @@ Automates PRP execution with phase-by-phase implementation, L1-L4 validation loo
 8. **Ends PRP Context**:
    - Removes active session
    - Returns execution summary
+
+## Execution Protocol Specification
+
+**This section defines the PRP execution protocol that `/batch-exe-prp` agents follow independently.**
+
+### Protocol Steps (Sequential per Phase)
+
+```
+For each phase in PRP blueprint:
+  1. Parse phase metadata (number, name, goal, hours)
+  2. Execute implementation steps:
+     - Read files (if modifying existing)
+     - Apply changes (Edit/Write tools)
+     - Create new files if needed
+  3. Run validation loop:
+     a. L1 (Syntax & Style):
+        - Run linting (ruff/pylint/eslint)
+        - Run formatting (black/prettier)
+        - Run type checking (mypy/tsc)
+        - Self-heal if failed (max 3 attempts)
+     b. L2 (Unit Tests):
+        - Run phase validation command
+        - Parse test failures
+        - Self-heal if failed (max 3 attempts)
+     c. L3 (Integration Tests):
+        - Run integration test suite
+        - NO self-healing (escalate on failure)
+     d. L4 (Pattern Conformance):
+        - Calculate drift score
+        - ABORT if drift >30%
+        - NO self-healing (escalate on failure)
+  4. Create checkpoint:
+     - Git commit: "Phase {N}: {goal}"
+     - Git tag: "checkpoint-{prp_id}-phase{N}-{timestamp}"
+  5. Output progress signal:
+     - "STATUS:PHASE_COMPLETE:{N}/{total}"
+
+Return JSON report:
+{
+  "prp_id": "PRP-X",
+  "status": "SUCCESS|FAILED|PARTIAL",
+  "phases_completed": N,
+  "phases_total": M,
+  "confidence_score": 1-10,
+  "validation_results": {...},
+  "self_heals": N,
+  "commit_hash": "abc123",
+  "execution_time": "Xm Ys",
+  "files_modified": ["file1", "file2"],
+  "errors": [...]
+}
+```
+
+### Self-Healing Rules
+
+**L1-L2 ONLY** (max 3 attempts per error):
+
+**Auto-fixable**:
+- Import errors → Add missing import
+- Formatting errors → Apply formatter
+- Simple type errors → Add type hints
+
+**DO NOT auto-fix**:
+- Persistent errors (same error 3x) → Escalate
+- Ambiguous errors (no file/line) → Escalate
+- Architectural errors (circular import, refactor needed) → Escalate
+- External errors (network, package not found) → Escalate
+- Security errors (CVE, credentials) → Escalate immediately
+
+### Health Check Protocol (for batch agents)
+
+**Output every 5 minutes**:
+```
+HEALTH:OK                          # All systems normal
+HEALTH:ERROR:timeout               # Validation timeout
+HEALTH:ERROR:import_error:file.py  # Specific error detected
+```
+
+**Completion signals**:
+```
+STATUS:COMPLETE:10/10              # Success (confidence score)
+STATUS:FAILED:L3_timeout           # Failure reason
+STATUS:PARTIAL:2/3                 # Partial (N of M phases done)
+```
 
 ## CLI Command
 
@@ -272,13 +359,11 @@ With auto-sync enabled (`ce context auto-sync --enable`):
 
 ## Claude Code Hooks
 
-**Integrated GitButler & Context Monitoring** (configured in `.claude/settings.local.json`):
+**Integrated Context Monitoring** (configured in `.claude/settings.local.json`):
 
 **Active Hooks**:
 
-- **SessionStart**: Context health check - Warns about drift on session start
-- **PreToolUse (git_git_commit)**: Runs `but status` before git commits - Shows conflicts (🔒)
-- **PreToolUse (Edit|Write)**: Reminds to commit to appropriate virtual branch
+- **SessionStart**: Context health check - Warns about drift on session start (>10%)
 
 **Additional hooks available** (add to settings.local.json as needed):
 
