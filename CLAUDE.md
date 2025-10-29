@@ -265,8 +265,9 @@ brew install --cask karabiner-elements
 **Virtual branch management for parallel multi-PRP development**
 **Use it to work on multiple PRPs at the same time**
 
-📖 **Command Reference**: [examples/GITBUTLER-BUT-COMMAND-REFERENCE.md](examples/GITBUTLER-BUT-COMMAND-REFERENCE.md)
+📖 **Command Reference**: [examples/GITBUTLER-REFERENCE.md](examples/GITBUTLER-REFERENCE.md)
 📚 **Full Guide**: [test-target/GITBUTLER-INTEGRATION-GUIDE.md](test-target/GITBUTLER-INTEGRATION-GUIDE.md)
+🧪 **Test Automation**: [examples/gitbutler-test-automation.py](examples/gitbutler-test-automation.py) (with Serena MCP integration)
 
 ### Quick Start
 ```bash

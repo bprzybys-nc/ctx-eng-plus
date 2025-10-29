@@ -9,6 +9,7 @@
 **Quick Jump**:
 - [Conflict Matrix](#conflict-resolution-matrix) ← Decision-making tool
 - [Commands](#command-reference) ← Syntax reference
+- [Branch Cleanup](#cleaning-up-staletest-branches) ← Remove test/stale branches
 - [Patterns](#workflow-patterns) ← Prevent empty commits
 - [Examples](#real-world-example) ← Full workflow
 - [Serena MCP](#serena-mcp-integration) ← Context persistence
@@ -42,8 +43,14 @@ but status                              # Check conflicts (🔒)
 but branch new "prp-XX-feature"
 but commit prp-XX-feature -m "msg"
 
-# Cleanup
-but branch delete -f "prp-XX-feature"  # -f = no prompt
+# Cleanup (single branch)
+but branch delete -f "prp-XX-feature"   # GitButler delete
+git branch -D prp-XX-feature            # If "not found in stack"
+git restore .                           # Restore modified files
+
+# Cleanup (multiple test branches)
+git branch | grep -E "test-|prp-t" | xargs git branch -D
+git restore .
 
 # History
 but oplog                               # View operations
@@ -148,6 +155,138 @@ but branch delete -f "prp-30-feature"
 ```
 
 **Warning**: Cannot be undone (unless via `but undo`)
+
+---
+
+#### Cleaning Up Stale/Test Branches
+
+<!-- AI: Use this two-layer cleanup approach after testing or when branches are abandoned -->
+
+GitButler maintains branches in **two layers**: virtual branches (GitButler's system) and underlying Git branches. Complete cleanup requires removing both.
+
+**The Two-Layer Problem**:
+
+```bash
+# Symptom: "but branch delete" says "not found in any stack"
+but branch delete -f old-branch
+# Output: Branch 'old-branch' not found in any stack
+
+# But the branch still exists!
+but branch list
+# Shows: old-branch (still there!)
+```
+
+**Root Cause**: GitButler removed the virtual branch, but the underlying Git branch remains.
+
+---
+
+**Complete Cleanup Workflow**:
+
+```bash
+# Step 1: List all branches (virtual + Git)
+but branch list
+# Shows both active GitButler branches and Git branches
+
+# Step 2: Try GitButler delete first (for active branches)
+but branch delete -f prp-30-feature
+# If successful, done. If "not found", proceed to Step 3.
+
+# Step 3: List underlying Git branches
+git branch -a | grep -v remote
+
+# Step 4: Delete orphaned Git branches
+git branch -D prp-30-feature test-branch-1 test-branch-2
+
+# Step 5: Verify cleanup
+but status
+# Should show clean workspace
+
+# Step 6: Restore files if needed
+git restore path/to/file.py
+```
+
+---
+
+**Quick Cleanup Script** (after testing):
+
+```bash
+# Delete multiple test branches at once
+git branch -D \
+  test-s1-color \
+  test-s1-width \
+  prp-t5-param \
+  prp-t6-conflict
+
+# Verify clean state
+but status
+git status
+
+# Restore modified files
+git restore .
+```
+
+---
+
+**Common Scenarios**:
+
+**Scenario 1: After Testing** (clean slate for next test round)
+
+```bash
+# List all branches
+but branch list
+
+# Delete Git branches (bypasses "not found" issue)
+git branch | grep -E "test-|prp-t" | xargs git branch -D
+
+# Restore files
+git restore .
+
+# Verify
+but status  # Should show: [Unassigned Changes] + base commit only
+```
+
+**Scenario 2: Abandoned Virtual Branch** (started PRP but never committed)
+
+```bash
+# Try GitButler delete first
+but branch delete -f prp-XX-abandoned
+
+# If fails with "not found", check Git
+git branch -D prp-XX-abandoned
+
+# Restore changes
+git restore .
+```
+
+**Scenario 3: Nuclear Option** (complete reset - **MOST RELIABLE**)
+
+```bash
+# WARNING: Destroys all GitButler state and uncommitted work
+rm -rf .git/gitbutler
+but init
+
+# Clean up any uncommitted files
+git restore .
+git clean -fd  # Remove untracked files
+
+# Verify clean state
+but status
+# Should show: [Unassigned Changes] + base commit only
+```
+
+**When to use**:
+- Branches won't delete despite multiple attempts
+- After testing (fastest cleanup)
+- GitButler state is corrupted
+
+---
+
+**Best Practices**:
+
+1. **Always use Git branch deletion** for test cleanup (faster, no "not found" errors)
+2. **Check `git branch` if `but branch delete` fails** - underlying branch may still exist
+3. **Restore files after deletion** if workspace shows unwanted changes
+4. **Snapshot before mass cleanup**: `but snapshot -m "Before cleanup"` (safety net)
 
 ---
 
@@ -743,11 +882,33 @@ but status | grep 🔒
 
 ---
 
+### "Branch not found in any stack"
+
+**Symptom**: `but branch delete -f <name>` returns "Branch 'X' not found in any stack" but `but branch list` still shows it.
+
+**Cause**: Two-layer branch system - GitButler removed virtual branch, but Git branch remains.
+
+**Solution**:
+
+```bash
+# Delete the underlying Git branch
+git branch -D <branch-name>
+
+# Verify removal
+but branch list
+```
+
+**See**: [Cleaning Up Stale/Test Branches](#cleaning-up-staletest-branches) for complete cleanup workflow.
+
+---
+
 ### Branch delete doesn't work
 
 → Use force flag: `but branch delete -f <name>`
 
-→ OR: Reinitialize `rm -rf .git/gitbutler && but init`
+→ If still fails with "not found", use `git branch -D <name>` (see above)
+
+→ Nuclear option: `rm -rf .git/gitbutler && but init`
 
 ---
 
@@ -810,9 +971,11 @@ but status
 **Related Documentation**:
 - [GITBUTLER-INTEGRATION-GUIDE.md](../test-target/GITBUTLER-INTEGRATION-GUIDE.md) - Full integration guide
 - [GITBUTLER-RESEARCHED-PATTERNS-LESS-LRND.md](../PRPs/GITBUTLER-RESEARCHED-PATTERNS-LESS-LRND.md) - Testing validation
+- [gitbutler-test-automation.py](gitbutler-test-automation.py) - Automated testing with Serena MCP integration
 - [CLAUDE.md § GitButler](../CLAUDE.md#gitbutler-integration) - Project-specific setup
 
 **External Resources**:
+
 - [GitButler Documentation](https://docs.gitbutler.com)
 - [Claude Code Hooks](https://docs.claude.com/en/docs/claude-code/hooks)
 - [Context Engineering Framework](https://github.com/coleam00/context-engineering-intro)
