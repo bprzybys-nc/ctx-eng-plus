@@ -260,70 +260,265 @@ brew install --cask karabiner-elements
 # Enable rule in Karabiner-Elements UI → Complex Modifications
 ```
 
-## GitButler Integration
+## Git Worktree - Parallel PRP Development
 
-**Virtual branch management for parallel multi-PRP development**
-**Use it to work on multiple PRPs at the same time**
-
-📖 **Command Reference**: [examples/GITBUTLER-REFERENCE.md](examples/GITBUTLER-REFERENCE.md)
-📚 **Full Guide**: [test-target/GITBUTLER-INTEGRATION-GUIDE.md](test-target/GITBUTLER-INTEGRATION-GUIDE.md)
-🧪 **Test Automation**: [examples/gitbutler-test-automation.py](examples/gitbutler-test-automation.py) (with Serena MCP integration)
+**Native git solution for working on multiple PRPs simultaneously**
 
 ### Quick Start
+
 ```bash
-# Install (if not already installed)
-brew install --cask gitbutler
-# Install CLI via GitButler app: Settings → General → Install CLI
+# Create worktree for PRP-A (creates ../ctx-eng-plus-prp-a)
+git worktree add ../ctx-eng-plus-prp-a -b prp-a-feature
 
-# Initialize repo
-but init
+# Work in worktree
+cd ../ctx-eng-plus-prp-a
+# Make changes...
+git add .
+git commit -m "Implement feature"
 
-# Check status
-but status
+# List all worktrees
+git worktree list
+
+# Remove worktree after merging
+git worktree remove ../ctx-eng-plus-prp-a
 ```
 
 ### Commands
-- `but status` - Check virtual branches
-- `but branch new <name>` - Create branch
-- `but commit <branch> -m "msg"` - Commit to specific branch
-- `but branch list` - List all branches
-- `but branch delete <name>` - Delete branch
 
-### Workflow
-1. Create branch per PRP: `but branch new "prp-XX-feature"`
-2. Make changes with Claude (Edit/Write)
-3. Commit: `but commit prp-XX-feature -m "Implement X"`
-4. Review/merge in GitButler UI
-
-### Benefits
-- Work on multiple PRPs simultaneously
-- No branch switching (`git checkout`)
-- Conflict detection without blocking (🔒 icon)
-- Visual branch management in UI
-- Changes auto-merged in `gitbutler/workspace` branch
-
-### Hooks (Already Configured)
-- **SessionStart**: Shows status if repo is GitButler-initialized
-- **PreToolUse**: Shows status before git commits
-- **Edit/Write**: Reminds to target correct branch
-
-### Example: Multi-PRP Development
+**Create**:
 ```bash
-# Work on PRP-30 and PRP-31 simultaneously
-but branch new "prp-30-keyboard"
-# Make changes...
-but commit prp-30-keyboard -m "Add cmd+v"
-
-but branch new "prp-31-validation"  # No checkout needed!
-# Make changes...
-but commit prp-31-validation -m "Add validation"
-
-# Both branches coexist cleanly
-but status
+git worktree add <path> -b <branch-name>
+# Example: git worktree add ../ctx-eng-plus-prp-12 -b prp-12-validation
 ```
 
-### Documentation
-See: [test-target/GITBUTLER-INTEGRATION-GUIDE.md](test-target/GITBUTLER-INTEGRATION-GUIDE.md)
+**List**:
+```bash
+git worktree list
+# Shows: path, commit hash, branch name
+```
+
+**Remove**:
+```bash
+git worktree remove <path>
+# or: git worktree remove --force <path>  # if uncommitted changes
+```
+
+**Prune** (clean stale references):
+```bash
+git worktree prune
+```
+
+### Workflow for Parallel PRPs
+
+**Stage 1: Create Worktrees**
+```bash
+# From main repo: /Users/bprzybysz/nc-src/ctx-eng-plus
+git worktree add ../ctx-eng-plus-prp-a -b prp-a-tool-deny
+git worktree add ../ctx-eng-plus-prp-b -b prp-b-usage-guide
+git worktree add ../ctx-eng-plus-prp-c -b prp-c-worktree-docs
+```
+
+**Stage 2: Execute in Parallel**
+```bash
+# Terminal 1
+cd ../ctx-eng-plus-prp-a
+# Edit .claude/settings.local.json
+git add .
+git commit -m "PRP-A: Add tools to deny list"
+
+# Terminal 2
+cd ../ctx-eng-plus-prp-b
+# Create TOOL-USAGE-GUIDE.md
+git add .
+git commit -m "PRP-B: Create tool usage guide"
+
+# Terminal 3
+cd ../ctx-eng-plus-prp-c
+# Update CLAUDE.md
+git add .
+git commit -m "PRP-C: Migrate to worktree docs"
+```
+
+**Stage 3: Merge in Order**
+```bash
+cd /Users/bprzybysz/nc-src/ctx-eng-plus
+git checkout main
+
+# Merge PRP-A first
+git merge prp-a-tool-deny --no-ff
+git push origin main
+
+# Merge PRP-B
+git merge prp-b-usage-guide --no-ff
+git push origin main
+
+# Merge PRP-C (may conflict with PRP-A on settings.local.json)
+git merge prp-c-worktree-docs --no-ff
+# If conflicts, resolve manually (see Conflict Resolution below)
+git push origin main
+```
+
+**Stage 4: Cleanup**
+```bash
+git worktree remove ../ctx-eng-plus-prp-a
+git worktree remove ../ctx-eng-plus-prp-b
+git worktree remove ../ctx-eng-plus-prp-c
+git worktree prune
+```
+
+### Critical Constraints
+
+**⚠️ Same Branch Limitation**
+
+**CANNOT** check out the same branch in multiple worktrees simultaneously.
+
+**Example of ERROR**:
+```bash
+# Main repo on `main` branch
+cd /Users/bprzybysz/nc-src/ctx-eng-plus
+git branch
+# * main
+
+# Try to create worktree on `main`
+git worktree add ../ctx-eng-plus-test -b main
+# ERROR: fatal: 'main' is already checked out at '/Users/bprzybysz/nc-src/ctx-eng-plus'
+```
+
+**Solution**: Each worktree must use a **unique branch**.
+
+```bash
+# Main repo stays on gitbutler/workspace or main
+# Each PRP worktree uses dedicated branch
+git worktree add ../ctx-eng-plus-prp-a -b prp-a-unique  # ✓
+git worktree add ../ctx-eng-plus-prp-b -b prp-b-unique  # ✓
+```
+
+### Conflict Resolution
+
+When merging parallel PRPs, conflicts may occur if they modify the same file sections.
+
+**Scenario 1: No Conflicts** (PRP-A + PRP-B)
+```bash
+git merge prp-a-tool-deny --no-ff  # ✓ Success
+git merge prp-b-usage-guide --no-ff  # ✓ Success (different files)
+```
+
+**Scenario 2: Merge Conflict** (PRP-A + PRP-D both edit settings.local.json)
+
+**Step 1: Attempt Merge**
+```bash
+git merge prp-d-command-perms --no-ff
+# Auto-merging .claude/settings.local.json
+# CONFLICT (content): Merge conflict in .claude/settings.local.json
+# Automatic merge failed; fix conflicts and then commit the result.
+```
+
+**Step 2: Check Conflict Markers**
+```bash
+git status
+# Unmerged paths:
+#   both modified:   .claude/settings.local.json
+```
+
+**Step 3: Read File to See Conflicts**
+```python
+Read(file_path="/Users/bprzybysz/nc-src/ctx-eng-plus/.claude/settings.local.json")
+# Look for:
+# <<<<<<< HEAD
+# ... current branch content ...
+# =======
+# ... incoming branch content ...
+# >>>>>>> prp-d-command-perms
+```
+
+**Step 4: Resolve with Edit Tool**
+```python
+# Remove conflict markers, keep desired changes from both branches
+Edit(
+  file_path="/Users/bprzybysz/nc-src/ctx-eng-plus/.claude/settings.local.json",
+  old_string="""<<<<<<< HEAD
+  "deny": [existing tools...]
+=======
+  "deny": [incoming tools...]
+>>>>>>> prp-d-command-perms""",
+  new_string="""  "deny": [merged tools from both branches...]"""
+)
+```
+
+**Step 5: Stage and Commit**
+```bash
+git add .claude/settings.local.json
+git commit -m "Merge prp-d-command-perms: Resolve settings conflict"
+```
+
+**Scenario 3: Conflicting Logic** (PRP-A denies tool, PRP-D allows same tool)
+
+**Resolution**: Apply **last-merged wins** or **manual decision**.
+
+```json
+// PRP-A (merged first): Denies "mcp__syntropy__git_git_status"
+"deny": ["mcp__syntropy__git_git_status"]
+
+// PRP-D (merging now): Allows "git" commands implicitly
+"allow": ["Bash(git:*)"]
+
+// Decision: Keep Bash(git:*) in allow, keep git_git_status in deny
+// Rationale: Native bash git preferred over MCP wrapper
+```
+
+### Comparison: GitButler vs Worktree
+
+| Feature | GitButler | Git Worktree |
+|---------|-----------|--------------|
+| **Parallel Development** | ✓ Virtual branches | ✓ Physical worktrees |
+| **Branch Switching** | ✗ Not needed | ✗ Not needed |
+| **Conflict Detection** | ✓ Real-time 🔒 icon | ⚠️ At merge time |
+| **Native Git** | ✗ Proprietary layer | ✓ Built-in since Git 2.5 |
+| **Learning Curve** | Medium (new concepts) | Low (standard git) |
+| **Merge Strategy** | UI-based | CLI-based (standard) |
+| **Same Branch Limit** | ✓ Can work on same "virtual" branch | ✗ Must use unique branches |
+| **Tool Requirement** | Requires GitButler app + CLI | ✓ Native git (no install) |
+| **Workspace Branch** | Auto-merges to `gitbutler/workspace` | Manual merge to `main` |
+
+### Benefits of Worktree Approach
+
+1. **Native Git**: No external dependencies, works everywhere
+2. **Explicit Branches**: Clear separation, standard git workflow
+3. **Merge Control**: Full control over merge order and conflict resolution
+4. **Universal**: Works on any git version ≥2.5 (2015)
+5. **Simple Cleanup**: `git worktree remove` + `git worktree prune`
+
+### Example: 3-PRP Parallel Execution
+
+```bash
+# Stage 1: Create worktrees (30 seconds)
+git worktree add ../ctx-eng-plus-prp-a -b prp-a-tool-deny
+git worktree add ../ctx-eng-plus-prp-b -b prp-b-usage-guide
+git worktree add ../ctx-eng-plus-prp-c -b prp-c-worktree-docs
+
+# Stage 2: Execute in parallel (15 minutes total, vs 45 sequential)
+# Each PRP executes independently in its worktree
+
+# Stage 3: Merge in dependency order (5 minutes)
+git merge prp-a-tool-deny --no-ff     # Merge order: 1
+git merge prp-b-usage-guide --no-ff   # Merge order: 2
+git merge prp-c-worktree-docs --no-ff # Merge order: 3
+
+# Stage 4: Cleanup (30 seconds)
+git worktree remove ../ctx-eng-plus-prp-a
+git worktree remove ../ctx-eng-plus-prp-b
+git worktree remove ../ctx-eng-plus-prp-c
+git worktree prune
+```
+
+**Time Savings**: 45 min sequential → 20 min parallel (55% reduction)
+
+### Archived GitButler Documentation
+
+Previous GitButler integration docs archived at:
+- `archive/gitbutler/GITBUTLER-REFERENCE.md`
+- `archive/gitbutler/GITBUTLER-INTEGRATION-GUIDE.md`
+- `archive/gitbutler/gitbutler-test-automation.py`
 
 ---
 
