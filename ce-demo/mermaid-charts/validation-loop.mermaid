@@ -1,0 +1,35 @@
+%% Validation Loop - Self-Correcting Execution
+%% Light theme optimized for presentations
+
+graph TD
+    A[📝 Start Task<br/>from PRP] --> B[💻 Generate Code]
+    B --> C{🔍 Lint Check}
+    C -->|❌ Failed| D[📖 Read Error]
+    D --> E[🔧 Fix Code]
+    E --> C
+    C -->|✅ Passed| F{🧪 Run Tests}
+    F -->|❌ Failed| G[📖 Read Test Error]
+    G --> H[🔧 Fix Implementation]
+    H --> F
+    F -->|✅ Passed| I{🔗 Integration Test}
+    I -->|❌ Failed| J[📖 Read Integration Error]
+    J --> K[🔧 Fix Integration]
+    K --> I
+    I -->|✅ Passed| L[✅ Task Complete<br/>Move to Next]
+
+    style A fill:#e3f2fd,stroke:#1976d2,stroke-width:2px,color:#000
+    style B fill:#fff9c4,stroke:#f9a825,stroke-width:2px,color:#000
+
+    style C fill:#fff3e0,stroke:#f57c00,stroke-width:2px,color:#000
+    style F fill:#fff3e0,stroke:#f57c00,stroke-width:2px,color:#000
+    style I fill:#fff3e0,stroke:#f57c00,stroke-width:2px,color:#000
+
+    style D fill:#ffebee,stroke:#c62828,stroke-width:2px,color:#000
+    style G fill:#ffebee,stroke:#c62828,stroke-width:2px,color:#000
+    style J fill:#ffebee,stroke:#c62828,stroke-width:2px,color:#000
+
+    style E fill:#fce4ec,stroke:#c2185b,stroke-width:2px,color:#000
+    style H fill:#fce4ec,stroke:#c2185b,stroke-width:2px,color:#000
+    style K fill:#fce4ec,stroke:#c2185b,stroke-width:2px,color:#000
+
+    style L fill:#c8e6c9,stroke:#388e3c,stroke-width:3px,color:#000
