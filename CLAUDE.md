@@ -129,7 +129,7 @@ Example: `mcp__syntropy__serena_find_symbol`
 
 **Permission Model**: Auto-allow safe commands, ask-first for potentially destructive operations.
 
-### Auto-Allow Patterns (~50 patterns)
+### Auto-Allow Patterns (~35 bash patterns)
 
 Commands that never prompt:
 
@@ -140,28 +140,25 @@ Commands that never prompt:
 - `cd`, `pwd`, `which`, `whereis`
 
 **Search**:
-- `find`, `grep`, `tree`
+- `find`, `grep`, `rg`, `tree`
 
 **Text Processing**:
-- `sed`, `awk`, `sort`, `uniq`, `cut`, `paste`, `tr`
-- `diff`, `comm`, `cmp`, `wc`
+- `sed`, `awk`, `sort`, `uniq`, `cut`, `diff`, `comm`, `wc`
 
-**Hashing/Encoding**:
-- `md5`, `sha256sum`, `base64`, `xxd`, `strings`, `hexdump`
-
-**System Info**:
-- `env`, `ps`, `whoami`, `hostname`, `date`, `cal`, `bc`
+**Environment**:
+- `env`, `ps`, `echo`
 
 **Development**:
-- `git` (all operations), `uv run`, `uv add`, `uvx`
-- `cat`, `grep`, `echo`, `jq`, `du`, `df`, `brew install`
+- `git` (all operations), `gh` (GitHub CLI)
+- `uv`, `uvx`, `pytest`
+- `python`, `python3`
 
 **Special Cases**:
 - `rm -rf ~/.mcp-auth` (MCP troubleshooting)
 
 **Full list**: See `.claude/settings.local.json` "allow" array
 
-### Ask-First Patterns (14 patterns)
+### Ask-First Patterns (15 patterns)
 
 Commands that require confirmation:
 
@@ -171,9 +168,11 @@ Commands that require confirmation:
 **Network Operations**:
 - `curl`, `wget`, `nc`, `telnet`, `ssh`, `scp`, `rsync`
 
+**Package Management**:
+- `brew install`, `npm install`, `pip install`, `gem install`
+
 **System Operations**:
 - `sudo` (any sudo command)
-- `npm install`, `pip install`, `gem install`
 
 **Rationale**: Safety gate for operations that modify files, access network, or require elevated privileges.
 

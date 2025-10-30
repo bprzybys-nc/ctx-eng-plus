@@ -138,7 +138,7 @@ mcp__syntropy__github_list_issues(owner="...", repo="...")
 
 **✅ CORRECT (Native gh CLI)**:
 ```bash
-# Pre-approved: Bash(gh:*) - pending PRP-D
+# Pre-approved: Bash(gh:*)
 gh pr create --title "Fix bug" --body "Description"
 gh issue list --label bug
 gh pr view 123
