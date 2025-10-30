@@ -565,7 +565,10 @@ These are applied without user interaction:
 # Time: 2-3 minutes
 ```
 
-**Note**: Markdown linting (MD031, MD032, etc.) is handled by L1 validation during `/execute-prp`. Peer review only recommends running L1 validation if markdown files were modified and not yet validated.
+**Note**: Markdown linting is handled at different stages:
+- **PRP generation** (`/generate-prp`): Markdown L1 validation runs automatically on generated PRP
+- **Code execution** (`/execute-prp`): Code L1 validation runs on Python/JS/etc., not markdown
+- **Peer review** (`/peer-review`): Only validates structure and factuality, not formatting
 
 **Characteristics**:
 
@@ -634,10 +637,10 @@ AUTO-FIXABLE (applying automatically):
      └─ Status: ✅ Complete (36 files reindexed, 2.3s)
 
 MANUAL (requires review):
-  ⓘ 2. Run L1 validation (markdown files modified)
-     └─ Issue: .claude/commands/peer-review.md modified
-     └─ Impact: Low (linting issues, if any)
-     └─ Action: /execute-prp will run L1 validation automatically
+  ⓘ 2. Review factuality checks (if any failed)
+     └─ Issue: No failed checks
+     └─ Impact: None
+     └─ Action: None needed
 
 ================================================================================
 Auto-fixes applied: 1
@@ -700,7 +703,9 @@ uv run ce context restore <backup-id>
 - Reduces friction in review workflow
 - Maintains safety via pre-checks and logging
 - User retains control via flag or env var
-- L1 validation handles linting during execution phase
+- Markdown linting handled during PRP generation (`/generate-prp`)
+- Code linting handled during PRP execution (`/execute-prp`)
+- Peer review focuses on structure, factuality, and execution quality
 
 ## CLI Command
 
