@@ -1,4 +1,4 @@
-# Vacuum Report - 2025-10-30T21:23:29.147665
+# Vacuum Report - 2025-10-30T21:29:29.489139
 
 ## Summary
 - Candidates found: 227
@@ -28,7 +28,7 @@
 | tools/ce/__pycache__/__main__.cpython-314.pyc | Temporary file: **/*.pyc | 14.0 KB | 2025-10-30 |
 | tools/ce/__pycache__/metrics.cpython-314.pyc | Temporary file: **/*.pyc | 11.0 KB | 2025-10-30 |
 | tools/ce/__pycache__/vacuum.cpython-314.pyc | Temporary file: **/*.pyc | 13.2 KB | 2025-10-30 |
-| tools/ce/vacuum_strategies/__pycache__/unreferenced_code.cpython-314.pyc | Temporary file: **/*.pyc | 6.0 KB | 2025-10-30 |
+| tools/ce/vacuum_strategies/__pycache__/unreferenced_code.cpython-314.pyc | Temporary file: **/*.pyc | 6.3 KB | 2025-10-30 |
 | tools/ce/vacuum_strategies/__pycache__/base.cpython-314.pyc | Temporary file: **/*.pyc | 9.6 KB | 2025-10-30 |
 | tools/ce/vacuum_strategies/__pycache__/temp_files.cpython-314.pyc | Temporary file: **/*.pyc | 2.1 KB | 2025-10-30 |
 | tools/ce/vacuum_strategies/__pycache__/dead_links.cpython-314.pyc | Temporary file: **/*.pyc | 3.5 KB | 2025-10-30 |
@@ -210,7 +210,7 @@
 | tools/tests/__pycache__ | Temporary file: **/__pycache__ | 45.7 KB | 2025-10-30 |
 | tools/ce/__pycache__ | Temporary file: **/__pycache__ | 346.9 KB | 2025-10-30 |
 | tools/ce/executors/__pycache__ | Temporary file: **/__pycache__ | 12.6 KB | 2025-10-30 |
-| tools/ce/vacuum_strategies/__pycache__ | Temporary file: **/__pycache__ | 35.8 KB | 2025-10-30 |
+| tools/ce/vacuum_strategies/__pycache__ | Temporary file: **/__pycache__ | 36.1 KB | 2025-10-30 |
 | tools/.venv/lib/python3.14/site-packages/__pycache__ | Temporary file: **/__pycache__ | 4.7 KB | 2025-10-30 |
 | tools/.venv/lib/python3.14/site-packages/attrs/__pycache__ | Temporary file: **/__pycache__ | 2.9 KB | 2025-10-30 |
 | tools/.venv/lib/python3.14/site-packages/pygments/__pycache__ | Temporary file: **/__pycache__ | 116.1 KB | 2025-10-30 |

@@ -1,0 +1,49 @@
+%% Context Engineering Components Architecture
+%% Light theme optimized for presentations
+
+graph TB
+    subgraph Framework["🎯 Context Engineering Framework"]
+        A[📋 CLAUDE.md<br/>Project Rules]
+        B[📁 PRPs/<br/>Implementation Plans]
+        C[💻 examples/<br/>Code Patterns]
+        D[⚙️ .ce/<br/>Framework Core]
+    end
+
+    subgraph Commands["🚀 Commands"]
+        E[/generate-prp<br/>Create Plan]
+        F[/execute-prp<br/>Build Feature]
+    end
+
+    subgraph Output["✨ Output"]
+        G[✅ Production Code]
+        H[🧪 Tests Passing]
+        I[📊 Validation Reports]
+    end
+
+    A --> E
+    B --> E
+    C --> E
+    D --> E
+
+    E --> F
+    B --> F
+
+    F --> G
+    F --> H
+    F --> I
+
+    style A fill:#e1f5fe,stroke:#0277bd,stroke-width:2px,color:#000
+    style B fill:#f3e5f5,stroke:#6a1b9a,stroke-width:2px,color:#000
+    style C fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px,color:#000
+    style D fill:#fff3e0,stroke:#e65100,stroke-width:2px,color:#000
+
+    style E fill:#fff9c4,stroke:#f9a825,stroke-width:2px,color:#000
+    style F fill:#ffe0b2,stroke:#ef6c00,stroke-width:2px,color:#000
+
+    style G fill:#c8e6c9,stroke:#388e3c,stroke-width:3px,color:#000
+    style H fill:#c8e6c9,stroke:#388e3c,stroke-width:3px,color:#000
+    style I fill:#c8e6c9,stroke:#388e3c,stroke-width:3px,color:#000
+
+    style Framework fill:#fafafa,stroke:#424242,stroke-width:2px,color:#000
+    style Commands fill:#fafafa,stroke:#424242,stroke-width:2px,color:#000
+    style Output fill:#fafafa,stroke:#424242,stroke-width:2px,color:#000
