@@ -671,13 +671,6 @@ git worktree prune
 
 **Time Savings**: 45 min sequential → 20 min parallel (55% reduction)
 
-### Archived GitButler Documentation
-
-Previous GitButler integration docs archived at:
-- `archive/gitbutler/GITBUTLER-REFERENCE.md`
-- `archive/gitbutler/GITBUTLER-INTEGRATION-GUIDE.md`
-- `archive/gitbutler/gitbutler-test-automation.py`
-
 ---
 
 ## Troubleshooting
