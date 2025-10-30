@@ -423,6 +423,11 @@ Examples:
         help="Delete HIGH + MEDIUM confidence items"
     )
     vacuum_parser.add_argument(
+        "--auto",
+        action="store_true",
+        help="Automatically delete HIGH + MEDIUM confidence items (same as --force)"
+    )
+    vacuum_parser.add_argument(
         "--nuclear",
         action="store_true",
         help="Delete ALL items including LOW confidence (requires confirmation)"

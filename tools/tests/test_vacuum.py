@@ -9,7 +9,6 @@ from ce.vacuum_strategies import (
     ObsoleteDocStrategy,
     UnreferencedCodeStrategy,
     OrphanTestStrategy,
-    DeadLinkStrategy,
     CommentedCodeStrategy,
 )
 
@@ -121,19 +120,6 @@ class TestOrphanTestStrategy:
         orphan_tests = [c for c in candidates if "nonexistent" in c.path.name]
         assert len(orphan_tests) >= 1
         assert all(c.confidence >= 40 for c in orphan_tests)
-
-
-class TestDeadLinkStrategy:
-    """Test dead link detection strategy."""
-
-    def test_finds_dead_links(self, temp_project):
-        """Should find markdown files with dead links."""
-        strategy = DeadLinkStrategy(temp_project)
-        candidates = strategy.find_candidates()
-
-        dead_link_files = [c for c in candidates if "readme" in c.path.name.lower()]
-        assert len(dead_link_files) >= 1
-        assert all(c.confidence >= 60 for c in dead_link_files)
 
 
 class TestCommentedCodeStrategy:

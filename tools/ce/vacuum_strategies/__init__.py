@@ -6,7 +6,6 @@ from .backup_files import BackupFileStrategy
 from .obsolete_docs import ObsoleteDocStrategy
 from .unreferenced_code import UnreferencedCodeStrategy
 from .orphan_tests import OrphanTestStrategy
-from .dead_links import DeadLinkStrategy
 from .commented_code import CommentedCodeStrategy
 
 __all__ = [
@@ -17,6 +16,5 @@ __all__ = [
     "ObsoleteDocStrategy",
     "UnreferencedCodeStrategy",
     "OrphanTestStrategy",
-    "DeadLinkStrategy",
     "CommentedCodeStrategy",
 ]

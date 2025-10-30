@@ -14,11 +14,11 @@ def temp_project_with_prps(tmp_path):
     # Create .ce directory
     (project_root / ".ce").mkdir()
 
-    # Create PRPs directory with actual PRP files
+    # Create PRPs directory with actual PRP files (with YAML headers)
     prps_dir = project_root / "PRPs" / "executed"
     prps_dir.mkdir(parents=True)
-    (prps_dir / "PRP-1-feature.md").write_text("# PRP-1\nActual PRP content")
-    (prps_dir / "PRP-2-bugfix.md").write_text("# PRP-2\nAnother PRP")
+    (prps_dir / "PRP-1-feature.md").write_text("---\nid: PRP-1\nstatus: executed\n---\n# PRP-1\nActual PRP content")
+    (prps_dir / "PRP-2-bugfix.md").write_text("---\nid: PRP-2\nstatus: executed\n---\n# PRP-2\nAnother PRP")
 
     # Create analysis/report files (should NOT be protected)
     (project_root / "CHANGELIST-REVIEW-PRP-1.md").write_text("# Review\nAnalysis content")
@@ -28,6 +28,9 @@ def temp_project_with_prps(tmp_path):
     # Create old versioned analysis files
     (project_root / "ANALYSIS-v1.md").write_text("# Old analysis")
     (project_root / "ANALYSIS.md").write_text("# Current analysis")
+
+    # Create garbage doc in PRPs/ without YAML header (should NOT be protected)
+    (prps_dir / "random-notes.md").write_text("# Random notes\nSome garbage doc")
 
     return project_root
 
@@ -96,3 +99,14 @@ def test_dead_links_in_analysis_files_detected(temp_project_with_prps):
     # Should find the changelist file with dead link
     changelist_candidates = [c for c in candidates if "CHANGELIST" in c.path.name]
     assert len(changelist_candidates) == 1, "Should detect dead links in analysis files"
+
+
+def test_garbage_docs_in_prps_not_protected(temp_project_with_prps):
+    """Markdown files in PRPs/ without YAML headers should NOT be protected."""
+    from ce.vacuum_strategies.base import BaseStrategy
+
+    strategy = ObsoleteDocStrategy(temp_project_with_prps)
+
+    # Check garbage doc in PRPs/ is NOT protected
+    garbage_doc = temp_project_with_prps / "PRPs" / "executed" / "random-notes.md"
+    assert not strategy.is_protected(garbage_doc), "Docs without YAML headers should NOT be protected"

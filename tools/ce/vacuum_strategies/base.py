@@ -18,6 +18,7 @@ class CleanupCandidate:
     last_modified: str
     git_history: str = ""
     references: List[str] = None
+    report_only: bool = False  # If True, never delete (only report)
 
     def __post_init__(self):
         if self.references is None:
@@ -30,11 +31,13 @@ class BaseStrategy(ABC):
     # Patterns that should NEVER be deleted
     PROTECTED_PATTERNS = [
         ".ce/**",
-        "PRPs/**/*.md",  # Protect actual PRP files (managed by update-context)
+        ".claude/**",  # Protect ALL Claude Code configuration
+        "syntropy-mcp/**",  # Protect syntropy MCP server directory
+        # Note: PRP files are protected by PRP naming convention check in is_protected()
         "pyproject.toml",
         "README.md",
         "CLAUDE.md",
-        ".claude/settings*.json",
+        "WARP.md",
         "examples/**",
         "**/__init__.py",
         "**/cli.py",
@@ -69,13 +72,38 @@ class BaseStrategy(ABC):
             True if path is protected, False otherwise
         """
         relative_path = path.relative_to(self.project_root)
+        relative_str = str(relative_path)
+
+        # Special case: Markdown files in PRPs/ - check if they have YAML header
+        # Match both "/PRPs/" and "PRPs/" (start of path)
+        if (("/PRPs/" in relative_str or relative_str.startswith("PRPs/")) and path.suffix == ".md"):
+            if self._has_yaml_frontmatter(path):
+                return True
+            # If in PRPs/ but no YAML header, not a real PRP - can be cleaned
+            return False
 
         for pattern in self.PROTECTED_PATTERNS:
             # Simple glob-like matching
-            if self._matches_pattern(str(relative_path), pattern):
+            if self._matches_pattern(relative_str, pattern):
                 return True
 
         return False
+
+    def _has_yaml_frontmatter(self, path: Path) -> bool:
+        """Check if markdown file has YAML frontmatter header.
+
+        Args:
+            path: Path to markdown file
+
+        Returns:
+            True if file starts with YAML frontmatter (---), False otherwise
+        """
+        try:
+            with open(path, "r", encoding="utf-8") as f:
+                first_line = f.readline().strip()
+                return first_line == "---"
+        except Exception:
+            return False
 
     def _matches_pattern(self, path: str, pattern: str) -> bool:
         """Simple pattern matching for protected paths.

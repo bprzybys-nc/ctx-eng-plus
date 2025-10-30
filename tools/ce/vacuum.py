@@ -10,7 +10,6 @@ from .vacuum_strategies import (
     BackupFileStrategy,
     CleanupCandidate,
     CommentedCodeStrategy,
-    DeadLinkStrategy,
     ObsoleteDocStrategy,
     OrphanTestStrategy,
     TempFileStrategy,
@@ -34,7 +33,6 @@ class VacuumCommand:
             "obsolete-docs": ObsoleteDocStrategy,
             "unreferenced-code": UnreferencedCodeStrategy,
             "orphan-tests": OrphanTestStrategy,
-            "dead-links": DeadLinkStrategy,
             "commented-code": CommentedCodeStrategy,
         }
 
@@ -45,6 +43,7 @@ class VacuumCommand:
         exclude_strategies: List[str] = None,
         execute: bool = False,
         force: bool = False,
+        auto: bool = False,
         nuclear: bool = False,
     ) -> int:
         """Run vacuum command.
@@ -55,6 +54,7 @@ class VacuumCommand:
             exclude_strategies: List of strategy names to skip
             execute: Delete HIGH confidence items
             force: Delete HIGH + MEDIUM confidence items
+            auto: Alias for force (delete HIGH + MEDIUM automatically)
             nuclear: Delete ALL items (requires confirmation)
 
         Returns:
@@ -68,7 +68,7 @@ class VacuumCommand:
             if not self._confirm_nuclear():
                 print("❌ Nuclear mode cancelled by user")
                 return 2
-        elif force:
+        elif force or auto:
             delete_threshold = 60  # Delete MEDIUM + HIGH
         elif execute:
             delete_threshold = 100  # Delete HIGH only
@@ -203,6 +203,10 @@ class VacuumCommand:
         deleted_count = 0
 
         for candidate in candidates:
+            # Skip report-only candidates (never delete these)
+            if candidate.report_only:
+                continue
+
             if candidate.confidence < threshold:
                 continue
 
