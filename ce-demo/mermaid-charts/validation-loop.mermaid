@@ -2,20 +2,20 @@
 %% Light theme optimized for presentations
 
 graph TD
-    A[📝 Start Task<br/>from PRP] --> B[💻 Generate Code]
-    B --> C{🔍 Lint Check}
-    C -->|❌ Failed| D[📖 Read Error]
-    D --> E[🔧 Fix Code]
+    A["📝 Start Task<br/>from PRP"] --> B["💻 Generate Code"]
+    B --> C{"🔍 Lint Check"}
+    C -->|"❌ Failed"| D["📖 Read Error"]
+    D --> E["🔧 Fix Code"]
     E --> C
-    C -->|✅ Passed| F{🧪 Run Tests}
-    F -->|❌ Failed| G[📖 Read Test Error]
-    G --> H[🔧 Fix Implementation]
+    C -->|"✅ Passed"| F{"🧪 Run Tests"}
+    F -->|"❌ Failed"| G["📖 Read Test Error"]
+    G --> H["🔧 Fix Implementation"]
     H --> F
-    F -->|✅ Passed| I{🔗 Integration Test}
-    I -->|❌ Failed| J[📖 Read Integration Error]
-    J --> K[🔧 Fix Integration]
+    F -->|"✅ Passed"| I{"🔗 Integration Test"}
+    I -->|"❌ Failed"| J["📖 Read Integration Error"]
+    J --> K["🔧 Fix Integration"]
     K --> I
-    I -->|✅ Passed| L[✅ Task Complete<br/>Move to Next]
+    I -->|"✅ Passed"| L["✅ Task Complete<br/>Move to Next"]
 
     style A fill:#e3f2fd,stroke:#1976d2,stroke-width:2px,color:#000
     style B fill:#fff9c4,stroke:#f9a825,stroke-width:2px,color:#000
