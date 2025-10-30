@@ -2,35 +2,35 @@
 %% Light theme optimized for presentations
 
 graph TB
-    subgraph Framework["🎯 Context Engineering Framework"]
-        A[📋 CLAUDE.md<br/>Project Rules]
-        B[📁 PRPs/<br/>Implementation Plans]
-        C[💻 examples/<br/>Code Patterns]
-        D[⚙️ .ce/<br/>Framework Core]
+    subgraph Framework["🎯 Context Engineering Framework<br/> "]
+        A["📋 CLAUDE.md<br/>Project Rules<br/> "]
+        B["📁 PRPs/<br/>Implementation Plans<br/> "]
+        C["💻 examples/<br/>Code Patterns<br/> "]
+        D["⚙️ .ce/<br/>Framework Core<br/> "]
     end
 
-    subgraph Commands["🚀 Commands"]
-        E[/generate-prp<br/>Create Plan]
-        F[/execute-prp<br/>Build Feature]
+    subgraph Commands["🚀 Commands<br/> "]
+        E["generate-prp<br/>Create Plan<br/> "]
+        F["execute-prp<br/>Build Feature<br/> "]
     end
 
-    subgraph Output["✨ Output"]
-        G[✅ Production Code]
-        H[🧪 Tests Passing]
-        I[📊 Validation Reports]
+    subgraph Output["✨ Output<br/> "]
+        G["✅ Production Code<br/> "]
+        H["🧪 Tests Passing<br/> "]
+        I["📊 Validation Reports<br/> "]
     end
 
-    A --> E
-    B --> E
-    C --> E
-    D --> E
+    A -->|"provides rules"| E
+    B -->|"contains templates"| E
+    C -->|"shows patterns"| E
+    D -->|"core framework"| E
 
-    E --> F
-    B --> F
+    E -->|"creates"| F
+    B -->|"guides execution"| F
 
-    F --> G
-    F --> H
-    F --> I
+    F -->|"produces"| G
+    F -->|"runs"| H
+    F -->|"generates"| I
 
     style A fill:#e1f5fe,stroke:#0277bd,stroke-width:2px,color:#000
     style B fill:#f3e5f5,stroke:#6a1b9a,stroke-width:2px,color:#000
