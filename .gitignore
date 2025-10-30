@@ -22,8 +22,46 @@ tools/uv.lock
 node_modules/
 tests/__pycache__/
 
-# Syntropy MCP - separate git repository
-syntropy-mcp/
+# Node.js specific
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Build outputs
+build/
+dist/
+*.tsbuildinfo
+
+# Python specific
+*.py[cod]
+*$py.class
+
+# Coverage
+coverage/
+htmlcov/
+.nyc_output/
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+Thumbs.db
+
+# Logs
+logs/
+
+# Misc
+*.bak
+.serena/
 
 repomix-output.xml
 **/.DS_Store
