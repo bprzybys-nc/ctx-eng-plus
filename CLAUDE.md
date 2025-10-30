@@ -47,6 +47,10 @@ uv run ce validate --level all
 uv run ce context health
 uv run ce git status
 
+# Cleanup
+uv run ce vacuum                  # Dry-run (report only)
+uv run ce vacuum --execute        # Delete temp files
+
 # Testing
 uv run pytest tests/ -v
 

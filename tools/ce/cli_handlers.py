@@ -903,3 +903,50 @@ def cmd_update_context(args) -> int:
         import traceback
         traceback.print_exc()
         return 1
+
+
+def cmd_vacuum(args):
+    """Handle vacuum command.
+
+    Args:
+        args: Parsed command-line arguments
+
+    Returns:
+        Exit code (0 = success, 1 = candidates found, 2 = error)
+    """
+    from pathlib import Path
+    from .vacuum import VacuumCommand
+
+    try:
+        # Find project root (where .ce/ directory exists)
+        current = Path.cwd()
+        project_root = None
+
+        for parent in [current] + list(current.parents):
+            if (parent / ".ce").exists():
+                project_root = parent
+                break
+
+        if not project_root:
+            print("❌ Error: Not in a Context Engineering project (.ce/ not found)", file=sys.stderr)
+            return 2
+
+        # Run vacuum command
+        vacuum = VacuumCommand(project_root)
+        return vacuum.run(
+            dry_run=not (args.execute or args.force or args.nuclear),
+            min_confidence=args.min_confidence,
+            exclude_strategies=args.exclude_strategies or [],
+            execute=args.execute,
+            force=args.force,
+            nuclear=args.nuclear,
+        )
+
+    except KeyboardInterrupt:
+        print("\n❌ Vacuum cancelled by user", file=sys.stderr)
+        return 2
+    except Exception as e:
+        print(f"❌ Vacuum failed: {str(e)}", file=sys.stderr)
+        import traceback
+        traceback.print_exc()
+        return 2

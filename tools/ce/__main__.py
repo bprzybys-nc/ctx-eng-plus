@@ -23,6 +23,7 @@ from .cli_handlers import (
     cmd_metrics,
     cmd_analyze_context,
     cmd_update_context,
+    cmd_vacuum,
 )
 
 
@@ -400,6 +401,45 @@ Examples:
         help="Output as JSON"
     )
 
+    # === VACUUM COMMAND ===
+    vacuum_parser = subparsers.add_parser(
+        "vacuum",
+        help="Clean up project noise (temp files, obsolete docs, unreferenced code)"
+    )
+    vacuum_parser.add_argument(
+        "--dry-run",
+        action="store_true",
+        default=True,
+        help="Generate report only (default)"
+    )
+    vacuum_parser.add_argument(
+        "--execute",
+        action="store_true",
+        help="Delete HIGH confidence items (temp files, backups)"
+    )
+    vacuum_parser.add_argument(
+        "--force",
+        action="store_true",
+        help="Delete HIGH + MEDIUM confidence items"
+    )
+    vacuum_parser.add_argument(
+        "--nuclear",
+        action="store_true",
+        help="Delete ALL items including LOW confidence (requires confirmation)"
+    )
+    vacuum_parser.add_argument(
+        "--min-confidence",
+        type=int,
+        default=0,
+        help="Minimum confidence threshold 0-100 (default: 0)"
+    )
+    vacuum_parser.add_argument(
+        "--exclude-strategy",
+        action="append",
+        dest="exclude_strategies",
+        help="Skip specific strategy (can be used multiple times)"
+    )
+
     # Parse arguments
     args = parser.parse_args()
 
@@ -438,6 +478,8 @@ Examples:
         return cmd_analyze_context(args)
     elif args.command == "update-context":
         return cmd_update_context(args)
+    elif args.command == "vacuum":
+        return cmd_vacuum(args)
     else:
         print(f"Unknown command: {args.command}", file=sys.stderr)
         return 1
