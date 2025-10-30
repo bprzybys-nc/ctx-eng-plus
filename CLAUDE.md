@@ -286,6 +286,74 @@ cd tools && uv run ce analyze-context --force
 
 **Troubleshooting**: `rm -rf ~/.mcp-auth` (pre-approved)
 
+## Batch PRP Generation
+
+**Decompose large plans into staged, parallelizable PRPs with automatic dependency analysis**
+
+```bash
+# Create plan document
+vim FEATURE-PLAN.md
+
+# Generate all PRPs with parallel subagents
+/batch-gen-prp FEATURE-PLAN.md
+
+# Output: Multiple PRPs with format PRP-X.Y.Z
+#   X = Batch ID (next free number)
+#   Y = Stage number
+#   Z = Order within stage
+```
+
+**Plan Format**:
+```markdown
+# Plan Title
+
+## Phases
+
+### Phase 1: Name
+
+**Goal**: One-sentence objective
+**Estimated Hours**: 0.5
+**Complexity**: low
+**Files Modified**: path/to/file
+**Dependencies**: None
+**Implementation Steps**: [steps]
+**Validation Gates**: [gates]
+```
+
+**What It Does**:
+1. Parses plan document → Extracts phases
+2. Builds dependency graph → Analyzes deps + file conflicts
+3. Assigns stages → Groups independent PRPs for parallel execution
+4. Spawns Sonnet subagents → Parallel generation per stage
+5. Monitors via heartbeat files → 30s polling, kills after 2 failed polls
+6. Creates Linear issues → One per PRP
+7. Outputs summary → All generated PRPs grouped by stage
+
+**Example Output**:
+```
+Batch 43:
+  Stage 1: PRP-43.1.1
+  Stage 2: PRP-43.2.1, PRP-43.2.2, PRP-43.2.3 (parallel)
+  Stage 3: PRP-43.3.1
+```
+
+**Integration with Execution**:
+```bash
+# Generate PRPs from plan
+/batch-gen-prp BIG-FEATURE-PLAN.md
+
+# Execute entire batch
+/batch-exe-prp --batch 43
+
+# Or stage-by-stage
+/batch-exe-prp --batch 43 --stage 1
+/batch-exe-prp --batch 43 --stage 2
+```
+
+**Time Savings**: 8 PRPs sequential (30 min) → parallel (10-12 min) = **60% faster**
+
+**See**: `.claude/commands/batch-gen-prp.md` for complete documentation
+
 ## PRP Sizing
 
 ```bash
