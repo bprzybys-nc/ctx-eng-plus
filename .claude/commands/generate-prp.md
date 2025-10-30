@@ -147,12 +147,18 @@ def detect_mode(prompt):
    - Auto-generates next PRP ID (PRP-N+1)
    - Validates completeness (ensures all required sections present)
 
-5. **Creates/Updates Linear issue**:
+5. **Runs L1 validation on generated markdown**:
+   - Lints markdown (markdownlint: MD031, MD032, etc.)
+   - Auto-fixes formatting issues (blank lines around lists/code blocks)
+   - Ensures PRP is lint-clean before output
+   - **Note**: This is markdown-specific L1, not code linting
+
+6. **Creates/Updates Linear issue**:
    - **Without --join-prp**: Creates new Linear issue with project defaults (from `.ce/linear-defaults.yml`)
    - **With --join-prp**: Updates existing PRP's Linear issue with new PRP information
    - Updates PRP YAML header with `issue: {ISSUE-ID}`
 
-6. **Outputs to**: `PRPs/feature-requests/PRP-{id}-{feature-slug}.md`
+7. **Outputs to**: `PRPs/feature-requests/PRP-{id}-{feature-slug}.md`
 
 ### Batch Mode Workflow
 
@@ -236,14 +242,21 @@ def detect_mode(prompt):
    - Write to: `PRPs/feature-requests/PRP-{prp_id}-{slug}.md`
    - Update heartbeat: `{"status": "WRITING", "progress": 60}`
 
-5. **Create Linear issue** (if `create_linear_issue: true`):
+5. **Run L1 validation on generated markdown**:
+   - Lint markdown (markdownlint: MD031, MD032, etc.)
+   - Auto-fix formatting issues (blank lines around lists/code blocks)
+   - Ensures PRP is lint-clean before output
+   - Update heartbeat: `{"status": "LINTING", "progress": 75}`
+   - **Note**: This is markdown-specific L1, not code linting
+
+6. **Create Linear issue** (if `create_linear_issue: true`):
    - Use Linear MCP: `linear_create_issue`
    - Title: `PRP-{prp_id}: {feature_name}`
    - Description: Link to PRP file + plan context
    - Update PRP YAML header with `issue: {ISSUE-ID}`
    - Update heartbeat: `{"status": "LINEAR", "progress": 90}`
 
-6. **Return JSON report**:
+7. **Return JSON report**:
    ```json
    {
      "prp_id": "43.2.1",
