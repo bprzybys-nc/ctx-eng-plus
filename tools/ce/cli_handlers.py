@@ -934,11 +934,12 @@ def cmd_vacuum(args):
         # Run vacuum command
         vacuum = VacuumCommand(project_root)
         return vacuum.run(
-            dry_run=not (args.execute or args.force or args.nuclear),
+            dry_run=not (args.execute or args.force or args.auto or args.nuclear),
             min_confidence=args.min_confidence,
             exclude_strategies=args.exclude_strategies or [],
             execute=args.execute,
             force=args.force,
+            auto=args.auto,
             nuclear=args.nuclear,
         )
 

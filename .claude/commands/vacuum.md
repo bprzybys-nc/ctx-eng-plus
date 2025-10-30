@@ -4,7 +4,7 @@ Clean up project noise: temp files, obsolete docs, unreferenced code, orphaned t
 
 ## Usage
 ```bash
-/vacuum [--execute|--force|--nuclear] [--exclude-strategy STRATEGY] [--min-confidence N]
+/vacuum [--execute|--force|--auto|--nuclear] [--exclude-strategy STRATEGY] [--min-confidence N]
 ```
 
 ## Modes
@@ -19,9 +19,11 @@ Clean up project noise: temp files, obsolete docs, unreferenced code, orphaned t
 /vacuum --execute
 ```
 
-**Force mode**: Delete HIGH + MEDIUM confidence items (includes obsolete docs, orphan tests)
+**Force/Auto mode**: Delete HIGH + MEDIUM confidence items (includes obsolete docs, orphan tests, dead links)
 ```bash
 /vacuum --force
+# or
+/vacuum --auto
 ```
 
 **Nuclear mode**: Delete ALL items including LOW confidence (unreferenced code, commented blocks) - requires confirmation
@@ -33,6 +35,7 @@ Clean up project noise: temp files, obsolete docs, unreferenced code, orphaned t
 
 - `--execute`: Delete HIGH confidence items (≥100%)
 - `--force`: Delete MEDIUM + HIGH confidence items (≥60%)
+- `--auto`: Automatically delete MEDIUM + HIGH confidence items (same as --force)
 - `--nuclear`: Delete ALL items including LOW confidence (<60%) - requires "yes" confirmation
 - `--min-confidence N`: Set custom confidence threshold (0-100)
 - `--exclude-strategy STRATEGY`: Skip specific strategy (use multiple times for multiple strategies)
@@ -51,22 +54,21 @@ Clean up project noise: temp files, obsolete docs, unreferenced code, orphaned t
 - Versioned docs: `*-v1.md`, `*-old.md`, `*-deprecated.md`
 - Docs referencing deleted tools/features
 - Duplicate docs (content hash comparison)
-- **Delete with --force**
+- **Delete with --force/--auto**
 
 ### 4. orphan-tests (MEDIUM: 60%)
 - `test_foo.py` where `foo.py` doesn't exist
-- **Delete with --force**
+- **Delete with --force/--auto**
 
-### 5. dead-links (MEDIUM: 70%)
-- Markdown files with broken links to deleted files
-- **Report only** (never auto-deletes containing file)
-
-### 6. unreferenced-code (LOW: 40%)
-- Python files with zero external imports
+### 5. unreferenced-code (LOW: 40%)
+- Python files where:
+  - ALL definitions (functions/classes) are unreferenced elsewhere
+  - AND the file itself is not imported by any other module
 - Uses Serena MCP for symbol analysis (~15s)
 - **Manual review only** (use --nuclear with caution)
+- Common false positives: CLI entry points, scripts meant to be run directly
 
-### 7. commented-code (LOW: 30%)
+### 6. commented-code (LOW: 30%)
 - Commented code blocks ≥20 lines
 - Excludes docstrings, license headers, teaching examples
 - **Manual review only**
@@ -75,9 +77,10 @@ Clean up project noise: temp files, obsolete docs, unreferenced code, orphaned t
 
 **NEVER_DELETE Paths**:
 - `.ce/**` - Framework boilerplate
-- `PRPs/**/*.md` - All PRP files (managed by update-context)
-- `pyproject.toml`, `README.md`, `CLAUDE.md`
-- `.claude/settings*.json` - Settings
+- `.claude/**` - Claude Code configuration (all commands, settings)
+- `syntropy-mcp/**` - Syntropy MCP server directory
+- `PRPs/**/*.md` - All PRP files with YAML headers (managed by update-context)
+- `pyproject.toml`, `README.md`, `CLAUDE.md`, `WARP.md`
 - `examples/**` - Pattern documentation
 - `**/__init__.py`, `**/cli.py`, `**/__main__.py` - Entry points
 
@@ -136,7 +139,7 @@ cd tools && uv run ce vacuum --dry-run
 
 ## Performance
 
-**Parallel execution** for fast strategies (temp-files, backup-files, obsolete-docs, orphan-tests, dead-links, commented-code):
+**Parallel execution** for fast strategies (temp-files, backup-files, obsolete-docs, orphan-tests, commented-code):
 - ~5 seconds total
 
 **Sequential execution** for slow strategy (unreferenced-code via Serena):
@@ -175,7 +178,7 @@ git commit -m "Implement feature X"
 ## Troubleshooting
 
 **"Strategy not found"**: Check spelling, available strategies:
-- `temp-files`, `backup-files`, `obsolete-docs`, `unreferenced-code`, `orphan-tests`, `dead-links`, `commented-code`
+- `temp-files`, `backup-files`, `obsolete-docs`, `unreferenced-code`, `orphan-tests`, `commented-code`
 
 **"Serena unavailable"**: unreferenced-code strategy will skip gracefully, other strategies run normally
 

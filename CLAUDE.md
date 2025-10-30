@@ -49,7 +49,8 @@ uv run ce git status
 
 # Cleanup
 uv run ce vacuum                  # Dry-run (report only)
-uv run ce vacuum --execute        # Delete temp files
+uv run ce vacuum --execute        # Delete temp files only
+uv run ce vacuum --auto           # Delete temp files + obsolete docs/dead links
 
 # Testing
 uv run pytest tests/ -v

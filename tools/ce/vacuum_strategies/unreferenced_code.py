@@ -9,7 +9,15 @@ from .base import BaseStrategy, CleanupCandidate
 
 
 class UnreferencedCodeStrategy(BaseStrategy):
-    """Find Python files with no external references using Serena MCP."""
+    """Find Python files where ALL definitions are unreferenced.
+
+    A file is considered unreferenced if:
+    1. The file/module itself is not imported anywhere
+    2. (Future enhancement: Check individual symbols with Serena)
+
+    Note: Currently only checks #1 for performance. Full Serena integration
+    would check if each function/class is referenced, but this is slower.
+    """
 
     def __init__(self, project_root: Path):
         """Initialize strategy and activate Serena project.
@@ -67,7 +75,7 @@ class UnreferencedCodeStrategy(BaseStrategy):
 
                 candidate = CleanupCandidate(
                     path=py_file,
-                    reason="No imports found (potentially unreferenced)",
+                    reason="File not imported anywhere (all defs potentially unreferenced)",
                     confidence=confidence,  # LOW confidence
                     size_bytes=self.get_file_size(py_file),
                     last_modified=self.get_last_modified(py_file),
