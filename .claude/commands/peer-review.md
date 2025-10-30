@@ -565,21 +565,7 @@ These are applied without user interaction:
 # Time: 2-3 minutes
 ```
 
-**2. Markdown Linting** (if trivial formatting issues)
-
-```bash
-# Triggered by: MD032 (lists without blank lines)
-# Action: Auto-add blank lines around lists
-# Time: <1 second
-```
-
-**3. Missing Blank Lines** (code blocks, lists)
-
-```bash
-# Triggered by: MD031 (code blocks without blank lines)
-# Action: Add blank lines before/after fenced code blocks
-# Time: <1 second
-```
+**Note**: Markdown linting (MD031, MD032, etc.) is handled by L1 validation during `/execute-prp`. Peer review only recommends running L1 validation if markdown files were modified and not yet validated.
 
 **Characteristics**:
 
@@ -648,10 +634,10 @@ AUTO-FIXABLE (applying automatically):
      └─ Status: ✅ Complete (36 files reindexed, 2.3s)
 
 MANUAL (requires review):
-  ⓘ 2. Fix markdown linting (optional, cosmetic)
-     └─ Issue: MD032 violations (16 instances)
-     └─ Impact: Low (doesn't affect functionality)
-     └─ Action: Run 'markdownlint --fix' or ignore
+  ⓘ 2. Run L1 validation (markdown files modified)
+     └─ Issue: .claude/commands/peer-review.md modified
+     └─ Impact: Low (linting issues, if any)
+     └─ Action: /execute-prp will run L1 validation automatically
 
 ================================================================================
 Auto-fixes applied: 1
@@ -700,9 +686,6 @@ export PEER_REVIEW_NO_AUTO_APPLY=1
 # Context sync rollback
 cd tools
 uv run ce context restore <backup-id>
-
-# Markdown fix rollback
-git checkout .claude/commands/peer-review.md
 ```
 
 ### Recommendation Policy
@@ -713,10 +696,11 @@ git checkout .claude/commands/peer-review.md
 
 **Rationale**:
 
-- Saves time on trivial fixes (markdown, drift sync)
+- Saves time on trivial fixes (context sync after doc changes)
 - Reduces friction in review workflow
 - Maintains safety via pre-checks and logging
 - User retains control via flag or env var
+- L1 validation handles linting during execution phase
 
 ## CLI Command
 
