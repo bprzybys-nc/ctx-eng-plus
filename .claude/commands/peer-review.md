@@ -1,6 +1,6 @@
 # /peer-review - PRP Execution Quality Review
 
-Review executed PRP quality with GitButler integration checks.
+Review executed PRP quality with git worktree workflow validation.
 
 ## Usage
 
@@ -19,50 +19,50 @@ Review executed PRP quality with GitButler integration checks.
 
 Validates executed PRP quality across multiple dimensions:
 
-### 1. GitButler Virtual Branch Validation
+### 1. Git Branch Validation
 
 **Checks**:
 
-- Virtual branch exists: `but branch list | grep "prp-{id}"`
+- Branch exists: `git branch | grep "prp-{id}"`
 - Branch name format: `prp-{id}-{sanitized-name}` (e.g., `prp-6-user-authentication`)
-- No conflicts present: `but status | grep 🔒` (aborts if conflicts detected)
-- All commits on correct branch: `but log prp-{id}-{name}`
+- No merge conflicts: `git status` (clean working tree)
+- All commits on correct branch: `git log prp-{id}-{name}`
 
 **Expected**:
 
 ```bash
 # Good branch name
-but branch list
+git branch | grep prp-6
 # Output: prp-6-user-authentication
 
 # No conflicts
-but status
-# Output: No 🔒 icon present
+git status
+# Output: nothing to commit, working tree clean
 
 # All phase commits present
-but log prp-6-user-authentication
+git log prp-6-user-authentication --oneline
 # Output:
-#   ● Phase 3: Test coverage (checkpoint-PRP-6-phase3-20251013-120000)
-#   ● Phase 2: Error handling (checkpoint-PRP-6-phase2-20251013-110000)
-#   ● Phase 1: Core logic (checkpoint-PRP-6-phase1-20251013-100000)
+#   abc1234 Phase 3: Test coverage (checkpoint-PRP-6-phase3-20251013-120000)
+#   def5678 Phase 2: Error handling (checkpoint-PRP-6-phase2-20251013-110000)
+#   ghi9012 Phase 1: Core logic (checkpoint-PRP-6-phase1-20251013-100000)
 ```
 
 **Failure Scenarios**:
 
 ```bash
-# ❌ Conflicts detected
-but status
-# Output: 🔒 commit abc123
-# Action: Resolve in GitButler UI before review
+# ❌ Merge conflicts detected
+git status
+# Output: Unmerged paths...
+# Action: Resolve conflicts manually before review
 
 # ❌ Wrong branch name format
-but branch list
+git branch
 # Output: feature-auth (should be: prp-6-user-authentication)
-# Action: Rename or recreate branch with correct format
+# Action: Rename branch: git branch -m feature-auth prp-6-user-authentication
 
 # ❌ Missing commits
-but log prp-6-user-authentication
-# Output: Only Phase 1 and 2 (missing Phase 3)
+git log prp-6-user-authentication --oneline
+# Output: Only Phase 1 and 2 commits (missing Phase 3)
 # Action: Check if all phases were executed
 ```
 
@@ -72,7 +72,7 @@ but log prp-6-user-authentication
 
 - All phases from blueprint executed
 - Each phase has checkpoint tag: `git tag -l "checkpoint-{prp_id}-phase*"`
-- Each phase has GitButler commit: `but log prp-{id}-{name}`
+- Each phase has git commit: `git log prp-{id}-{name}`
 - Phase goals met (compares blueprint to implementation)
 
 **Example**:
@@ -85,8 +85,8 @@ git tag -l "checkpoint-PRP-6-phase*"
 #   checkpoint-PRP-6-phase2-20251013-110000
 #   checkpoint-PRP-6-phase3-20251013-120000
 
-# GitButler commits match phases
-but log prp-6-user-authentication
+# Git commits match phases
+git log prp-6-user-authentication --oneline
 # Expected: 3 commits (one per phase)
 ```
 
@@ -140,7 +140,7 @@ uv run ce context health --json | jq '.drift_score'
   "prp_id": "PRP-6",
   "review_type": "exe",
   "timestamp": "2025-10-29T12:00:00Z",
-  "gitbutler_checks": {
+  "branch_checks": {
     "branch_exists": true,
     "branch_name_format": "✅ prp-6-user-authentication",
     "conflicts_detected": false,
@@ -198,14 +198,14 @@ The peer-review command checks the same hooks that execute-prp uses:
 
 ### Active Hooks (from .claude/settings.local.json)
 
-- **PreToolUse (git_git_commit)**: Runs `but status` before commits - Shows conflicts (🔒)
-- **PreToolUse (Edit|Write)**: Reminds to commit to appropriate virtual branch
+- **SessionStart**: Context health check - Warns about drift on session start (>10%)
+- **PreToolUse (Edit|Write)**: Reminds to commit to appropriate branch
 
 The review validates:
 
-1. No 🔒 icons present in `but status` output
-2. All file modifications committed to correct virtual branch
-3. GitButler workspace integration successful
+1. No merge conflicts in `git status` output
+2. All file modifications committed to correct branch
+3. Git worktree workflow successfully followed
 
 ## Common Issues
 
@@ -213,34 +213,34 @@ The review validates:
 
 ```bash
 # Symptom
-but branch list | grep prp-6
+git branch | grep prp-6
 # Output: (empty)
 
 # Solution: Check if branch was deleted or wrong ID
-but branch list
-git branch | grep prp-6
+git branch -a | grep prp
 ```
 
-### Issue: "Conflicts detected"
+### Issue: "Merge conflicts detected"
 
 ```bash
 # Symptom
-but status
-# Output: 🔒 commit abc123
+git status
+# Output: Unmerged paths: file.py
 
-# Solution: Resolve in GitButler UI
-# 1. Open GitButler UI
-# 2. Navigate to conflicted branch
-# 3. Resolve conflicts
-# 4. Re-run peer-review
+# Solution: Resolve conflicts manually
+# 1. Open conflicted file
+# 2. Resolve conflict markers (<<<<<<, ======, >>>>>>)
+# 3. git add file.py
+# 4. git commit
+# 5. Re-run peer-review
 ```
 
 ### Issue: "Missing phase commits"
 
 ```bash
 # Symptom
-but log prp-6-feature
-# Output: Only 2 of 3 phases
+git log prp-6-feature --oneline
+# Output: Only 2 of 3 phase commits
 
 # Solution: Check execution logs
 # - Was execution interrupted?
@@ -263,8 +263,8 @@ cd tools && uv run ce context post-sync PRP-6
 
 ### ✅ APPROVED Criteria
 
-- GitButler branch exists with correct format
-- No conflicts (🔒 icon)
+- Git branch exists with correct format
+- No merge conflicts
 - All phases completed
 - All checkpoint tags exist
 - Confidence score >= 8/10
@@ -299,34 +299,36 @@ cd tools && uv run ce context post-sync PRP-6
 /peer-review exe PRP-6
 
 # 3. If approved, create PR
-# (via GitButler UI or gh CLI)
+# (via gh CLI)
 
 # 4. If needs review, address issues
-# - Fix conflicts: GitButler UI
+# - Fix conflicts: Resolve manually
 # - Reduce drift: cd tools && uv run ce context post-sync PRP-6
 # - Fix validation: cd tools && uv run ce execute PRP-6 --start-phase N
 ```
 
-### With GitButler Workflow
+### With Git Worktree Workflow
 
 ```bash
 # Check branch status
-but status
+git status
 
 # View commits
-but log prp-6-user-authentication
+git log prp-6-user-authentication --oneline
 
 # Review execution
 /peer-review exe PRP-6
 
-# If approved, merge in GitButler UI or push
-but branch push prp-6-user-authentication
+# If approved, merge to main
+git checkout main
+git merge prp-6-user-authentication --no-ff
+git push origin main
 ```
 
 ## Tips
 
 1. **Run immediately after execution** for fresh context
-2. **Check GitButler UI** for visual conflict inspection
+2. **Check git status** for merge conflicts
 3. **Use --verbose** for detailed validation breakdowns
 4. **Trust confidence scores**: 10/10 = production ready
 5. **Review self-healing logs** to understand fixes applied
@@ -337,21 +339,21 @@ but branch push prp-6-user-authentication
 
 - **Module**: `tools/ce/peer_review.py`
 - **Tests**: `tools/tests/test_peer_review.py`
-- **Integration**: Uses GitButler `but` commands for branch validation
-- **Hooks**: Validates PreToolUse hooks executed correctly
+- **Integration**: Uses native `git` commands for branch validation
+- **Hooks**: Validates SessionStart hooks executed correctly
 - **Context**: Checks drift score via `ce context health`
 
 ## Related Commands
 
-- `/execute-prp <prp-file>` - Execute PRP with GitButler integration
-- `but status` - Check conflicts and branch status
-- `but log <branch>` - View commit history
+- `/execute-prp <prp-file>` - Execute PRP with git worktree workflow
+- `git status` - Check conflicts and branch status
+- `git log <branch> --oneline` - View commit history
 - `ce context health` - Check context drift
 - `ce prp restore <prp-id> [phase]` - Rollback to checkpoint
 
 ## External References
 
-- [GitButler Reference](../examples/GITBUTLER-REFERENCE.md) - Full GitButler guide
+- [Git Worktree Guide](../CLAUDE.md#git-worktree---parallel-prp-development) - Git worktree workflow (CLAUDE.md lines 421-681)
 - [PRP-4](../PRPs/feature-requests/PRP-4-execute-prp-orchestration.md) - Execute-PRP implementation
 - [PRP-2](../PRPs/feature-requests/PRP-2-prp-state-isolation.md) - Checkpoint system
 - [PRP-5](../PRPs/feature-requests/PRP-5-context-sync-integration.md) - Context sync
