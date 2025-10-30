@@ -1,23 +1,143 @@
-# /peer-review - PRP Execution Quality Review
+# /peer-review - PRP Quality Review (Generation + Execution)
 
-Review executed PRP quality with git worktree workflow validation.
+Review PRP quality in two modes: generation (default) and execution (explicit).
 
 ## Usage
 
 ```bash
-/peer-review exe <prp-file-or-id>
+/peer-review <prp>       # DEFAULT: prp mode (generation review)
+/peer-review prp <prp>   # EXPLICIT: prp mode (generation review)
+/peer-review exe <prp>   # EXPLICIT: exe mode (execution review)
 ```
 
 **Examples**:
 
 ```bash
+# Generation review (DEFAULT)
+/peer-review PRP-6
+/peer-review prp PRP-6
+/peer-review PRPs/feature-requests/PRP-6-user-authentication-system.md
+
+# Execution review (EXPLICIT)
 /peer-review exe PRP-6
 /peer-review exe PRPs/feature-requests/PRP-6-user-authentication-system.md
 ```
 
-## What It Does
+## Mode Detection
 
-Validates executed PRP quality across multiple dimensions:
+The command supports two review modes:
+
+**Usage:**
+- `/peer-review <prp>` → prp mode (DEFAULT - generation review)
+- `/peer-review prp <prp>` → prp mode (explicit)
+- `/peer-review exe <prp>` → exe mode (execution review)
+
+**Mode detection:**
+
+```python
+def detect_review_mode(args):
+    """Detect review mode from arguments
+
+    Returns: ("prp"|"exe", target_path)
+    """
+    if len(args) == 0:
+        raise ValueError("Usage: /peer-review [prp|exe] <target>")
+
+    # Check if first arg is explicit mode
+    if args[0].lower() in ["exe", "prp"]:
+        mode = args[0].lower()
+        target = args[1] if len(args) > 1 else None
+    else:
+        # No explicit mode → default to "prp"
+        mode = "prp"
+        target = args[0]
+
+    if not target:
+        raise ValueError(f"Target required for {mode} mode")
+
+    return mode, target
+```
+
+## Mode 1: Generation Review (prp) - DEFAULT
+
+Reviews PRP quality BEFORE execution.
+
+### What It Reviews
+
+**1. Structure Completeness**
+- ✓ All 9 required sections present (TL;DR, Context, Implementation, etc.)
+- ✓ YAML header valid and complete
+- ✓ Blueprint phases defined
+- ✓ Validation gates specified
+
+**2. Factuality Verification** (mandatory)
+- ✓ Files referenced exist
+- ✓ Dependencies exist (PRP-X in executed/)
+- ✓ Commits exist (if referenced)
+- ✓ Line number claims reasonable
+
+**3. Clarity & Completeness**
+- ✓ Implementation steps actionable
+- ✓ Validation commands copy-paste ready
+- ✓ Rollback procedures documented
+- ✓ Time estimates provided
+
+### Review Output
+
+```
+================================================================================
+Generation Review: PRP-30
+================================================================================
+
+Structure:
+  ✓ YAML header complete
+  ✓ 9/9 sections present
+  ✓ 6 phases defined
+  ✓ 7 validation gates specified
+
+Factuality Verification:
+  ✓ dependencies: PRP-C exists (PRPs/executed/PRP-C-gitbutler-worktree-migration.md)
+  ✓ dependencies: PRP-D exists (PRPs/executed/PRP-D-command-permissions.md)
+  ✗ files_modified: .git/gitbutler/virtual_branches.toml (file not found)
+  ✓ commit: 12e6893 exists
+  ✓ commit: b29ccc5 exists
+
+Clarity:
+  ✓ Implementation steps actionable
+  ✓ Validation commands runnable
+  ✓ Rollback procedures present
+
+================================================================================
+Summary: 8 PASS, 1 FAIL
+================================================================================
+
+FAILED CHECKS:
+✗ .git/gitbutler/virtual_branches.toml
+  → FIX: Update PRP to remove reference OR verify file should exist
+
+Review Status: ⚠️ FACTUAL ERRORS DETECTED
+Recommendation: Fix factual errors before execution
+```
+
+### When to Use
+
+```bash
+# After generating PRP (most common workflow)
+/generate-prp initials/auth/INITIAL.md
+# Output: PRPs/feature-requests/PRP-35-user-authentication.md
+
+/peer-review PRP-35  # Check generation quality (DEFAULT)
+
+# If approved, execute
+/execute-prp PRP-35
+
+# Then check execution quality (EXPLICIT)
+/peer-review exe PRP-35
+```
+
+## Mode 2: Execution Review (exe) - EXPLICIT
+
+Validates executed PRP quality across multiple dimensions.
 
 ### 1. Git Branch Validation
 
@@ -131,6 +251,249 @@ git log prp-6-user-authentication --oneline
 cd tools
 uv run ce context health --json | jq '.drift_score'
 # Expected: < 10.0
+```
+
+## Factuality Check Registry
+
+Checks are run in BOTH modes (prp and exe) against target document.
+
+### How It Works
+
+1. **Extract claims** from YAML header and document
+2. **Run verification** commands for each claim
+3. **Report results**: PASS (✓) or FAIL (✗)
+4. **Cache results** for performance (1-hour TTL)
+
+### Check: file_exists
+
+**Pattern**: `files_modified: [path]` in YAML header
+
+**Verify**:
+
+```bash
+test -f {path} && echo "✓ PASS" || echo "✗ FAIL"
+```
+
+**Output**:
+- ✓ PASS: File exists at specified path
+- ✗ FAIL: File not found
+
+**Example**:
+
+```yaml
+files_modified: [.claude/settings.local.json]
+```
+
+Verification: `test -f .claude/settings.local.json` → ✓ PASS
+
+### Check: commit_exists
+
+**Pattern**: `Commit {hash}` or git references in text
+
+**Verify**:
+
+```bash
+git show {hash} --oneline > /dev/null 2>&1 && echo "✓ PASS" || echo "✗ FAIL"
+```
+
+**Output**:
+- ✓ PASS: Commit exists in repository
+- ✗ FAIL: Commit not found
+
+**Example**:
+
+```
+"Commit 12e6893 contains PRP-A execution"
+```
+
+Verification: `git show 12e6893 --oneline` → ✓ PASS
+
+### Check: dependency_exists
+
+**Pattern**: `dependencies: PRP-X` in YAML header
+
+**Verify**:
+
+```bash
+ls PRPs/executed/PRP-{X}*.md > /dev/null 2>&1 && echo "✓ PASS" || echo "✗ FAIL"
+```
+
+**Output**:
+- ✓ PASS: PRP file found in executed/
+- ✗ FAIL: PRP not in executed/
+
+**Example**:
+
+```yaml
+dependencies: PRP-C, PRP-D
+```
+
+Verification:
+- `ls PRPs/executed/PRP-C*.md` → ✓ PASS
+- `ls PRPs/executed/PRP-D*.md` → ✓ PASS
+
+### Check: branch_exists
+
+**Pattern**: Branch references in text or git commands
+
+**Verify**:
+
+```bash
+git branch -a | grep -q "{branch}" && echo "✓ PASS" || echo "✗ FAIL"
+```
+
+**Output**:
+- ✓ PASS: Branch exists (local or remote)
+- ✗ FAIL: Branch not found
+
+**Example**:
+
+```
+"Branch prp-a-tool-deny"
+```
+
+Verification: `git branch -a | grep prp-a-tool-deny` → ✓ PASS
+
+### Check: tag_exists
+
+**Pattern**: Tag references (checkpoint tags, backup tags)
+
+**Verify**:
+
+```bash
+git tag -l "{tag}" | grep -q . && echo "✓ PASS" || echo "✗ FAIL"
+```
+
+**Output**:
+- ✓ PASS: Tag exists
+- ✗ FAIL: Tag not found
+
+**Example**:
+
+```
+"Tag checkpoint-PRP-6-phase1-20251013-100000"
+```
+
+Verification: `git tag -l "checkpoint-PRP-6-phase1-*"` → ✓ PASS
+
+### Adding New Checks (Extendable)
+
+To add a new factuality check:
+
+1. Add new subsection: `### Check: {name}`
+2. Define **Pattern** (what to look for)
+3. Define **Verify** (bash command to run)
+4. Define **Output** (PASS/FAIL meanings)
+5. Provide **Example**
+
+**No code changes required** - checks are documentation-driven.
+
+## Cache System
+
+### Cache File
+
+Location: `.ce/peer-review-cache.json`
+
+Structure:
+
+```json
+{
+  "version": "1.0",
+  "last_cleanup": "2025-10-30T12:00:00Z",
+  "checks": {
+    "file:.claude/settings.local.json": {
+      "result": "PASS",
+      "verified_at": "2025-10-30T12:00:00Z",
+      "expires_at": "2025-10-30T13:00:00Z",
+      "access_count": 3
+    },
+    "commit:12e6893": {
+      "result": "PASS",
+      "verified_at": "2025-10-30T11:30:00Z",
+      "expires_at": "2025-10-30T12:30:00Z",
+      "access_count": 1
+    }
+  }
+}
+```
+
+### Cache Behavior
+
+**On every /peer-review run**:
+1. Load cache from `.ce/peer-review-cache.json`
+2. Auto-cleanup (see maintenance rules below)
+3. For each factuality check:
+   - Cache hit (not expired): Use cached result, increment access_count
+   - Cache miss: Run verification, store result with 1-hour TTL
+4. Save updated cache
+
+### Maintenance Rules (Auto-cleanup)
+
+**Rule 1: TTL Expiration** (1 hour)
+- Remove entries where `expires_at < now`
+- Prevents stale results after codebase changes
+
+**Rule 2: Max Size Limit** (100 entries)
+- Keep top 100 entries by `(access_count, verified_at)`
+- Evict least accessed + oldest entries
+- Prevents unbounded growth
+
+**Rule 3: Orphaned Entries**
+- Remove entries where target no longer exists
+- Example: File deleted, commit rebased away
+
+**Cleanup pseudocode**:
+
+```python
+def load_cache():
+    cache = read_json('.ce/peer-review-cache.json')
+    now = datetime.now()
+
+    # Rule 1: Remove expired
+    cache['checks'] = {
+        k: v for k, v in cache['checks'].items()
+        if datetime.fromisoformat(v['expires_at']) > now
+    }
+
+    # Rule 2: Limit max size
+    if len(cache['checks']) > 100:
+        sorted_checks = sorted(
+            cache['checks'].items(),
+            key=lambda x: (x[1]['access_count'], x[1]['verified_at']),
+            reverse=True
+        )
+        cache['checks'] = dict(sorted_checks[:100])
+
+    # Rule 3: Remove orphaned
+    cache['checks'] = {
+        k: v for k, v in cache['checks'].items()
+        if verify_target_exists(k)
+    }
+
+    cache['last_cleanup'] = now.isoformat()
+    save_json('.ce/peer-review-cache.json', cache)
+    return cache
+```
+
+### Performance
+
+**Without cache**:
+- 15 factuality checks × 0.3s each = 4.5s
+
+**With cache** (80% hit rate):
+- 3 misses × 0.3s = 0.9s
+- 12 hits × 0.01s = 0.12s
+- Total: 1.02s
+
+**4.4x faster** with cache hits
+
+### Manual Cleanup
+
+If needed, force cache reset:
+
+```bash
+rm .ce/peer-review-cache.json
+# Next /peer-review creates fresh cache
 ```
 
 ## Review Output
@@ -259,6 +622,17 @@ cd tools && uv run ce context health
 cd tools && uv run ce context post-sync PRP-6
 ```
 
+### Issue: "Cache too large"
+
+```bash
+# Symptom
+ls -lh .ce/peer-review-cache.json
+# Output: 500KB (should be ~50KB)
+
+# Solution: Cache auto-cleans, but force reset if needed
+rm .ce/peer-review-cache.json
+```
+
 ## Review Criteria
 
 ### ✅ APPROVED Criteria
@@ -287,25 +661,55 @@ cd tools && uv run ce context post-sync PRP-6
 - Debug code present
 - Validation failures
 
-## Workflow Integration
+## Usage Examples
 
-### After /execute-prp
+### Generation Review (DEFAULT)
 
 ```bash
-# 1. Execute PRP
-/execute-prp PRP-6
+# After generating PRP (most common)
+/generate-prp initials/auth/INITIAL.md
+/peer-review PRP-35  # DEFAULT: prp mode
 
-# 2. Review execution quality
-/peer-review exe PRP-6
+# Explicit prp mode (same as default)
+/peer-review prp PRP-35
 
-# 3. If approved, create PR
-# (via gh CLI)
-
-# 4. If needs review, address issues
-# - Fix conflicts: Resolve manually
-# - Reduce drift: cd tools && uv run ce context post-sync PRP-6
-# - Fix validation: cd tools && uv run ce execute PRP-6 --start-phase N
+# Review specific file path
+/peer-review PRPs/feature-requests/PRP-35-user-authentication.md
 ```
+
+### Execution Review (EXPLICIT)
+
+```bash
+# After executing PRP
+/execute-prp PRP-35
+/peer-review exe PRP-35  # EXPLICIT: exe mode
+
+# Review executed PRP
+/peer-review exe PRPs/executed/PRP-35-user-authentication.md
+```
+
+### Complete Workflow
+
+```bash
+# 1. Generate PRP
+/generate-prp initials/auth/INITIAL.md
+# Output: PRPs/feature-requests/PRP-35-user-authentication.md
+
+# 2. Review generation quality (DEFAULT)
+/peer-review PRP-35
+# Checks: structure, dependencies, files, factuality
+# Output: 12 PASS, 0 FAIL
+
+# 3. If approved, execute
+/execute-prp PRP-35
+
+# 4. Review execution quality (EXPLICIT)
+/peer-review exe PRP-35
+# Checks: git branches, validation gates, confidence score
+# Output: 10/10 confidence
+```
+
+## Workflow Integration
 
 ### With Git Worktree Workflow
 
