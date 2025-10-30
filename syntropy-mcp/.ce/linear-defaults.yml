@@ -1,0 +1,21 @@
+# Linear Issue Defaults - TEMPLATE
+# Used when creating issues via /generate-prp or manual issue creation
+# IMPORTANT: Replace placeholder values with your project specifics
+
+# Project name to assign issues to
+# TEMPLATE: Replace with your Linear project name
+project: "YOUR_PROJECT_NAME"
+
+# Default assignee email
+# TEMPLATE: Replace with your email address
+assignee: "your.email@example.com"
+
+# Team identifier (resolved from Linear API)
+# TEMPLATE: Replace with your Linear team ID
+team: "YOUR_TEAM_ID"
+
+# Default labels for PRP-related issues
+default_labels:
+  - "feature"
+
+# Note: These defaults can be overridden when creating specific issues

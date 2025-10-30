@@ -1,0 +1,16 @@
+# Git hooks configuration for Context Engineering
+# Controls validation behavior in pre-commit hooks
+
+pre_commit:
+  # Uncomment validation_level to enable pre-commit validation
+  # If commented/missing = no validation (hook disabled)
+  #
+  # validation_level: 1  # Syntax & Style (fast)
+  # validation_level: 2  # Unit Tests (medium)
+  # validation_level: 3  # Integration Tests (slow)
+  #
+  # NOTE: Level 4 (Pattern Conformance) is NEVER for hooks
+  #       Run manually: cd tools && uv run ce validate --level 4
+
+# Default: validation_level commented = hook does nothing (fast commits during refactoring)
+# To enable: uncomment validation_level and set 1, 2, or 3

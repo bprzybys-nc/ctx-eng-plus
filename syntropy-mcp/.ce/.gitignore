@@ -1,0 +1,43 @@
+# Context Engineering Boilerplate - Files to Exclude from Copy
+# These files should NEVER be copied to new projects via init-project
+
+# Runtime files (regenerated on usage)
+drift-report.md
+syntropy-health-cache.json
+
+# Virtual environments (project-specific)
+tools/.venv/
+tools/venv/
+**/__pycache__/
+**/*.pyc
+**/*.pyo
+
+# Test caches (runtime)
+tools/.pytest_cache/
+tools/.coverage
+.coverage
+
+# Temporary files (runtime)
+tools/tmp/
+tmp/
+
+# Project-specific config (use templates instead)
+# These files are templated - users must customize from templates
+linear-defaults.yml.example
+.serena/project.yml.example
+
+# Note: Template files end in .example
+# Actual config files (linear-defaults.yml, .serena/project.yml)
+# contain placeholders like YOUR_PROJECT_NAME and should be copied
+# so users can customize them
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
