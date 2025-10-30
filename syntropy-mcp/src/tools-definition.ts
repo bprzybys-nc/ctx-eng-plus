@@ -1218,7 +1218,7 @@ export const SYNTROPY_TOOLS = [
     }
   },
   {
-    name: "syntropy_init_project",
+    name: "init_project",
     description: "Initialize Context Engineering project structure with boilerplate copy and slash command upsert",
     inputSchema: {
       type: "object" as const,
@@ -1232,7 +1232,7 @@ export const SYNTROPY_TOOLS = [
     }
   },
   {
-    name: "syntropy_get_system_doc",
+    name: "get_system_doc",
     description: "Access framework documentation from .ce/ directory",
     inputSchema: {
       type: "object" as const,
@@ -1250,7 +1250,7 @@ export const SYNTROPY_TOOLS = [
     }
   },
   {
-    name: "syntropy_get_user_doc",
+    name: "get_user_doc",
     description: "Access user/project documentation from project root (excludes .ce/)",
     inputSchema: {
       type: "object" as const,
@@ -1268,7 +1268,7 @@ export const SYNTROPY_TOOLS = [
     }
   },
   {
-    name: "syntropy_knowledge_search",
+    name: "knowledge_search",
     description: "Search across all knowledge sources (framework docs, PRPs, examples, Serena memories)",
     inputSchema: {
       type: "object" as const,
@@ -1303,7 +1303,7 @@ export const SYNTROPY_TOOLS = [
     }
   },
   {
-    name: "syntropy_get_summary",
+    name: "get_summary",
     description: "Get compact, readable summary of Syntropy MCP system (servers, tools, routing). Returns summary and persists to .ce/SYNTROPY-SUMMARY.md",
     inputSchema: {
       type: "object" as const,

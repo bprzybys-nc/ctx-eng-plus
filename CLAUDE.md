@@ -186,7 +186,7 @@ Commands that require confirmation:
 
 ## Quick Tool Selection
 
-**🔗 Comprehensive Guide**: See [TOOL-USAGE-GUIDE.md](TOOL-USAGE-GUIDE.md) for:
+**🔗 Comprehensive Guide**: See [examples/TOOL-USAGE-GUIDE.md](examples/TOOL-USAGE-GUIDE.md) for:
 - Decision tree (flowchart for tool selection)
 - Common tasks with right/wrong examples
 - Anti-patterns to avoid

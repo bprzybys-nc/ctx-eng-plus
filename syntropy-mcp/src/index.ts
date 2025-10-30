@@ -103,6 +103,27 @@ function parseSyntropyTool(toolName: string): { server: string; tool: string } |
 }
 
 /**
+ * Match tool name against multiple variants (double underscore, single underscore, short form).
+ * This elegant helper eliminates repetitive OR chains in conditionals.
+ *
+ * Example: matchesTool(name, "healthcheck") matches:
+ * - mcp__syntropy__healthcheck (Claude Code standard)
+ * - mcp__syntropy_healthcheck (legacy single underscore)
+ * - syntropy_healthcheck (legacy prefix)
+ * - healthcheck (short form)
+ *
+ * @param name - The tool name to check
+ * @param shortName - The short form tool name (e.g., "healthcheck", "init_project")
+ * @returns true if name matches any variant
+ */
+function matchesTool(name: string, shortName: string): boolean {
+  return name === `mcp__syntropy__${shortName}` ||
+         name === `mcp__syntropy_${shortName}` ||
+         name === `syntropy_${shortName}` ||
+         name === shortName;
+}
+
+/**
  * Map short server name to pool key.
  * Example: "filesystem" -> "syn-filesystem"
  */
@@ -220,7 +241,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
   console.error(`[Syntropy] DEBUG: Tool args:`, JSON.stringify(args));
 
   // Handle healthcheck tool (special case - direct implementation, no forwarding)
-  if (name === "mcp__syntropy__healthcheck" || name === "mcp__syntropy_healthcheck" || name === "syntropy_healthcheck" || name === "healthcheck") {
+  if (matchesTool(name, "healthcheck")) {
     const detailed = (args as { detailed?: boolean }).detailed ?? false;
     const timeoutMs = (args as { timeout_ms?: number }).timeout_ms ?? 2000;
 
@@ -258,7 +279,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
   }
 
   // Handle init project tool (special case - direct implementation, no forwarding)
-  if (name === "mcp__syntropy_syntropy_init_project" || name === "syntropy_init_project") {
+  if (matchesTool(name, "init_project")) {
     try {
       const result = await initProject(args as { project_root: string });
       return {
@@ -279,7 +300,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
   }
 
   // Handle knowledge query tools (direct implementation, no forwarding)
-  if (name === "mcp__syntropy_syntropy_get_system_doc" || name === "syntropy_get_system_doc") {
+  if (matchesTool(name, "get_system_doc")) {
     const result = await getSystemDoc(args as { project_root: string; doc_path: string });
     return {
       content: [{
@@ -289,7 +310,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
     };
   }
 
-  if (name === "mcp__syntropy_syntropy_get_user_doc" || name === "syntropy_get_user_doc") {
+  if (matchesTool(name, "get_user_doc")) {
     const result = await getUserDoc(args as { project_root: string; doc_path: string });
     return {
       content: [{
@@ -299,7 +320,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
     };
   }
 
-  if (name === "mcp__syntropy_syntropy_knowledge_search" || name === "syntropy_knowledge_search") {
+  if (matchesTool(name, "knowledge_search")) {
     const result = await knowledgeSearch(args as any);
     return {
       content: [{
@@ -309,7 +330,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
     };
   }
 
-  if (name === "mcp__syntropy_syntropy_get_summary" || name === "syntropy_get_summary") {
+  if (matchesTool(name, "get_summary")) {
     const result = await getSyntropySummary(args as any);
     return {
       content: [{
@@ -319,7 +340,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
     };
   }
 
-  if (name === "mcp__syntropy_denoise" || name === "denoise") {
+  if (matchesTool(name, "denoise")) {
     const result = await denoise(args as any);
     return {
       content: [{
@@ -330,7 +351,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
   }
 
   // Handle enable_tools command (dynamic tool management)
-  if (name === "mcp__syntropy__enable_tools" || name === "mcp__syntropy_enable_tools" || name === "enable_tools") {
+  if (matchesTool(name, "enable_tools")) {
     const { enable = [], disable = [] } = args as {
       enable?: string[];
       disable?: string[];
@@ -362,7 +383,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
   }
 
   // Handle list_all_tools command (show all tools with status)
-  if (name === "mcp__syntropy__list_all_tools" || name === "mcp__syntropy_list_all_tools" || name === "list_all_tools") {
+  if (matchesTool(name, "list_all_tools")) {
     const allTools: Array<{
       name: string;
       description: string;

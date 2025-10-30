@@ -213,10 +213,10 @@ Update `.claude/settings.local.json` or `.claude/config.json` to:
 ### ❌ DENY: Syntropy System Tools (5 tools)
 
 **Tools to Deny**:
-- `syntropy_init_project` (rare use, one-time setup)
-- `syntropy_get_system_doc` (use native Read for .ce/ files)
-- `syntropy_get_user_doc` (use native Read for user docs)
-- `syntropy_get_summary` (use bash commands or native tools)
+- `init_project` (rare use, one-time setup)
+- `get_system_doc` (use native Read for .ce/ files)
+- `get_user_doc` (use native Read for user docs)
+- `get_summary` (use bash commands or native tools)
 - `denoise` (specialized, rare use)
 
 **Rationale**:
@@ -260,8 +260,8 @@ Update `.claude/settings.local.json` or `.claude/config.json` to:
 ### ✅ KEEP: Syntropy Specialized Tools (2 tools)
 
 **Tools to Keep**:
-- `syntropy_healthcheck`
-- `syntropy_knowledge_search`
+- `healthcheck`
+- `knowledge_search`
 
 **Rationale**:
 - `healthcheck`: Debugging MCP server connectivity, diagnostics
@@ -665,8 +665,8 @@ Need to... → Use this tool
 - `Thinking` (1 tool) - Complex reasoning
   - `sequentialthinking`
 - `Syntropy` (2 tools) - System utilities
-  - `syntropy_healthcheck`
-  - `syntropy_knowledge_search`
+  - `healthcheck`
+  - `knowledge_search`
 
 **Section 6: Migration from Old Tools**
 
