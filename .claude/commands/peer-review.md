@@ -542,6 +542,182 @@ rm .ce/peer-review-cache.json
 }
 ```
 
+## Auto-Apply Recommendations
+
+After peer review completes, recommendations are **automatically applied** unless they require user interaction.
+
+### How It Works
+
+1. **Review generates recommendations** (categorized by type)
+2. **Auto-fixable recommendations** → Applied immediately without asking
+3. **Manual recommendations** → Presented to user with explanation
+4. **User is notified** of all actions taken
+
+### Auto-Fixable (Applied Automatically)
+
+These are applied without user interaction:
+
+**1. Context Sync** (if drift > 30%)
+
+```bash
+# Triggered by: High drift after documentation changes
+# Action: cd tools && uv run ce context sync
+# Time: 2-3 minutes
+```
+
+**2. Markdown Linting** (if trivial formatting issues)
+
+```bash
+# Triggered by: MD032 (lists without blank lines)
+# Action: Auto-add blank lines around lists
+# Time: <1 second
+```
+
+**3. Missing Blank Lines** (code blocks, lists)
+
+```bash
+# Triggered by: MD031 (code blocks without blank lines)
+# Action: Add blank lines before/after fenced code blocks
+# Time: <1 second
+```
+
+**Characteristics**:
+
+- ✅ Low risk (cosmetic or automatically reversible)
+- ✅ No architectural impact
+- ✅ Deterministic outcome (no ambiguity)
+- ✅ Fast execution (<3 minutes)
+
+### Manual (Requires User Decision)
+
+These require explicit user approval:
+
+**1. Structural Refactoring**
+
+```bash
+# Example: "Consider splitting 800-line function into smaller units"
+# Why manual: Architectural decision needed
+# Action: Present recommendation, wait for approval
+```
+
+**2. Dependency Changes**
+
+```bash
+# Example: "Update dependency PRP-X (outdated reference)"
+# Why manual: May affect other PRPs
+# Action: Present recommendation, wait for approval
+```
+
+**3. Security-Related**
+
+```bash
+# Example: "Remove exposed API key in example code"
+# Why manual: Critical issue requiring verification
+# Action: Present recommendation, wait for approval
+```
+
+**4. High-Risk Operations**
+
+```bash
+# Example: "Delete unused files: file1.py, file2.py"
+# Why manual: Irreversible without backup
+# Action: Present recommendation, wait for approval
+```
+
+**Characteristics**:
+
+- ⚠️ Higher risk (may require rollback)
+- ⚠️ Architectural or security implications
+- ⚠️ Subjective (multiple valid approaches)
+- ⚠️ Time-consuming (>3 minutes)
+
+### Example Output
+
+```
+================================================================================
+Peer Review Complete: PRP-31
+================================================================================
+
+Review Status: ⚠️ APPROVED WITH CONDITIONS
+
+Recommendations Generated:
+
+AUTO-FIXABLE (applying automatically):
+  ✅ 1. Sync context (drift: 32.73% → <10%)
+     └─ Running: cd tools && uv run ce context sync
+     └─ Status: ✅ Complete (36 files reindexed, 2.3s)
+
+MANUAL (requires review):
+  ⓘ 2. Fix markdown linting (optional, cosmetic)
+     └─ Issue: MD032 violations (16 instances)
+     └─ Impact: Low (doesn't affect functionality)
+     └─ Action: Run 'markdownlint --fix' or ignore
+
+================================================================================
+Auto-fixes applied: 1
+Manual recommendations: 1
+Overall: ✅ APPROVED
+================================================================================
+```
+
+### Disabling Auto-Apply
+
+If you prefer manual control:
+
+```bash
+# Via CLI flag
+cd tools
+uv run ce peer-review exe PRP-6 --no-auto-apply
+
+# Via environment variable
+export PEER_REVIEW_NO_AUTO_APPLY=1
+/peer-review exe PRP-6
+```
+
+### Safety Guarantees
+
+**Before auto-apply**:
+
+1. Verify git working tree is clean
+2. Check no uncommitted changes exist
+3. Create backup reference (if needed)
+
+**During auto-apply**:
+
+1. Log all actions taken
+2. Capture command output
+3. Verify expected outcome
+
+**After auto-apply**:
+
+1. Report success/failure
+2. Show before/after metrics (e.g., drift score)
+3. Provide rollback instructions if needed
+
+**Rollback** (if auto-fix fails):
+
+```bash
+# Context sync rollback
+cd tools
+uv run ce context restore <backup-id>
+
+# Markdown fix rollback
+git checkout .claude/commands/peer-review.md
+```
+
+### Recommendation Policy
+
+**Default Behavior**: Auto-apply enabled
+
+**Override**: Use `--no-auto-apply` flag for full manual control
+
+**Rationale**:
+
+- Saves time on trivial fixes (markdown, drift sync)
+- Reduces friction in review workflow
+- Maintains safety via pre-checks and logging
+- User retains control via flag or env var
+
 ## CLI Command
 
 ```bash
