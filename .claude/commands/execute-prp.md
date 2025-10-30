@@ -2,6 +2,8 @@
 
 Automates PRP execution with phase-by-phase implementation, L1-L4 validation loops, self-healing error recovery, and automatic escalation triggers.
 
+**Note**: This command defines the PRP execution protocol. `/batch-exe-prp` launches parallel agents that follow this protocol independently in separate git worktrees.
+
 ## Usage
 
 ```
@@ -22,12 +24,20 @@ Automates PRP execution with phase-by-phase implementation, L1-L4 validation loo
    - Identifies files to create/modify and functions to implement
    - Extracts validation commands and checkpoint instructions
 
-2. **Initializes PRP Context** (via PRP-2):
+2. **Creates Git Branch** (in worktree if specified):
+   - If executing in git worktree: Uses existing branch from worktree setup
+   - If executing in main repo: Creates branch `prp-{prp_id}-{sanitized-name}`
+   - Format example: `prp-6-user-authentication`
+   - Enables parallel PRP execution (see CLAUDE.md "Git Worktree" section)
+   - **Pattern**: Branch created/verified BEFORE any file modifications
+
+3. **Initializes PRP Context**:
    - Creates active PRP session in `.ce/active_prp_session`
    - Initializes state tracking for phases
    - Sets up checkpoint namespace: `checkpoint-{prp_id}-{phase}`
+   - Stores branch name and worktree path if applicable
 
-3. **Executes Each Phase**:
+4. **Executes Each Phase**:
    - Creates/modifies files using Serena MCP
    - Implements functions from blueprint
    - Logs progress to console
@@ -46,9 +56,17 @@ Automates PRP execution with phase-by-phase implementation, L1-L4 validation loo
    - Re-runs validation
    - Escalates to human if persistent/ambiguous
 
-5. **Creates Checkpoints** (via PRP-2):
-   - Git tag after each validation gate: `checkpoint-{prp_id}-phase{N}-{timestamp}`
-   - Preserves rollback points
+   **Error Escalation Triggers**:
+   - **Persistent**: Same error after 3 attempts
+   - **Ambiguous**: Generic error with no file/line info
+   - **Architectural**: Keywords: refactor, redesign, circular import
+   - **External**: Network errors, package issues
+   - **Security**: CVE, credentials, permissions
+
+5. **Creates Checkpoints**:
+   - Git commit after each phase: `git commit -m "Phase N: {goal}"`
+   - Git tag after validation gate: `checkpoint-{prp_id}-phase{N}-{timestamp}`
+   - Preserves rollback points for easy recovery
 
 6. **Post-Execution Sync** (if auto-sync enabled via PRP-5):
    - Runs cleanup protocol (archives memories, deletes ephemeral state)
@@ -66,6 +84,90 @@ Automates PRP execution with phase-by-phase implementation, L1-L4 validation loo
 8. **Ends PRP Context**:
    - Removes active session
    - Returns execution summary
+
+## Execution Protocol Specification
+
+**This section defines the PRP execution protocol that `/batch-exe-prp` agents follow independently.**
+
+### Protocol Steps (Sequential per Phase)
+
+```
+For each phase in PRP blueprint:
+  1. Parse phase metadata (number, name, goal, hours)
+  2. Execute implementation steps:
+     - Read files (if modifying existing)
+     - Apply changes (Edit/Write tools)
+     - Create new files if needed
+  3. Run validation loop:
+     a. L1 (Syntax & Style):
+        - Run linting (ruff/pylint/eslint)
+        - Run formatting (black/prettier)
+        - Run type checking (mypy/tsc)
+        - Self-heal if failed (max 3 attempts)
+     b. L2 (Unit Tests):
+        - Run phase validation command
+        - Parse test failures
+        - Self-heal if failed (max 3 attempts)
+     c. L3 (Integration Tests):
+        - Run integration test suite
+        - NO self-healing (escalate on failure)
+     d. L4 (Pattern Conformance):
+        - Calculate drift score
+        - ABORT if drift >30%
+        - NO self-healing (escalate on failure)
+  4. Create checkpoint:
+     - Git commit: "Phase {N}: {goal}"
+     - Git tag: "checkpoint-{prp_id}-phase{N}-{timestamp}"
+  5. Output progress signal:
+     - "STATUS:PHASE_COMPLETE:{N}/{total}"
+
+Return JSON report:
+{
+  "prp_id": "PRP-X",
+  "status": "SUCCESS|FAILED|PARTIAL",
+  "phases_completed": N,
+  "phases_total": M,
+  "confidence_score": 1-10,
+  "validation_results": {...},
+  "self_heals": N,
+  "commit_hash": "abc123",
+  "execution_time": "Xm Ys",
+  "files_modified": ["file1", "file2"],
+  "errors": [...]
+}
+```
+
+### Self-Healing Rules
+
+**L1-L2 ONLY** (max 3 attempts per error):
+
+**Auto-fixable**:
+- Import errors → Add missing import
+- Formatting errors → Apply formatter
+- Simple type errors → Add type hints
+
+**DO NOT auto-fix**:
+- Persistent errors (same error 3x) → Escalate
+- Ambiguous errors (no file/line) → Escalate
+- Architectural errors (circular import, refactor needed) → Escalate
+- External errors (network, package not found) → Escalate
+- Security errors (CVE, credentials) → Escalate immediately
+
+### Health Check Protocol (for batch agents)
+
+**Output every 5 minutes**:
+```
+HEALTH:OK                          # All systems normal
+HEALTH:ERROR:timeout               # Validation timeout
+HEALTH:ERROR:import_error:file.py  # Specific error detected
+```
+
+**Completion signals**:
+```
+STATUS:COMPLETE:10/10              # Success (confidence score)
+STATUS:FAILED:L3_timeout           # Failure reason
+STATUS:PARTIAL:2/3                 # Partial (N of M phases done)
+```
 
 ## CLI Command
 
@@ -255,18 +357,21 @@ With auto-sync enabled (`ce context auto-sync --enable`):
 4. Creates final checkpoint
 5. Removes active PRP session
 
-## Claude Code Hooks (Optional)
+## Claude Code Hooks
 
-**Proactive context monitoring** during interactive sessions:
+**Integrated Context Monitoring** (configured in `.claude/settings.local.json`):
 
-**Working hook** (configured in `.claude/settings.local.json`):
-- **SessionStart health check** - Warns about drift on session start
+**Active Hooks**:
+
+- **SessionStart**: Context health check - Warns about drift on session start (>10%)
 
 **Additional hooks available** (add to settings.local.json as needed):
+
 - **UserPromptSubmit**: Auto-sync reminder (checks if auto-sync disabled)
 - **PostToolUse**: Drift spike detector (alerts after Edit/Write if drift >40%)
 
 **Current hook configuration**:
+
 ```json
 {
   "hooks": {
@@ -287,35 +392,40 @@ With auto-sync enabled (`ce context auto-sync --enable`):
 ```
 
 **Use cases**:
+
 - Daily development: SessionStart health check (drift warning)
 - Long sessions: PostToolUse drift spike detector (alerts >40% drift)
 - Exploration: Complements auto-sync for non-PRP work
 
 **Note**: Hooks are optional. Auto-sync mode handles PRP workflow automatically.
 
-**More info**: See official docs at https://docs.claude.com/en/docs/claude-code/hooks
+**More info**: See official docs at <https://docs.claude.com/en/docs/claude-code/hooks>
 
 ## Common Issues
 
 ### Issue: "PRP file not found: PRP-5"
+
 ```bash
 # Solution: Use full path or ensure PRP is in PRPs/feature-requests/
 /execute-prp PRPs/feature-requests/PRP-5-context-sync-integration.md
 ```
 
 ### Issue: Validation fails with "command not found"
+
 ```bash
 # Solution: Ensure validation command is correct in PRP blueprint
 # Example: Use "uv run pytest tests/" not just "pytest tests/"
 ```
 
 ### Issue: Self-healing stuck in loop
+
 ```bash
 # Solution: Same error 3 times triggers escalation
 # Review escalation message for troubleshooting guidance
 ```
 
 ### Issue: "Auto-sync failed"
+
 ```bash
 # Solution: Post-sync is non-blocking, execution still completes
 # Run manual sync: cd tools && uv run ce context post-sync PRP-5
@@ -363,18 +473,21 @@ With auto-sync enabled (`ce context auto-sync --enable`):
    - Address any escalated errors
 
 3. **Rollback if Needed** (via PRP-2):
+
    ```bash
    cd tools
    uv run ce prp restore PRP-6 phase2
    ```
 
 4. **Context Sync** (if auto-sync disabled):
+
    ```bash
    cd tools
    uv run ce context post-sync PRP-6
    ```
 
 5. **Peer Review**:
+
    ```bash
    /peer-review exe PRPs/feature-requests/PRP-6-user-authentication-system.md
    ```
