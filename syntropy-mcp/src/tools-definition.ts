@@ -1143,7 +1143,7 @@ export const SYNTROPY_TOOLS = [
   },
 
 
-  // ============ SYNTROPY TOOLS (7) ============
+  // ============ SYNTROPY TOOLS (9) ============
   {
     name: "denoise",
     description: "Boil out noise from documents—remove verbosity while strictly guaranteeing complete retention of all essential information",
@@ -1168,6 +1168,35 @@ export const SYNTROPY_TOOLS = [
         }
       },
       required: ["file_path"]
+    }
+  },
+  {
+    name: "enable_tools",
+    description: "Enable or disable specific tools dynamically without restart. Changes persist across sessions.",
+    inputSchema: {
+      type: "object" as const,
+      properties: {
+        enable: {
+          type: "array",
+          items: { type: "string" },
+          description: "Tool names to enable (full MCP format: mcp__syntropy__<server>_<tool>)"
+        },
+        disable: {
+          type: "array",
+          items: { type: "string" },
+          description: "Tool names to disable (full MCP format: mcp__syntropy__<server>_<tool>)"
+        }
+      },
+      required: []
+    }
+  },
+  {
+    name: "list_all_tools",
+    description: "List all tools from all connected MCP servers with their enabled/disabled status",
+    inputSchema: {
+      type: "object" as const,
+      properties: {},
+      required: []
     }
   },
   {

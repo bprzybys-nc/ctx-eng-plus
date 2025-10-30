@@ -273,6 +273,39 @@ cd tools && uv run ce analyze-context --force
 - 1: 5-15% (warning)
 - 2: ≥15% (critical)
 
+## Syntropy MCP Tool Sync
+
+**Dynamic tool management** - Enable/disable tools at runtime without restart
+
+```bash
+# Sync settings with Syntropy MCP tool state
+/sync-with-syntropy
+
+# Workflow example:
+# 1. Enable/disable tools via Syntropy
+mcp__syntropy__enable_tools(
+  enable=["serena_find_symbol", "context7_get_library_docs"],
+  disable=["filesystem_read_file", "git_git_status"]
+)
+
+# 2. Sync settings to .claude/settings.local.json
+/sync-with-syntropy
+
+# 3. Verify changes
+cat .claude/settings.local.json
+```
+
+**How it works**:
+1. Call `mcp__syntropy__list_all_tools` to get current tool states
+2. Update `.claude/settings.local.json` to match
+3. Backup original settings to `.claude/settings.local.json.backup`
+4. Output clear summary of changes made
+
+**Benefits**:
+- Real-time tool control (no MCP restart needed)
+- Persistent state across sessions (`~/.syntropy/tool-state.json`)
+- Context-aware tool sets (enable 10 tools for quick tasks, all 87 for deep analysis)
+
 ## Linear Integration
 
 **Config**: `.ce/linear-defaults.yml`

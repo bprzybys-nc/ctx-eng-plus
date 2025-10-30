@@ -37,6 +37,7 @@ import { initProject } from "./tools/init.js";
 import { getSystemDoc, getUserDoc, knowledgeSearch } from "./tools/knowledge.js";
 import { getSyntropySummary } from "./tools/summary.js";
 import { denoise } from "./tools/denoise.js";
+import { ToolStateManager } from "./tool-manager.js";
 // After SYNTROPY_TOOLS import
 console.error(`[SYNTROPY DEBUG] Registering ${SYNTROPY_TOOLS.length} tools`);
 console.error(`[SYNTROPY DEBUG] Tool 58: ${SYNTROPY_TOOLS[57]?.name || 'N/A'}`);
@@ -49,6 +50,9 @@ const __dirname = path.dirname(__filename);
 
 // Initialize client manager for forwarding
 const clientManager = new MCPClientManager(path.join(__dirname, "../servers.json"));
+
+// Initialize tool state manager
+const toolStateManager = new ToolStateManager();
 
 // Tool routing configuration
 // CRITICAL: Keys MUST match servers.json pool keys (syn-XXXX)
@@ -191,10 +195,18 @@ const server = new Server(
  * Tools are exposed in proper MCP format with full JSON Schema definitions.
  * This ensures compatibility with all MCP clients including Claude Code, Claude Desktop,
  * and other integrations.
+ *
+ * FILTERING: Tools are filtered by enabled state from ToolStateManager.
+ * Default behavior: All tools enabled (empty enabled list = wildcard).
  */
 server.setRequestHandler(ListToolsRequestSchema, async () => {
-  // Use tool definitions with proper inputSchema from tools-definition.ts
-  return { tools: SYNTROPY_TOOLS };
+  // Filter tools by enabled state
+  const enabledTools = SYNTROPY_TOOLS.filter(tool => {
+    const toolName = `mcp__syntropy__${tool.name}`;
+    return toolStateManager.isEnabled(toolName);
+  });
+
+  return { tools: enabledTools };
 });
 
 /**
@@ -317,6 +329,69 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
     };
   }
 
+  // Handle enable_tools command (dynamic tool management)
+  if (name === "mcp__syntropy__enable_tools" || name === "mcp__syntropy_enable_tools" || name === "enable_tools") {
+    const { enable = [], disable = [] } = args as {
+      enable?: string[];
+      disable?: string[];
+    };
+
+    try {
+      await toolStateManager.enableTools(enable, disable);
+      const state = toolStateManager.getState();
+
+      return {
+        content: [{
+          type: "text" as const,
+          text: JSON.stringify({
+            success: true,
+            message: 'Tool state updated successfully',
+            enabled_count: state.enabled.length,
+            disabled_count: state.disabled.length,
+            state_file: '~/.syntropy/tool-state.json'
+          }, null, 2)
+        }]
+      };
+    } catch (error) {
+      throw new McpError(
+        ErrorCode.InternalError,
+        `Failed to update tool state: ${error}\n` +
+        `🔧 Troubleshooting: Check ~/.syntropy/tool-state.json permissions`
+      );
+    }
+  }
+
+  // Handle list_all_tools command (show all tools with status)
+  if (name === "mcp__syntropy__list_all_tools" || name === "mcp__syntropy_list_all_tools" || name === "list_all_tools") {
+    const allTools: Array<{
+      name: string;
+      description: string;
+      status: 'enabled' | 'disabled';
+    }> = [];
+
+    // Add all tools from SYNTROPY_TOOLS with their status
+    for (const tool of SYNTROPY_TOOLS) {
+      const toolName = `mcp__syntropy__${tool.name}`;
+      allTools.push({
+        name: toolName,
+        description: tool.description || '',
+        status: toolStateManager.isEnabled(toolName) ? 'enabled' : 'disabled'
+      });
+    }
+
+    return {
+      content: [{
+        type: "text" as const,
+        text: JSON.stringify({
+          total_tools: allTools.length,
+          enabled_tools: allTools.filter(t => t.status === 'enabled').length,
+          disabled_tools: allTools.filter(t => t.status === 'disabled').length,
+          tools: allTools
+        }, null, 2)
+      }]
+    };
+  }
+
   // Parse syntropy tool name (format: mcp__syntropy_server_tool, added by Claude Code)
   const parsed = parseSyntropyTool(name);
   if (!parsed) {
@@ -369,6 +444,15 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
 // Start server only when not running tests
 async function main() {
   const transport = new StdioServerTransport();
+
+  // Initialize tool state manager
+  try {
+    await toolStateManager.initialize();
+    console.error("✅ Tool state manager initialized");
+  } catch (error) {
+    console.error(`⚠️ Tool state manager initialization failed: ${error}`);
+    console.error("🔧 Continuing with default state (all tools enabled)");
+  }
 
   // NEW: Wait for eager servers with 9-second timeout protection
   try {
