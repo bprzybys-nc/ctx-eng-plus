@@ -247,6 +247,40 @@ Dependency graph:
 **Algorithm**: Topological sort + conflict resolution
 
 ```python
+def detect_circular_dependency(dep_graph, assigned):
+    """Detect circular dependency and return cycle path
+
+    H3: Show actual cycle path in error message
+
+    Returns: list of phase numbers forming cycle, or None if no cycle
+    """
+    def dfs(node, visited, stack):
+        visited.add(node)
+        stack.append(node)
+
+        for dep in dep_graph[node].dependencies:
+            if dep not in assigned:  # Only check unassigned deps
+                if dep not in visited:
+                    cycle = dfs(dep, visited, stack)
+                    if cycle:
+                        return cycle
+                elif dep in stack:
+                    # Found cycle
+                    cycle_start = stack.index(dep)
+                    return stack[cycle_start:] + [dep]
+
+        stack.pop()
+        return None
+
+    # Check all unassigned nodes
+    for node in dep_graph:
+        if node not in assigned:
+            cycle = dfs(node, set(), [])
+            if cycle:
+                return cycle
+
+    return None
+
 def assign_stages(dep_graph, file_map):
     """Group phases into stages maximizing parallelism"""
     stages = []
@@ -261,7 +295,13 @@ def assign_stages(dep_graph, file_map):
         ]
 
         if not ready:
-            raise CircularDependencyError("Circular dependency detected")
+            # H3: Detect and show circular dependency path
+            cycle_path = detect_circular_dependency(dep_graph, assigned)
+            if cycle_path:
+                cycle_str = " → ".join([f"Phase {p}" for p in cycle_path])
+                raise CircularDependencyError(f"Circular dependency detected: {cycle_str}")
+            else:
+                raise CircularDependencyError("Circular dependency detected (unable to determine path)")
 
         # Group by file conflicts
         parallel_groups = []
@@ -311,10 +351,33 @@ Estimated execution time:
 - Z = Order within stage
 
 ```python
+import re
+from glob import glob
+
+def extract_prp_number(filename):
+    """Extract root batch number from PRP filename
+
+    C2: Handles both sequential and batch PRP formats
+
+    Examples:
+        PRP-42-feature.md → 42
+        PRP-43.2.1-feature.md → 43 (ignore stage/order)
+        PRP-100.5.3-complex.md → 100
+
+    Returns: int (batch number) or 0 if no match
+    """
+    match = re.search(r'PRP-(\d+)', filename)
+    if match:
+        return int(match.group(1))
+    return 0
+
 # Find next batch ID
 existing_prps = glob("PRPs/feature-requests/PRP-*.md")
-max_id = max([extract_prp_number(p) for p in existing_prps])
-batch_id = max_id + 1
+if existing_prps:
+    max_id = max([extract_prp_number(p) for p in existing_prps])
+    batch_id = max_id + 1
+else:
+    batch_id = 1  # First batch
 
 # Assign PRP IDs
 prp_ids = {}
@@ -525,7 +588,21 @@ def monitor_parallel_agents(agents, prp_ids, timeout=300):
 
             # Check heartbeat file
             if os.path.exists(heartbeat_file):
-                heartbeat = json.load(open(heartbeat_file))
+                # H5: Handle corrupted heartbeat files
+                try:
+                    with open(heartbeat_file, 'r') as f:
+                        heartbeat = json.load(f)
+                    age = time.now() - heartbeat.timestamp
+                except (json.JSONDecodeError, IOError, KeyError) as e:
+                    # Treat corrupted heartbeat as missing
+                    failed_polls[prp_id] += 1
+                    age = time.now() - start_time
+                    print(f"PRP-{prp_id}: {dep_graph[status_data.phase_num].name}")
+                    print(f"  Status: [CORRUPTED_HEARTBEAT] ⚠ WARNING (poll {failed_polls[prp_id]}/2)")
+                    print(f"  Error: {str(e)}")
+                    print()
+                    continue
+
                 age = time.now() - heartbeat.timestamp
 
                 status_data.status = heartbeat.status
@@ -589,6 +666,15 @@ def monitor_parallel_agents(agents, prp_ids, timeout=300):
                         "error": f"Timeout after {timeout}s"
                     }
             break
+
+    # M3: Cleanup heartbeat files
+    for prp_id in agent_status.keys():
+        heartbeat_file = f".tmp/batch-gen/PRP-{prp_id}.status"
+        if os.path.exists(heartbeat_file):
+            try:
+                os.remove(heartbeat_file)
+            except OSError:
+                pass  # Ignore cleanup errors
 
     return results
 ```
@@ -741,6 +827,23 @@ Or regenerate entire stage:
 /batch-exe-prp --batch 43 --stage 3
 ```
 
+**H6: Batch Filtering Integration**
+
+⚠️ **NOTE**: The `--batch` flag syntax shown above assumes `/batch-exe-prp` supports batch ID filtering. This feature needs verification:
+
+1. **Check if `/batch-exe-prp` supports `--batch` flag**
+2. **If not**: Update `/batch-exe-prp` to add batch filtering by parsing PRP-X.Y.Z format
+3. **Or**: Update this doc to show manual PRP selection:
+   ```bash
+   # Manual approach (if --batch not supported)
+   /execute-prp PRPs/feature-requests/PRP-43.1.1-*.md
+   /execute-prp PRPs/feature-requests/PRP-43.2.1-*.md
+   /execute-prp PRPs/feature-requests/PRP-43.2.2-*.md
+   # ... etc
+   ```
+
+**Recommended**: Add `--batch` support to `/batch-exe-prp` for seamless workflow
+
 **Batch metadata**: PRPs contain all necessary metadata for execution
 - `stage`: Which stage the PRP belongs to
 - `execution_order`: Order within batch
@@ -783,9 +886,29 @@ Failed PRPs can be retried later
 **User requirement**: "second polling status failed = kill"
 
 **Behavior**:
-- Poll 1: No heartbeat → ⚠ WARNING
-- Poll 2 (30s later): Still no heartbeat → ❌ KILL
+- Poll 1 (30s): No heartbeat → ⚠ WARNING
+- Poll 2 (60s): Still no heartbeat → ❌ KILL
 - Mark as FAILED, continue with other agents
+
+**H4: 60-Second Kill Timeout**
+
+⚠️ **WARNING**: Agents are killed if no heartbeat for 60 seconds (2 polls × 30s).
+
+This is **intentionally aggressive** for PRP generation (typical time: 30-90s). Reasons:
+- Prevents hung agents from blocking stage completion
+- Faster feedback for failures
+- PRP generation should be quick (< 60s for most)
+
+**If your PRPs require >60s**:
+- Research-heavy PRPs may timeout if Serena queries are slow
+- Complex PRPs with deep codebase analysis may need more time
+
+**Solutions**:
+1. **Adjust phase granularity**: Break large phases into smaller ones
+2. **Skip research**: Set research to optional in batch input
+3. **Increase timeout**: Modify monitoring code (not recommended)
+
+**Comparison with /batch-exe-prp**: Execution timeout is 10 minutes (much longer because code execution takes longer than generation)
 
 ### 4. Invalid Plan Format
 
