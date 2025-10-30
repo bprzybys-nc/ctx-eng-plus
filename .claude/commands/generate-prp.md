@@ -1,8 +1,46 @@
-# /generate-prp - Generate PRP from INITIAL.md
+# /generate-prp - Generate PRP from INITIAL.md or Batch Input
 
 Automates PRP (Product Requirements Prompt) generation from INITIAL.md with comprehensive codebase research, documentation fetching, and context synthesis.
 
+**Supports two modes**:
+- **Solo Mode**: Interactive generation from INITIAL.md file (user-facing)
+- **Batch Mode**: Automated generation from structured JSON input (subagent-facing, used by `/batch-gen-prp`)
+
+## Mode Detection
+
+The command automatically detects which mode to use by extracting and parsing JSON from the prompt:
+
+```python
+import json
+import re
+
+def detect_mode(prompt):
+    """Detect generation mode from prompt
+
+    Returns: "batch" or "solo"
+    """
+    # Extract JSON block from prompt
+    json_match = re.search(r'```json\n(.*?)\n```', prompt, re.DOTALL)
+
+    if json_match:
+        try:
+            data = json.loads(json_match.group(1))
+            if data.get("batch_mode") is True:
+                return "batch"
+        except json.JSONDecodeError:
+            pass  # Invalid JSON, default to solo
+
+    # No valid JSON or batch_mode not true → solo mode
+    return "solo"
+```
+
+**Detection Rules**:
+- **Batch Mode**: Prompt contains valid JSON with `"batch_mode": true`
+- **Solo Mode**: All other cases (default, safe fallback)
+
 ## Usage
+
+### Solo Mode
 
 ```
 /generate-prp <initial-md-path>                        # Creates new PRP + Linear issue
@@ -14,7 +52,71 @@ Automates PRP (Product Requirements Prompt) generation from INITIAL.md with comp
 - ID: `--join-prp PRP-12`
 - File path: `--join-prp PRPs/executed/PRP-12-feature.md`
 
+### Batch Mode (Subagent)
+
+**Used by**: `/batch-gen-prp` coordinator spawning parallel subagents
+
+**Input Format**: Structured JSON in prompt
+```json
+{
+  "batch_mode": true,
+  "prp_id": "43.2.1",
+  "feature_name": "Command Permission Lists",
+  "goal": "Add comprehensive command permission patterns",
+  "estimated_hours": 0.42,
+  "complexity": "low",
+  "files_modified": [".claude/settings.local.json"],
+  "dependencies": ["43.1.1"],
+  "implementation_steps": [
+    "Remove GitButler pattern",
+    "Add 35 auto-allow patterns",
+    "Add 14 ask-first patterns"
+  ],
+  "validation_gates": [
+    "JSON syntax validates",
+    "72 Bash patterns present"
+  ],
+  "stage": "stage-2-parallel",
+  "execution_order": 1,
+  "merge_order": 4,
+  "conflict_potential": "MEDIUM",
+  "conflict_notes": "Shared file with PRP-43.1.1",
+  "worktree_path": "../ctx-eng-plus-prp-43-2-1",
+  "branch_name": "prp-43-2-1-command-permissions",
+  "create_linear_issue": true,
+  "plan_context": "Part of tool lockdown initiative"
+}
+```
+
+**Output Format**: JSON report for coordinator
+```json
+{
+  "prp_id": "43.2.1",
+  "status": "SUCCESS",
+  "file_path": "PRPs/feature-requests/PRP-43.2.1-command-permissions.md",
+  "linear_issue": "CTX-123",
+  "linear_url": "https://linear.app/...",
+  "execution_time_seconds": 45,
+  "errors": []
+}
+```
+
+**Heartbeat Protocol**: Writes progress to `.tmp/batch-gen/PRP-{prp_id}.status` every 10-15 seconds
+```json
+{
+  "prp_id": "43.2.1",
+  "status": "WRITING",
+  "progress": 60,
+  "timestamp": 1730000000,
+  "current_step": "Generating Implementation Steps section"
+}
+```
+
+**Status Values**: `STARTING`, `PARSING`, `RESEARCHING`, `WRITING`, `LINEAR`, `COMPLETE`, `FAILED`
+
 ## What It Does
+
+### Solo Mode Workflow
 
 1. **Parses INITIAL.md structure**:
    - Extracts FEATURE, EXAMPLES, DOCUMENTATION, OTHER CONSIDERATIONS sections
@@ -52,6 +154,119 @@ Automates PRP (Product Requirements Prompt) generation from INITIAL.md with comp
 
 6. **Outputs to**: `PRPs/feature-requests/PRP-{id}-{feature-slug}.md`
 
+### Batch Mode Workflow
+
+**Used by `/batch-gen-prp` coordinator for parallel PRP generation**
+
+1. **Parse and validate JSON input** from prompt:
+   ```python
+   # Extract JSON from prompt
+   json_match = re.search(r'```json\n(.*?)\n```', prompt, re.DOTALL)
+   if not json_match:
+       raise ValueError("No JSON input found in prompt")
+
+   data = json.loads(json_match.group(1))
+
+   # Validate required fields (H1: Input validation)
+   required_fields = [
+       "batch_mode", "prp_id", "feature_name", "goal",
+       "estimated_hours", "complexity", "files_modified",
+       "implementation_steps", "validation_gates", "stage",
+       "execution_order", "merge_order", "conflict_potential",
+       "worktree_path", "branch_name", "create_linear_issue"
+   ]
+
+   missing = [f for f in required_fields if f not in data]
+   if missing:
+       raise ValueError(f"Missing required fields: {', '.join(missing)}")
+
+   # Extract metadata
+   prp_id = data["prp_id"]
+   feature_name = data["feature_name"]
+   # ... etc
+   ```
+
+2. **Write heartbeat**: `.tmp/batch-gen/PRP-{prp_id}.status`
+   ```python
+   import os
+   import time
+
+   # Ensure directory exists
+   os.makedirs(".tmp/batch-gen", exist_ok=True)
+
+   def write_heartbeat(prp_id, status, progress, current_step=None):
+       """Write heartbeat file with current progress
+
+       H2: Heartbeat timing - Call every 10-15 seconds during long ops
+       """
+       heartbeat_file = f".tmp/batch-gen/PRP-{prp_id}.status"
+       heartbeat_data = {
+           "prp_id": prp_id,
+           "status": status,
+           "progress": progress,
+           "timestamp": int(time.time()),
+           "current_step": current_step
+       }
+       with open(heartbeat_file, 'w') as f:
+           json.dump(heartbeat_data, f)
+
+   # Initial heartbeat
+   write_heartbeat(prp_id, "STARTING", 0)
+   ```
+
+3. **Optional: Research codebase** (if needed for context):
+   ```python
+   # C3: MCP error handling with graceful degradation
+   research_context = None
+   try:
+       # Use Serena MCP for symbol lookup
+       write_heartbeat(prp_id, "RESEARCHING", 20, "Searching for similar patterns")
+       symbols = serena_find_symbol(feature_name)
+       research_context = analyze_symbols(symbols)
+   except (MCPConnectionError, TimeoutError) as e:
+       # Graceful degradation: continue without research
+       write_heartbeat(prp_id, "PARSING", 30, "Skipping research (MCP unavailable)")
+       research_context = None  # Generate PRP without research context
+   ```
+
+4. **Generate PRP file**:
+   - Build YAML header with provided metadata
+   - Create 6-section structure using `implementation_steps` and `validation_gates` from input
+   - Synthesize TL;DR, Context, Testing Strategy, Rollout Plan sections
+   - Write to: `PRPs/feature-requests/PRP-{prp_id}-{slug}.md`
+   - Update heartbeat: `{"status": "WRITING", "progress": 60}`
+
+5. **Create Linear issue** (if `create_linear_issue: true`):
+   - Use Linear MCP: `linear_create_issue`
+   - Title: `PRP-{prp_id}: {feature_name}`
+   - Description: Link to PRP file + plan context
+   - Update PRP YAML header with `issue: {ISSUE-ID}`
+   - Update heartbeat: `{"status": "LINEAR", "progress": 90}`
+
+6. **Return JSON report**:
+   ```json
+   {
+     "prp_id": "43.2.1",
+     "status": "SUCCESS",
+     "file_path": "PRPs/feature-requests/PRP-43.2.1-feature.md",
+     "linear_issue": "CTX-123",
+     "linear_url": "https://linear.app/...",
+     "execution_time_seconds": 45,
+     "errors": []
+   }
+   ```
+   - Update heartbeat: `{"status": "COMPLETE", "progress": 100}`
+
+**Error Handling**:
+- On error, write final heartbeat: `{"status": "FAILED", "progress": XX, "error": "message"}`
+- Return JSON report with `"status": "FAILED"` and `"errors": ["error details"]`
+- Parent coordinator continues with other PRPs (graceful degradation)
+
+**Heartbeat Timing**:
+- Write heartbeat every 10-15 seconds during long operations
+- Always write on status transitions (STARTING → PARSING → etc.)
+- Final heartbeat on COMPLETE or FAILED
+
 ## INITIAL.md Structure
 
 Your INITIAL.md must follow this structure:
@@ -61,12 +276,6 @@ Your INITIAL.md must follow this structure:
 
 ## FEATURE
 <What to build - user story, acceptance criteria>
-
-## PLANNING CONTEXT
-**Complexity Assessment**: <simple|medium|complex>
-**Architectural Impact**: <isolated|moderate|cross-cutting>
-**Risk Factors**: <list key risks>
-**Success Metrics**: <how to measure success>
 
 ## EXAMPLES
 <Similar code patterns from codebase, inline code blocks, or file references>
@@ -79,38 +288,7 @@ Your INITIAL.md must follow this structure:
 ```
 
 **Required sections**: FEATURE, EXAMPLES
-**Optional sections**: PLANNING CONTEXT, DOCUMENTATION, OTHER CONSIDERATIONS
-
-### New: PLANNING CONTEXT Section
-
-Helps sequential thinking analyze feature complexity:
-
-```markdown
-## PLANNING CONTEXT
-**Complexity Assessment**: medium
-- 2-3 files needed
-- 100-150 LOC estimated
-- Uses existing auth patterns
-
-**Architectural Impact**: moderate
-- Touches auth layer and API endpoints
-- No database schema changes
-
-**Risk Factors**:
-- JWT token expiration handling
-- Rate limiting integration
-- Password reset flow complexity
-
-**Success Metrics**:
-- Auth success rate >99.9%
-- Token refresh <100ms
-- Zero security vulnerabilities in audit
-```
-
-Sequential thinking uses this to:
-- Generate realistic time estimates
-- Identify hidden complexity
-- Propose validation gates based on risks
+**Optional sections**: DOCUMENTATION, OTHER CONSIDERATIONS
 
 ## Example
 
@@ -173,9 +351,6 @@ uv run ce prp generate <path-to-initial.md>
 uv run ce prp generate <path-to-initial.md> --join-prp 12
 uv run ce prp generate <path-to-initial.md> --join-prp PRP-12
 uv run ce prp generate <path-to-initial.md> --join-prp PRPs/executed/PRP-12-feature.md
-
-# Disable sequential thinking (use heuristics only)
-uv run ce prp generate <path-to-initial.md> --no-thinking
 
 # Custom output directory
 uv run ce prp generate <path-to-initial.md> -o /custom/path
