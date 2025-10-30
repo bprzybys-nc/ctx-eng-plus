@@ -8,9 +8,35 @@ Automates PRP (Product Requirements Prompt) generation from INITIAL.md with comp
 
 ## Mode Detection
 
-The command automatically detects which mode to use:
-- **Contains `"batch_mode": true` in prompt** → Batch Mode
-- **Otherwise** → Solo Mode (default)
+The command automatically detects which mode to use by extracting and parsing JSON from the prompt:
+
+```python
+import json
+import re
+
+def detect_mode(prompt):
+    """Detect generation mode from prompt
+
+    Returns: "batch" or "solo"
+    """
+    # Extract JSON block from prompt
+    json_match = re.search(r'```json\n(.*?)\n```', prompt, re.DOTALL)
+
+    if json_match:
+        try:
+            data = json.loads(json_match.group(1))
+            if data.get("batch_mode") is True:
+                return "batch"
+        except json.JSONDecodeError:
+            pass  # Invalid JSON, default to solo
+
+    # No valid JSON or batch_mode not true → solo mode
+    return "solo"
+```
+
+**Detection Rules**:
+- **Batch Mode**: Prompt contains valid JSON with `"batch_mode": true`
+- **Solo Mode**: All other cases (default, safe fallback)
 
 ## Usage
 
@@ -132,19 +158,76 @@ The command automatically detects which mode to use:
 
 **Used by `/batch-gen-prp` coordinator for parallel PRP generation**
 
-1. **Parse JSON input** from prompt:
-   - Extract `prp_id`, `feature_name`, `goal`, metadata
-   - No INITIAL.md file parsing needed
+1. **Parse and validate JSON input** from prompt:
+   ```python
+   # Extract JSON from prompt
+   json_match = re.search(r'```json\n(.*?)\n```', prompt, re.DOTALL)
+   if not json_match:
+       raise ValueError("No JSON input found in prompt")
+
+   data = json.loads(json_match.group(1))
+
+   # Validate required fields (H1: Input validation)
+   required_fields = [
+       "batch_mode", "prp_id", "feature_name", "goal",
+       "estimated_hours", "complexity", "files_modified",
+       "implementation_steps", "validation_gates", "stage",
+       "execution_order", "merge_order", "conflict_potential",
+       "worktree_path", "branch_name", "create_linear_issue"
+   ]
+
+   missing = [f for f in required_fields if f not in data]
+   if missing:
+       raise ValueError(f"Missing required fields: {', '.join(missing)}")
+
+   # Extract metadata
+   prp_id = data["prp_id"]
+   feature_name = data["feature_name"]
+   # ... etc
+   ```
 
 2. **Write heartbeat**: `.tmp/batch-gen/PRP-{prp_id}.status`
-   ```json
-   {"status": "STARTING", "progress": 0, "timestamp": now()}
+   ```python
+   import os
+   import time
+
+   # Ensure directory exists
+   os.makedirs(".tmp/batch-gen", exist_ok=True)
+
+   def write_heartbeat(prp_id, status, progress, current_step=None):
+       """Write heartbeat file with current progress
+
+       H2: Heartbeat timing - Call every 10-15 seconds during long ops
+       """
+       heartbeat_file = f".tmp/batch-gen/PRP-{prp_id}.status"
+       heartbeat_data = {
+           "prp_id": prp_id,
+           "status": status,
+           "progress": progress,
+           "timestamp": int(time.time()),
+           "current_step": current_step
+       }
+       with open(heartbeat_file, 'w') as f:
+           json.dump(heartbeat_data, f)
+
+   # Initial heartbeat
+   write_heartbeat(prp_id, "STARTING", 0)
    ```
 
 3. **Optional: Research codebase** (if needed for context):
-   - Use Serena MCP for symbol lookup
-   - Lightweight research (< 30 seconds)
-   - Update heartbeat: `{"status": "RESEARCHING", "progress": 20}`
+   ```python
+   # C3: MCP error handling with graceful degradation
+   research_context = None
+   try:
+       # Use Serena MCP for symbol lookup
+       write_heartbeat(prp_id, "RESEARCHING", 20, "Searching for similar patterns")
+       symbols = serena_find_symbol(feature_name)
+       research_context = analyze_symbols(symbols)
+   except (MCPConnectionError, TimeoutError) as e:
+       # Graceful degradation: continue without research
+       write_heartbeat(prp_id, "PARSING", 30, "Skipping research (MCP unavailable)")
+       research_context = None  # Generate PRP without research context
+   ```
 
 4. **Generate PRP file**:
    - Build YAML header with provided metadata
