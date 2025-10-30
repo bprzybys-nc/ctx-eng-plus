@@ -14,7 +14,7 @@ worktree_path: ../ctx-eng-plus-prp-b
 branch_name: prp-b-tool-usage-guide
 execution_order: 2
 merge_order: 2
-files_modified: TOOL-USAGE-GUIDE.md (new file)
+files_modified: examples/TOOL-USAGE-GUIDE.md (new file, symlinked to .serena/memories/)
 conflict_potential: NONE (new file, no conflicts with A, C, D, E)
 ---
 
@@ -293,10 +293,10 @@ Need to... → Use this tool
   - Use for: Complex problem decomposition, multi-step reasoning
 
 **Syntropy (2 tools)** - System Utilities
-- `syntropy_healthcheck` - Check MCP server health
-  - Example: `syntropy_healthcheck detailed=true`
-- `syntropy_knowledge_search` - Search across PRPs, memories, examples
-  - Example: `syntropy_knowledge_search query="authentication" limit=10`
+- `healthcheck` - Check MCP server health
+  - Example: `healthcheck detailed=true`
+- `knowledge_search` - Search across PRPs, memories, examples
+  - Example: `knowledge_search query="authentication" limit=10`
 
 **Total**: 25 MCP tools (+ 7 IDE/system tools = 32 total)
 ```
@@ -398,8 +398,8 @@ Complete mapping of all 55 denied tools to their replacements:
 | `denoise` | N/A | Specialized, rare use |
 
 **Kept Tools** (not denied):
-- `syntropy_healthcheck` - MCP diagnostics
-- `syntropy_knowledge_search` - Semantic search across PRPs/memories
+- `healthcheck` - MCP diagnostics
+- `knowledge_search` - Semantic search across PRPs/memories
 ```
 
 ### Phase 3: Finalization (3 min)

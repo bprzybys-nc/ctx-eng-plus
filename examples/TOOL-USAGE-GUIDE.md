@@ -385,7 +385,8 @@ gh pr create --title "Fix" --body "Description"
 | Tool | Purpose | Example |
 |------|---------|---------|
 | `healthcheck` | Check MCP servers | `detailed=True` |
-| `knowledge_search` | Search docs/PRPs | `query="validation", project_root="/path"` |
+| `enable_tools` | Enable/disable tools dynamically | `enable=["tool1"], disable=["tool2"]` |
+| `list_all_tools` | List all tools with enabled/disabled status | `{}` (no args) |
 
 ---
 
@@ -542,6 +543,19 @@ Periodically run `mcp__syntropy__healthcheck(detailed=True)` to ensure all serve
 1. Use `serena_get_symbols_overview` to list all symbols in file
 2. Ensure format: `ClassName.method_name` or `function_name`
 3. Check relative_path is correct from project root
+
+---
+
+## See Also
+
+**Code Examples**:
+- `tools/ce/examples/syntropy/` - MCP tool usage patterns in Python
+- `.serena/memories/` - Serena memory management examples and patterns
+
+**Related Documentation**:
+- `CLAUDE.md` - Project guide and quick commands
+- `TOOL-PERMISSION-LOCKDOWN-PLAN.md` - Detailed rationale for tool deny list
+- `PRPs/executed/PRP-B-tool-usage-guide.md` - PRP that created this guide
 
 ---
 
