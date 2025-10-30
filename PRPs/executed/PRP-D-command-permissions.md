@@ -1,7 +1,9 @@
 ---
 prp_id: PRP-D
 feature_name: Command Permission Lists
-status: pending
+status: executed
+executed: 2025-10-29T00:00:00Z
+execution_commit: 0f5303f
 complexity: low
 estimated_hours: 0.33-0.42
 stage: stage-2-parallel

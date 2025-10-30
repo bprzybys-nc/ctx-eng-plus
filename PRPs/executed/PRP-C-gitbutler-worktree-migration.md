@@ -1,9 +1,11 @@
 ---
 prp_id: PRP-C
 feature_name: GitButler to Worktree Migration
-status: pending
+status: executed
 created: 2025-10-29T00:00:00Z
-updated: 2025-10-29T00:00:00Z
+updated: 2025-10-30T00:00:00Z
+executed: 2025-10-29T00:00:00Z
+execution_commit: 920edd4
 complexity: medium
 estimated_hours: 0.42-0.50
 dependencies: none
