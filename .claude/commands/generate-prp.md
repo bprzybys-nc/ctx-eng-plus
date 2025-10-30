@@ -1,8 +1,20 @@
-# /generate-prp - Generate PRP from INITIAL.md
+# /generate-prp - Generate PRP from INITIAL.md or Batch Input
 
 Automates PRP (Product Requirements Prompt) generation from INITIAL.md with comprehensive codebase research, documentation fetching, and context synthesis.
 
+**Supports two modes**:
+- **Solo Mode**: Interactive generation from INITIAL.md file (user-facing)
+- **Batch Mode**: Automated generation from structured JSON input (subagent-facing, used by `/batch-gen-prp`)
+
+## Mode Detection
+
+The command automatically detects which mode to use:
+- **Contains `"batch_mode": true` in prompt** → Batch Mode
+- **Otherwise** → Solo Mode (default)
+
 ## Usage
+
+### Solo Mode
 
 ```
 /generate-prp <initial-md-path>                        # Creates new PRP + Linear issue
@@ -14,7 +26,71 @@ Automates PRP (Product Requirements Prompt) generation from INITIAL.md with comp
 - ID: `--join-prp PRP-12`
 - File path: `--join-prp PRPs/executed/PRP-12-feature.md`
 
+### Batch Mode (Subagent)
+
+**Used by**: `/batch-gen-prp` coordinator spawning parallel subagents
+
+**Input Format**: Structured JSON in prompt
+```json
+{
+  "batch_mode": true,
+  "prp_id": "43.2.1",
+  "feature_name": "Command Permission Lists",
+  "goal": "Add comprehensive command permission patterns",
+  "estimated_hours": 0.42,
+  "complexity": "low",
+  "files_modified": [".claude/settings.local.json"],
+  "dependencies": ["43.1.1"],
+  "implementation_steps": [
+    "Remove GitButler pattern",
+    "Add 35 auto-allow patterns",
+    "Add 14 ask-first patterns"
+  ],
+  "validation_gates": [
+    "JSON syntax validates",
+    "72 Bash patterns present"
+  ],
+  "stage": "stage-2-parallel",
+  "execution_order": 1,
+  "merge_order": 4,
+  "conflict_potential": "MEDIUM",
+  "conflict_notes": "Shared file with PRP-43.1.1",
+  "worktree_path": "../ctx-eng-plus-prp-43-2-1",
+  "branch_name": "prp-43-2-1-command-permissions",
+  "create_linear_issue": true,
+  "plan_context": "Part of tool lockdown initiative"
+}
+```
+
+**Output Format**: JSON report for coordinator
+```json
+{
+  "prp_id": "43.2.1",
+  "status": "SUCCESS",
+  "file_path": "PRPs/feature-requests/PRP-43.2.1-command-permissions.md",
+  "linear_issue": "CTX-123",
+  "linear_url": "https://linear.app/...",
+  "execution_time_seconds": 45,
+  "errors": []
+}
+```
+
+**Heartbeat Protocol**: Writes progress to `.tmp/batch-gen/PRP-{prp_id}.status` every 10-15 seconds
+```json
+{
+  "prp_id": "43.2.1",
+  "status": "WRITING",
+  "progress": 60,
+  "timestamp": 1730000000,
+  "current_step": "Generating Implementation Steps section"
+}
+```
+
+**Status Values**: `STARTING`, `PARSING`, `RESEARCHING`, `WRITING`, `LINEAR`, `COMPLETE`, `FAILED`
+
 ## What It Does
+
+### Solo Mode Workflow
 
 1. **Parses INITIAL.md structure**:
    - Extracts FEATURE, EXAMPLES, DOCUMENTATION, OTHER CONSIDERATIONS sections
@@ -51,6 +127,62 @@ Automates PRP (Product Requirements Prompt) generation from INITIAL.md with comp
    - Updates PRP YAML header with `issue: {ISSUE-ID}`
 
 6. **Outputs to**: `PRPs/feature-requests/PRP-{id}-{feature-slug}.md`
+
+### Batch Mode Workflow
+
+**Used by `/batch-gen-prp` coordinator for parallel PRP generation**
+
+1. **Parse JSON input** from prompt:
+   - Extract `prp_id`, `feature_name`, `goal`, metadata
+   - No INITIAL.md file parsing needed
+
+2. **Write heartbeat**: `.tmp/batch-gen/PRP-{prp_id}.status`
+   ```json
+   {"status": "STARTING", "progress": 0, "timestamp": now()}
+   ```
+
+3. **Optional: Research codebase** (if needed for context):
+   - Use Serena MCP for symbol lookup
+   - Lightweight research (< 30 seconds)
+   - Update heartbeat: `{"status": "RESEARCHING", "progress": 20}`
+
+4. **Generate PRP file**:
+   - Build YAML header with provided metadata
+   - Create 6-section structure using `implementation_steps` and `validation_gates` from input
+   - Synthesize TL;DR, Context, Testing Strategy, Rollout Plan sections
+   - Write to: `PRPs/feature-requests/PRP-{prp_id}-{slug}.md`
+   - Update heartbeat: `{"status": "WRITING", "progress": 60}`
+
+5. **Create Linear issue** (if `create_linear_issue: true`):
+   - Use Linear MCP: `linear_create_issue`
+   - Title: `PRP-{prp_id}: {feature_name}`
+   - Description: Link to PRP file + plan context
+   - Update PRP YAML header with `issue: {ISSUE-ID}`
+   - Update heartbeat: `{"status": "LINEAR", "progress": 90}`
+
+6. **Return JSON report**:
+   ```json
+   {
+     "prp_id": "43.2.1",
+     "status": "SUCCESS",
+     "file_path": "PRPs/feature-requests/PRP-43.2.1-feature.md",
+     "linear_issue": "CTX-123",
+     "linear_url": "https://linear.app/...",
+     "execution_time_seconds": 45,
+     "errors": []
+   }
+   ```
+   - Update heartbeat: `{"status": "COMPLETE", "progress": 100}`
+
+**Error Handling**:
+- On error, write final heartbeat: `{"status": "FAILED", "progress": XX, "error": "message"}`
+- Return JSON report with `"status": "FAILED"` and `"errors": ["error details"]`
+- Parent coordinator continues with other PRPs (graceful degradation)
+
+**Heartbeat Timing**:
+- Write heartbeat every 10-15 seconds during long operations
+- Always write on status transitions (STARTING → PARSING → etc.)
+- Final heartbeat on COMPLETE or FAILED
 
 ## INITIAL.md Structure
 
