@@ -421,8 +421,8 @@ The `prp_id` is injected and persisted through multiple mechanisms:
 
 ```mermaid
 graph TB
-    A["INITIAL.md"] --> B["/generate-prp"]
-    B --> C["PRP Document"]
+    A["INITIAL.md or PLAN.md"] --> B["PRP Generation<br/>(Manual or /batch-gen-prp)"]
+    B --> C["PRP Document(s)"]
     C --> D{"Human Validation"}
     D -->|"Approved"| E["/execute-prp"]
     D -->|"Rejected"| F["Revise PRP"]
@@ -770,13 +770,14 @@ graph TB
 
 **Implementation Status Overview:**
 
-Context Engineering framework is **production-ready** with 26/28 core PRPs executed (89% completion). All critical features implemented, tested, and security-verified.
+Context Engineering framework is **production-ready** with 31+ core PRPs executed (93%+ completion). All critical features implemented, tested, and security-verified.
 
 **Core Features Implemented:** ✅
 
 - ✅ 4-level validation gates (L1-L4: syntax, unit tests, integration, pattern conformance + drift)
 - ✅ PRP generation & execution (research + synthesis workflow with checkpoint tracking)
-- ✅ Git operations (status, diff, checkpoints, drift tracking)
+- ✅ Batch PRP generation & execution (parallel subagents, git worktrees, dependency analysis)
+- ✅ Git operations (status, diff, checkpoints, drift tracking, worktree management)
 - ✅ Context management (health monitoring, drift detection, sync, auto-remediation)
 - ✅ Error recovery (retry with backoff, circuit breaker, resilience patterns)
 - ✅ Metrics & profiling (success rate tracking, performance monitoring)
@@ -784,7 +785,9 @@ Context Engineering framework is **production-ready** with 26/28 core PRPs execu
 - ✅ Linear integration (automated issue creation, defaults management)
 - ✅ Syntropy MCP aggregation (unified server layer, connection pooling)
 - ✅ Security hardening (CWE-78 elimination, command injection prevention)
-- ✅ `/generate-prp` and `/execute-prp` slash commands
+- ✅ Tool ecosystem optimization (55 MCP tools denied, 96% token reduction)
+- ✅ Project maintenance tools (vacuum, denoise, tools-misuse-scan)
+- ✅ 9 slash commands for interactive workflows
 
 **Post-1.0 Enhancements:** 🔜
 
@@ -860,14 +863,16 @@ def run_py(code: Optional[str] = None,
 - `ce context sync` - Sync context with codebase changes
 - `ce context prune` - Remove stale context entries
 - `ce run_py` - Execute Python code (3 LOC limit)
+- `ce vacuum [--execute|--auto|--nuclear]` - Clean up project noise (temp files, obsolete docs, unreferenced code)
+- `ce drift` - Drift history tracking and analysis
+- `ce analyze-context` / `ce analyse-context` - Fast drift check without metadata sync (2-3s vs 10-15s)
 
 **PRP Management Commands (Implemented):**
 
 - `ce prp validate <prp-file>` - Validate PRP structure and sections
-- `ce prp generate <initial-md>` - Generate PRP from INITIAL.md (Slash command wrapper)
-- `ce prp execute <prp-file>` - Execute PRP implementation (Slash command wrapper)
 - `ce prp analyze <prp-file>` - Analyze PRP for complexity, sizing, patterns
 - `ce update-context [--prp file]` - Sync context, generate drift reports, create remediation PRPs
+- `ce metrics [options]` - Collect and display system metrics and success rates
 
 **PRP State Management (Functions Implemented, CLI Pending):**
 
@@ -885,12 +890,10 @@ def run_py(code: Optional[str] = None,
 - `ce drift summary` - ✅ Function exists, CLI wrapper pending
 - `ce drift compare <prp-id-1> <prp-id-2>` - ✅ Function exists, CLI wrapper pending
 
-**Pipeline & Infrastructure Commands (Implemented):**
+**Pipeline Commands (Implemented):**
 
 - `ce pipeline validate <yaml>` - Validate abstract pipeline YAML schema
 - `ce pipeline render <yaml>` - Render pipeline to concrete format (GitHub Actions, etc.)
-- `ce metrics [options]` - Collect and display metrics
-- `ce analyze-context` / `ce analyse-context` - Fast drift check without metadata sync
 
 **Implementation Status:**
 
@@ -907,8 +910,8 @@ def run_py(code: Optional[str] = None,
 
 # PRP system (functions implemented, most CLI exposed)
 ✅ prp.py: start_prp, checkpoint, cleanup, restore, status, list (functions)
-✅ generate.py: research + synthesize (via /generate-prp)
-✅ execute.py: phase execution + validation loops (via /execute-prp)
+✅ generate.py: research + synthesize (via /batch-gen-prp for parallel generation)
+✅ execute.py: phase execution + validation loops (via /execute-prp and /batch-exe-prp)
 ✅ prp_analyzer.py: complexity analysis (ce prp analyze)
 
 # Tool optimization (fully implemented)
@@ -928,7 +931,7 @@ def run_py(code: Optional[str] = None,
 ✅ Security Tests: 38/38 pass, 631 regression tests pass
 ```
 
-**Architecture Note:** Execution driven by slash commands (`/generate-prp`, `/execute-prp`) with state managed internally. CLI commands provide validation, analysis, and utility functions. This differs from model's planned interactive CLI state management but achieves same functionality through delegation.
+**Architecture Note:** Execution driven by slash commands (`/batch-gen-prp`, `/batch-exe-prp`, `/execute-prp`) with state managed internally. CLI commands provide validation, analysis, and utility functions. This differs from model's planned interactive CLI state management but achieves same functionality through delegation.
 
 **PRP Context Command Examples:**
 
@@ -1064,7 +1067,7 @@ ce drift compare PRP-003 PRP-005
 
 **Functionality:**
 
-- **Auto-issue creation**: `/generate-prp` creates Linear issue automatically
+- **Auto-issue creation**: `/batch-gen-prp` creates Linear issues automatically during batch generation
 - **Default configuration**: `.ce/linear-defaults.yml` stores project, assignee, labels
 - **PRP metadata**: YAML header stores `issue: {LINEAR-ISSUE-ID}` for tracking
 - **Multi-PRP join**: `--join-prp` flag links multiple PRPs to same issue
@@ -1084,14 +1087,13 @@ default_labels:
 **Usage:**
 
 ```bash
-# Auto-create Linear issue during PRP generation
-/generate-prp INITIAL.md
-# → Creates PRP-NN + Linear issue BLA-XXX
-# → Updates PRP YAML with issue ID
+# Auto-create Linear issues during batch PRP generation
+/batch-gen-prp BIG-FEATURE-PLAN.md
+# → Creates PRP-43.1.1, PRP-43.2.1, ... + Linear issues for each
+# → Updates each PRP YAML with issue ID
 
-# Join related PRPs to same Linear issue
-/generate-prp part2.md --join-prp PRP-10
-# → Creates PRP-NN + links to BLA-XXX (from PRP-10)
+# Manual issue creation (if needed)
+cd tools && uv run python -c "from ce.linear_utils import create_issue; create_issue('PRP-44', 'Feature Name')"
 ```
 
 #### 4.1.5 Metrics & Performance Monitoring
@@ -1226,6 +1228,236 @@ result = subprocess.run(cmd_list, shell=False, ...)  # ✅ SAFE
 - [Bandit B602 Security Check](https://bandit.readthedocs.io/en/latest/plugins/b602_subprocess_popen_with_shell_equals_true.html) - Static analysis tool
 - [CISA Secure Design Alert](https://www.cisa.gov/resources-tools/resources/secure-design-alert-eliminating-os-command-injection-vulnerabilities) - Federal guidance
 
+#### 4.1.9 Slash Commands
+
+**Purpose:** High-level workflow commands for interactive Claude Code sessions
+
+**Status:** ✅ **IMPLEMENTED** (9 commands active)
+
+**Command Overview:**
+
+| Command | Purpose | Typical Use Case |
+|---------|---------|------------------|
+| `/execute-prp` | Execute single PRP | Implement specific feature |
+| `/batch-exe-prp` | Execute batch PRPs in parallel | Multi-PRP staged implementation |
+| `/batch-gen-prp` | Generate batch PRPs from plan | Decompose large features |
+| `/update-context` | Sync context with codebase | After major changes or drift |
+| `/vacuum` | Clean up project noise | Remove temp files, obsolete docs |
+| `/denoise` | Compress verbose documents | Token optimization for docs |
+| `/tools-misuse-scan` | Detect tool anti-patterns | Debug session issues |
+| `/syntropy-health` | MCP server health check | Troubleshoot MCP connections |
+| `/sync-with-syntropy` | Sync tool permissions | Update settings after tool changes |
+
+**Implementation Details:**
+
+```bash
+# Location: .claude/commands/*.md
+# Format: Markdown files with command documentation
+# Invocation: /command-name [args]
+# Example: /vacuum --execute
+```
+
+**Key Features:**
+
+- **Interactive workflow**: Designed for Claude Code conversation flow
+- **Context-aware**: Access to full project state and conversation history
+- **Integrated with ce CLI**: Many commands wrap ce CLI operations
+- **Documentation-driven**: Command behavior defined in markdown files
+
+**Command Descriptions:**
+
+**1. /execute-prp** - Execute single PRP implementation
+- Reads PRP file, executes implementation steps
+- Runs validation gates (L1-L4)
+- Creates git checkpoints
+- Updates PRP metadata (executed timestamp, commit hash)
+
+**2. /batch-exe-prp** - Execute batch PRPs with parallel execution
+- Parses batch ID from PRP filenames (PRP-X.Y.Z format)
+- Groups by stage, executes stages sequentially
+- Parallel execution within stage (git worktrees)
+- Health monitoring via git commit timestamps
+- Automatic merge with conflict detection
+
+**3. /batch-gen-prp** - Generate batch PRPs from plan document
+- Parses plan markdown → extracts phases
+- Builds dependency graph (explicit + file conflicts)
+- Assigns stages for parallel generation
+- Spawns parallel subagents for generation
+- Creates Linear issues for each PRP
+- Health monitoring via heartbeat files
+
+**4. /update-context** - Sync context metadata with codebase
+- Updates PRP execution status
+- Generates drift reports
+- Syncs with Serena memories
+- Creates remediation PRPs for high drift
+
+**5. /vacuum** - Clean up project noise
+- Strategies: temp-files, backup-files, obsolete-docs, unreferenced-code, orphan-tests, commented-code
+- Modes: dry-run (report only), --execute (HIGH confidence), --auto (MEDIUM+), --nuclear (ALL)
+- Confidence scoring: 30-100%
+- Protected paths: .ce/, .claude/, PRPs/, pyproject.toml, etc.
+- Report output: .ce/vacuum-report.md
+
+**6. /denoise** - Boil out document noise
+- Removes verbosity while preserving essential information
+- Target: 60-75% reduction in lines
+- Preserves: commands, references, warnings, key facts
+- Compresses: long explanations, redundant examples, verbose text
+- Validation: ensures zero information loss
+
+**7. /tools-misuse-scan** - Detect tool anti-patterns
+- Scans conversation for denied tool errors
+- Categories: Bash anti-patterns, denied tools
+- Remediation suggestions with alternatives
+- Report format: structured markdown
+
+**8. /syntropy-health** - MCP server health diagnostics
+- Checks all Syntropy MCP servers (serena, filesystem, git, etc.)
+- Connection status, response time, error counts
+- Tool availability check
+- Detailed diagnostics with `--detailed` flag
+
+**9. /sync-with-syntropy** - Sync tool permissions with Syntropy state
+- Calls `mcp__syntropy__list_all_tools` for current state
+- Updates `.claude/settings.local.json` to match
+- Backs up original settings
+- Outputs summary of changes
+
+**Workflow Integration:**
+
+```bash
+# Typical workflow
+/syntropy-health              # Check MCP health
+/batch-gen-prp PLAN.md        # Generate PRPs from plan
+/batch-exe-prp --batch 43     # Execute batch 43
+/update-context               # Sync context after execution
+/vacuum --execute             # Clean up temp files
+```
+
+#### 4.1.10 Batch PRP Generation & Execution
+
+**Purpose:** Parallel PRP generation and execution for large features
+
+**Status:** ✅ **IMPLEMENTED** (PRP-27-31 era)
+
+**Architecture:**
+
+```mermaid
+graph TB
+    A[Plan Document] --> B[/batch-gen-prp]
+    B --> C[Parse Phases]
+    C --> D[Build Dependency Graph]
+    D --> E[Assign Stages]
+    E --> F[Spawn Parallel Subagents]
+    F --> G[Monitor via Heartbeats]
+    G --> H[Generated PRPs]
+
+    H --> I[/batch-exe-prp]
+    I --> J[Parse Batch ID]
+    J --> K[Group by Stage]
+    K --> L[Create Git Worktrees]
+    L --> M[Execute Stage in Parallel]
+    M --> N[Monitor via Git Commits]
+    N --> O[Merge in Order]
+    O --> P[Cleanup Worktrees]
+
+    style A fill:#e3f2fd,color:#000
+    style B fill:#fff8e1,color:#000
+    style F fill:#c8e6c9,color:#000
+    style H fill:#f3e5f5,color:#000
+    style I fill:#fff8e1,color:#000
+    style M fill:#c8e6c9,color:#000
+    style P fill:#b2ebf2,color:#000
+```
+
+**Generation Process:**
+
+1. **Parse Plan**: Extract phases with metadata (goal, hours, complexity, files, dependencies)
+2. **Dependency Analysis**: Build graph with explicit + implicit (file conflict) dependencies
+3. **Stage Assignment**: Topological sort → group independent PRPs
+4. **Parallel Generation**: Spawn Sonnet subagents per stage
+5. **Health Monitoring**: 30s polling, heartbeat files, 2-poll kill timeout
+6. **Linear Integration**: Create issue per PRP with defaults
+
+**Execution Process:**
+
+1. **Parse Batch**: Extract PRP-X.Y.Z format → batch ID, stage, order
+2. **Stage Grouping**: Group PRPs by stage number
+3. **Worktree Creation**: `git worktree add ../ctx-eng-plus-prp-X-Y-Z -b branch-name`
+4. **Parallel Execution**: Execute PRPs in parallel within stage
+5. **Health Monitoring**: 30s polling, git log timestamps, 10min timeout
+6. **Sequential Merge**: Merge branches in order, handle conflicts
+7. **Cleanup**: Remove worktrees, prune references
+
+**PRP Naming Convention:**
+
+- **Format**: `PRP-X.Y.Z-feature-name.md`
+- **X**: Batch ID (next free PRP number)
+- **Y**: Stage number (1, 2, 3...)
+- **Z**: Order within stage (1, 2, 3...)
+- **Example**: `PRP-43.2.3-doc-updates.md` (Batch 43, Stage 2, 3rd PRP in stage)
+
+**Metadata in PRP Headers:**
+
+```yaml
+stage: stage-2-parallel
+execution_order: 4
+merge_order: 4
+worktree_path: ../ctx-eng-plus-prp-43-2-3
+branch_name: prp-43-2-3-doc-updates
+conflict_potential: LOW
+dependencies: [PRP-43.1.1]
+```
+
+**Performance:**
+
+- **Generation**: 8 PRPs sequential (30 min) → parallel (10-12 min) = **60% faster**
+- **Execution**: 3 PRPs sequential (45 min) → parallel (20 min) = **55% faster**
+- **Monitoring**: 30s polling interval, low overhead
+
+**Safety Mechanisms:**
+
+- **Dependency validation**: Circular dependency detection
+- **File conflict detection**: Implicit dependencies from file overlaps
+- **Health monitoring**: Kill stalled agents/executors
+- **Merge order**: Enforced sequential merge to handle conflicts
+- **Worktree isolation**: No cross-contamination between PRPs
+
+**Example Workflow:**
+
+```bash
+# 1. Create plan document
+vim BIG-FEATURE-PLAN.md
+
+# 2. Generate batch PRPs (parallel)
+/batch-gen-prp BIG-FEATURE-PLAN.md
+# Output: PRPs/feature-requests/PRP-43.*.md (8 PRPs)
+#   Stage 1: PRP-43.1.1
+#   Stage 2: PRP-43.2.1, PRP-43.2.2, PRP-43.2.3 (parallel)
+#   Stage 3: PRP-43.3.1, PRP-43.3.2
+
+# 3. Execute batch (parallel within stages)
+/batch-exe-prp --batch 43
+# Executes Stage 1 → Stage 2 (parallel) → Stage 3
+# Time: ~20 min vs 45 min sequential
+
+# 4. Sync context
+/update-context
+```
+
+**Implementation Status:**
+
+- ✅ Batch generation with parallel subagents
+- ✅ Batch execution with git worktrees
+- ✅ Dependency graph analysis (explicit + file conflicts)
+- ✅ Health monitoring (heartbeats for gen, git commits for exe)
+- ✅ Linear integration (issue creation per PRP)
+- ✅ Conflict detection and merge order enforcement
+- ✅ Circular dependency detection with path reporting
+- ✅ Worktree creation and cleanup automation
+
 ### See Also
 
 - [Product Requirements Prompt (PRP) System](../docs/research/01-prp-system.md) - Complete PRP templates, validation gates, and self-healing patterns
@@ -1292,9 +1524,11 @@ graph LR
     A["project/"]
 
     A --> B[".claude/"]
-    B --> B1["commands/<br/>Slash commands"]
-    B1 --> B1a["generate-prp.md"]
-    B1 --> B1b["execute-prp.md"]
+    B --> B1["commands/<br/>9 Slash commands"]
+    B1 --> B1a["batch-gen-prp.md"]
+    B1 --> B1b["batch-exe-prp.md"]
+    B1 --> B1c["execute-prp.md"]
+    B1 --> B1d["vacuum.md, denoise.md, etc."]
     B --> B2["CLAUDE.md<br/>Global rules"]
 
     A --> C["PRPs/"]
@@ -1346,7 +1580,7 @@ graph LR
 graph TB
     A["Step 1: CLAUDE.md<br/>Global Rules"] --> B["Step 2: INITIAL.md<br/>Feature Request"]
     B --> B5["Step 2.5: Context Sync<br/>Health Check 1-2 min"]
-    B5 --> C["Step 3: /generate-prp<br/>10-15 min Research"]
+    B5 --> C["Step 3: PRP Generation<br/>10-15 min Research"]
     C --> D["Step 4: Human Validation<br/>CRITICAL CHECKPOINT"]
     D --> E["Step 5: /execute-prp<br/>20-90 min Implementation"]
     E --> F["Step 6: Validation Loop<br/>L1-L4 + Self-Healing"]
@@ -1390,8 +1624,10 @@ graph TB
 - **Purpose:** Ensure PRP generation uses fresh, accurate context
 - **Abort conditions:** High drift, failed sync, context corruption
 
-**Step 3: /generate-prp** (10-15 minutes)
+**Step 3: PRP Generation** (10-15 minutes)
 
+- **For single PRPs**: Manual PRP writing using templates (.ce/examples/prp-template.md)
+- **For batch PRPs**: `/batch-gen-prp PLAN.md` with parallel subagents
 - Automated research: codebase patterns, documentation, architecture
 - Generate complete PRP with all sections
 - Include validation commands and pseudocode
@@ -1459,7 +1695,7 @@ graph TB
 | 1. CLAUDE.md | Manual (one-time) | 0% |
 | 2. INITIAL.md | Manual | 0% |
 | 2.5. Context Sync | None | 100% |
-| 3. /generate-prp | None | 100% |
+| 3. PRP Generation | Manual or /batch-gen-prp | 0-100% |
 | 4. Validation | Manual (required) | 0% |
 | 5. /execute-prp | None | 100% |
 | 6. Validation loop (L1-L4) | None | 100% |
@@ -2564,7 +2800,7 @@ graph TD
     B -->|"Simple"| C["KISS Template"]
     B -->|"Complex"| D["Self-Healing Template"]
 
-    C --> E["/generate-prp"]
+    C --> E["PRP Generation"]
     D --> E
 
     E --> F["Human Validation"]
