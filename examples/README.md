@@ -1,65 +1,123 @@
-# Code Patterns & Examples
+# Context Engineering Examples
 
-This directory contains reusable code patterns for reference during PRP implementation.
+Comprehensive collection of examples, patterns, and workflows for the Context Engineering framework.
+
+## 📋 **[INDEX.md](INDEX.md) - Start Here**
+
+**Complete catalog of all 24 examples** with searchable table, categories, and quick reference.
+
+Browse by:
+
+- **Type**: Patterns, Workflows, Configuration, Guides, Reference
+- **Category**: MCP, Batch, Cleanup, Context, Git, Testing
+- **Complexity**: Low, Medium, High
+- **Syntropy Integration**: Yes/No with server names
 
 ## Structure
 
-- `patterns/` - Common implementation patterns
-  - API patterns
-  - Database patterns
-  - Test patterns
-  - Error handling patterns
+```
+examples/
+├── INDEX.md                    # 📋 Complete catalog (start here!)
+├── README.md                   # This file
+├── syntropy/                   # Syntropy MCP integration examples
+│   ├── README.md               # Overview and tool listing
+│   ├── serena-symbol-search.md      # Code navigation & refactoring
+│   ├── context7-docs-fetch.md       # Library documentation
+│   ├── thinking-sequential.md       # Complex reasoning
+│   ├── linear-integration.md        # Issue tracking
+│   └── memory-management.md         # Persistent knowledge
+├── workflows/                  # Complete workflow examples
+│   ├── batch-prp-generation.md      # Parallel PRP generation
+│   ├── batch-prp-execution.md       # Parallel PRP execution
+│   ├── vacuum-cleanup.md            # Project cleanup
+│   ├── denoise-documents.md         # Document compression
+│   └── context-drift-remediation.md # Context sync
+├── config/                     # Configuration examples
+│   ├── slash-command-template.md    # Create custom commands
+│   └── hook-configuration.md        # Lifecycle hooks
+├── patterns/                   # Reusable patterns
+│   ├── dedrifting-lessons.md        # Context drift prevention
+│   ├── git-message-rules.md         # Commit conventions
+│   ├── example-simple-feature.md    # Complete PRP example
+│   └── mocks-marking.md             # Test mock tracking
+├── model/                      # System architecture
+│   └── SystemModel.md               # Framework architecture
+└── [other reference files]
+```
 
-## Usage
+## Quick Start
 
-Reference these patterns in PRPs CONTEXT section:
+### New to Context Engineering?
 
-- Similar implementation: `examples/patterns/api-crud.py:15-42`
+1. **[INDEX.md](INDEX.md)** - Browse all examples
+2. **[System Model](model/SystemModel.md)** - Understand framework architecture
+3. **[Tool Usage Guide](TOOL-USAGE-GUIDE.md)** - Learn tool selection
+4. **[Example Simple Feature](patterns/example-simple-feature.md)** - See complete PRP
 
-## Adding Patterns
+### Learning Syntropy MCP?
 
-When you implement a particularly good solution, extract it as a pattern:
+1. **[Syntropy Overview](syntropy/README.md)** - Tool listing and usage
+2. **[Serena Symbol Search](syntropy/serena-symbol-search.md)** - Code navigation
+3. **[Context7 Docs Fetch](syntropy/context7-docs-fetch.md)** - Documentation fetching
+4. **[Linear Integration](syntropy/linear-integration.md)** - Issue tracking
 
-1. Create a new file in `patterns/` with descriptive name
-2. Include clear comments explaining the pattern
-3. Add usage notes and gotchas
-4. Reference from future PRPs
+### Need to Clean Up Project?
 
-## Pattern Categories
+1. **[Context Drift Remediation](workflows/context-drift-remediation.md)** - Sync PRPs with codebase
+2. **[Vacuum Cleanup](workflows/vacuum-cleanup.md)** - Remove project noise
+3. **[Denoise Documents](workflows/denoise-documents.md)** - Compress verbose docs
 
-### API Patterns
+### Want to Run Batch PRPs?
 
-- RESTful endpoint design
-- Request validation
-- Response formatting
-- Error handling
+1. **[Batch PRP Generation](workflows/batch-prp-generation.md)** - Generate from plan
+2. **[Batch PRP Execution](workflows/batch-prp-execution.md)** - Execute in parallel
+3. **[PRP Decomposition Patterns](prp-decomposition-patterns.md)** - Break down features
 
-### Database Patterns
+## Statistics
 
-- Query builders
-- Transaction handling
-- Schema migrations
-- Connection pooling
+- **24 Examples**: Patterns, workflows, configuration, guides, reference
+- **10,755 Total Lines**: Comprehensive coverage
+- **8 Syntropy Examples**: MCP integration patterns
+- **5 Workflows**: Batch operations, cleanup, context management
+- **6 New Files (PRP-32)**: Completed 2025-11-03
 
-### Test Patterns
+## Content Template
 
-- Unit test structure
-- Integration test setup
-- Mock patterns
-- Fixture management
+All examples follow consistent structure:
 
-### Error Handling Patterns
+1. **Purpose**: What this demonstrates, when to use
+2. **Prerequisites**: Required setup
+3. **Examples**: 3-4 concrete examples with input/output
+4. **Common Patterns**: 3-5 recommended patterns
+5. **Anti-Patterns**: 2-3 things not to do
+6. **Related Examples**: Cross-links
 
-- Exception hierarchy
-- Error logging
-- User-facing error messages
-- Recovery strategies
+Length: 150-300 lines (Medium complexity)
+
+## Adding Examples
+
+When adding new examples:
+
+1. Follow content template structure
+2. Add to appropriate directory (syntropy/, workflows/, config/, patterns/)
+3. Update **[INDEX.md](INDEX.md)** with new entry
+4. Cross-link with 2-3 related examples
+5. Run validation: `cd tools && uv run ce validate --level 4`
+6. Commit: `git add examples/ && git commit -m "Examples: Added [name]"`
+
+## Related Documentation
+
+- **[CLAUDE.md](../CLAUDE.md)** - Project guide and quick commands
+- **[.ce/RULES.md](../.ce/RULES.md)** - Framework rules and principles
+- **[PRPs/](../PRPs/)** - Executed and feature request PRPs
+- **[.claude/commands/](../.claude/commands/)** - Slash commands
 
 ## Contributing
 
-Keep patterns:
+Keep examples:
 
-- **Simple**: Single responsibility
-- **Documented**: Clear comments
-- **Tested**: Include test examples
-- **Practical**: Real-world usage
+- **Concise**: 150-300 lines (sweet spot)
+- **Practical**: Real-world usage patterns
+- **Complete**: Follow content template
+- **Cross-linked**: 2-3 related examples
+- **Validated**: Pass L1-L4 validation gates
