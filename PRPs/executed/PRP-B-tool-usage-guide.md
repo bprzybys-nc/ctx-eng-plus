@@ -37,12 +37,14 @@ conflict_potential: NONE (new file, no conflicts with A, C, D, E)
 ## 2. Context
 
 ### Background
+
 - CLAUDE.md has mixed/outdated tool recommendations
 - No clear decision tree for native vs MCP tool selection
 - 55 MCP tools being denied (PRP-A) need alternatives documented
 - Users and Claude Code need authoritative reference
 
 ### Parallel Execution Context
+
 - **Stage**: stage-1-parallel (can run with PRP-A, PRP-C)
 - **Worktree**: `../ctx-eng-plus-prp-b`
 - **Branch**: `prp-b-tool-usage-guide`
@@ -50,6 +52,7 @@ conflict_potential: NONE (new file, no conflicts with A, C, D, E)
 - **Conflicts**: NONE (new file, doesn't conflict with any other PRP)
 
 ### Constraints and Considerations
+
 - Must cover all 32 kept MCP tools
 - Must provide alternatives for all 55 denied tools
 - Must include concrete, copy-paste examples
@@ -57,6 +60,7 @@ conflict_potential: NONE (new file, no conflicts with A, C, D, E)
 - Clear, concise, actionable content
 
 ### Documentation References
+
 - Source: TOOL-PERMISSION-LOCKDOWN-PLAN.md Section 4
 - PRP-A deny list for tools to migrate from
 - Native tools: Read, Write, Edit, Glob, Grep, Bash, Task
@@ -69,12 +73,14 @@ conflict_potential: NONE (new file, no conflicts with A, C, D, E)
 ### Phase 1: File Creation (5 min)
 
 **Step 1**: Create file at project root
+
 ```bash
 cd /Users/bprzybyszi/nc-src/ctx-eng-plus
 # File will be created as TOOL-USAGE-GUIDE.md
 ```
 
 **Step 2**: Write YAML-style header (optional, for consistency)
+
 ```markdown
 # Tool Usage Guide
 
@@ -84,6 +90,7 @@ cd /Users/bprzybyszi/nc-src/ctx-eng-plus
 ```
 
 **Step 3**: Create section skeleton
+
 - Section 1: Philosophy
 - Section 2: Decision Tree
 - Section 3: Common Tasks
@@ -94,6 +101,7 @@ cd /Users/bprzybyszi/nc-src/ctx-eng-plus
 ### Phase 2: Content Writing (12 min)
 
 **Step 4**: Write Section 1 - Philosophy (~100 words)
+
 ```markdown
 ## 1. Philosophy
 
@@ -116,12 +124,14 @@ cd /Users/bprzybyszi/nc-src/ctx-eng-plus
 ```
 
 **Step 5**: Write Section 2 - Decision Tree (~150 words)
+
 ```markdown
 ## 2. Decision Tree
 
 When performing a task, follow this decision tree:
 
 ```
+
 Need to... → Use this tool
 ├─ Read file → Read (native)
 ├─ Write new file → Write (native)
@@ -143,10 +153,12 @@ Need to... → Use this tool
 │   └─ Fetch docs → context7_get_library_docs
 ├─ Complex reasoning → thinking MCP (sequentialthinking)
 └─ Debug MCP servers → syntropy MCP (healthcheck)
+
 ```
 ```
 
 **Step 6**: Write Section 3 - Common Tasks Table (~200 words)
+
 ```markdown
 ## 3. Common Tasks
 
@@ -174,6 +186,7 @@ Need to... → Use this tool
 ```
 
 **Step 7**: Write Section 4 - Anti-Patterns (~150 words)
+
 ```markdown
 ## 4. Anti-Patterns
 
@@ -221,6 +234,7 @@ Need to... → Use this tool
 ```
 
 **Step 8**: Write Section 5 - Tool Quick Reference (~200 words)
+
 ```markdown
 ## 5. Tool Quick Reference
 
@@ -302,6 +316,7 @@ Need to... → Use this tool
 ```
 
 **Step 9**: Write Section 6 - Migration Table (~300 words)
+
 ```markdown
 ## 6. Migration from Old Tools
 
@@ -405,6 +420,7 @@ Complete mapping of all 55 denied tools to their replacements:
 ### Phase 3: Finalization (3 min)
 
 **Step 10**: Add table of contents (optional)
+
 ```markdown
 ## Table of Contents
 
@@ -417,12 +433,14 @@ Complete mapping of all 55 denied tools to their replacements:
 ```
 
 **Step 11**: Format and validate
+
 - Ensure all markdown tables render correctly
 - Verify all code blocks have proper syntax highlighting
 - Check all tool names are accurate
 - Verify examples are executable
 
 **Step 12**: Add footer
+
 ```markdown
 ---
 
@@ -437,26 +455,31 @@ Complete mapping of all 55 denied tools to their replacements:
 ## 4. Validation Gates
 
 ### Gate 1: File Created
+
 **Command**: `ls TOOL-USAGE-GUIDE.md`
 **Expected**: File exists at project root
 **On Failure**: Verify file path, check write permissions
 
 ### Gate 2: All Sections Present
+
 **Command**: `grep -c "^## [1-6]" TOOL-USAGE-GUIDE.md`
 **Expected**: 6 (all sections present)
 **On Failure**: Add missing sections
 
 ### Gate 3: Migration Table Complete
+
 **Command**: `grep -c "Old Tool (Denied)" TOOL-USAGE-GUIDE.md`
 **Expected**: 7 (one per category: Filesystem, Git, GitHub, Repomix, Playwright, Perplexity, Syntropy)
 **On Failure**: Add missing migration entries
 
 ### Gate 4: Markdown Renders Correctly
+
 **Command**: Visual inspection in markdown viewer or GitHub
 **Expected**: All tables render, no broken formatting
 **On Failure**: Fix markdown syntax, check table alignment
 
 ### Gate 5: Examples Accurate
+
 **Command**: Manual spot-check of 5-10 examples
 **Expected**: All examples are valid, executable commands/tool calls
 **On Failure**: Correct examples, verify tool names
@@ -466,9 +489,11 @@ Complete mapping of all 55 denied tools to their replacements:
 ## 5. Testing Strategy
 
 ### Test Framework
+
 Manual content validation + markdown rendering
 
 ### Test Command
+
 ```bash
 # Check file exists
 ls TOOL-USAGE-GUIDE.md
@@ -484,16 +509,19 @@ open TOOL-USAGE-GUIDE.md  # macOS
 ```
 
 ### Unit Tests
+
 1. **File exists**: Created at correct path
 2. **All sections present**: 6 sections complete
 3. **Migration table**: Covers all 55 denied tools
 
 ### Integration Tests
+
 1. **Renders correctly**: View in markdown viewer
 2. **Links work**: TOC links jump to sections (if included)
 3. **Tables format**: All tables display properly
 
 ### Functional Tests
+
 1. **Examples executable**: Spot-check 10 examples
 2. **Tool names accurate**: Cross-reference with PRP-A
 3. **Complete coverage**: All use cases covered
@@ -503,6 +531,7 @@ open TOOL-USAGE-GUIDE.md  # macOS
 ## 6. Rollout Plan
 
 ### Phase 1: Development
+
 - Create worktree: `git worktree add ../ctx-eng-plus-prp-b -b prp-b-tool-usage-guide`
 - Execute steps 1-12 in worktree
 - Write all 6 sections (~400-500 lines total)
@@ -510,18 +539,21 @@ open TOOL-USAGE-GUIDE.md  # macOS
 - Commit: `git commit -m "Create TOOL-USAGE-GUIDE.md with 6 sections"`
 
 ### Phase 2: Review
+
 - Push branch: `git push -u origin prp-b-tool-usage-guide`
 - Create PR: `gh pr create --title "PRP-B: Tool Usage Guide" --base main`
 - Self-review: Check all sections, validate examples
 - Merge when ready
 
 ### Phase 3: Integration
+
 - Merge order: 2 (merge after PRP-A, before PRP-C)
 - No conflicts expected (new file)
 - Verify: File renders correctly on GitHub
 - Reference: PRP-E will add links to this guide from CLAUDE.md
 
 ### Rollback Strategy
+
 ```bash
 # If issues occur (simple - just delete file)
 rm TOOL-USAGE-GUIDE.md
@@ -535,6 +567,7 @@ git revert HEAD
 ## Research Findings
 
 ### Content Sources
+
 - **Philosophy**: Based on native-first principle from TOOL-PERMISSION-LOCKDOWN-PLAN.md
 - **Decision Tree**: Covers all common operations from project workflow
 - **Common Tasks**: Synthesized from actual project usage patterns
@@ -543,12 +576,15 @@ git revert HEAD
 - **Migration Table**: Complete mapping of all 55 denied tools
 
 ### Tool Categorization
+
 - **Native**: 7 tools (Read, Write, Edit, Glob, Grep, Bash, Task)
 - **MCP Kept**: 25 tools (Serena 11, Linear 9, Context7 2, thinking 1, Syntropy 2)
 - **MCP Denied**: 55 tools (categorized in migration table)
 
 ### Example Quality
+
 All examples are:
+
 - Copy-paste executable
 - Real-world use cases
 - Properly formatted (code blocks, syntax highlighting)
@@ -557,6 +593,7 @@ All examples are:
 ---
 
 **Completion Criteria**:
+
 - [ ] File created at project root
 - [ ] All 6 sections complete (~400-500 lines)
 - [ ] Migration table covers all 55 denied tools

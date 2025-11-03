@@ -13,6 +13,7 @@
 Use Claude Code native tools (Read, Write, Edit, Glob, Grep, Bash) over MCP wrappers whenever possible.
 
 **Why?**
+
 - **Token Efficiency**: 96% reduction in MCP tools context (~46k → ~2k tokens)
 - **Performance**: Direct tool access, no MCP routing overhead
 - **Reliability**: Fewer abstraction layers, clearer error messages
@@ -21,6 +22,7 @@ Use Claude Code native tools (Read, Write, Edit, Glob, Grep, Bash) over MCP wrap
 ### When to Use MCP Tools
 
 **Only use MCP tools for capabilities not available natively**:
+
 - **Serena**: Code symbol navigation, memory management
 - **Linear**: Issue tracking integration
 - **Context7**: Library documentation fetching
@@ -68,12 +70,14 @@ Need to [action]?
 ### Task 1: Read and Modify Files
 
 **❌ WRONG (MCP)**:
+
 ```python
 mcp__syntropy__filesystem_read_file(path="foo.py")
 mcp__syntropy__filesystem_edit_file(path="foo.py", edits=[...])
 ```
 
 **✅ CORRECT (Native)**:
+
 ```python
 Read(file_path="/absolute/path/foo.py")
 Edit(file_path="/absolute/path/foo.py", old_string="...", new_string="...")
@@ -86,12 +90,14 @@ Edit(file_path="/absolute/path/foo.py", old_string="...", new_string="...")
 ### Task 2: Search Codebase
 
 **❌ WRONG (MCP)**:
+
 ```python
 mcp__syntropy__filesystem_search_files(pattern="*.py")
 mcp__syntropy__repomix_pack_codebase(directory=".")
 ```
 
 **✅ CORRECT (Native + Serena)**:
+
 ```python
 # Find files by pattern
 Glob(pattern="**/*.py")
@@ -110,12 +116,14 @@ mcp__syntropy__serena_find_symbol(name_path="MyClass.calculate")
 ### Task 3: Git Operations
 
 **❌ WRONG (MCP)**:
+
 ```python
 mcp__syntropy__git_git_status(repo_path="/path")
 mcp__syntropy__git_git_commit(repo_path="/path", message="Fix bug")
 ```
 
 **✅ CORRECT (Native Bash)**:
+
 ```bash
 # Pre-approved: Bash(git:*)
 git status
@@ -131,12 +139,14 @@ git commit -m "Fix bug"
 ### Task 4: GitHub Operations
 
 **❌ WRONG (MCP)**:
+
 ```python
 mcp__syntropy__github_create_pull_request(owner="...", repo="...", ...)
 mcp__syntropy__github_list_issues(owner="...", repo="...")
 ```
 
 **✅ CORRECT (Native gh CLI)**:
+
 ```bash
 # Pre-approved: Bash(gh:*)
 gh pr create --title "Fix bug" --body "Description"
@@ -151,6 +161,7 @@ gh pr view 123
 ### Task 5: Find Symbol Usages
 
 **✅ CORRECT (Serena - unique capability)**:
+
 ```python
 # Find where MyClass.calculate is used
 mcp__syntropy__serena_find_referencing_symbols(name_path="MyClass.calculate")
@@ -166,6 +177,7 @@ mcp__syntropy__serena_get_symbols_overview(relative_path="src/utils.py")
 ### Task 6: Library Documentation
 
 **✅ CORRECT (Context7 - unique capability)**:
+
 ```python
 # Resolve library ID
 mcp__syntropy__context7_resolve_library_id(libraryName="numpy")
@@ -184,6 +196,7 @@ mcp__syntropy__context7_get_library_docs(
 ### Task 7: Project Management
 
 **✅ CORRECT (Linear - unique capability)**:
+
 ```python
 # List issues
 mcp__syntropy__linear_list_issues(team_id="TEAM-123")
@@ -203,6 +216,7 @@ mcp__syntropy__linear_create_issue(
 ### Task 8: Complex Reasoning
 
 **✅ CORRECT (Sequential Thinking - unique capability)**:
+
 ```python
 mcp__syntropy__thinking_sequentialthinking(
   thought="Analyzing trade-offs between approach A and B...",
@@ -219,6 +233,7 @@ mcp__syntropy__thinking_sequentialthinking(
 ### Task 9: System Health Check
 
 **✅ CORRECT (Syntropy - unique capability)**:
+
 ```python
 # Quick health check
 mcp__syntropy__healthcheck()
@@ -236,6 +251,7 @@ mcp__syntropy__healthcheck(detailed=True, timeout_ms=5000)
 ### Anti-Pattern 1: Using MCP for Simple File Ops
 
 **❌ WRONG**:
+
 ```python
 mcp__syntropy__filesystem_read_file(path="config.json")
 mcp__syntropy__filesystem_write_file(path="config.json", content="...")
@@ -244,6 +260,7 @@ mcp__syntropy__filesystem_write_file(path="config.json", content="...")
 **Problem**: Unnecessary MCP overhead, consumes more tokens, slower execution.
 
 **✅ FIX**:
+
 ```python
 Read(file_path="/absolute/path/config.json")
 Write(file_path="/absolute/path/config.json", content="...")
@@ -254,6 +271,7 @@ Write(file_path="/absolute/path/config.json", content="...")
 ### Anti-Pattern 2: Packing Entire Codebase
 
 **❌ WRONG**:
+
 ```python
 mcp__syntropy__repomix_pack_codebase(directory=".")
 # Then search packed output
@@ -262,6 +280,7 @@ mcp__syntropy__repomix_pack_codebase(directory=".")
 **Problem**: Monolithic approach, inefficient for incremental work, high token cost.
 
 **✅ FIX**:
+
 ```python
 # Incremental exploration
 Glob(pattern="**/auth*.py")  # Find relevant files
@@ -274,6 +293,7 @@ Read(file_path="/path/to/auth.py")  # Read only what you need
 ### Anti-Pattern 3: MCP for Git Commands
 
 **❌ WRONG**:
+
 ```python
 mcp__syntropy__git_git_status(repo_path="/path")
 mcp__syntropy__git_git_diff(repo_path="/path")
@@ -282,6 +302,7 @@ mcp__syntropy__git_git_diff(repo_path="/path")
 **Problem**: Limited flag support, unnecessary abstraction.
 
 **✅ FIX**:
+
 ```bash
 git status
 git diff --staged
@@ -293,6 +314,7 @@ git log --oneline -10
 ### Anti-Pattern 4: Using Playwright for Simple Web Content
 
 **❌ WRONG**:
+
 ```python
 mcp__syntropy__playwright_navigate(url="https://example.com")
 mcp__syntropy__playwright_get_visible_text()
@@ -301,6 +323,7 @@ mcp__syntropy__playwright_get_visible_text()
 **Problem**: Overkill for static content, slow browser startup.
 
 **✅ FIX**:
+
 ```python
 # For static content
 WebFetch(url="https://example.com", prompt="Extract main content")
@@ -314,6 +337,7 @@ WebSearch(query="Python asyncio best practices")
 ### Anti-Pattern 5: GitHub MCP Instead of gh CLI
 
 **❌ WRONG**:
+
 ```python
 mcp__syntropy__github_create_pull_request(
   owner="user",
@@ -328,6 +352,7 @@ mcp__syntropy__github_create_pull_request(
 **Problem**: Verbose, requires explicit owner/repo, limited features.
 
 **✅ FIX**:
+
 ```bash
 # Infers owner/repo from current directory
 gh pr create --title "Fix" --body "Description"
@@ -353,6 +378,7 @@ gh pr create --title "Fix" --body "Description"
 ### MCP Tools (Use Only When Native Unavailable)
 
 #### Serena (Code Navigation)
+
 | Tool | Purpose | Example |
 |------|---------|---------|
 | `serena_find_symbol` | Find symbol definition | `name_path="MyClass.method"` |
@@ -363,6 +389,7 @@ gh pr create --title "Fix" --body "Description"
 | `serena_read_memory` | Retrieve context | `memory_type="architecture"` |
 
 #### Linear (Project Management)
+
 | Tool | Purpose | Example |
 |------|---------|---------|
 | `linear_list_issues` | List issues | `team_id="TEAM-123"` |
@@ -371,17 +398,20 @@ gh pr create --title "Fix" --body "Description"
 | `linear_update_issue` | Update issue | `issue_id="...", updates={...}` |
 
 #### Context7 (Library Docs)
+
 | Tool | Purpose | Example |
 |------|---------|---------|
 | `context7_resolve_library_id` | Find library ID | `libraryName="numpy"` |
 | `context7_get_library_docs` | Fetch docs | `context7CompatibleLibraryID="/numpy/doc"` |
 
 #### Thinking (Reasoning)
+
 | Tool | Purpose | Example |
 |------|---------|---------|
 | `thinking_sequentialthinking` | Structured reasoning | `thought="...", thoughtNumber=1` |
 
 #### Syntropy (System)
+
 | Tool | Purpose | Example |
 |------|---------|---------|
 | `healthcheck` | Check MCP servers | `detailed=True` |
@@ -487,21 +517,27 @@ gh pr create --title "Fix" --body "Description"
 ## Best Practices
 
 ### 1. Start with Native Tools
+
 Always check if Read/Write/Edit/Glob/Grep/Bash can solve the task before reaching for MCP tools.
 
 ### 2. Use Serena for Symbol Navigation
+
 When you need to find a specific function/class definition or its usages across the codebase.
 
 ### 3. Incremental > Monolithic
+
 Prefer Glob → Grep → Read over packing entire codebase with Repomix.
 
 ### 4. Bash for System Commands
+
 Git, gh, tree, ls, find, etc. are pre-approved and more flexible than MCP wrappers.
 
 ### 5. MCP for Integration
+
 Use MCP tools when you need external service integration (Linear, Context7) not available via native tools.
 
 ### 6. Validate with Healthcheck
+
 Periodically run `mcp__syntropy__healthcheck(detailed=True)` to ensure all servers are connected.
 
 ---
@@ -513,6 +549,7 @@ Periodically run `mcp__syntropy__healthcheck(detailed=True)` to ensure all serve
 **Cause**: Tool is in deny list or MCP server disconnected.
 
 **Fix**:
+
 1. Check `.claude/settings.local.json` permissions.deny
 2. Run `mcp__syntropy__healthcheck(detailed=True)`
 3. Reconnect MCP: `/mcp` (in main repo, not worktrees)
@@ -522,6 +559,7 @@ Periodically run `mcp__syntropy__healthcheck(detailed=True)` to ensure all serve
 **Cause**: Command not in allow list.
 
 **Fix**:
+
 1. Check if command matches allow pattern: `Bash(git:*)`, `Bash(uv run:*)`, etc.
 2. If needed frequently, add to allow list in settings
 3. Temporary: User can approve via prompt
@@ -531,6 +569,7 @@ Periodically run `mcp__syntropy__healthcheck(detailed=True)` to ensure all serve
 **Cause**: Server connectivity issue or large operation.
 
 **Fix**:
+
 1. Check server health: `mcp__syntropy__healthcheck()`
 2. Increase timeout if supported
 3. Consider native alternative (e.g., Grep instead of repomix)
@@ -540,6 +579,7 @@ Periodically run `mcp__syntropy__healthcheck(detailed=True)` to ensure all serve
 **Cause**: Incorrect name_path format or file not indexed.
 
 **Fix**:
+
 1. Use `serena_get_symbols_overview` to list all symbols in file
 2. Ensure format: `ClassName.method_name` or `function_name`
 3. Check relative_path is correct from project root
@@ -549,10 +589,12 @@ Periodically run `mcp__syntropy__healthcheck(detailed=True)` to ensure all serve
 ## See Also
 
 **Code Examples**:
+
 - `tools/ce/examples/syntropy/` - MCP tool usage patterns in Python
 - `.serena/memories/` - Serena memory management examples and patterns
 
 **Related Documentation**:
+
 - `CLAUDE.md` - Project guide and quick commands
 - `TOOL-PERMISSION-LOCKDOWN-PLAN.md` - Detailed rationale for tool deny list
 - `PRPs/executed/PRP-B-tool-usage-guide.md` - PRP that created this guide
