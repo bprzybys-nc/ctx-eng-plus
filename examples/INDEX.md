@@ -336,9 +336,8 @@ When adding new examples:
 ## Related Documentation
 
 - [CLAUDE.md](../CLAUDE.md) - Project guide and quick commands
-- [.ce/RULES.md](../.ce/RULES.md) - Framework rules and principles
 - [PRPs/](../PRPs/) - Executed and feature request PRPs
-- [.claude/commands/](../.claude/commands/) - Slash commands
+- [.claude/commands/](../.claude/commands/) - Slash commands (11 framework commands including peer-review)
 
 ## Contributing
 
