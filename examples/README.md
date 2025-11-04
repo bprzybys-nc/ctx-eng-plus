@@ -4,7 +4,7 @@ Comprehensive collection of examples, patterns, and workflows for the Context En
 
 ## 📋 **[INDEX.md](INDEX.md) - Start Here**
 
-**Complete catalog of all 24 examples** with searchable table, categories, and quick reference.
+**Complete catalog of all 25 examples** with searchable table, categories, and quick reference.
 
 Browse by:
 
@@ -20,12 +20,12 @@ examples/
 ├── INDEX.md                    # 📋 Complete catalog (start here!)
 ├── README.md                   # This file
 ├── syntropy/                   # Syntropy MCP integration examples
-│   ├── README.md               # Overview and tool listing
+│   ├── README.md               # 🔶 Master overview: tool naming, decision matrix
 │   ├── serena-symbol-search.md      # Code navigation & refactoring
-│   ├── context7-docs-fetch.md       # Library documentation
-│   ├── thinking-sequential.md       # Complex reasoning
-│   ├── linear-integration.md        # Issue tracking
-│   └── memory-management.md         # Persistent knowledge
+│   ├── memory-management.md         # Persistent knowledge storage
+│   ├── linear-integration.md        # Issue tracking & project management
+│   ├── context7-docs-fetch.md       # Library documentation fetching
+│   └── thinking-sequential.md       # Complex multi-step reasoning
 ├── workflows/                  # Complete workflow examples
 │   ├── batch-prp-generation.md      # Parallel PRP generation
 │   ├── batch-prp-execution.md       # Parallel PRP execution
@@ -56,10 +56,10 @@ examples/
 
 ### Learning Syntropy MCP?
 
-1. **[Syntropy Overview](syntropy/README.md)** - Tool listing and usage
-2. **[Serena Symbol Search](syntropy/serena-symbol-search.md)** - Code navigation
-3. **[Context7 Docs Fetch](syntropy/context7-docs-fetch.md)** - Documentation fetching
-4. **[Linear Integration](syntropy/linear-integration.md)** - Issue tracking
+1. **[Syntropy README](syntropy/README.md)** - Master overview, tool naming, decision matrix
+2. **[Serena Symbol Search](syntropy/serena-symbol-search.md)** - Code navigation and refactoring
+3. **[Context7 Docs Fetch](syntropy/context7-docs-fetch.md)** - Library documentation fetching
+4. **[Linear Integration](syntropy/linear-integration.md)** - Issue tracking and project management
 
 ### Need to Clean Up Project?
 
@@ -75,11 +75,13 @@ examples/
 
 ## Statistics
 
-- **24 Examples**: Patterns, workflows, configuration, guides, reference
-- **10,755 Total Lines**: Comprehensive coverage
-- **8 Syntropy Examples**: MCP integration patterns
+- **25 Examples**: Patterns, workflows, configuration, guides, reference
+- **~10,963 Total Lines**: Comprehensive coverage
+- **6 Syntropy Examples**: MCP integration overview + patterns (Serena, Context7, Linear, Thinking)
+- **9 Examples Using Syntropy MCP**: Across all categories
 - **5 Workflows**: Batch operations, cleanup, context management
-- **6 New Files (PRP-32)**: Completed 2025-11-03
+- **21 IsWorkflow=Yes Examples**: Universal framework boilerplate
+- **4 IsWorkflow=No Examples**: Project-specific documentation
 
 ## Content Template
 

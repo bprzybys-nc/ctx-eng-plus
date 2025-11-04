@@ -55,6 +55,7 @@
       "mcp__syntropy__linear_get_team",
       "mcp__syntropy__linear_list_users",
       "mcp__syntropy__linear_create_project",
+      "mcp__syntropy__serena_execute_shell_command",
       "mcp__syntropy__serena_activate_project",
       "mcp__syntropy__serena_create_text_file",
       "mcp__syntropy__serena_find_referencing_symbols",

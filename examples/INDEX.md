@@ -15,67 +15,69 @@ Comprehensive catalog of all Context Engineering framework examples, organized b
 
 ## All Examples
 
-| Name | Type | Category | Complexity | Syntropy | Description | Path |
-|------|------|----------|------------|----------|-------------|------|
+| Name | Type | Category | IsWorkflow | Syntropy | Description | Path |
+|------|------|----------|-----------|----------|-------------|------|
 | **SYNTROPY MCP** | | | | | | |
-| Context7 Docs Fetch | Pattern | MCP | High | Yes (Context7) | Fetch library documentation with topic focus and token optimization | [syntropy/context7-docs-fetch.md](syntropy/context7-docs-fetch.md) |
-| Linear Integration | Pattern | MCP | High | Yes (Linear) | Create, update, and manage Linear issues from PRPs | [syntropy/linear-integration.md](syntropy/linear-integration.md) |
-| Memory Management | Pattern | MCP | High | Yes (Serena) | Store and retrieve persistent knowledge using Serena memory | [syntropy/memory-management.md](syntropy/memory-management.md) |
-| Serena Symbol Search | Pattern | MCP | High | Yes (Serena) | Navigate code symbols, find definitions, search patterns, refactor safely | [syntropy/serena-symbol-search.md](syntropy/serena-symbol-search.md) |
-| Thinking Sequential | Pattern | MCP | High | Yes (Thinking) | Structured multi-step reasoning with branching and revision | [syntropy/thinking-sequential.md](syntropy/thinking-sequential.md) |
+| Syntropy README | Reference | MCP | Yes | Yes (Syntropy) | Master overview: tool naming, decision matrix, when to use Syntropy vs native tools | [syntropy/README.md](syntropy/README.md) |
+| Context7 Docs Fetch | Pattern | MCP | Yes | Yes (Context7) | Fetch library documentation with topic focus and token optimization | [syntropy/context7-docs-fetch.md](syntropy/context7-docs-fetch.md) |
+| Linear Integration | Pattern | MCP | Yes | Yes (Linear) | Create, update, and manage Linear issues from PRPs | [syntropy/linear-integration.md](syntropy/linear-integration.md) |
+| Memory Management | Pattern | MCP | Yes | Yes (Serena) | Store and retrieve persistent knowledge using Serena memory | [syntropy/memory-management.md](syntropy/memory-management.md) |
+| Serena Symbol Search | Pattern | MCP | Yes | Yes (Serena) | Navigate code symbols, find definitions, search patterns, refactor safely | [syntropy/serena-symbol-search.md](syntropy/serena-symbol-search.md) |
+| Thinking Sequential | Pattern | MCP | Yes | Yes (Thinking) | Structured multi-step reasoning with branching and revision | [syntropy/thinking-sequential.md](syntropy/thinking-sequential.md) |
 | **WORKFLOWS** | | | | | | |
-| Batch PRP Execution | Workflow | Batch | High | No | Execute PRPs in parallel using git worktrees with health monitoring | [workflows/batch-prp-execution.md](workflows/batch-prp-execution.md) |
-| Batch PRP Generation | Workflow | Batch | High | No | Generate multiple PRPs from plan with dependency analysis | [workflows/batch-prp-generation.md](workflows/batch-prp-generation.md) |
-| Context Drift Remediation | Workflow | Context | High | No | Detect, analyze, and remediate context drift between PRPs and codebase | [workflows/context-drift-remediation.md](workflows/context-drift-remediation.md) |
-| Denoise Documents | Workflow | Cleanup | High | No | Compress verbose documentation using AI-powered denoising | [workflows/denoise-documents.md](workflows/denoise-documents.md) |
-| Vacuum Cleanup | Workflow | Cleanup | High | No | Identify and remove project noise with confidence-based deletion | [workflows/vacuum-cleanup.md](workflows/vacuum-cleanup.md) |
+| Batch PRP Execution | Workflow | Batch | Yes | No | Execute PRPs in parallel using git worktrees with health monitoring | [workflows/batch-prp-execution.md](workflows/batch-prp-execution.md) |
+| Batch PRP Generation | Workflow | Batch | Yes | No | Generate multiple PRPs from plan with dependency analysis | [workflows/batch-prp-generation.md](workflows/batch-prp-generation.md) |
+| Context Drift Remediation | Workflow | Context | Yes | No | Detect, analyze, and remediate context drift between PRPs and codebase | [workflows/context-drift-remediation.md](workflows/context-drift-remediation.md) |
+| Denoise Documents | Workflow | Cleanup | Yes | No | Compress verbose documentation using AI-powered denoising | [workflows/denoise-documents.md](workflows/denoise-documents.md) |
+| Vacuum Cleanup | Workflow | Cleanup | Yes | No | Identify and remove project noise with confidence-based deletion | [workflows/vacuum-cleanup.md](workflows/vacuum-cleanup.md) |
 | **CONFIGURATION** | | | | | | |
-| Hook Configuration | Configuration | Hooks | High | No | Configure lifecycle hooks (session-start, pre-commit, prompt-submit) | [config/hook-configuration.md](config/hook-configuration.md) |
-| Slash Command Template | Configuration | Commands | High | No | Create custom slash commands using markdown-based definitions | [config/slash-command-template.md](config/slash-command-template.md) |
+| Hook Configuration | Configuration | Hooks | Yes | No | Configure lifecycle hooks (session-start, pre-commit, prompt-submit) | [config/hook-configuration.md](config/hook-configuration.md) |
+| Slash Command Template | Configuration | Commands | Yes | No | Create custom slash commands using markdown-based definitions | [config/slash-command-template.md](config/slash-command-template.md) |
 | **PATTERNS** | | | | | | |
-| Dedrifting Lessons | Pattern | Context | Medium | No | Root cause analysis for context drift with prevention strategies | [patterns/dedrifting-lessons.md](patterns/dedrifting-lessons.md) |
-| Example Simple Feature | Pattern | PRP | Medium | No | Complete PRP example for adding git status summary command | [patterns/example-simple-feature.md](patterns/example-simple-feature.md) |
-| Git Message Rules | Pattern | Git | Medium | No | Git commit message formatting and convention rules | [patterns/git-message-rules.md](patterns/git-message-rules.md) |
-| Mock Marking Pattern | Pattern | Testing | Low | No | Mark mocks with FIXME comments for tracking temporary test code | [patterns/mocks-marking.md](patterns/mocks-marking.md) |
+| Dedrifting Lessons | Pattern | Context | Yes | No | Root cause analysis for context drift with prevention strategies | [patterns/dedrifting-lessons.md](patterns/dedrifting-lessons.md) |
+| Example Simple Feature | Pattern | PRP | No | No | Complete PRP example for adding git status summary command (ctx-eng-plus specific) | [patterns/example-simple-feature.md](patterns/example-simple-feature.md) |
+| Git Message Rules | Pattern | Git | No | No | Git commit message formatting and convention rules (ctx-eng-plus specific) | [patterns/git-message-rules.md](patterns/git-message-rules.md) |
+| Mock Marking Pattern | Pattern | Testing | Yes | No | Mark mocks with FIXME comments for tracking temporary test code | [patterns/mocks-marking.md](patterns/mocks-marking.md) |
 | **GUIDES** | | | | | | |
-| Tool Usage Guide | Guide | Tools | High | Yes (Multiple) | Complete tool selection guide with decision trees and examples | [TOOL-USAGE-GUIDE.md](TOOL-USAGE-GUIDE.md) |
-| PRP Decomposition Patterns | Guide | PRP | High | No | Patterns for breaking down large features into manageable PRPs | [prp-decomposition-patterns.md](prp-decomposition-patterns.md) |
+| Tool Usage Guide | Guide | Tools | Yes | Yes (Multiple) | Complete tool selection guide with decision trees and examples | [TOOL-USAGE-GUIDE.md](TOOL-USAGE-GUIDE.md) |
+| PRP Decomposition Patterns | Guide | PRP | Yes | No | Patterns for breaking down large features into manageable PRPs | [prp-decomposition-patterns.md](prp-decomposition-patterns.md) |
 | **REFERENCE** | | | | | | |
-| L4 Validation Example | Reference | Validation | Medium | No | Level 4 pattern conformance validation example with drift detection | [l4-validation-example.md](l4-validation-example.md) |
-| Linear Integration Example | Reference | MCP | Medium | No | Legacy Linear MCP integration example | [linear-integration-example.md](linear-integration-example.md) |
-| Mermaid Color Palette | Reference | Diagrams | High | No | Standard color palette for mermaid diagrams with light/dark themes | [mermaid-color-palette.md](mermaid-color-palette.md) |
-| Syntropy Status Hook | Reference | MCP | Low | Yes (Syntropy) | Syntropy MCP health check system for session-start hook | [syntropy-status-hook-system.md](syntropy-status-hook-system.md) |
-| Settings Local Example | Reference | Configuration | Low | No | Example .claude/settings.local.json with permissions | [example.setting.local.md](example.setting.local.md) |
-| tmp/ Directory Convention | Reference | Standards | Low | No | Conventions for temporary file storage and cleanup | [tmp-directory-convention.md](tmp-directory-convention.md) |
+| L4 Validation Example | Reference | Validation | No | No | Level 4 pattern conformance validation example (ctx-eng-plus specific) | [l4-validation-example.md](l4-validation-example.md) |
+| Linear Integration Example | Reference | MCP | Yes | No | Legacy Linear MCP integration example | [linear-integration-example.md](linear-integration-example.md) |
+| Mermaid Color Palette | Reference | Diagrams | Yes | No | Standard color palette for mermaid diagrams with light/dark themes | [mermaid-color-palette.md](mermaid-color-palette.md) |
+| Syntropy Status Hook | Reference | MCP | No | Yes (Syntropy) | Syntropy MCP health check system (references ctx-eng-plus scripts) | [syntropy-status-hook-system.md](syntropy-status-hook-system.md) |
+| Settings Local Example | Reference | Configuration | Yes | No | Example .claude/settings.local.json with permissions (framework template) | [example.setting.local.md](example.setting.local.md) |
+| tmp/ Directory Convention | Reference | Standards | Yes | No | Conventions for temporary file storage and cleanup | [tmp-directory-convention.md](tmp-directory-convention.md) |
 | **MODEL** | | | | | | |
-| System Model | Model | Architecture | High | Yes (Syntropy) | Complete Context Engineering framework architecture and design | [model/SystemModel.md](model/SystemModel.md) |
+| System Model | Model | Architecture | Yes | Yes (Syntropy) | Complete Context Engineering framework architecture and design | [model/SystemModel.md](model/SystemModel.md) |
 
 ## Statistics
 
-- **Total Examples**: 24
-- **Syntropy Examples**: 6 (MCP integration patterns)
+- **Total Examples**: 25
+- **Syntropy Examples**: 6 (MCP integration overview + patterns)
 - **Workflows**: 5 (Batch, cleanup, context management)
 - **Configuration**: 2 (Commands, hooks)
 - **Patterns**: 4 (Git, testing, context, PRP)
 - **Guides**: 2 (Tools, PRP decomposition)
-- **Reference**: 6 (Validation, diagrams, standards)
+- **Reference**: 6 (Validation, diagrams, standards, Syntropy overview)
 - **Model**: 1 (System architecture)
 
 ## Categories
 
 ### Syntropy MCP
 
-Examples for using Syntropy MCP integration (Serena, Context7, Thinking, Linear):
+Examples and reference for using Syntropy MCP integration (Serena, Context7, Thinking, Linear):
 
 | Example | Tools | Lines | Description |
 |---------|-------|-------|-------------|
+| [Syntropy README](syntropy/README.md) | Syntropy | 208 | Master overview, tool naming, decision matrix |
 | [Serena Symbol Search](syntropy/serena-symbol-search.md) | Serena | 917 | Code navigation, refactoring, symbol tracking |
 | [Memory Management](syntropy/memory-management.md) | Serena | 625 | Persistent knowledge storage and retrieval |
 | [Linear Integration](syntropy/linear-integration.md) | Linear | 592 | Issue tracking integration |
 | [Context7 Docs Fetch](syntropy/context7-docs-fetch.md) | Context7 | 478 | Library documentation fetching |
 | [Thinking Sequential](syntropy/thinking-sequential.md) | Thinking | 342 | Complex reasoning patterns |
 
-**Total**: 5 examples, 2,954 lines
+**Total**: 6 examples, 3,162 lines
 
 ### Batch Workflows
 
@@ -160,17 +162,29 @@ System architecture:
 
 **Total**: 1 example, 2,981 lines
 
-## Complexity Distribution
+## IsWorkflow Distribution
 
-- **Low** (<150 lines): 3 examples
-- **Medium** (150-300 lines): 5 examples
-- **High** (>300 lines): 16 examples
+- **Yes** (Universal/Framework): 21 examples (84%)
+- **No** (Project-Specific): 4 examples (16%)
+
+### Classification Legend
+
+**IsWorkflow = Yes**: Universal CE framework documentation that should be copied to any target project during initialization. Includes MCP patterns, generic workflows, framework config templates, and reusable practices.
+
+**IsWorkflow = No**: Project-specific documentation tied to ctx-eng-plus codebase or conventions. Not suitable for general distribution to other projects.
+
+### Project-Specific Examples (No)
+
+1. **Example Simple Feature** (patterns/) - Demonstrates adding git status summary command specific to ctx-eng-plus
+2. **Git Message Rules** (patterns/) - Commit message conventions specific to this project
+3. **L4 Validation Example** (reference/) - Validation patterns specific to ctx-eng-plus infrastructure
+4. **Syntropy Status Hook** (reference/) - References ctx-eng-plus-specific scripts (scripts/session-startup.sh)
 
 ## Syntropy Integration
 
-**Examples using Syntropy MCP**: 8/24 (33%)
+**Examples using Syntropy MCP**: 9/25 (36%)
 
-- **Heavy usage** (20+ references): Serena Symbol Search (58), Linear Integration (30), Context7 Docs (29), Tool Usage Guide (34), Memory Management (34)
+- **Heavy usage** (20+ references): Serena Symbol Search (58), Linear Integration (30), Context7 Docs (29), Tool Usage Guide (34), Memory Management (34), Syntropy README (navigation hub)
 - **Moderate usage** (5-20 references): Thinking Sequential (17), System Model (2)
 - **Light usage** (1-5 references): Syntropy Status Hook (1), Slash Command Template (1)
 
@@ -187,10 +201,10 @@ System architecture:
 
 **Learning Syntropy MCP**:
 
-1. [Syntropy README](syntropy/README.md) - Overview and tool list
-2. [Serena Symbol Search](syntropy/serena-symbol-search.md) - Code navigation
-3. [Context7 Docs Fetch](syntropy/context7-docs-fetch.md) - Documentation
-4. [Linear Integration](syntropy/linear-integration.md) - Issue tracking
+1. [Syntropy README](syntropy/README.md) - Master overview, decision matrix, tool naming
+2. [Serena Symbol Search](syntropy/serena-symbol-search.md) - Code navigation and refactoring
+3. [Context7 Docs Fetch](syntropy/context7-docs-fetch.md) - Library documentation fetching
+4. [Linear Integration](syntropy/linear-integration.md) - Issue tracking and project management
 
 **Maintaining Project Health**:
 
