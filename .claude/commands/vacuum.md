@@ -51,9 +51,26 @@ Clean up project noise: temp files, obsolete docs, unreferenced code, orphaned t
 - **Auto-delete with --execute**
 
 ### 3. obsolete-docs (MEDIUM: 70%)
+**Filename Patterns**:
 - Versioned docs: `*-v1.md`, `*-old.md`, `*-deprecated.md`
-- Docs referencing deleted tools/features
-- Duplicate docs (content hash comparison)
+- Temporary analysis docs: `ANALYSIS-*`, `CHANGELIST-*`, `REPORT-*`, `IMPLEMENTATION-*`, `DEPLOYMENT*`
+- Planning docs: `*-PLAN.md`, `*-REPLAN.md`, `*-SUMMARY-*.md`, `*_SOLUTION.md`
+- Root-level all-caps files (e.g., `VERSION` - with exceptions for LICENSE, MAKEFILE)
+
+**Content Analysis** (reads first 20 lines):
+- Status markers: "**Status**: PENDING", "**Status**: READY FOR EXECUTION"
+- Execution tracking: "**Completed**:", "**Remaining Work**:"
+- Planning markers: "## 📋 EXECUTIVE SUMMARY", "## 🎯 EXECUTION SUMMARY"
+- Solution patterns: "**Problem**:", "**Solution**:", "## Solution Options"
+- Date indicators: "**Date**: 2025-10-*" (time-bound docs)
+- Workflow markers: "**Workflow:**", "Source Plan:", "This plan addresses"
+
+**Protected Patterns**:
+- `.ce/**`, `.claude/**`, `.serena/**` (framework/config dirs)
+- `syntropy-mcp/**` (MCP server)
+- `tmp/finalizing/**` (work-in-progress)
+- `PRPs/**/*.md` with YAML headers (real PRPs)
+
 - **Delete with --force/--auto**
 
 ### 4. orphan-tests (MEDIUM: 60%)
@@ -78,9 +95,11 @@ Clean up project noise: temp files, obsolete docs, unreferenced code, orphaned t
 **NEVER_DELETE Paths**:
 - `.ce/**` - Framework boilerplate
 - `.claude/**` - Claude Code configuration (all commands, settings)
+- `.serena/**` - Serena memories and configuration
 - `syntropy-mcp/**` - Syntropy MCP server directory
+- `tmp/**` files < 2 days old - Recent work-in-progress (older files deleted)
 - `PRPs/**/*.md` - All PRP files with YAML headers (managed by update-context)
-- `pyproject.toml`, `README.md`, `CLAUDE.md`, `WARP.md`
+- `pyproject.toml`, `README.md`, `CLAUDE.md`, `WARP.md`, `VERSION`
 - `examples/**` - Pattern documentation
 - `**/__init__.py`, `**/cli.py`, `**/__main__.py` - Entry points
 
