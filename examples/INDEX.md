@@ -21,12 +21,7 @@ Comprehensive catalog of all Context Engineering framework examples, organized b
 | Name | Type | Category | IsWorkflow | Description | Path |
 |------|------|----------|-----------|-------------|------|
 | **FRAMEWORK INITIALIZATION** | | | | | |
-| Initialization Guide | Guide | Initialization | Yes | Master CE 1.1 framework initialization (5 phases: buckets, user files, repomix, blending, cleanup) | [INITIALIZATION.md](INITIALIZATION.md) |
-| Migration: Greenfield | Workflow | Migration | Yes | New project setup (10 min) | [workflows/migration-greenfield.md](workflows/migration-greenfield.md) |
-| Migration: Mature Project | Workflow | Migration | Yes | Add CE to existing codebase (45 min) | [workflows/migration-mature-project.md](workflows/migration-mature-project.md) |
-| Migration: CE 1.0 Upgrade | Workflow | Migration | Yes | Upgrade CE 1.0 → CE 1.1 (40 min) | [workflows/migration-existing-ce.md](workflows/migration-existing-ce.md) |
-| Migration: Partial Install | Workflow | Migration | Yes | Complete partial CE installation (15 min) | [workflows/migration-partial-ce.md](workflows/migration-partial-ce.md) |
-| Migration Integration Summary | Reference | Migration | Yes | Integration summary and workflow overview | [migration-integration-summary.md](migration-integration-summary.md) |
+| Initialization Guide | Guide | Initialization | Yes | Master CE 1.1 framework initialization (5 phases: buckets, user files, repomix, blending, cleanup). Covers 4 scenarios: Greenfield, Mature Project, CE 1.0 Upgrade, Partial Install | [INITIALIZATION.md](INITIALIZATION.md) |
 | **TEMPLATES** | | | | | |
 | PRP-0 Template | Template | Initialization | Yes | Document framework installation in meta-PRP (PRP-0-CONTEXT-ENGINEERING.md template) | [templates/PRP-0-CONTEXT-ENGINEERING.md](templates/PRP-0-CONTEXT-ENGINEERING.md) |
 | **SLASH COMMANDS** | | | | | |
@@ -85,15 +80,10 @@ Complete CE 1.1 framework initialization and migration workflows:
 
 | Example | Type | Duration | Description |
 |---------|------|----------|-------------|
-| [Initialization Guide](INITIALIZATION.md) | Guide | Variable | Master CE 1.1 framework initialization guide (5 phases: buckets, user files, repomix, blending, cleanup) |
-| [Migration: Greenfield](workflows/migration-greenfield.md) | Workflow | 10 min | New project setup from scratch |
-| [Migration: Mature Project](workflows/migration-mature-project.md) | Workflow | 45 min | Add CE to existing codebase with user file preservation |
-| [Migration: CE 1.0 Upgrade](workflows/migration-existing-ce.md) | Workflow | 40 min | Upgrade CE 1.0 → CE 1.1 with /system/ organization |
-| [Migration: Partial Install](workflows/migration-partial-ce.md) | Workflow | 15 min | Complete partial CE installation |
-| [Migration Integration Summary](migration-integration-summary.md) | Reference | - | Integration summary and workflow overview |
+| [Initialization Guide](INITIALIZATION.md) | Guide | Variable | Master CE 1.1 framework initialization guide (5 phases: buckets, user files, repomix, blending, cleanup). Covers 4 scenarios: Greenfield (10 min), Mature Project (45 min), CE 1.0 Upgrade (40 min), Partial Install (15 min) |
 | [PRP-0 Template](templates/PRP-0-CONTEXT-ENGINEERING.md) | Template | - | Document framework installation in meta-PRP |
 
-**Total**: 7 files (1 master guide + 4 migration workflows + 1 summary + 1 template)
+**Total**: 2 files (1 master guide + 1 template)
 
 **Key Features**:
 - 5-phase initialization (bucket collection, user files, repomix, blending, cleanup)

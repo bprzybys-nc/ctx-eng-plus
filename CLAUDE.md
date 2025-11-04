@@ -89,10 +89,12 @@ npx repomix --unpack .ce/ce-infrastructure.xml --target tmp/extraction/
 - **Combined**: <210KB total
 
 **Migration Scenarios**:
-- **Greenfield**: New project setup (10 min) → [migration-greenfield.md](examples/workflows/migration-greenfield.md)
-- **Mature Project**: Add CE to existing codebase (45 min) → [migration-mature-project.md](examples/workflows/migration-mature-project.md)
-- **CE 1.0 Upgrade**: Upgrade CE 1.0 → CE 1.1 (40 min) → [migration-existing-ce.md](examples/workflows/migration-existing-ce.md)
-- **Partial Install**: Complete partial CE installation (15 min) → [migration-partial-ce.md](examples/workflows/migration-partial-ce.md)
+
+All scenarios documented in [INITIALIZATION.md](examples/INITIALIZATION.md) with scenario-specific variations within each phase:
+- **Greenfield**: New project setup (10 min)
+- **Mature Project**: Add CE to existing codebase (45 min)
+- **CE 1.0 Upgrade**: Upgrade CE 1.0 → CE 1.1 (40 min)
+- **Partial Install**: Complete partial CE installation (15 min)
 
 **Memory Type System** (CE 1.1):
 
