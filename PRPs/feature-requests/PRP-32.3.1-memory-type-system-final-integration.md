@@ -65,9 +65,12 @@ This is the FINAL integration phase of the 5-phase Syntropy MCP 1.1 release fina
 ### Current State
 
 **Memory Files** (23 files in `.serena/memories/`):
+- **6 critical memories**: code-style-conventions, suggested-commands, task-completion-checklist, testing-standards, tool-usage-syntropy, use-syntropy-tools-not-bash
+- **17 regular memories**: All other framework memories
 - No YAML front matter currently
-- Need `type: regular` default (users upgrade to `critical` manually)
+- All default to `type: regular` (users upgrade to `critical` manually during target project initialization)
 - Need category, tags, timestamps
+- **Note**: User memories in target projects get `type: user` during initialization (Phase 2 user file migration)
 
 **INDEX.md** (`examples/INDEX.md`):
 - Needs Phase 1 classification updates (file status corrections)
@@ -138,6 +141,38 @@ updated: "2025-11-04T00:00:00Z"
 - Context health: `cd tools && uv run ce context health`
 
 ## 3. Implementation Steps
+
+### Phase 0: ce-32/ Workspace Setup (5 minutes)
+
+**Goal**: Create centralized workspace for PRP-32 processing artifacts
+
+**Steps**:
+```bash
+# Create ce-32/ folder structure
+mkdir -p ce-32/docs
+mkdir -p ce-32/cache
+mkdir -p ce-32/builds
+mkdir -p ce-32/validation
+
+echo "✓ ce-32/ workspace created"
+```
+
+**Folder Structure**:
+- **ce-32/docs/**: Processed documentation (classification reports, integration reports)
+- **ce-32/cache/**: Temporary cache files during processing
+- **ce-32/builds/**: Repomix package builds (ce-workflow-docs.xml, ce-infrastructure.xml)
+- **ce-32/validation/**: Validation outputs and test extractions
+
+**Purpose**: Centralize all PRP-32 development artifacts in one location (not distributed to target projects)
+
+**Validation**:
+```bash
+test -d ce-32/docs && \
+test -d ce-32/cache && \
+test -d ce-32/builds && \
+test -d ce-32/validation && \
+echo "✓ ce-32/ workspace complete" || echo "✗ Workspace incomplete"
+```
 
 ### Phase 1: Dependency Verification (15 minutes)
 
@@ -217,6 +252,55 @@ Please execute PRP-32.[N] before continuing with PRP-32.3.1
 # Verify all 23 files have YAML headers
 grep -l "^---$" /Users/bprzybyszi/nc-src/ctx-eng-plus/.serena/memories/*.md | wc -l
 # Expected: 23 (excluding README.md)
+```
+
+### Phase 2.5: User File Migration Documentation (10 minutes)
+
+**Goal**: Document how user files get YAML headers during target project initialization
+
+**Background**:
+- Framework memories (23 files) get `type: regular` in ctx-eng-plus (this PRP)
+- User memories/PRPs in target projects get `type: user` during Phase 2 of INITIALIZATION.md workflow
+
+**Documentation Updates**:
+
+Add to examples/INITIALIZATION.md Phase 2 section:
+
+**User Memory YAML Headers**:
+```yaml
+---
+type: user
+source: target-project
+created: "2025-11-04T00:00:00Z"
+updated: "2025-11-04T00:00:00Z"
+---
+
+[existing user memory content]
+```
+
+**User PRP YAML Headers**:
+```yaml
+---
+prp_id: USER-001
+title: User Feature Implementation
+status: completed
+created: "2025-11-04"
+source: target-project
+type: user
+---
+
+[existing user PRP content]
+```
+
+**Key Points**:
+- Framework files: `type: regular` or `type: critical` (ctx-eng-plus)
+- User files: `type: user` (target projects during initialization)
+- Source: `target-project` (distinguishes from framework source)
+
+**Validation**:
+```bash
+# Verify INITIALIZATION.md documents user file migration
+grep "type: user" examples/INITIALIZATION.md && echo "✓ User migration documented"
 ```
 
 ### Phase 3: INDEX.md Unified Update (30 minutes)
@@ -313,49 +397,114 @@ grep "Total Examples:" /Users/bprzybyszi/nc-src/ctx-eng-plus/examples/INDEX.md
 grep -q "Framework Initialization" /Users/bprzybyszi/nc-src/ctx-eng-plus/CLAUDE.md && echo "✓ Initialization section added"
 ```
 
-### Phase 5: Repomix Package Regeneration (15 minutes)
+### Phase 5: Repomix Package Regeneration with /system/ Organization (20 minutes)
 
-**Goal**: Regenerate workflow and infrastructure packages with Phase 4 refined docs and memory type headers
+**Goal**: Regenerate workflow and infrastructure packages with Phase 4 refined docs, memory type headers, and CE 1.1 /system/ organization
 
 **Steps**:
-1. Regenerate workflow package (includes Phase 4 consolidated docs):
-   ```bash
-   cd /Users/bprzybyszi/nc-src/ctx-eng-plus
-   uvx repomix --config .ce/repomix/workflow.config.json -o .ce/ce-workflow-docs.xml
-   ```
 
-2. Regenerate infrastructure package (includes memory type headers):
-   ```bash
-   uvx repomix --config .ce/repomix/infrastructure.config.json -o .ce/ce-infrastructure.xml
-   ```
+**Step 5.1: Regenerate Workflow Package** (no changes from CE 1.0)
+```bash
+cd /Users/bprzybyszi/nc-src/ctx-eng-plus
+npx repomix --config .ce/repomix-profile-workflow.yml
+# Output: .ce/ce-workflow-docs.xml (reference package, NOT extracted)
+```
 
-3. Check token counts:
-   ```bash
-   # Workflow package (target <55KB)
-   wc -c /Users/bprzybyszi/nc-src/ctx-eng-plus/.ce/ce-workflow-docs.xml
+**Step 5.2: Regenerate Infrastructure Package with /system/ Structure**
 
-   # Infrastructure package (target <45KB)
-   wc -c /Users/bprzybyszi/nc-src/ctx-eng-plus/.ce/ce-infrastructure.xml
-   ```
+```bash
+# Generate infrastructure package
+npx repomix --config .ce/repomix-profile-infrastructure.yml
 
-4. Generate markdown mirrors:
-   ```bash
-   uvx repomix --config .ce/repomix/workflow.config.json -o .ce/ce-workflow-docs.md
-   uvx repomix --config .ce/repomix/infrastructure.config.json -o .ce/ce-infrastructure.md
-   ```
+# Run post-processing to add /system/ organization
+bash .ce/reorganize-infrastructure.sh
 
-5. Update package manifest (if exists):
-   - Record new package sizes
-   - Update last_generated timestamp
+# Validation: Verify /system/ structure
+npx repomix --unpack .ce/ce-infrastructure.xml --target .tmp/validation/
+test -d .tmp/validation/.ce/examples/system && echo "✓ /system/ structure"
+test -d .tmp/validation/.ce/PRPs/system && echo "✓ PRPs /system/ structure"
+test -d .tmp/validation/.serena/memories/system && echo "✓ Memories /system/ structure"
 
-**Output**: Regenerated repomix packages (<100KB combined)
+# Move packages to ce-32/builds/
+mkdir -p ce-32/builds/
+mv .ce/ce-workflow-docs.xml ce-32/builds/
+mv .ce/ce-infrastructure.xml ce-32/builds/
+echo "✓ Packages moved to ce-32/builds/"
+```
+
+**Purpose**: Centralize repomix builds in ce-32/ folder for organized PRP-32 processing
+
+**Note**: ce-32/ is ctx-eng-plus development artifact, not distributed to target projects
+
+**Step 5.3: Validate Package Organization**
+
+```bash
+# Extract and verify structure
+mkdir -p .tmp/final-validation/
+npx repomix --unpack .ce/ce-infrastructure.xml --target .tmp/final-validation/
+
+# Verify directory structure matches CE 1.1 design
+test -d .tmp/final-validation/.ce/examples/system && echo "✓ System examples dir"
+test -d .tmp/final-validation/.ce/PRPs/system && echo "✓ System PRPs dir"
+test -d .tmp/final-validation/.serena/memories/system && echo "✓ System memories dir"
+
+# Verify file counts
+EXAMPLES=$(find .tmp/final-validation/.ce/examples/system/ -name "*.md" | wc -l)
+MEMORIES=$(find .tmp/final-validation/.serena/memories/system/ -name "*.md" | wc -l)
+COMMANDS=$(find .tmp/final-validation/.claude/commands/ -name "*.md" | wc -l)
+
+echo "Framework files:"
+echo "  Examples: $EXAMPLES (expected: 21)"
+echo "  Memories: $MEMORIES (expected: 23)"
+echo "  Commands: $COMMANDS (expected: 11)"
+```
+
+**Step 5.4: Check Token Counts**
+
+```bash
+# Workflow package (target <60KB)
+wc -c /Users/bprzybyszi/nc-src/ctx-eng-plus/.ce/ce-workflow-docs.xml
+
+# Infrastructure package (target <150KB)
+wc -c /Users/bprzybyszi/nc-src/ctx-eng-plus/.ce/ce-infrastructure.xml
+
+# Combined total (target <210KB)
+total_size=$(( $(wc -c < .ce/ce-workflow-docs.xml) + $(wc -c < .ce/ce-infrastructure.xml) ))
+echo "Combined size: ${total_size} bytes ($(( total_size / 1024 )) KB)"
+```
+
+**Step 5.5: Generate Markdown Mirrors**
+
+```bash
+npx repomix --config .ce/repomix-profile-workflow.yml --style markdown --output .ce/ce-workflow-docs.md
+npx repomix --config .ce/repomix-profile-infrastructure.yml --style markdown --output .ce/ce-infrastructure.md
+```
+
+**Step 5.6: Update Package Manifest**
+
+Update `.ce/repomix-manifest.yml`:
+- Record new package sizes
+- Update last_generated timestamp
+- Confirm /system/ organization structure
+- Update file counts (21 examples, 23 memories, 11 commands)
+
+**Output**: Regenerated repomix packages (<210KB combined) with CE 1.1 /system/ organization
 
 **Validation**:
 ```bash
-# Verify both packages exist and are <100KB combined
+# Verify both packages exist and are <210KB combined
 total_size=$(( $(wc -c < /Users/bprzybyszi/nc-src/ctx-eng-plus/.ce/ce-workflow-docs.xml) + $(wc -c < /Users/bprzybyszi/nc-src/ctx-eng-plus/.ce/ce-infrastructure.xml) ))
 echo "Combined size: ${total_size} bytes ($(( total_size / 1024 )) KB)"
-[[ $total_size -lt 102400 ]] && echo "✓ Within token limit" || echo "✗ Exceeds 100KB limit"
+[[ $total_size -lt 215040 ]] && echo "✓ Within token limit (<210KB)" || echo "✗ Exceeds 210KB limit"
+
+# Verify /system/ organization in infrastructure package
+npx repomix --unpack .ce/ce-infrastructure.xml --target .tmp/quick-check/
+test -d .tmp/quick-check/.ce/examples/system && \
+test -d .tmp/quick-check/.serena/memories/system && \
+echo "✓ /system/ organization verified" || echo "✗ Missing /system/ structure"
+
+# Cleanup validation directories
+rm -rf .tmp/validation/ .tmp/final-validation/ .tmp/quick-check/
 ```
 
 ### Phase 6: Final Integration Report (30 minutes)
@@ -368,7 +517,6 @@ echo "Combined size: ${total_size} bytes ($(( total_size / 1024 )) KB)"
    # Syntropy MCP 1.1 Release - Final Integration Report
 
    **Generated**: 2025-11-04T17:30:00Z
-   **Batch**: 32
    **Total Phases**: 5
 
    ## Executive Summary
@@ -463,29 +611,75 @@ echo "Combined size: ${total_size} bytes ($(( total_size / 1024 )) KB)"
    ## [1.1.0] - 2025-11-04
 
    ### Added
-   - Memory type system: YAML headers for all 23 Serena memories (regular/critical classification)
-   - Framework initialization guide (examples/INITIALIZATION.md)
-   - Migration guides for 5 deprecated MCP tools (examples/migration-guides/)
-   - "Framework Initialization" section in CLAUDE.md
-   - Repomix usage documentation in CLAUDE.md
+
+   **CE 1.1 Framework Initialization**
+   - 5-phase initialization workflow (bucket collection, user files, repomix, blending, cleanup)
+   - /system/ organization for framework files (separation from user files)
+   - 4 migration scenarios: Greenfield, Mature Project, CE 1.0 Upgrade, Partial Installation
+   - PRP-0 convention: Document framework installation in meta-PRP
+   - Zero noise guarantee: Legacy files cleaned up after migration
+
+   **Migration Guides**
+   - `examples/INITIALIZATION.md` - Master initialization guide
+   - `examples/workflows/migration-greenfield.md` - New project (10 min)
+   - `examples/workflows/migration-mature-project.md` - Add CE to existing code (45 min)
+   - `examples/workflows/migration-existing-ce.md` - Upgrade CE 1.0 → CE 1.1 (40 min)
+   - `examples/workflows/migration-partial-ce.md` - Complete partial installation (15 min)
+
+   **Templates**
+   - `examples/templates/PRP-0-CONTEXT-ENGINEERING.md` - CE installation documentation template
+
+   **Memory Type System**
+   - YAML headers for all 23 Serena memories (type: critical/regular)
+   - Category taxonomy (documentation/pattern/troubleshooting/architecture/configuration)
+   - Upgrade path documentation (regular → critical)
 
    ### Changed
-   - INDEX.md: Added migration guides section, updated file counts, corrected missing file status
-   - Repomix packages regenerated with consolidated docs (workflow <55KB, infrastructure <45KB)
-   - Documentation consolidation: Unified initialization docs, reduced redundancy
+
+   **Directory Structure**
+   - Framework files moved to `/system/` subfolders (`.ce/examples/system/`, `.serena/memories/system/`)
+   - User files remain in parent directories (`.ce/examples/`, `.serena/memories/`)
+   - CLAUDE.md structure: Framework sections (marked) + user sections
+
+   **Repomix Packages**
+   - ce-workflow-docs.xml: <60KB (reference package, stored not extracted)
+   - ce-infrastructure.xml: <150KB with /system/ organization (all framework files)
+   - Combined total: <210KB (increased from <100KB for complete framework)
+   - Post-processing script adds /system/ subdirectories
+   - Development artifacts centralized in ce-32/ folder (docs, cache, builds, validation)
+
+   **Memory Type System**
+   - All 23 framework memories have YAML type headers
+   - 6 critical memories: code-style-conventions, suggested-commands, task-completion-checklist, testing-standards, tool-usage-syntropy, use-syntropy-tools-not-bash
+   - 17 regular memories: All other framework memories
+   - User memories in target projects get `type: user` during initialization
+
+   **User File Migration**
+   - YAML headers added to user memories and PRPs during target project initialization
+   - User memory header: `type: user`, `source: target-project`
+   - User PRP header: `prp_id`, `title`, `status`, `source: target-project`, `type: user`
+   - Documented in examples/INITIALIZATION.md Phase 2
+
+   **INDEX.md & CLAUDE.md**
+   - Added "Framework Initialization" section to CLAUDE.md
+   - Added migration guide references
+   - Updated file counts and statistics
+   - Corrected broken path references
 
    ### Fixed
-   - INDEX.md broken path references (workflows/, config/, syntropy/ directories)
-   - Documentation gaps identified in Phase 1 classification audit
+   - INDEX.md broken references (workflows/, config/, syntropy/ directories)
+   - Documentation gaps from Phase 1 audit
+   - Missing migration scenarios (partial CE installation)
+
+   ### Deprecated
+   - CE 1.0 flat organization (no `/system/` subfolders)
+   - Root-level `PRPs/` directory (use `.ce/PRPs/` instead)
+   - Root-level `examples/` directory (use `.ce/examples/` instead)
 
    ### Documentation
-   - 5 migration guides created (Repomix→Serena, GitHub MCP→gh CLI, Git MCP→native, Filesystem MCP→native, Perplexity MCP→WebSearch)
    - Final integration report (docs/final-integration-report.md)
    - Classification report (docs/classification-report.md)
-
-   ### Performance
-   - Token reduction: [X]KB from documentation consolidation (Phase 4)
-   - Repomix packages optimized: <100KB combined (was [Y]KB)
+   - Migration integration summary (examples/migration-integration-summary.md)
    ```
 
 3. Write CHANGELOG.md update (single Edit operation)
@@ -808,6 +1002,54 @@ cat /Users/bprzybyszi/nc-src/ctx-eng-plus/.ce/ce-infrastructure.xml | wc -c
 5. Announce 1.1 release (internal/external)
 
 **Success Criteria**: Release stable, no rollback needed
+
+---
+
+## 7. Success Metrics
+
+### Implementation Completeness
+
+1. **ce-32/ Folder Structure**
+   - ✅ Phase 0 documented in Implementation Steps
+   - ✅ 4 subdirectories: docs, cache, builds, validation
+   - ✅ Purpose: Centralize PRP-32 development artifacts
+   - ✅ Note: Not distributed to target projects
+
+2. **Memory Type System**
+   - ✅ All 23 framework memories have YAML headers
+   - ✅ Memory type split clarified: 6 critical + 17 regular
+   - ✅ Critical memories explicitly listed (code-style-conventions, suggested-commands, task-completion-checklist, testing-standards, tool-usage-syntropy, use-syntropy-tools-not-bash)
+   - ✅ User memories get `type: user` in target projects
+
+3. **Repomix Package Management**
+   - ✅ Packages moved to ce-32/builds/ (Phase 5, Step 5.2)
+   - ✅ ce-32/builds/ce-workflow-docs.xml (<60KB)
+   - ✅ ce-32/builds/ce-infrastructure.xml (<150KB)
+   - ✅ /system/ organization verified (validation commands)
+
+4. **User File Migration**
+   - ✅ Phase 2.5 added to Implementation Steps
+   - ✅ User memory YAML header template documented
+   - ✅ User PRP YAML header template documented
+   - ✅ INITIALIZATION.md Phase 2 references user file migration
+
+5. **Documentation Updates**
+   - ✅ INDEX.md unified update (Phase 3)
+   - ✅ CLAUDE.md Framework Initialization section (Phase 4)
+   - ✅ CHANGELOG.md 1.1 release entry with ce-32/, memory types, user migration
+
+### Validation Coverage
+
+- **9 validation gates**: Dependency verification, memory headers, INDEX/CLAUDE updates, package sizes, full validation, context health, final report, CHANGELOG
+- **All phases have validation commands**: Clear pass/fail criteria
+- **Token limits enforced**: <60KB workflow, <150KB infrastructure, <210KB total
+
+### Cross-PRP Consistency
+
+- ✅ File counts match PRP-32.1.2: 21 examples, 23 memories (6 critical + 17 regular), 11 commands
+- ✅ ce-32/builds/ path consistent across PRP-32.1.2 and PRP-32.3.1
+- ✅ /system/ organization consistent with PRP-32.1.3
+- ✅ Memory type split documented consistently
 
 ---
 
