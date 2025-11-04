@@ -32,7 +32,9 @@ class BaseStrategy(ABC):
     PROTECTED_PATTERNS = [
         ".ce/**",
         ".claude/**",  # Protect ALL Claude Code configuration
+        ".serena/**",  # Protect Serena memories and configuration
         "syntropy-mcp/**",  # Protect syntropy MCP server directory
+        # Note: tmp/** files are conditionally protected by age (see is_protected_by_age)
         # Note: PRP files are protected by PRP naming convention check in is_protected()
         "pyproject.toml",
         "README.md",
@@ -73,6 +75,15 @@ class BaseStrategy(ABC):
         """
         relative_path = path.relative_to(self.project_root)
         relative_str = str(relative_path)
+
+        # Special case: tmp/ files - protect if modified less than 2 days ago
+        if relative_str.startswith("tmp/"):
+            # Files < 2 days old (by filesystem mtime) are protected
+            if not self.is_recently_modified(path, days=2):
+                # File is older than 2 days - not protected
+                return False
+            # File is recent (< 2 days) - protected
+            return True
 
         # Special case: Markdown files in PRPs/ - check if they have YAML header
         # Match both "/PRPs/" and "PRPs/" (start of path)
@@ -202,3 +213,22 @@ class BaseStrategy(ABC):
         """
         history = self.get_git_history(path, days)
         return "commits in last" in history and not history.startswith("0 commits")
+
+    def is_recently_modified(self, path: Path, days: int = 30) -> bool:
+        """Check if file was modified recently (filesystem mtime).
+
+        Args:
+            path: Path to file
+            days: Number of days to consider recent
+
+        Returns:
+            True if file was modified in last N days (based on filesystem mtime)
+        """
+        from datetime import datetime, timedelta
+
+        try:
+            mtime = datetime.fromtimestamp(path.stat().st_mtime)
+            cutoff = datetime.now() - timedelta(days=days)
+            return mtime > cutoff
+        except Exception:
+            return False
