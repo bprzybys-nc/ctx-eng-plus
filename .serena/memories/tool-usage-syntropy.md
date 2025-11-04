@@ -1,3 +1,11 @@
+---
+type: regular
+category: documentation
+tags: [syntropy, mcp, tools]
+created: "2025-11-04T17:30:00Z"
+updated: "2025-11-04T17:30:00Z"
+---
+
 # Syntropy MCP Tool Usage - Updated Reference
 
 **Purpose**: Fast agent tool selection using Syntropy MCP aggregation layer

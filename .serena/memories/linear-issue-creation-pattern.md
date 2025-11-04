@@ -1,3 +1,11 @@
+---
+type: regular
+category: pattern
+tags: [linear, issues, automation]
+created: "2025-11-04T17:30:00Z"
+updated: "2025-11-04T17:30:00Z"
+---
+
 # Linear Issue Creation Pattern
 
 ## Working Example

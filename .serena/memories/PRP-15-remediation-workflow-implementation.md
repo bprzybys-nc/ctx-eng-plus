@@ -1,3 +1,11 @@
+---
+type: regular
+category: pattern
+tags: [prp, remediation, workflow]
+created: "2025-11-04T17:30:00Z"
+updated: "2025-11-04T17:30:00Z"
+---
+
 # PRP-15: Integrated PRP Execution - Implementation Complete
 
 ## Implementation Status: ✅ COMPLETED

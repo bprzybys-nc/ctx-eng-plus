@@ -1,3 +1,11 @@
+---
+type: regular
+category: architecture
+tags: [structure, organization, modules]
+created: "2025-11-04T17:30:00Z"
+updated: "2025-11-04T17:30:00Z"
+---
+
 # Codebase Structure
 
 ## Top-Level Layout

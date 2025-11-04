@@ -1,3 +1,11 @@
+---
+type: regular
+category: pattern
+tags: [syntropy, hooks, status]
+created: "2025-11-04T17:30:00Z"
+updated: "2025-11-04T17:30:00Z"
+---
+
 # Syntropy Status Hook - Cache-Based Architecture
 
 ## Pattern: SessionStart Hook with MCP Data via Cache

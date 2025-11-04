@@ -319,13 +319,10 @@ for memory in *.md 2>/dev/null; do
     TYPE="regular"
   fi
 
-  # Add YAML header
+  # Add YAML header for user memory
   cat > "${memory}.tmp" << EOF
 ---
-type: $TYPE
-priority: normal
-category: guide
-tags: []
+type: user
 source: target-project
 created: "$(date -u +%Y-%m-%dT%H:%M:%SZ)"
 updated: "$(date -u +%Y-%m-%dT%H:%M:%SZ)"
@@ -362,8 +359,57 @@ find tmp/syntropy-initialization/prps -name "*.md" ! -name "*.fake" -exec sh -c 
   done
 ' sh {} +
 
+# Add YAML headers to user PRPs (if missing)
+cd .ce/PRPs/executed/
+
+for prp in *.md 2>/dev/null; do
+  # Skip if already has YAML header
+  if head -n 1 "$prp" | grep -q "^---"; then
+    continue
+  fi
+
+  # Extract PRP ID from filename (e.g., USER-001 from USER-001-feature.md)
+  PRP_ID=$(echo "$prp" | sed 's/\.md$//' | cut -d'-' -f1-2)
+  TITLE=$(echo "$prp" | sed 's/\.md$//' | sed 's/^[^-]*-[^-]*-//' | tr '-' ' ')
+
+  # Add YAML header for user PRP
+  cat > "${prp}.tmp" << EOF
+---
+prp_id: $PRP_ID
+title: $TITLE
+status: completed
+created: "$(date -u +%Y-%m-%d)"
+source: target-project
+type: user
+---
+
+$(cat "$prp")
+EOF
+  mv "${prp}.tmp" "$prp"
+  echo "✓ Added YAML header to $prp"
+done
+
+cd ../../..
 echo "✓ User PRPs migrated to .ce/PRPs/"
 ```
+
+**User PRP YAML Header Format**:
+
+```yaml
+---
+prp_id: USER-001
+title: User Feature Implementation
+status: completed
+created: "2025-11-04"
+source: target-project
+type: user
+---
+```
+
+**Notes**:
+- `type: user` distinguishes user PRPs from framework PRPs
+- `source: target-project` indicates origin (vs. framework source: ctx-eng-plus)
+- Framework PRPs use `type: regular` or `type: critical`
 
 ### Step 2.3: User Examples Migration
 
@@ -408,11 +454,12 @@ cat > tmp/syntropy-initialization/phase2-report.txt << EOF
 
 ## Memories Migrated
 User memories: $(find .serena/memories -maxdepth 1 -name "*.md" 2>/dev/null | wc -l)
-Headers added: $(grep -l "^type:" .serena/memories/*.md 2>/dev/null | wc -l)
+Headers added (type: user): $(grep -l "^type: user" .serena/memories/*.md 2>/dev/null | wc -l)
 
 ## PRPs Migrated
 Executed: $(ls .ce/PRPs/executed/*.md 2>/dev/null | wc -l)
 Feature requests: $(ls .ce/PRPs/feature-requests/*.md 2>/dev/null | wc -l)
+Headers added (type: user): $(grep -l "^type: user" .ce/PRPs/executed/*.md 2>/dev/null | wc -l)
 
 ## Examples Migrated
 User examples: $(ls .ce/examples/*.md 2>/dev/null | wc -l)
@@ -420,12 +467,18 @@ User examples: $(ls .ce/examples/*.md 2>/dev/null | wc -l)
 ## Commands/Settings
 Custom commands: $(ls .claude/commands/*.md 2>/dev/null | wc -l)
 Settings backed up: $(test -f .claude/settings.pre-ce.json && echo "yes" || echo "no")
+
+## YAML Header Summary
+- User memories: type: user, source: target-project
+- User PRPs: type: user, source: target-project, prp_id, title, status
+- Framework memories: type: regular (default) or type: critical (upgraded manually)
+- Framework PRPs: Standard PRP YAML with batch_id, stage, order
 EOF
 
 cat tmp/syntropy-initialization/phase2-report.txt
 ```
 
-**Phase 2 Complete**: User files migrated with YAML headers. Proceed to Phase 3.
+**Phase 2 Complete**: User files migrated with YAML headers (`type: user`). Framework files use `type: regular` or `type: critical`. Proceed to Phase 3.
 
 ---
 

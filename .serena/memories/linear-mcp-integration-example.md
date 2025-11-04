@@ -1,3 +1,11 @@
+---
+type: regular
+category: documentation
+tags: [linear, mcp, integration]
+created: "2025-11-04T17:30:00Z"
+updated: "2025-11-04T17:30:00Z"
+---
+
 # Linear MCP Integration - Pattern Example
 
 ## Quick Reference

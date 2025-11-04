@@ -1,3 +1,11 @@
+---
+type: regular
+category: pattern
+tags: [serena, verification, testing]
+created: "2025-11-04T17:30:00Z"
+updated: "2025-11-04T17:30:00Z"
+---
+
 # Serena Implementation Verification Pattern
 
 ## Overview
