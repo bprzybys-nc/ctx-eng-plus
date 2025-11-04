@@ -170,6 +170,12 @@ This is a read-only audit. No files will be modified until Phase 5 (final update
 - **IsWorkflow=Yes**: Universal CE framework docs, suitable for any project
 - **IsWorkflow=No**: Ctx-eng-plus specific (references project paths, conventions, custom implementation)
 
+**CE 1.1 Organization Logic** (for /system/ subfolder placement):
+- **System Docs** (→ `/system/` subfolder): Files from Syntropy init / ce-infrastructure.xml extraction
+  - Destination: `.ce/examples/system/`, `.ce/PRPs/system/`, `.serena/memories/system/`
+- **User Docs** (→ parent directory): Files copied from target project buckets during initialization
+  - Destination: `.ce/examples/`, `.ce/PRPs/`, `.serena/memories/`
+
 **Steps**:
 1. Review each examples/ file:
    - Read first 100 lines to identify ctx-eng-plus specific content
@@ -285,17 +291,27 @@ This is a read-only audit. No files will be modified until Phase 5 (final update
 
 ## Classification by IsWorkflow
 
-### Distributable (IsWorkflow=Yes)
-| File Path | Type | Size (lines) | Status | Notes |
-|-----------|------|--------------|--------|-------|
-| examples/TOOL-USAGE-GUIDE.md | Guide | 606 | ✓ Indexed | Universal tool selection guide |
-| ... | ... | ... | ... | ... |
+### System Docs (from Syntropy init / ce-infrastructure.xml)
+**Destination**: `/system/` subfolders (`.ce/examples/system/`, `.serena/memories/system/`, `.ce/PRPs/system/`)
 
-### Project-Specific (IsWorkflow=No)
-| File Path | Type | Size (lines) | Status | Notes |
-|-----------|------|--------------|--------|-------|
-| .ce/linear-defaults.yml | Config | 23 | ✗ Exclude | Project-specific config |
-| ... | ... | ... | ... | ... |
+| File Path | Type | Count | Status | Notes |
+|-----------|------|-------|--------|-------|
+| Examples | Framework examples (IsWorkflow=Yes) | 21 | ✓ Complete | All workflow examples |
+| PRPs | Framework PRPs | 0 | N/A | Structure exists for future |
+| Memories | Framework memories | 23 | ✓ Complete | 6 critical + 17 regular |
+
+### User Docs (from target project buckets)
+**Destination**: Parent directories (`.ce/examples/`, `.serena/memories/`, `.ce/PRPs/`)
+
+| File Path | Type | Count | Status | Notes |
+|-----------|------|-------|--------|-------|
+| Examples | User examples | [count] | Variable | From examples/ bucket |
+| PRPs | User PRPs | [count] | Variable | From PRPs/ bucket |
+| Memories | User memories | [count] | Variable | From serena/ bucket |
+
+### Classification Source
+- **System**: ce-infrastructure.xml package contents
+- **User**: tmp/syntropy-initialization/<bucket>/ validated files
 
 ## Directory Structure Analysis
 
@@ -455,6 +471,10 @@ ls -d /Users/bprzybyszi/nc-src/ctx-eng-plus/examples/syntropy/ 2>/dev/null || ec
 ```bash
 # Verify classification report exists and is complete
 cat /Users/bprzybyszi/nc-src/ctx-eng-plus/docs/doc-classification-report.md | grep -c "IsWorkflow"
+
+# Verify System vs User classification
+grep "System Docs" /Users/bprzybyszi/nc-src/ctx-eng-plus/docs/doc-classification-report.md
+grep "User Docs" /Users/bprzybyszi/nc-src/ctx-eng-plus/docs/doc-classification-report.md
 ```
 
 **Success Criteria**:
@@ -462,6 +482,8 @@ cat /Users/bprzybyszi/nc-src/ctx-eng-plus/docs/doc-classification-report.md | gr
 - All ~96 files classified (15 examples/ + 23 .serena/ + 48 .ce/ + 10 .claude/commands/)
 - Each file has IsWorkflow status (Yes/No)
 - No "TBD" or "Unknown" classifications
+- **System vs User distinction clear**: System docs = from Syntropy init, User docs = from buckets
+- File counts match: 21 system examples, 23 system memories, 11 framework commands
 
 ### Gate 4: SystemModel Alignment Verified
 

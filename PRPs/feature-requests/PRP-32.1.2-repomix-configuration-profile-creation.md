@@ -32,9 +32,18 @@ version: 1
 
 **Problem**: CE framework documentation is scattered across 25+ files with no consolidated distribution format. Users need both workflow documentation (examples) and infrastructure files (memories, commands, tools) but currently must manually collect them.
 
-**Solution**: Create 2 repomix configuration profiles that generate XML packages:
-1. **Workflow Documentation Package** (21 workflow examples + CLAUDE.md sections) → .ce/ce-workflow-docs.xml (<60KB)
-2. **Infrastructure Package** (6 universal memories + 11 commands + tools/*.py) → .ce/ce-infrastructure.xml (<40KB)
+**Solution**: Create 2 repomix configuration profiles that generate XML packages with different purposes:
+
+1. **ce-workflow-docs.xml** - Reference Package (<60KB)
+   - 21 workflow examples (IsWorkflow=Yes) + CLAUDE.md workflow sections
+   - Stored at `.ce/examples/system/ce-workflow-docs.xml` (NOT extracted)
+   - Purpose: Lightweight reference for workflow patterns
+
+2. **ce-infrastructure.xml** - Installation Package (<150KB)
+   - ALL framework files organized with `/system/` subfolders
+   - Extracted during initialization (Phase 3: Repomix Package Handling)
+   - Includes: 21 framework examples, 23 framework memories, 11 commands, tools source, CLAUDE.md sections
+   - Creates: `.ce/examples/system/`, `.ce/PRPs/system/`, `.serena/memories/system/`
 
 **Impact**:
 - Enables one-command distribution of CE framework components
@@ -103,11 +112,14 @@ version: 1
 
 **Desired State**:
 - 2 repomix YAML profiles: .ce/repomix-profile-workflow.yml, .ce/repomix-profile-infrastructure.yml
-- Generated XML packages: .ce/ce-workflow-docs.xml, .ce/ce-infrastructure.xml
+- Generated XML packages:
+  - .ce/ce-workflow-docs.xml (reference, <60KB)
+  - .ce/ce-infrastructure.xml (installation with /system/ organization, <150KB)
 - Human-readable mirrors: .ce/ce-workflow-docs.md, .ce/ce-infrastructure.md
-- Manifest documentation: .ce/repomix-manifest.yml (documents what's in each package)
-- Usage guide: .ce/README-REPOMIX.md (how to use packages)
-- All packages <100KB total (<60KB + <40KB)
+- Manifest documentation: .ce/repomix-manifest.yml (documents what's in each package + /system/ structure)
+- Usage guide: .ce/README-REPOMIX.md (how to use packages + initialization workflow)
+- Post-processing script: .ce/reorganize-infrastructure.sh (adds /system/ subfolders to ce-infrastructure.xml)
+- Total packages <210KB (<60KB + <150KB)
 
 **Why Now**:
 - Foundation for Syntropy MCP 1.1 release
@@ -248,15 +260,18 @@ npx repomix --config .ce/repomix-profile-workflow.yml --style markdown --output 
 
 ---
 
-### Phase 2: Infrastructure Package (1.5h)
+### Phase 2: Infrastructure Package (2.5h)
+
+**IMPORTANT**: This package contains ALL framework files organized for extraction to `/system/` subfolders.
 
 **Step 2.1: Create Infrastructure Profile (.ce/repomix-profile-infrastructure.yml)**
 
 ```yaml
-# Repomix Configuration: CE Framework Infrastructure Files
+# Repomix Configuration: CE Framework Complete Installation Package
 # Output: .ce/ce-infrastructure.xml
-# Target Size: <40KB
-# Description: Universal memories, framework commands, and tool source code
+# Target Size: <150KB
+# Description: ALL framework files (examples, memories, commands, tools, CLAUDE.md sections)
+# Post-processing: Requires reorganization to add /system/ subfolders
 
 output:
   filePath: .ce/ce-infrastructure.xml
@@ -267,31 +282,56 @@ output:
   instructionFilePath: null
 
 include:
-  # Universal memories (explicit 6-file list)
+  # Framework Examples (IsWorkflow=Yes, 21 files) → .ce/examples/system/
+  - "examples/patterns/*.md"
+  - "examples/workflows/*.md"
+  - "examples/TOOL-USAGE-GUIDE.md"
+  - "examples/prp-decomposition-patterns.md"
+  - "examples/syntropy-context7-guide.md"
+  - "examples/syntropy-linear-integration.md"
+  - "examples/syntropy-serena-memory-system.md"
+  - "examples/syntropy-thinking-sequential.md"
+  - "examples/syntropy-status-hook-system.md"
+  - "examples/batch-prp-generation-parallel.md"
+  - "examples/prp-execution-workflow.md"
+  - "examples/vacuum-temp-cleanup.md"
+  - "examples/drift-detection-analysis.md"
+  # (Add remaining framework examples from INDEX.md IsWorkflow=Yes)
+
+  # Framework Memories (23 files) → .serena/memories/system/
   - ".serena/memories/code-style-conventions.md"
   - ".serena/memories/suggested-commands.md"
   - ".serena/memories/task-completion-checklist.md"
   - ".serena/memories/testing-standards.md"
   - ".serena/memories/tool-usage-syntropy.md"
   - ".serena/memories/use-syntropy-tools-not-bash.md"
+  - ".serena/memories/*.md"  # Include all framework memories
 
-  # Framework commands (all 7)
+  # Framework Commands (11 files) → .claude/commands/
   - ".claude/commands/*.md"
 
-  # Tool source code
+  # Tool Source Code → tools/
   - "tools/ce/*.py"
   - "tools/pyproject.toml"
 
+  # CLAUDE.md Framework Sections → CLAUDE.md
+  - "CLAUDE.md"
+
 exclude:
-  # Project-specific memories
+  # Project-specific examples (IsWorkflow=No)
+  - "examples/model/SystemModel.md"
+  - "examples/example.setting.local.md"
+  - "examples/linear-integration-example.md"
+  - "examples/tmp-directory-convention.md"
+
+  # Project-specific memories (non-framework)
   - ".serena/memories/codebase-structure.md"
   - ".serena/memories/project-overview.md"
   - ".serena/memories/PRP-*.md"
   - ".serena/memories/*-pattern.md"
   - ".serena/memories/*-implementation*.md"
-  - ".serena/memories/TOOL-USAGE-GUIDE.md"  # Symlink, included via examples
 
-  # Test files (too large, users write own)
+  # Test files
   - "tools/tests"
 
   # System files
@@ -310,22 +350,104 @@ security:
 **Validation**:
 ```bash
 npx repomix --config .ce/repomix-profile-infrastructure.yml --dry-run
-# Expected: 6 memories + 11 commands + ~30 .py files = ~47 files, <40KB
+# Expected: 21 examples + 23 memories + 11 commands + ~30 .py files + CLAUDE.md = ~85 files, <150KB
 ```
 
-**Step 2.2: Generate Infrastructure Package**
+**Step 2.2: Generate Infrastructure Package (Initial)**
 
 ```bash
 npx repomix --config .ce/repomix-profile-infrastructure.yml
-# Output: .ce/ce-infrastructure.xml
+# Output: .ce/ce-infrastructure.xml (flat structure, needs reorganization)
 
 # Verify token count
 wc -c .ce/ce-infrastructure.xml
-# Expected: <160,000 characters (~40KB tokens)
+# Expected: <600,000 characters (~150KB tokens)
 
 # Create human-readable mirror
 npx repomix --config .ce/repomix-profile-infrastructure.yml --style markdown --output .ce/ce-infrastructure.md
 ```
+
+**Step 2.3: Post-Process to Add /system/ Organization**
+
+Create `.ce/reorganize-infrastructure.sh`:
+
+```bash
+#!/bin/bash
+# Post-process ce-infrastructure.xml to add /system/ subfolders
+# This script reorganizes the extracted package to match CE 1.1 structure
+
+set -e
+
+echo "Reorganizing ce-infrastructure.xml with /system/ subfolders..."
+
+# Extract to temp
+mkdir -p .tmp/repomix-reorganize/
+npx repomix --unpack .ce/ce-infrastructure.xml --target .tmp/repomix-reorganize/
+
+# Create /system/ structure
+mkdir -p .tmp/repomix-final/.ce/examples/system/
+mkdir -p .tmp/repomix-final/.ce/PRPs/system/executed/
+mkdir -p .tmp/repomix-final/.serena/memories/system/
+
+# Move framework files to /system/ subfolders
+echo "Moving examples to .ce/examples/system/..."
+mv .tmp/repomix-reorganize/examples/*.md .tmp/repomix-final/.ce/examples/system/ 2>/dev/null || true
+mv .tmp/repomix-reorganize/examples/patterns/*.md .tmp/repomix-final/.ce/examples/system/ 2>/dev/null || true
+mv .tmp/repomix-reorganize/examples/workflows/*.md .tmp/repomix-final/.ce/examples/system/ 2>/dev/null || true
+
+echo "Moving memories to .serena/memories/system/..."
+mv .tmp/repomix-reorganize/.serena/memories/*.md .tmp/repomix-final/.serena/memories/system/ 2>/dev/null || true
+
+# Keep root files at root
+echo "Preserving root files..."
+cp -R .tmp/repomix-reorganize/.claude/ .tmp/repomix-final/
+cp -R .tmp/repomix-reorganize/tools/ .tmp/repomix-final/
+cp .tmp/repomix-reorganize/CLAUDE.md .tmp/repomix-final/
+
+# Repack with /system/ organization
+echo "Repacking with /system/ structure..."
+cd .tmp/repomix-final/
+npx repomix --pack --output ../../.ce/ce-infrastructure-system.xml
+
+echo "✓ Reorganized package created: .ce/ce-infrastructure-system.xml"
+echo "✓ Replace .ce/ce-infrastructure.xml with ce-infrastructure-system.xml when ready"
+```
+
+**Step 2.4: Run Reorganization**
+
+```bash
+# Make executable
+chmod +x .ce/reorganize-infrastructure.sh
+
+# Run reorganization
+.ce/reorganize-infrastructure.sh
+
+# Replace original with reorganized version
+mv .ce/ce-infrastructure-system.xml .ce/ce-infrastructure.xml
+
+# Validate /system/ structure
+npx repomix --unpack .ce/ce-infrastructure.xml --target .tmp/validation/
+test -d .tmp/validation/.ce/examples/system && echo "✓ Examples /system/ structure"
+test -d .tmp/validation/.ce/PRPs/system && echo "✓ PRPs /system/ structure"
+test -d .tmp/validation/.serena/memories/system && echo "✓ Memories /system/ structure"
+```
+
+**Step 2.5: Move Packages to ce-32/builds/**
+
+```bash
+# Create builds directory
+mkdir -p ce-32/builds/
+
+# Move generated packages to builds folder
+mv .ce/ce-workflow-docs.xml ce-32/builds/
+mv .ce/ce-infrastructure.xml ce-32/builds/
+
+echo "✓ Packages moved to ce-32/builds/"
+```
+
+**Purpose**: Centralize repomix builds in ce-32/ folder for PRP-32 processing
+
+**Note**: ce-32/ is ctx-eng-plus development artifact, not distributed to target projects
 
 ---
 
@@ -339,8 +461,6 @@ npx repomix --config .ce/repomix-profile-infrastructure.yml --style markdown --o
 
 version: "1.0.0"
 generated: "2025-11-04T00:00:00Z"
-batch: 32
-phase: 1
 
 packages:
   workflow_docs:
@@ -380,59 +500,119 @@ packages:
     file: .ce/ce-infrastructure.xml
     mirror: .ce/ce-infrastructure.md
     profile: .ce/repomix-profile-infrastructure.yml
-    description: "Universal memories, framework commands, and tool source code"
-    target_size: "<40KB"
+    post_process: .ce/reorganize-infrastructure.sh
+    description: "Complete CE framework installation package with /system/ organization"
+    target_size: "<150KB"
+    organization: "Requires post-processing to add /system/ subfolders"
     contents:
-      - type: "memories"
-        count: 6
-        filter: "Universal only (not project-specific)"
+      - type: "examples"
+        count: 21
+        destination: ".ce/examples/system/"
+        filter: "IsWorkflow=Yes from examples/INDEX.md"
         files:
-          - ".serena/memories/code-style-conventions.md"
-          - ".serena/memories/suggested-commands.md"
-          - ".serena/memories/task-completion-checklist.md"
-          - ".serena/memories/testing-standards.md"
-          - ".serena/memories/tool-usage-syntropy.md"
-          - ".serena/memories/use-syntropy-tools-not-bash.md"
+          - "examples/patterns/*.md"
+          - "examples/workflows/*.md"
+          - "examples/TOOL-USAGE-GUIDE.md"
+          - "examples/prp-decomposition-patterns.md"
+          - "examples/syntropy-status-hook-system.md"
+          # All 21 framework workflow examples
+
+      - type: "memories"
+        count: 23
+        destination: ".serena/memories/system/"
+        filter: "All framework memories (6 critical + 17 regular)"
+        critical:
+          - "code-style-conventions.md"
+          - "suggested-commands.md"
+          - "task-completion-checklist.md"
+          - "testing-standards.md"
+          - "tool-usage-syntropy.md"
+          - "use-syntropy-tools-not-bash.md"
+        regular:
+          - "batch-generation-patterns.md"
+          - "ce-tool-patterns.md"
+          - "complexity-estimation.md"
+          - "context-drift-monitoring.md"
+          - "file-structure-best-practices.md"
+          - "git-worktree-patterns.md"
+          - "prp-execution-checklist.md"
+          - "prp-sizing-thresholds.md"
+          - "sequential-thinking-usage.md"
+          - "syntropy-mcp-architecture.md"
+          - "syntropy-tool-management.md"
+          - "testing-strategy-pattern.md"
+          - "token-optimization-strategies.md"
+          - "tool-selection-decision-tree.md"
+          - "validation-levels.md"
+          - "worktree-conflict-resolution.md"
+          - "xml-package-generation.md"
 
       - type: "commands"
         count: 11
-        filter: "All framework commands"
+        destination: ".claude/commands/"
+        filter: "All framework slash commands"
         files:
-          - ".claude/commands/batch-exe-prp.md"
-          - ".claude/commands/batch-gen-prp.md"
-          - ".claude/commands/denoise.md"
-          - ".claude/commands/execute-prp.md"
-          - ".claude/commands/generate-prp.md"
-          - ".claude/commands/peer-review.md"
-          - ".claude/commands/sync-with-syntropy.md"
-          - ".claude/commands/syntropy-health.md"
-          - ".claude/commands/tools-misuse-scan.md"
-          - ".claude/commands/update-context.md"
-          - ".claude/commands/vacuum.md"
+          - "batch-exe-prp.md"
+          - "batch-gen-prp.md"
+          - "denoise.md"
+          - "execute-prp.md"
+          - "generate-prp.md"
+          - "peer-review.md"
+          - "sync-with-syntropy.md"
+          - "syntropy-health.md"
+          - "tools-misuse-scan.md"
+          - "update-context.md"
+          - "vacuum.md"
 
       - type: "tools"
         count: 33
+        destination: "tools/"
         filter: "All CE tool source code"
         files:
-          - "tools/ce/*.py (all modules)"
-          - "tools/pyproject.toml"
+          - "ce/*.py (all modules)"
+          - "pyproject.toml"
+
+      - type: "documentation"
+        count: 1
+        destination: "CLAUDE.md (framework sections only)"
+        filter: "Framework sections for blending"
+        sections:
+          - "Communication"
+          - "Core Principles"
+          - "UV Package Management"
+          - "Ad-Hoc Code Policy"
+          - "Quick Commands"
+          - "Tool Naming Convention"
+          - "Allowed Tools Summary"
+          - "Command Permissions"
+          - "Quick Tool Selection"
+          - "Project Structure"
+          - "Testing Standards"
+          - "Code Quality"
 
     excluded:
-      - ".serena/memories/*-pattern.md (project-specific patterns)"
+      - ".serena/memories/*-pattern.md (project-specific patterns if not framework)"
       - ".serena/memories/PRP-*.md (implementation memories)"
       - ".serena/memories/project-overview.md (project-specific)"
+      - "examples/model/SystemModel.md (IsWorkflow=No)"
+      - "examples/example.setting.local.md (project-specific)"
+      - "examples/linear-integration-example.md (project-specific)"
+      - "examples/tmp-directory-convention.md (project-specific)"
       - "tools/tests/ (users write own tests)"
+      - ".ce/PRPs/ (PRPs stay in Syntropy, not distributed)"
 
     use_cases:
-      - "Framework installation (tool source code)"
-      - "Serena memory initialization (universal memories)"
-      - "Command reference (slash command documentation)"
+      - "Complete framework installation (first-time setup)"
+      - "CE 1.1 initialization with /system/ organization"
+      - "Serena memory population (23 framework memories)"
+      - "Command and tool installation (11 commands + 33 tool files)"
+      - "CLAUDE.md framework section blending"
 
 regeneration:
-  schedule: "Phase 5 (after Phase 4 doc refinement)"
-  trigger: "Documentation updates in Phase 4"
+  schedule: "After framework documentation updates"
+  trigger: "Framework documentation changes"
   automated: false
-  notes: "Manual regeneration in Phase 5 after doc audit/refinement complete"
+  notes: "Manual regeneration required after documentation updates"
 ```
 
 **Step 3.2: Create README (.ce/README-REPOMIX.md)**
@@ -450,14 +630,18 @@ Two consolidated XML packages containing CE framework documentation and infrastr
    - 21 workflow examples (IsWorkflow=Yes)
    - CLAUDE.md workflow sections
    - Target: <60KB tokens
+   - Location: Stored at `.ce/examples/system/ce-workflow-docs.xml` (NOT extracted)
 
 2. **Infrastructure Files** (.ce/ce-infrastructure.xml)
-   - 6 universal Serena memories
-   - 11 framework slash commands
-   - 33 CE tool source files
-   - Target: <40KB tokens
+   - 21 framework examples → `.ce/examples/system/`
+   - 23 framework memories (6 critical + 17 regular) → `.serena/memories/system/`
+   - 11 framework slash commands → `.claude/commands/`
+   - 33 CE tool source files → `tools/`
+   - CLAUDE.md framework sections (for blending)
+   - Target: <150KB tokens
+   - Requires: Post-processing with `.ce/reorganize-infrastructure.sh` for /system/ organization
 
-**Total Size**: <100KB tokens (both packages combined)
+**Total Size**: <210KB tokens (both packages combined)
 
 ## Package Contents
 
@@ -483,13 +667,18 @@ npx repomix --config .ce/repomix-profile-infrastructure.yml
 
 ```bash
 # Workflow package (expect <60KB)
-wc -c .ce/ce-workflow-docs.xml
+wc -c ce-32/builds/ce-workflow-docs.xml
 
-# Infrastructure package (expect <40KB)
-wc -c .ce/ce-infrastructure.xml
+# Infrastructure package (expect <150KB)
+wc -c ce-32/builds/ce-infrastructure.xml
 
-# Total (expect <100KB)
-wc -c .ce/ce-*.xml
+# Total (expect <210KB)
+wc -c ce-32/builds/ce-*.xml
+
+# Verify /system/ organization (after post-processing)
+ls -la .ce/examples/system/
+ls -la .serena/memories/system/
+ls -la .claude/commands/
 ```
 
 ### View Human-Readable Versions
@@ -527,8 +716,8 @@ gh release upload v1.1 .ce/ce-workflow-docs.xml .ce/ce-infrastructure.xml
 
 ```bash
 # Estimate token usage (rough: 1 token ≈ 4 chars)
-echo "Workflow: $(($(wc -c < .ce/ce-workflow-docs.xml) / 4)) tokens"
-echo "Infrastructure: $(($(wc -c < .ce/ce-infrastructure.xml) / 4)) tokens"
+echo "Workflow: $(($(wc -c < ce-32/builds/ce-workflow-docs.xml) / 4)) tokens"
+echo "Infrastructure: $(($(wc -c < ce-32/builds/ce-infrastructure.xml) / 4)) tokens"
 ```
 
 ## Profiles
@@ -541,26 +730,27 @@ echo "Infrastructure: $(($(wc -c < .ce/ce-infrastructure.xml) / 4)) tokens"
 
 ### Infrastructure Profile (.ce/repomix-profile-infrastructure.yml)
 
-- **Includes**: 6 universal memories, 7 commands, tools/ce/*.py
-- **Excludes**: Project-specific memories, tests/
-- **Output**: .ce/ce-infrastructure.xml, .ce/ce-infrastructure.md
+- **Includes**: 21 framework examples, 23 framework memories (6 critical + 17 regular), 11 commands, 33 tool files, CLAUDE.md framework sections
+- **Excludes**: Project-specific examples/memories, tests/, .ce/PRPs/
+- **Post-processing**: `.ce/reorganize-infrastructure.sh` adds /system/ organization
+- **Output**: .ce/ce-infrastructure.xml, .ce/ce-infrastructure.md (with /system/ subfolders)
 
 ## Regeneration
 
-Packages are regenerated in **Phase 5** (PRP-32.5.1) after documentation refinement in Phase 4.
+Packages can be regenerated when framework documentation is updated.
 
-**Trigger**: Documentation updates from Phase 4 audit/refinement
+**Trigger**: Documentation updates or framework refinement
 
 **Process**:
-1. Phase 4 completes doc refinement
-2. Phase 5 reruns repomix with updated profiles
-3. New packages incorporate refined documentation
+1. Complete documentation updates
+2. Rerun repomix with existing profiles
+3. New packages incorporate updated documentation
 4. Manifest updated with new file counts/sizes
 
 ## Notes
 
-- **Phase 1 Generation**: Uses current docs as-is (no modifications)
-- **Phase 5 Regeneration**: Uses refined docs from Phase 4
+- **Initial Generation**: Uses current framework documentation as-is
+- **Regeneration**: Update packages after framework documentation changes
 - **Size Monitoring**: If packages exceed targets, adjust include/exclude patterns
 - **Validation**: Dry-run before generating to verify file counts and sizes
 
@@ -596,7 +786,6 @@ npx repomix --version
 
 ---
 
-**Generated**: Batch 32, Phase 1, PRP-32.1.2
 **Version**: 1.0.0
 **Last Updated**: 2025-11-04
 ```
@@ -616,7 +805,7 @@ cat /tmp/workflow-dryrun.txt
 # Test infrastructure profile
 npx repomix --config .ce/repomix-profile-infrastructure.yml --dry-run > /tmp/infra-dryrun.txt
 cat /tmp/infra-dryrun.txt
-# Verify: 6 memories + 7 commands + ~30 .py files = ~43 files
+# Verify: 21 examples + 23 memories + 11 commands + 33 tools = ~88 files
 ```
 
 **Step 4.2: Generate Both Packages**
@@ -629,14 +818,17 @@ npx repomix --config .ce/repomix-profile-workflow.yml --style markdown --output 
 # Generate infrastructure package
 npx repomix --config .ce/repomix-profile-infrastructure.yml
 npx repomix --config .ce/repomix-profile-infrastructure.yml --style markdown --output .ce/ce-infrastructure.md
+
+# Post-process infrastructure package to add /system/ organization
+bash .ce/reorganize-infrastructure.sh
 ```
 
 **Step 4.3: Token Count Verification**
 
 ```bash
 # Character counts (1 token ≈ 4 chars)
-WORKFLOW_CHARS=$(wc -c < .ce/ce-workflow-docs.xml)
-INFRA_CHARS=$(wc -c < .ce/ce-infrastructure.xml)
+WORKFLOW_CHARS=$(wc -c < ce-32/builds/ce-workflow-docs.xml)
+INFRA_CHARS=$(wc -c < ce-32/builds/ce-infrastructure.xml)
 TOTAL_CHARS=$((WORKFLOW_CHARS + INFRA_CHARS))
 
 WORKFLOW_TOKENS=$((WORKFLOW_CHARS / 4))
@@ -644,13 +836,13 @@ INFRA_TOKENS=$((INFRA_CHARS / 4))
 TOTAL_TOKENS=$((TOTAL_CHARS / 4))
 
 echo "Workflow: $WORKFLOW_TOKENS tokens (target <60K)"
-echo "Infrastructure: $INFRA_TOKENS tokens (target <40K)"
-echo "Total: $TOTAL_TOKENS tokens (target <100K)"
+echo "Infrastructure: $INFRA_TOKENS tokens (target <150K)"
+echo "Total: $TOTAL_TOKENS tokens (target <210K)"
 
 # Validation
 test $WORKFLOW_TOKENS -lt 60000 && echo "✓ Workflow size OK" || echo "✗ Workflow too large"
-test $INFRA_TOKENS -lt 40000 && echo "✓ Infrastructure size OK" || echo "✗ Infrastructure too large"
-test $TOTAL_TOKENS -lt 100000 && echo "✓ Total size OK" || echo "✗ Total too large"
+test $INFRA_TOKENS -lt 150000 && echo "✓ Infrastructure size OK" || echo "✗ Infrastructure too large"
+test $TOTAL_TOKENS -lt 210000 && echo "✓ Total size OK" || echo "✗ Total too large"
 ```
 
 **Step 4.4: Content Verification**
@@ -660,13 +852,17 @@ test $TOTAL_TOKENS -lt 100000 && echo "✓ Total size OK" || echo "✗ Total too
 grep -c "examples/patterns" .ce/ce-workflow-docs.xml
 # Expected: 21+ occurrences
 
-# Verify infrastructure package contains exactly 6 memories
-grep -c ".serena/memories" .ce/ce-infrastructure.xml
-# Expected: 6 occurrences
+# Verify infrastructure package contains 23 memories
+grep -c ".serena/memories/system" .ce/ce-infrastructure.xml
+# Expected: 23 occurrences
 
 # Verify infrastructure package contains 11 commands
 grep -c ".claude/commands" .ce/ce-infrastructure.xml
 # Expected: 11+ occurrences
+
+# Verify infrastructure package contains 21 examples
+grep -c ".ce/examples/system" .ce/ce-infrastructure.xml
+# Expected: 21+ occurrences
 
 # Verify infrastructure package contains tool source
 grep -c "tools/ce" .ce/ce-infrastructure.xml
@@ -705,7 +901,7 @@ npx repomix --config .ce/repomix-profile-workflow.yml --dry-run | grep "Files to
 **Infrastructure Package**:
 ```bash
 npx repomix --config .ce/repomix-profile-infrastructure.yml --dry-run | grep "Files to process:"
-# Expected: 47+ files (6 memories + 11 commands + 30+ .py files)
+# Expected: 88+ files (21 examples + 23 memories + 11 commands + 33 tools)
 ```
 
 **On Failure**: Adjust include/exclude patterns in profiles
@@ -720,14 +916,17 @@ npx repomix --config .ce/repomix-profile-infrastructure.yml --dry-run | grep "Fi
 npx repomix --config .ce/repomix-profile-workflow.yml
 npx repomix --config .ce/repomix-profile-infrastructure.yml
 
+# Post-process infrastructure package for /system/ organization
+bash .ce/reorganize-infrastructure.sh
+
 # Verify files exist
 ls -lh .ce/ce-workflow-docs.xml
 ls -lh .ce/ce-infrastructure.xml
 ```
 
-**Expected Output**: Both .xml files exist, non-zero size
+**Expected Output**: Both .xml files exist, non-zero size, /system/ subdirectories created
 
-**On Failure**: Check repomix error messages, verify file paths
+**On Failure**: Check repomix error messages, verify file paths, check post-processing script
 
 ---
 
@@ -736,16 +935,18 @@ ls -lh .ce/ce-infrastructure.xml
 **Command**:
 ```bash
 # Run token count script (from Step 4.3)
-WORKFLOW_TOKENS=$(( $(wc -c < .ce/ce-workflow-docs.xml) / 4 ))
-INFRA_TOKENS=$(( $(wc -c < .ce/ce-infrastructure.xml) / 4 ))
+WORKFLOW_TOKENS=$(( $(wc -c < ce-32/builds/ce-workflow-docs.xml) / 4 ))
+INFRA_TOKENS=$(( $(wc -c < ce-32/builds/ce-infrastructure.xml) / 4 ))
+TOTAL_TOKENS=$((WORKFLOW_TOKENS + INFRA_TOKENS))
 echo "Workflow: $WORKFLOW_TOKENS tokens (<60K target)"
-echo "Infrastructure: $INFRA_TOKENS tokens (<40K target)"
+echo "Infrastructure: $INFRA_TOKENS tokens (<150K target)"
+echo "Total: $TOTAL_TOKENS tokens (<210K target)"
 ```
 
 **Expected Output**:
 - Workflow: <60,000 tokens
-- Infrastructure: <40,000 tokens
-- Total: <100,000 tokens
+- Infrastructure: <150,000 tokens
+- Total: <210,000 tokens
 
 **On Failure**:
 - Too large → Add more exclude patterns (remove large files)
@@ -788,6 +989,36 @@ grep -q "infrastructure:" .ce/repomix-manifest.yml && echo "✓ Infrastructure d
 
 ---
 
+### Gate 7: /system/ Organization Verified
+
+**Command**:
+```bash
+# Verify /system/ subdirectories exist with correct files
+test -d .ce/examples/system && echo "✓ .ce/examples/system/ exists" || echo "✗ Missing"
+test -d .serena/memories/system && echo "✓ .serena/memories/system/ exists" || echo "✗ Missing"
+
+# Count files in /system/ directories
+EXAMPLES_COUNT=$(find .ce/examples/system -name "*.md" | wc -l)
+MEMORIES_COUNT=$(find .serena/memories/system -name "*.md" | wc -l)
+echo "Examples in /system/: $EXAMPLES_COUNT (expected: 21)"
+echo "Memories in /system/: $MEMORIES_COUNT (expected: 23)"
+
+# Verify commands at root (NOT in /system/)
+test -d .claude/commands && echo "✓ .claude/commands/ at root" || echo "✗ Missing"
+COMMANDS_COUNT=$(find .claude/commands -name "*.md" | wc -l)
+echo "Commands: $COMMANDS_COUNT (expected: 11)"
+```
+
+**Expected Output**:
+- All /system/ directories exist
+- 21 examples in .ce/examples/system/
+- 23 memories in .serena/memories/system/
+- 11 commands in .claude/commands/ (root, not /system/)
+
+**On Failure**: Re-run post-processing script (.ce/reorganize-infrastructure.sh)
+
+---
+
 ## 🧪 Testing Strategy
 
 ### Test Framework
@@ -807,24 +1038,33 @@ npx repomix --config .ce/repomix-profile-infrastructure.yml --dry-run
 npx repomix --config .ce/repomix-profile-workflow.yml
 npx repomix --config .ce/repomix-profile-infrastructure.yml
 
-# 3. Generate markdown mirrors
+# 3. Post-process infrastructure package for /system/ organization
+bash .ce/reorganize-infrastructure.sh
+
+# 4. Generate markdown mirrors
 npx repomix --config .ce/repomix-profile-workflow.yml --style markdown --output .ce/ce-workflow-docs.md
 npx repomix --config .ce/repomix-profile-infrastructure.yml --style markdown --output .ce/ce-infrastructure.md
 
-# 4. Verify token counts
-WORKFLOW_TOKENS=$(( $(wc -c < .ce/ce-workflow-docs.xml) / 4 ))
-INFRA_TOKENS=$(( $(wc -c < .ce/ce-infrastructure.xml) / 4 ))
+# 5. Verify token counts
+WORKFLOW_TOKENS=$(( $(wc -c < ce-32/builds/ce-workflow-docs.xml) / 4 ))
+INFRA_TOKENS=$(( $(wc -c < ce-32/builds/ce-infrastructure.xml) / 4 ))
 TOTAL_TOKENS=$((WORKFLOW_TOKENS + INFRA_TOKENS))
-echo "Workflow: $WORKFLOW_TOKENS tokens"
-echo "Infrastructure: $INFRA_TOKENS tokens"
-echo "Total: $TOTAL_TOKENS tokens"
+echo "Workflow: $WORKFLOW_TOKENS tokens (target <60K)"
+echo "Infrastructure: $INFRA_TOKENS tokens (target <150K)"
+echo "Total: $TOTAL_TOKENS tokens (target <210K)"
 
-# 5. Content verification
+# 6. Content verification
 grep -c "examples/patterns" .ce/ce-workflow-docs.xml  # Expect 21+
-grep -c ".serena/memories" .ce/ce-infrastructure.xml   # Expect 6
+grep -c ".serena/memories/system" .ce/ce-infrastructure.xml   # Expect 23
 grep -c ".claude/commands" .ce/ce-infrastructure.xml   # Expect 11
+grep -c ".ce/examples/system" .ce/ce-infrastructure.xml   # Expect 21
 
-# 6. Documentation verification
+# 7. /system/ organization verification
+find .ce/examples/system -name "*.md" | wc -l  # Expect 21
+find .serena/memories/system -name "*.md" | wc -l  # Expect 23
+find .claude/commands -name "*.md" | wc -l  # Expect 11
+
+# 8. Documentation verification
 test -f .ce/repomix-manifest.yml && echo "✓ Manifest" || echo "✗ Manifest"
 test -f .ce/README-REPOMIX.md && echo "✓ README" || echo "✗ README"
 ```
@@ -836,10 +1076,10 @@ test -f .ce/README-REPOMIX.md && echo "✓ README" || echo "✗ README"
 - **Resolution**: Add more exclude patterns, reduce CLAUDE.md extraction
 - **Verification**: Rerun dry-run, verify new token count
 
-**Scenario 2: Missing Universal Memories**
+**Scenario 2: Missing Framework Memories**
 - **Cause**: Typo in memory file paths or wrong exclusion
-- **Resolution**: Fix paths in infrastructure profile, verify with `ls .serena/memories/*.md`
-- **Verification**: Rerun infrastructure package generation, grep for memory count
+- **Resolution**: Fix paths in infrastructure profile, verify with `ls .serena/memories/*.md` (should be 23 files)
+- **Verification**: Rerun infrastructure package generation, check `grep -c ".serena/memories/system" .ce/ce-infrastructure.xml` (expect 23)
 
 **Scenario 3: Commands Not Included**
 - **Cause**: Incorrect glob pattern or exclusion
@@ -857,7 +1097,7 @@ test -f .ce/README-REPOMIX.md && echo "✓ README" || echo "✗ README"
 **Step 3**: Generate XML packages and markdown mirrors
 **Step 4**: Create manifest and README documentation
 
-**Validation**: All 6 validation gates pass
+**Validation**: All 7 validation gates pass (including /system/ organization)
 
 ---
 
@@ -865,8 +1105,8 @@ test -f .ce/README-REPOMIX.md && echo "✓ README" || echo "✗ README"
 
 **Step 1**: Review generated packages for completeness
 - Workflow package contains 21 workflow examples
-- Infrastructure package contains exactly 6 universal memories, 11 commands
-- Token counts within targets (<60KB, <40KB)
+- Infrastructure package contains 21 examples, 23 memories, 11 commands, 33 tools with /system/ organization
+- Token counts within targets (<60KB workflow, <150KB infrastructure, <210KB total)
 
 **Step 2**: Review documentation
 - Manifest documents all included/excluded files
@@ -887,13 +1127,16 @@ git add .ce/ce-workflow-docs.*
 git add .ce/ce-infrastructure.*
 git add .ce/repomix-manifest.yml
 git add .ce/README-REPOMIX.md
-git commit -m "PRP-32.1.2: Add repomix configuration profiles
+git add .ce/reorganize-infrastructure.sh
+git commit -m "PRP-32.1.2: Add repomix configuration profiles with /system/ organization
 
 - Create workflow documentation package profile
-- Create infrastructure package profile
+- Create infrastructure package profile with ALL framework files
+- Add post-processing script for /system/ subdirectories
 - Generate XML packages and markdown mirrors
 - Add manifest and usage documentation
-- Token counts: workflow <60KB, infrastructure <40KB"
+- Token counts: workflow <60KB, infrastructure <150KB, total <210KB
+- CE 1.1 structure: .ce/examples/system/, .serena/memories/system/"
 ```
 
 **Step 2**: Push to main branch
@@ -911,13 +1154,17 @@ git push origin main
 ## 📊 Success Metrics
 
 1. **Package Count**: 2 repomix profiles created (.ce/repomix-profile-*.yml)
-2. **Generated Files**: 4 output files (2 XML + 2 MD mirrors)
-3. **Token Efficiency**: Combined <100KB (workflow <60KB, infrastructure <40KB)
-4. **File Coverage**:
-   - Workflow: 21+ workflow examples included
-   - Infrastructure: 6 universal memories, 11 commands, 30+ tool files
-5. **Documentation**: 2 doc files (manifest + README)
-6. **Validation**: All 6 gates pass
+2. **Generated Files**: 4 output files (2 XML + 2 MD mirrors) + 1 post-processing script
+3. **Packages Moved to ce-32/builds/**:
+   - ce-32/builds/ce-workflow-docs.xml
+   - ce-32/builds/ce-infrastructure.xml
+4. **Token Efficiency**: Combined <210KB (workflow <60KB, infrastructure <150KB)
+5. **File Coverage**:
+   - Workflow: 21 workflow examples included
+   - Infrastructure: 21 examples, 23 memories (6 critical + 17 regular), 11 commands, 33 tool files
+6. **Documentation**: 2 doc files (manifest + README)
+7. **Validation**: All 7 gates pass (including /system/ organization)
+8. **/system/ Organization**: Framework files organized in .ce/examples/system/ and .serena/memories/system/
 
 ---
 
@@ -933,10 +1180,11 @@ git push origin main
 
 ### Critical Path Items
 
-1. **Explicit Memory List**: Infrastructure profile uses exact 6-file list (not glob patterns) to avoid errors
-2. **CLAUDE.md Extraction**: May need manual section extraction if full file too large
-3. **Token Size Monitoring**: Track sizes during generation, adjust exclude patterns if needed
-4. **Phase 5 Regeneration**: Profiles designed for reuse in Phase 5 after doc refinement
+1. **Complete Framework Files**: Infrastructure profile includes ALL framework files (21 examples + 23 memories + 11 commands + 33 tools)
+2. **/system/ Organization**: Post-processing script required to add /system/ subfolders (CE 1.1 structure)
+3. **CLAUDE.md Extraction**: Framework sections only (for blending), not entire file
+4. **Token Size Monitoring**: Track sizes during generation, adjust exclude patterns if needed (target <150KB for infrastructure)
+5. **Phase 5 Regeneration**: Profiles designed for reuse in Phase 5 after doc refinement
 
 ### Known Limitations
 

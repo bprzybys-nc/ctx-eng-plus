@@ -23,7 +23,9 @@ issue: TBD
 
 **Objective**: Consolidate similar documentation into k-groups, denoise without losing essential information
 
-**What**: Analyze documentation files to identify clusters of similar content, create k-groups mapping (5-7 logical groups), execute systematic consolidation per group, reduce token count by 20-25% (from 280k to 210k tokens)
+**What**: Analyze SYSTEM documentation files to identify clusters of similar content, create k-groups mapping (5-7 logical groups), execute systematic consolidation per group for FRAMEWORK docs only, reduce token count by 20-25%
+
+**Scope Limitation**: This PRP ONLY consolidates system docs (`.ce/examples/system/`, `.ce/PRPs/system/`, `.serena/memories/system/`). User docs (`.ce/examples/`, `.ce/PRPs/`, `.serena/memories/`) are preserved as-is
 
 **Why**: Reduce documentation token overhead for Syntropy MCP 1.1 release while preserving all essential information and improving organization
 
@@ -45,19 +47,26 @@ The Context Engineering framework documentation has grown organically to ~280k t
 
 ### Current State
 
-**Documentation Locations**:
-- `examples/` - 15 .md files (~280k tokens total estimate)
-- `.serena/memories/` - 23 .md files (may have duplicates)
-- `.claude/commands/` - 10 .md files (slash command definitions)
+**Documentation Locations** (SYSTEM DOCS ONLY):
+- `.ce/examples/system/` - 21 framework examples (~180k tokens)
+- `.serena/memories/system/` - 23 framework memories (~100k tokens)
+- `.ce/PRPs/system/` - 0 framework PRPs currently (future-proofed structure)
 
-**Identified Clusters** (preliminary analysis):
-1. Syntropy MCP guides (context7, linear, serena, thinking, troubleshooting)
-2. Workflow documentation (batch generation, execution, cleanup, drift detection)
-3. Configuration guides (command permissions, hooks, settings)
-4. Patterns and practices (testing, code standards, validation, error handling)
-5. Project management (PRP sizing, structure, Linear integration, batch execution)
-6. Migration & initialization (setup, onboarding, troubleshooting)
-7. Reference materials (tool usage, API docs, CLI reference, keyboard shortcuts, glossary, quick reference)
+**Total**: ~280k tokens (system docs only)
+
+**User Docs** (NOT in scope for consolidation):
+- `.ce/examples/` - User project examples
+- `.serena/memories/` - User project memories
+- `.ce/PRPs/executed/`, `.ce/PRPs/feature-requests/` - User PRPs
+
+**Identified Clusters** (preliminary analysis - SYSTEM DOCS):
+1. **Syntropy MCP (System Docs)**: context7, linear, serena, thinking guides from `.ce/examples/system/`
+2. **Workflow Automation (System Docs)**: batch generation, execution patterns from `.ce/examples/system/`
+3. **Configuration (System Docs)**: command permissions, hooks from `.ce/examples/system/`
+4. **Patterns & Practices (System Docs)**: testing, code standards from `.serena/memories/system/`
+5. **Project Management (System Docs)**: PRP sizing, structure from `.ce/examples/system/`
+6. **Migration & Init (System Docs)**: setup, onboarding from `.ce/examples/system/`
+7. **Reference Materials (System Docs)**: tool usage, CLI reference from `.ce/examples/system/`
 
 **Target Consolidation**:
 - Group 1: 6 files → 3 files (33% reduction)
@@ -78,6 +87,16 @@ The Context Engineering framework documentation has grown organically to ~280k t
 3. **Update cross-references** - All internal links must work after consolidation
 4. **Soft dependency on Phase 1** - Can start k-groups analysis independently, merge classification report when available
 5. **Stage 2 execution** - Overlaps with Stage 1, results feed into Stage 3
+
+**User Doc Preservation** (DO NOT consolidate):
+- **User examples** in `.ce/examples/` (project-specific)
+- **User PRPs** in `.ce/PRPs/executed/`, `.ce/PRPs/feature-requests/`
+- **User memories** in `.serena/memories/` (not in /system/)
+
+**Only consolidate**:
+- **Framework examples** in `.ce/examples/system/`
+- **Framework PRPs** in `.ce/PRPs/system/` (none currently)
+- **Framework memories** in `.serena/memories/system/`
 
 **Workflow Integration**:
 1. Start k-groups analysis immediately (independent of Phase 1)
@@ -446,6 +465,30 @@ grep -q "Summary" /Users/bprzybyszi/nc-src/ctx-eng-plus/docs/consolidation-repor
 - Documents all k-group results
 - Lists git commit hashes for rollback
 - Includes any issues or follow-up items
+
+### Gate 6: Only System Docs Modified
+
+**Command**:
+```bash
+# Verify only system docs modified
+test ! -f .ce/examples/NEW-FILE.md && echo "✓ No user examples created"
+test ! -f .serena/memories/NEW-FILE.md && echo "✓ No user memories created"
+
+# Verify system docs consolidated
+SYSTEM_EXAMPLES_BEFORE=21
+SYSTEM_EXAMPLES_AFTER=$(find .ce/examples/system/ -name "*.md" | wc -l)
+test "$SYSTEM_EXAMPLES_AFTER" -lt "$SYSTEM_EXAMPLES_BEFORE" && echo "✓ System examples consolidated"
+
+SYSTEM_MEMORIES_BEFORE=23
+SYSTEM_MEMORIES_AFTER=$(find .serena/memories/system/ -name "*.md" | wc -l)
+test "$SYSTEM_MEMORIES_AFTER" -le "$SYSTEM_MEMORIES_BEFORE" && echo "✓ System memories verified"
+```
+
+**Success Criteria**:
+- No new files created in user doc directories (`.ce/examples/`, `.serena/memories/`)
+- Only `.ce/examples/system/` and `.serena/memories/system/` modified
+- File count in system directories decreased (consolidation occurred)
+- User PRPs in `.ce/PRPs/executed/`, `.ce/PRPs/feature-requests/` untouched
 
 ## 5. Testing Strategy
 
