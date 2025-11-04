@@ -435,9 +435,8 @@ cd tools && uv run ce prp analyze <path-to-prp.md>
 
 - `.ce/` - System boilerplate (don't modify)
 - `.ce/RULES.md` - Framework rules
-- `.ce/examples/system/` - Implementation patterns
 - `PRPs/[executed,feature-requests]` - Feature requests
-- `examples/` - User code patterns
+- `examples/` - Framework patterns and user code
 
 ## Keyboard Shortcuts
 
