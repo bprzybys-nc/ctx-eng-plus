@@ -1,3 +1,11 @@
+---
+type: regular
+category: documentation
+tags: [testing, standards, tdd]
+created: "2025-11-04T17:30:00Z"
+updated: "2025-11-04T17:30:00Z"
+---
+
 # Testing Standards
 
 ## Testing Philosophy

@@ -1,3 +1,11 @@
+---
+type: regular
+category: documentation
+tags: [validation, testing, l4]
+created: "2025-11-04T17:30:00Z"
+updated: "2025-11-04T17:30:00Z"
+---
+
 # Level 4 Pattern Conformance Validation - Usage Guide
 
 ## Overview

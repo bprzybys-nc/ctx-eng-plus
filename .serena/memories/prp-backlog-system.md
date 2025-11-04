@@ -1,3 +1,11 @@
+---
+type: regular
+category: configuration
+tags: [prp, backlog, tracking]
+created: "2025-11-04T17:30:00Z"
+updated: "2025-11-04T17:30:00Z"
+---
+
 # PRP Backlog System
 
 **Type**: Critical System Documentation

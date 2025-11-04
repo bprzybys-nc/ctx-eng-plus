@@ -1,3 +1,11 @@
+---
+type: regular
+category: pattern
+tags: [prp, implementation, workflow]
+created: "2025-11-04T17:30:00Z"
+updated: "2025-11-04T17:30:00Z"
+---
+
 # PRP-2 Implementation Patterns
 
 **Source**: PRP-2 execution (2025-10-12)  

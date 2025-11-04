@@ -1,3 +1,11 @@
+---
+type: regular
+category: troubleshooting
+tags: [security, cwe78, fix]
+created: "2025-11-04T17:30:00Z"
+updated: "2025-11-04T17:30:00Z"
+---
+
 # CWE-78 PRP-22: Critical Newline Escape Sequence Issue & Solution
 
 ## Problem Encountered

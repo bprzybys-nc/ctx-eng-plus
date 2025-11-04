@@ -1,3 +1,11 @@
+---
+type: regular
+category: configuration
+tags: [serena, mcp, permissions]
+created: "2025-11-04T17:30:00Z"
+updated: "2025-11-04T17:30:00Z"
+---
+
 # Serena MCP Tool Restrictions & Workarounds
 
 **Updated**: 2025-10-20 for Syntropy MCP

@@ -60,6 +60,90 @@ uv run ce run_py "print('hello')"
 uv run ce run_py ../tmp/script.py
 ```
 
+## Framework Initialization
+
+**First-time setup**: See [examples/INITIALIZATION.md](examples/INITIALIZATION.md) for complete CE 1.1 initialization guide.
+
+**Key Steps** (5-phase workflow):
+1. **Bucket Collection**: Extract existing Serena memories, examples, PRPs, CLAUDE.md, .claude directory
+2. **User Files Migration**: Copy validated user files with `type: user` YAML headers
+3. **Repomix Package Handling**: Extract ce-infrastructure.xml to /system/ subfolders
+4. **Blending**: Merge framework + user files (CLAUDE.md sections, settings.local.json, commands)
+5. **Cleanup**: Remove initialization artifacts, verify structure
+
+**Repomix Usage** (manual context loading):
+
+```bash
+# Load workflow docs (commands, validation, PRP patterns)
+# Reference package - stored in .ce/, not extracted during initialization
+cat .ce/ce-workflow-docs.xml
+
+# Load infrastructure docs (memories, rules, system architecture)
+# Extracted to /system/ subfolders during Phase 3 of initialization
+npx repomix --unpack .ce/ce-infrastructure.xml --target tmp/extraction/
+```
+
+**Repomix Package Structure** (CE 1.1):
+- **ce-workflow-docs.xml**: <60KB (reference package, not extracted)
+- **ce-infrastructure.xml**: <150KB (all framework files with /system/ organization)
+- **Combined**: <210KB total
+
+**Migration Scenarios**:
+- **Greenfield**: New project setup (10 min) → [migration-greenfield.md](examples/workflows/migration-greenfield.md)
+- **Mature Project**: Add CE to existing codebase (45 min) → [migration-mature-project.md](examples/workflows/migration-mature-project.md)
+- **CE 1.0 Upgrade**: Upgrade CE 1.0 → CE 1.1 (40 min) → [migration-existing-ce.md](examples/workflows/migration-existing-ce.md)
+- **Partial Install**: Complete partial CE installation (15 min) → [migration-partial-ce.md](examples/workflows/migration-partial-ce.md)
+
+**Memory Type System** (CE 1.1):
+
+Framework memories (23 files) use `type: regular` by default:
+```yaml
+---
+type: regular
+category: documentation
+tags: [tag1, tag2, tag3]
+created: "2025-11-04T17:30:00Z"
+updated: "2025-11-04T17:30:00Z"
+---
+```
+
+**Critical Memory Candidates** (upgrade during initialization):
+- code-style-conventions.md
+- suggested-commands.md
+- task-completion-checklist.md
+- testing-standards.md
+- tool-usage-syntropy.md
+- use-syntropy-tools-not-bash.md
+
+**User File Headers** (added during Phase 2 of initialization):
+
+User memories:
+```yaml
+---
+type: user
+source: target-project
+created: "2025-11-04T00:00:00Z"
+updated: "2025-11-04T00:00:00Z"
+---
+```
+
+User PRPs:
+```yaml
+---
+prp_id: USER-001
+title: User Feature Implementation
+status: completed
+created: "2025-11-04"
+source: target-project
+type: user
+---
+```
+
+**See Also**:
+- [examples/INITIALIZATION.md](examples/INITIALIZATION.md) - Complete initialization guide
+- [.serena/memories/README.md](.serena/memories/README.md) - Memory type system documentation
+- [examples/templates/PRP-0-CONTEXT-ENGINEERING.md](examples/templates/PRP-0-CONTEXT-ENGINEERING.md) - Document framework installation
+
 ## Working Directory
 
 **Default**: `/Users/bprzybysz/nc-src/ctx-eng-plus`

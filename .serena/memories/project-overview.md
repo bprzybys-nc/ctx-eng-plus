@@ -1,3 +1,11 @@
+---
+type: regular
+category: documentation
+tags: [overview, project, context]
+created: "2025-11-04T17:30:00Z"
+updated: "2025-11-04T17:30:00Z"
+---
+
 # Project Overview
 
 ## Purpose

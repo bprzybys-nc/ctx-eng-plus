@@ -1,3 +1,11 @@
+---
+type: regular
+category: documentation
+tags: [code-style, conventions, standards]
+created: "2025-11-04T17:30:00Z"
+updated: "2025-11-04T17:30:00Z"
+---
+
 # Code Style and Conventions
 
 ## Communication Style
