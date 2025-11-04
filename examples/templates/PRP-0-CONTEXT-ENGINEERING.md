@@ -218,9 +218,8 @@ installation_method: {METHOD}
 - `.ce/examples/system/prp-decomposition-patterns.md` - PRP sizing
 - `.serena/memories/system/task-completion-checklist.md` - Workflow checklist
 
-**Migration Guides**:
-- `examples/INITIALIZATION.md` - Master initialization guide
-- `examples/workflows/migration-{scenario}.md` - Scenario-specific guides
+**Migration Guide**:
+- `examples/INITIALIZATION.md` - Complete CE 1.1 initialization guide (5-phase workflow, scenario-aware)
 
 ---
 
