@@ -6,6 +6,8 @@
 
 **Last Updated**: 2025-11-04
 
+**NOTE (2025-11-04)**: Historical references to `.ce/examples/system/` directory in this guide refer to a planned structure that was consolidated. All framework examples now reside in `examples/` directory. See PRP-32.2.1 for details on the consolidation.
+
 ---
 
 ## Overview
