@@ -66,3 +66,5 @@ logs/
 repomix-output.xml
 **/.DS_Store
 .DS_Store
+
+.tmp/batch-gen/
