@@ -1,0 +1,50 @@
+# Repomix Configuration: CE Framework Workflow Documentation
+# Output: ce-32/builds/ce-workflow-docs.xml
+# Target Size: <60KB
+# Description: Workflow examples and patterns from CE framework
+
+output:
+  filePath: ce-32/builds/ce-workflow-docs.xml
+  style: xml
+  topFilesLength: 5
+  showLineNumbers: true
+  copyToClipboard: false
+  instructionFilePath: null
+
+include:
+  # Workflow examples (IsWorkflow=Yes from INDEX.md)
+  - "examples/syntropy/*.md"
+  - "examples/workflows/*.md"
+  - "examples/config/*.md"
+  - "examples/patterns/dedrifting-lessons.md"
+  - "examples/patterns/mocks-marking.md"
+  - "examples/TOOL-USAGE-GUIDE.md"
+  - "examples/prp-decomposition-patterns.md"
+  - "examples/mermaid-color-palette.md"
+  - "examples/linear-integration-example.md"
+  - "examples/tmp-directory-convention.md"
+  - "examples/example.setting.local.md"
+  - "examples/model/SystemModel.md"
+  - "examples/INDEX.md"
+
+  # CLAUDE.md (full file - workflow sections will be extracted manually if needed)
+  - "CLAUDE.md"
+
+exclude:
+  # Project-specific examples (IsWorkflow=No)
+  - "examples/patterns/example-simple-feature.md"
+  - "examples/patterns/git-message-rules.md"
+  - "examples/l4-validation-example.md"
+  - "examples/syntropy-status-hook-system.md"
+
+  # System files
+  - ".git"
+  - ".tmp"
+  - "node_modules"
+  - "__pycache__"
+
+ignore:
+  customPatterns: []
+
+security:
+  enableSecurityCheck: true

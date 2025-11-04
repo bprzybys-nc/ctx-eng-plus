@@ -1,0 +1,183 @@
+# CE Framework Repomix Packages Manifest
+# Documents contents of distribution packages
+
+version: "1.0.0"
+generated: "2025-11-04T00:00:00Z"
+
+packages:
+  workflow_docs:
+    file: ce-32/builds/ce-workflow-docs.xml
+    profile: .ce/repomix-profile-workflow.json
+    description: "Workflow examples and patterns from CE framework"
+    target_size: "<60KB"
+    actual_size: "88,213 tokens (288,431 chars)"
+    status: "Exceeds target by 47% - Phase 5 will regenerate with refined docs"
+    contents:
+      - type: "examples"
+        count: 13
+        filter: "IsWorkflow=Yes from examples/INDEX.md"
+        files:
+          - "examples/syntropy/*.md (6 files: README, context7, linear, memory, serena, thinking)"
+          - "examples/workflows/*.md (5 files: batch execution, batch generation, context drift, denoise, vacuum)"
+          - "examples/config/*.md (2 files: hook configuration, slash command template)"
+          - "examples/patterns/dedrifting-lessons.md"
+          - "examples/patterns/mocks-marking.md"
+          - "examples/TOOL-USAGE-GUIDE.md"
+          - "examples/prp-decomposition-patterns.md"
+          - "examples/mermaid-color-palette.md"
+          - "examples/linear-integration-example.md"
+          - "examples/tmp-directory-convention.md"
+          - "examples/example.setting.local.md"
+          - "examples/model/SystemModel.md"
+          - "examples/INDEX.md"
+      - type: "documentation"
+        count: 1
+        filter: "Complete file (all workflow sections)"
+        files:
+          - "CLAUDE.md (7,714 tokens)"
+
+    excluded:
+      - "examples/patterns/example-simple-feature.md (IsWorkflow=No, project-specific)"
+      - "examples/patterns/git-message-rules.md (IsWorkflow=No, project-specific)"
+      - "examples/l4-validation-example.md (IsWorkflow=No, project-specific)"
+      - "examples/syntropy-status-hook-system.md (references ctx-eng-plus scripts)"
+
+    use_cases:
+      - "New project onboarding (workflow patterns)"
+      - "PRP generation reference (decomposition patterns)"
+      - "Command usage examples (slash commands, ce tools)"
+      - "Syntropy MCP integration patterns"
+
+    top_files:
+      - "examples/model/SystemModel.md (35,618 tokens, 40.4%)"
+      - "CLAUDE.md (7,714 tokens, 8.7%)"
+      - "examples/TOOL-USAGE-GUIDE.md (6,450 tokens, 7.3%)"
+      - "examples/INDEX.md (6,203 tokens, 7%)"
+      - "examples/workflows/migration-mature-project.md (5,348 tokens, 6.1%)"
+
+  infrastructure:
+    file: ce-32/builds/ce-infrastructure.xml
+    profile: .ce/repomix-profile-infrastructure.json
+    description: "Complete CE framework installation package (all components)"
+    target_size: "<150KB"
+    actual_size: "278,476 tokens (977,615 chars)"
+    status: "Exceeds target by 86% - Phase 5 will regenerate with refined docs"
+    post_process_note: "Reorganization script (.ce/reorganize-infrastructure.sh) will add /system/ subfolders during extraction"
+    contents:
+      - type: "examples"
+        count: 13
+        destination: ".ce/examples/system/ (after extraction)"
+        filter: "IsWorkflow=Yes from examples/INDEX.md"
+        files:
+          - "examples/syntropy/*.md (6 files)"
+          - "examples/workflows/*.md (5 files)"
+          - "examples/config/*.md (2 files)"
+          - "examples/patterns/*.md (2 files: dedrifting-lessons, mocks-marking)"
+          - "examples/TOOL-USAGE-GUIDE.md"
+          - "examples/prp-decomposition-patterns.md"
+          - "examples/mermaid-color-palette.md"
+          - "examples/linear-integration-example.md"
+          - "examples/tmp-directory-convention.md"
+          - "examples/example.setting.local.md"
+          - "examples/model/SystemModel.md"
+          - "examples/INDEX.md"
+
+      - type: "memories"
+        count: 23
+        destination: ".serena/memories/system/ (after extraction)"
+        filter: "All framework memories (6 critical + 17 regular)"
+        critical:
+          - "code-style-conventions.md (129 lines)"
+          - "suggested-commands.md (98 lines)"
+          - "task-completion-checklist.md (80 lines)"
+          - "testing-standards.md (87 lines)"
+          - "tool-usage-syntropy.md (425 lines)"
+          - "use-syntropy-tools-not-bash.md (200 lines)"
+        regular:
+          - "codebase-structure.md"
+          - "cwe78-prp22-newline-escape-issue.md"
+          - "l4-validation-usage.md"
+          - "linear-issue-creation-pattern.md"
+          - "linear-issue-tracking-integration.md"
+          - "linear-mcp-integration-example.md"
+          - "linear-mcp-integration.md"
+          - "project-overview.md"
+          - "PRP-15-remediation-workflow-implementation.md"
+          - "prp-2-implementation-patterns.md"
+          - "prp-backlog-system.md"
+          - "prp-structure-initialized.md"
+          - "serena-implementation-verification-pattern.md"
+          - "serena-mcp-tool-restrictions.md"
+          - "syntropy-status-hook-pattern.md"
+          - "system-model-specification.md"
+          - "tool-config-optimization-completed.md"
+
+      - type: "commands"
+        count: 11
+        destination: ".claude/commands/ (root, not /system/)"
+        filter: "All framework slash commands"
+        files:
+          - "batch-exe-prp.md (10,772 tokens)"
+          - "batch-gen-prp.md (9,951 tokens)"
+          - "denoise.md"
+          - "execute-prp.md"
+          - "generate-prp.md"
+          - "peer-review.md"
+          - "sync-with-syntropy.md"
+          - "syntropy-health.md"
+          - "tools-misuse-scan.md"
+          - "update-context.md"
+          - "vacuum.md"
+
+      - type: "tools"
+        count: 27
+        destination: "tools/"
+        filter: "All CE tool source code"
+        files:
+          - "ce/*.py (26 modules including generate.py, update_context.py)"
+          - "pyproject.toml"
+          - "bootstrap.sh"
+        top_files:
+          - "tools/ce/generate.py (20,030 tokens, 7.2%)"
+          - "tools/ce/update_context.py (20,020 tokens, 7.2%)"
+
+      - type: "documentation"
+        count: 1
+        destination: "CLAUDE.md (framework sections for blending)"
+        filter: "Complete file (framework + project-specific sections)"
+        files:
+          - "CLAUDE.md (7,714 tokens, 2.8%)"
+
+    excluded:
+      - "examples/patterns/example-simple-feature.md (IsWorkflow=No)"
+      - "examples/patterns/git-message-rules.md (IsWorkflow=No)"
+      - "examples/l4-validation-example.md (IsWorkflow=No)"
+      - "examples/syntropy-status-hook-system.md (references ctx-eng-plus scripts)"
+      - "tools/tests/ (users write own tests)"
+
+    use_cases:
+      - "Complete framework installation (first-time setup)"
+      - "CE 1.1 initialization with /system/ organization"
+      - "Serena memory population (23 framework memories)"
+      - "Command and tool installation (11 commands + 27 tool files)"
+      - "CLAUDE.md framework section blending"
+
+    top_files:
+      - "examples/model/SystemModel.md (35,618 tokens, 12.8%)"
+      - "tools/ce/generate.py (20,030 tokens, 7.2%)"
+      - "tools/ce/update_context.py (20,020 tokens, 7.2%)"
+      - ".claude/commands/batch-exe-prp.md (10,772 tokens, 3.9%)"
+      - ".claude/commands/batch-gen-prp.md (9,951 tokens, 3.6%)"
+
+regeneration:
+  schedule: "Phase 5 (PRP-32.5.1)"
+  trigger: "After Phase 4 documentation refinement"
+  automated: false
+  notes: "Initial generation uses current docs as-is. Phase 5 will regenerate with refined documentation to meet token targets (<60KB workflow, <150KB infrastructure, <210KB total)"
+
+notes:
+  - "Both packages exceed initial token targets due to comprehensive documentation"
+  - "SystemModel.md alone accounts for 35.6K tokens (40% of workflow package)"
+  - "Phase 4 will refine documentation to reduce token counts"
+  - "Phase 5 will regenerate packages with optimized documentation"
+  - "/system/ organization requires post-processing script during extraction"

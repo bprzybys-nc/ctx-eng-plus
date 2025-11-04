@@ -1,0 +1,100 @@
+# Repomix Configuration: CE Framework Complete Installation Package
+# Output: ce-32/builds/ce-infrastructure.xml
+# Target Size: <150KB
+# Description: ALL framework files (examples, memories, commands, tools, CLAUDE.md sections)
+# Post-processing: Requires reorganization to add /system/ subfolders
+
+output:
+  filePath: ce-32/builds/ce-infrastructure.xml
+  style: xml
+  topFilesLength: 5
+  showLineNumbers: true
+  copyToClipboard: false
+  instructionFilePath: null
+
+include:
+  # Framework Examples (IsWorkflow=Yes, 21 files) -> .ce/examples/system/
+  - "examples/syntropy/*.md"
+  - "examples/workflows/*.md"
+  - "examples/config/*.md"
+  - "examples/patterns/dedrifting-lessons.md"
+  - "examples/patterns/mocks-marking.md"
+  - "examples/TOOL-USAGE-GUIDE.md"
+  - "examples/prp-decomposition-patterns.md"
+  - "examples/mermaid-color-palette.md"
+  - "examples/linear-integration-example.md"
+  - "examples/tmp-directory-convention.md"
+  - "examples/example.setting.local.md"
+  - "examples/model/SystemModel.md"
+  - "examples/INDEX.md"
+
+  # Framework Memories (23 files) -> .serena/memories/system/
+  # Universal memories (6 critical)
+  - ".serena/memories/code-style-conventions.md"
+  - ".serena/memories/suggested-commands.md"
+  - ".serena/memories/task-completion-checklist.md"
+  - ".serena/memories/testing-standards.md"
+  - ".serena/memories/tool-usage-syntropy.md"
+  - ".serena/memories/use-syntropy-tools-not-bash.md"
+
+  # Additional framework memories (17 regular)
+  - ".serena/memories/codebase-structure.md"
+  - ".serena/memories/cwe78-prp22-newline-escape-issue.md"
+  - ".serena/memories/l4-validation-usage.md"
+  - ".serena/memories/linear-issue-creation-pattern.md"
+  - ".serena/memories/linear-issue-tracking-integration.md"
+  - ".serena/memories/linear-mcp-integration-example.md"
+  - ".serena/memories/linear-mcp-integration.md"
+  - ".serena/memories/project-overview.md"
+  - ".serena/memories/PRP-15-remediation-workflow-implementation.md"
+  - ".serena/memories/prp-2-implementation-patterns.md"
+  - ".serena/memories/prp-backlog-system.md"
+  - ".serena/memories/prp-structure-initialized.md"
+  - ".serena/memories/serena-implementation-verification-pattern.md"
+  - ".serena/memories/serena-mcp-tool-restrictions.md"
+  - ".serena/memories/syntropy-status-hook-pattern.md"
+  - ".serena/memories/system-model-specification.md"
+  - ".serena/memories/tool-config-optimization-completed.md"
+
+  # Framework Commands (11 files) -> .claude/commands/
+  - ".claude/commands/batch-exe-prp.md"
+  - ".claude/commands/batch-gen-prp.md"
+  - ".claude/commands/denoise.md"
+  - ".claude/commands/execute-prp.md"
+  - ".claude/commands/generate-prp.md"
+  - ".claude/commands/peer-review.md"
+  - ".claude/commands/sync-with-syntropy.md"
+  - ".claude/commands/syntropy-health.md"
+  - ".claude/commands/tools-misuse-scan.md"
+  - ".claude/commands/update-context.md"
+  - ".claude/commands/vacuum.md"
+
+  # Tool Source Code -> tools/
+  - "tools/ce/*.py"
+  - "tools/pyproject.toml"
+  - "tools/bootstrap.sh"
+
+  # CLAUDE.md Framework Sections -> CLAUDE.md
+  - "CLAUDE.md"
+
+exclude:
+  # Project-specific examples (IsWorkflow=No)
+  - "examples/patterns/example-simple-feature.md"
+  - "examples/patterns/git-message-rules.md"
+  - "examples/l4-validation-example.md"
+  - "examples/syntropy-status-hook-system.md"
+
+  # Test files
+  - "tools/tests"
+
+  # System files
+  - ".git"
+  - ".tmp"
+  - "__pycache__"
+  - "*.pyc"
+
+ignore:
+  customPatterns: []
+
+security:
+  enableSecurityCheck: true
