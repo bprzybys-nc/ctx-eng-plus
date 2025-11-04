@@ -1,665 +1,978 @@
-# Context Engineering Framework - Initialization Guide
+# CE 1.1 Framework Initialization Guide
 
-**Version**: CE 1.1
-**Updated**: 2025-11-04
-**Audience**: Teams installing CE framework for the first time or upgrading
+**Purpose**: Complete guide for installing and configuring the Context Engineering (CE) 1.1 framework across all project scenarios
+
+**Version**: 1.1
+
+**Last Updated**: 2025-11-04
 
 ---
 
-## Quick Start (5 Steps)
+## Overview
 
-### Step 1: Unpack Framework (2 minutes)
+This guide covers the complete process of installing the Context Engineering framework into target projects using a unified 5-phase workflow. The process adapts to your specific scenario while maintaining consistent structure and validation.
 
-```bash
-# If you received ce-workflow-docs.xml
-repomix --unpack ce-workflow-docs.xml --target ./
+### What is CE 1.1?
 
-# Creates:
-# - .ce/                 # Framework components
-# - .serena/memories/    # Knowledge base
-# - .claude/commands/    # Automation commands
-# - examples/            # Documentation and patterns
-# - CLAUDE.md            # Project guide
+Context Engineering is a framework for managing project context, documentation, and workflows through:
+
+- **Structured knowledge base** (Serena memories)
+- **Automated workflows** (slash commands)
+- **PRP-based development** (Plan-Review-Produce pattern)
+- **Tool integration** (Syntropy MCP, Linear, UV)
+- **System/user separation** (framework vs project docs)
+
+### Key Benefits
+
+- **Zero noise**: Clean separation of framework and project files
+- **Consistent validation**: Multi-level validation gates
+- **Automated workflows**: 11 framework commands for common tasks
+- **Knowledge persistence**: 23 framework memories + your project memories
+- **Easy upgrades**: System docs updated independently
+
+---
+
+## Quick Start: Choose Your Scenario
+
+Use this decision tree to identify your installation scenario:
+
+```
+START: What's your project's current state?
+│
+├─ NO CE components exist
+│  │
+│  ├─ New project (empty or minimal code)
+│  │  └─→ SCENARIO 1: Greenfield (~10 min)
+│  │
+│  └─ Existing codebase with working code
+│     └─→ SCENARIO 2: Mature Project (~45 min)
+│
+└─ Has CE components
+   │
+   ├─ Has .ce/ directory (CE 1.1)
+   │  └─→ SCENARIO 4: Partial Install (~15 min)
+   │
+   └─ No .ce/ directory (CE 1.0 or legacy)
+      └─→ SCENARIO 3: CE 1.0 Upgrade (~40 min)
 ```
 
-### Step 2: Initialize Serena (1 minute)
+### Scenario Descriptions
+
+| Scenario | When to Use | Phases | Time |
+|----------|-------------|--------|------|
+| **Greenfield** | New project, no CE components | 1, 3, 4 (skip 2, 5) | 10 min |
+| **Mature Project** | Existing code, no CE | 1, 2, 3, 4 (skip 5) | 45 min |
+| **CE 1.0 Upgrade** | Legacy CE installation | 1, 2, 3, 4, 5 (all) | 40 min |
+| **Partial Install** | Missing CE components | 1, 3, 4 (selective) | 15 min |
+
+---
+
+## Prerequisites
+
+### Required for All Scenarios
+
+- **Repomix CLI**: `npm install -g repomix`
+- **CE framework packages**:
+  - `ce-infrastructure.xml` (complete framework)
+  - `ce-workflow-docs.xml` (reference documentation)
+- **Git repository**: Project initialized with git
+- **Project directory**: Write access to target directory
+
+### Optional (Recommended)
+
+- **Backup branch**: `git checkout -b pre-ce-backup`
+- **Linear account**: For issue tracking integration
+- **Syntropy MCP**: For tool integration
+- **UV package manager**: For CE CLI tools
+
+### Before You Begin
 
 ```bash
-# Activate Serena MCP with project root (full absolute path required)
-serena_activate("/absolute/path/to/your/project")
+# Verify prerequisites
+which repomix && echo "✓ Repomix installed"
+which git && echo "✓ Git installed"
+test -f ce-infrastructure.xml && echo "✓ Framework package available"
 
-# Verify memories loaded
-serena_list_memories()
-# Expected: 23 memories (6 critical, 17 regular)
+# Create backup (recommended)
+git checkout -b pre-ce-backup
+git push origin pre-ce-backup
+git checkout main
 ```
 
-### Step 3: Configure Settings (1 minute)
+---
+
+## The 5-Phase Workflow
+
+### Phase Overview
+
+1. **Bucket Collection** (5-10 min) - Stage files for validation
+2. **User Files Copy** (0-15 min) - Migrate project-specific files
+3. **Repomix Package Handling** (5 min) - Extract framework packages
+4. **CLAUDE.md Blending** (10 min) - Merge framework + project guide
+5. **Legacy Cleanup** (0-5 min) - Remove duplicate legacy files
+
+**Note**: Not all scenarios execute all phases. See scenario-specific instructions below.
+
+---
+
+## Phase 1: Bucket Collection (Universal)
+
+**Duration**: 5-10 minutes
+**Applies to**: All scenarios
+
+### Purpose
+
+Create a staging area to organize and validate files before copying to CE 1.1 destinations.
+
+### Step 1.1: Create Staging Area
 
 ```bash
-# Settings already unpacked to .claude/settings.local.json
-# Verify configuration
-cat .claude/settings.local.json | jq '.bash.permissions.allow | length'
-# Expected: ~80 auto-allowed command patterns
+# Create bucket directories
+mkdir -p tmp/syntropy-initialization/{serena,examples,prps,claude-md,claude-dir}
 
-# If merging with existing settings, see: Migration Scenarios below
+# Verify structure
+ls -d tmp/syntropy-initialization/*/
+# Expected:
+# tmp/syntropy-initialization/serena/
+# tmp/syntropy-initialization/examples/
+# tmp/syntropy-initialization/prps/
+# tmp/syntropy-initialization/claude-md/
+# tmp/syntropy-initialization/claude-dir/
 ```
 
-### Step 4: Verify PRP-0 Created (Auto)
+### Step 1.2: Copy Files to Buckets
+
+**Bucket 1: Serena Memories**
 
 ```bash
-# Check bootstrap documentation
-cat PRPs/executed/PRP-0-CONTEXT-ENGINEERING.md
-
-# This file documents:
-# - What framework components were installed
-# - Why this framework was chosen
-# - How to use the framework
-# - Framework version and timestamp
+# Copy existing Serena memories (if any)
+if [ -d .serena/memories ]; then
+  cp -R .serena/memories/*.md tmp/syntropy-initialization/serena/ 2>/dev/null || true
+  echo "Serena files: $(ls tmp/syntropy-initialization/serena/*.md 2>/dev/null | wc -l)"
+fi
 ```
 
-### Step 5: Validate Installation (1 minute)
+**Bucket 2: Examples**
 
 ```bash
+# Copy existing examples (if any)
+if [ -d examples ]; then
+  find examples -name "*.md" -exec cp {} tmp/syntropy-initialization/examples/ \; 2>/dev/null || true
+  echo "Example files: $(ls tmp/syntropy-initialization/examples/*.md 2>/dev/null | wc -l)"
+fi
+```
+
+**Bucket 3: PRPs**
+
+```bash
+# Copy existing PRPs (if any)
+if [ -d PRPs ]; then
+  find PRPs -name "*.md" -exec cp {} tmp/syntropy-initialization/prps/ \; 2>/dev/null || true
+  echo "PRP files: $(ls tmp/syntropy-initialization/prps/*.md 2>/dev/null | wc -l)"
+fi
+```
+
+**Bucket 4: CLAUDE.md**
+
+```bash
+# Copy existing CLAUDE.md (if any)
+if [ -f CLAUDE.md ]; then
+  cp CLAUDE.md tmp/syntropy-initialization/claude-md/
+  echo "✓ CLAUDE.md copied"
+fi
+```
+
+**Bucket 5: Claude Directory**
+
+```bash
+# Copy existing .claude directory (if any)
+if [ -d .claude ]; then
+  cp -R .claude/* tmp/syntropy-initialization/claude-dir/ 2>/dev/null || true
+  echo "Claude files: $(ls tmp/syntropy-initialization/claude-dir/ 2>/dev/null | wc -l)"
+fi
+```
+
+### Step 1.3: Validate Bucket Contents
+
+Review files in each bucket to verify they match bucket characteristics:
+
+**Serena Bucket Validation**
+
+```bash
+cd tmp/syntropy-initialization/serena/
+
+for file in *.md 2>/dev/null; do
+  # Check for memory-like content
+  if ! grep -qi "memory\|pattern\|guide" "$file" 2>/dev/null; then
+    mv "$file" "$file.fake"
+    echo "⚠ Marked $file as fake (not a memory)"
+  fi
+done
+```
+
+**Examples Bucket Validation**
+
+```bash
+cd tmp/syntropy-initialization/examples/
+
+for file in *.md 2>/dev/null; do
+  # Check for example/pattern structure
+  if ! grep -qi "example\|pattern\|workflow\|guide" "$file" 2>/dev/null; then
+    mv "$file" "$file.fake"
+    echo "⚠ Marked $file as fake (not an example)"
+  fi
+done
+```
+
+**PRPs Bucket Validation**
+
+```bash
+cd tmp/syntropy-initialization/prps/
+
+for file in *.md 2>/dev/null; do
+  # Check for PRP structure (YAML header or PRP-ID in filename)
+  if ! grep -q "^---" "$file" 2>/dev/null && ! echo "$file" | grep -qi "prp-"; then
+    mv "$file" "$file.fake"
+    echo "⚠ Marked $file as fake (not a PRP)"
+  fi
+done
+```
+
+### Step 1.4: Bucket Summary
+
+```bash
+# Return to project root
+cd /path/to/your/project
+
+# Generate bucket report
+cat > tmp/syntropy-initialization/bucket-report.txt << 'EOF'
+# Bucket Collection Report
+
+## Serena Bucket
+Valid: $(ls tmp/syntropy-initialization/serena/*.md 2>/dev/null | grep -v ".fake" | wc -l)
+Fake: $(ls tmp/syntropy-initialization/serena/*.fake 2>/dev/null | wc -l)
+
+## Examples Bucket
+Valid: $(ls tmp/syntropy-initialization/examples/*.md 2>/dev/null | grep -v ".fake" | wc -l)
+Fake: $(ls tmp/syntropy-initialization/examples/*.fake 2>/dev/null | wc -l)
+
+## PRPs Bucket
+Valid: $(ls tmp/syntropy-initialization/prps/*.md 2>/dev/null | grep -v ".fake" | wc -l)
+Fake: $(ls tmp/syntropy-initialization/prps/*.fake 2>/dev/null | wc -l)
+
+## CLAUDE.md Bucket
+Valid: $(ls tmp/syntropy-initialization/claude-md/CLAUDE.md 2>/dev/null | wc -l)
+
+## Claude Dir Bucket
+Files: $(ls tmp/syntropy-initialization/claude-dir/ 2>/dev/null | wc -l)
+EOF
+
+# Display report
+cat tmp/syntropy-initialization/bucket-report.txt
+```
+
+**Phase 1 Complete**: Files staged and validated. Proceed to Phase 2 (or skip if Greenfield).
+
+---
+
+## Phase 2: User Files Copy
+
+**Duration**: 0-15 minutes
+**Applies to**: Mature Project, CE 1.0 Upgrade, Partial Install
+**Skip for**: Greenfield
+
+### Scenario Variations
+
+**Skip this phase if**:
+- **Greenfield**: No user files exist yet
+
+**Full migration if**:
+- **Mature Project**: Copy all validated files from buckets
+- **CE 1.0 Upgrade**: Copy all validated files + classify existing files
+
+**Selective migration if**:
+- **Partial Install**: Copy only missing components
+
+### Step 2.1: User Memory Migration
+
+**For Mature Project and CE 1.0 Upgrade**:
+
+```bash
+# Copy validated user memories (non-.fake files)
+find tmp/syntropy-initialization/serena -name "*.md" ! -name "*.fake" -exec cp {} .serena/memories/ \; 2>/dev/null || true
+
+# Add YAML headers to memories without them
+cd .serena/memories/
+
+for memory in *.md 2>/dev/null; do
+  # Skip if already has YAML header
+  if head -n 1 "$memory" | grep -q "^---"; then
+    continue
+  fi
+
+  # Determine type (heuristic based on content)
+  if grep -qi "architecture\|security\|core principle\|critical" "$memory"; then
+    TYPE="critical"
+  else
+    TYPE="regular"
+  fi
+
+  # Add YAML header
+  cat > "${memory}.tmp" << EOF
+---
+type: $TYPE
+priority: normal
+category: guide
+tags: []
+source: target-project
+created: "$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+updated: "$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+---
+
+$(cat "$memory")
+EOF
+  mv "${memory}.tmp" "$memory"
+  echo "✓ Added YAML header to $memory (type: $TYPE)"
+done
+
+cd ../..
+```
+
+### Step 2.2: User PRP Migration
+
+**For Mature Project and CE 1.0 Upgrade**:
+
+```bash
+# Create PRP directories if needed
+mkdir -p .ce/PRPs/{executed,feature-requests,archived}
+
+# Copy validated user PRPs (non-.fake files)
+find tmp/syntropy-initialization/prps -name "*.md" ! -name "*.fake" -exec sh -c '
+  for prp; do
+    # Determine destination based on filename or content
+    if echo "$prp" | grep -qi "executed"; then
+      cp "$prp" .ce/PRPs/executed/
+    elif echo "$prp" | grep -qi "feature\|request"; then
+      cp "$prp" .ce/PRPs/feature-requests/
+    else
+      cp "$prp" .ce/PRPs/executed/
+    fi
+  done
+' sh {} +
+
+echo "✓ User PRPs migrated to .ce/PRPs/"
+```
+
+### Step 2.3: User Examples Migration
+
+**For Mature Project and CE 1.0 Upgrade**:
+
+```bash
+# Create examples directory if needed
+mkdir -p .ce/examples
+
+# Copy validated user examples (non-.fake files)
+find tmp/syntropy-initialization/examples -name "*.md" ! -name "*.fake" -exec cp {} .ce/examples/ \; 2>/dev/null || true
+
+echo "✓ User examples migrated to .ce/examples/"
+```
+
+### Step 2.4: User Commands/Settings Migration
+
+**For all scenarios with existing .claude/ content**:
+
+```bash
+# Copy custom commands (preserve existing)
+if [ -d tmp/syntropy-initialization/claude-dir/commands ]; then
+  mkdir -p .claude/commands
+  cp -n tmp/syntropy-initialization/claude-dir/commands/*.md .claude/commands/ 2>/dev/null || true
+  echo "✓ User commands preserved"
+fi
+
+# Backup existing settings (will be merged in Phase 3)
+if [ -f tmp/syntropy-initialization/claude-dir/settings.local.json ]; then
+  mkdir -p .claude
+  cp tmp/syntropy-initialization/claude-dir/settings.local.json .claude/settings.pre-ce.json
+  echo "✓ Existing settings backed up"
+fi
+```
+
+### Step 2.5: Migration Summary
+
+```bash
+# Generate migration report
+cat > tmp/syntropy-initialization/phase2-report.txt << EOF
+# Phase 2: User Files Migration Report
+
+## Memories Migrated
+User memories: $(find .serena/memories -maxdepth 1 -name "*.md" 2>/dev/null | wc -l)
+Headers added: $(grep -l "^type:" .serena/memories/*.md 2>/dev/null | wc -l)
+
+## PRPs Migrated
+Executed: $(ls .ce/PRPs/executed/*.md 2>/dev/null | wc -l)
+Feature requests: $(ls .ce/PRPs/feature-requests/*.md 2>/dev/null | wc -l)
+
+## Examples Migrated
+User examples: $(ls .ce/examples/*.md 2>/dev/null | wc -l)
+
+## Commands/Settings
+Custom commands: $(ls .claude/commands/*.md 2>/dev/null | wc -l)
+Settings backed up: $(test -f .claude/settings.pre-ce.json && echo "yes" || echo "no")
+EOF
+
+cat tmp/syntropy-initialization/phase2-report.txt
+```
+
+**Phase 2 Complete**: User files migrated with YAML headers. Proceed to Phase 3.
+
+---
+
+## Phase 3: Repomix Package Handling (Universal)
+
+**Duration**: 5 minutes
+**Applies to**: All scenarios
+
+### Purpose
+
+Extract framework packages to install system documentation, memories, examples, commands, and tools.
+
+### Step 3.1: Copy Workflow Package
+
+```bash
+# Create system directory
+mkdir -p .ce/examples/system/
+
+# Copy workflow documentation package (reference only, not extracted)
+cp ce-workflow-docs.xml .ce/examples/system/
+
+echo "✓ Workflow package copied to .ce/examples/system/ce-workflow-docs.xml"
+```
+
+**Note**: `ce-workflow-docs.xml` is stored as-is for reference and redistribution. The actual framework files come from `ce-infrastructure.xml` extraction below.
+
+### Step 3.2: Extract Infrastructure Package
+
+```bash
+# Extract complete framework infrastructure
+# This creates /system/ subdirectories automatically
+repomix --unpack ce-infrastructure.xml --target ./
+
+# Verify extraction
+echo "Framework files extracted:"
+echo "  System memories: $(ls .serena/memories/system/*.md 2>/dev/null | wc -l)"
+echo "  System examples: $(ls .ce/examples/system/*.md 2>/dev/null | wc -l)"
+echo "  Framework commands: $(ls .claude/commands/*.md 2>/dev/null | wc -l)"
+echo "  Tool files: $(find tools -name "*.py" 2>/dev/null | wc -l)"
+```
+
+**What gets extracted**:
+
+```
+.ce/examples/system/          # 21 framework example files
+.serena/memories/system/      # 23 framework memories (6 critical + 17 regular)
+.claude/commands/             # 11 framework commands
+.claude/settings.local.json   # Framework settings (merged with existing)
+tools/                        # 33 tool source files
+CLAUDE.md                     # Framework sections (merged with existing)
+```
+
+### Step 3.3: Validate Framework Installation
+
+```bash
+# Check system memories (expected: 23)
+SYSTEM_MEMORIES=$(ls .serena/memories/system/*.md 2>/dev/null | wc -l)
+test $SYSTEM_MEMORIES -eq 23 && echo "✓ All 23 system memories installed" || echo "⚠ Only $SYSTEM_MEMORIES system memories found"
+
+# Check system examples (expected: 21)
+SYSTEM_EXAMPLES=$(ls .ce/examples/system/*.md 2>/dev/null | wc -l)
+test $SYSTEM_EXAMPLES -eq 21 && echo "✓ All 21 system examples installed" || echo "⚠ Only $SYSTEM_EXAMPLES system examples found"
+
+# Check framework commands (expected: 11)
+FRAMEWORK_COMMANDS=$(ls .claude/commands/*.md 2>/dev/null | wc -l)
+test $FRAMEWORK_COMMANDS -ge 11 && echo "✓ All 11 framework commands installed" || echo "⚠ Only $FRAMEWORK_COMMANDS commands found"
+
+# Check tool files (expected: 33)
+TOOL_FILES=$(find tools -name "*.py" 2>/dev/null | wc -l)
+test $TOOL_FILES -ge 33 && echo "✓ Tool source files installed" || echo "⚠ Only $TOOL_FILES tool files found"
+
+# Check settings merged
+test -f .claude/settings.local.json && jq empty .claude/settings.local.json && echo "✓ Settings valid JSON" || echo "⚠ Settings invalid"
+```
+
+### Step 3.4: Initialize CE Tools
+
+```bash
+# Install CE CLI tools
 cd tools
-uv sync
-uv run ce validate --level 4
+./bootstrap.sh
 
-# Expected output:
-# ✓ All validation gates passed
-# ✓ Context drift: <5%
-# ✓ Framework initialized successfully
+# Verify installation
+uv run ce --version
+# Expected: ce version 1.1.0
+
+# Run basic validation
+uv run ce validate --level 1
+# Expected: Structure validation passes
+
+cd ..
 ```
 
-**Total time**: ~6 minutes for complete initialization
+**Phase 3 Complete**: Framework installed with /system/ organization. Proceed to Phase 4.
 
 ---
 
-## What You Get
+## Phase 4: CLAUDE.md Blending (Universal)
 
-### Documentation (25+ files, ~14k lines)
+**Duration**: 10 minutes
+**Applies to**: All scenarios
 
-**examples/**:
-- Workflow patterns (batch operations, cleanup, drift remediation)
-- Integration guides (Linear, Serena, Syntropy MCP)
-- Configuration templates
-- Pattern library
-- Reference materials
+### Purpose
 
-**CLAUDE.md** (470 lines):
-- Project guide and framework principles
-- Tool selection philosophy
-- Testing and code quality standards
-- Command reference
-- Git worktree documentation
+Merge framework CLAUDE.md sections with project-specific sections, creating a single unified project guide.
 
-**.ce/RULES.md** (300 lines):
-- Framework rules and governance
-- Validation levels and gates
-- PRP structure standards
-
-### Automation (7 commands)
-
-**/.claude/commands/**:
-- `/generate-prp` - Create PRPs from INITIAL.md
-- `/execute-prp` - Execute PRP with git integration
-- `/peer-review` - Validate code quality
-- `/batch-gen-prp` - Parallel PRP generation
-- `/batch-exe-prp` - Parallel PRP execution
-- `/vacuum` - Clean temporary files
-- `/update-context` - Sync PRPs with codebase
-
-### Knowledge Base (23 memories)
-
-**Serena memories** (.serena/memories/):
-
-**Critical Memories** (🔒 6 files, never removed):
-- code-style-conventions.md
-- testing-standards.md
-- tool-usage-syntropy.md
-- tool-config-optimization-completed.md
-- task-completion-checklist.md
-- use-syntropy-tools-not-bash.md
-
-**Regular Memories** (📝 17 files, project lifetime):
-- Codebase structure
-- Validation usage patterns
-- Linear integration examples
-- Serena implementation patterns
-- System architecture specifications
-
-**Memory Type System**:
-- **critical** (🔒): Forever, admin override only
-- **regular** (📝): Project lifetime, user deletable
-- **feat** (🧪): PRP-scoped, auto-removed after PRP execution
-
----
-
-## Repomix Usage
-
-### Packaging CE Documentation (For Framework Maintainers)
+### Step 4.1: Backup Existing CLAUDE.md
 
 ```bash
-# From ctx-eng-plus project root
-repomix \
-  --include "examples/**/*.md" \
-  --include ".serena/memories/*.md" \
-  --include "CLAUDE.md" \
-  --include ".ce/RULES.md" \
-  --style xml \
-  --output .ce/ce-workflow-docs.xml \
-  --header-text "Context Engineering Framework Distribution Package v1.1"
-
-# Output: .ce/ce-workflow-docs.xml (~50KB, 8,000 tokens)
+# Backup user's CLAUDE.md (if exists)
+if [ -f CLAUDE.md ]; then
+  cp CLAUDE.md "CLAUDE.md.backup-$(date +%Y%m%d-%H%M%S)"
+  echo "✓ CLAUDE.md backed up"
+else
+  echo "ℹ No existing CLAUDE.md (fresh installation)"
+fi
 ```
 
-### Unpacking to Target Project (For Users)
+### Step 4.2: Identify Framework vs Project Sections
+
+Framework sections (from ce-infrastructure.xml):
+- Communication
+- Core Principles
+- UV Package Management
+- Ad-Hoc Code Policy
+- Quick Commands
+- Tool Naming Convention
+- Allowed Tools Summary
+- Command Permissions
+- Quick Tool Selection
+- Project Structure
+- Testing Standards
+- Code Quality
+- Context Commands
+- Syntropy MCP Tool Sync
+- Linear Integration
+- Batch PRP Generation
+- PRP Sizing
+- Testing Patterns
+- Documentation Standards
+- Efficient Doc Review
+- Resources
+- Keyboard Shortcuts
+- Git Worktree
+- Troubleshooting
+
+Project sections (user-defined) are any sections not in framework list.
+
+### Step 4.3: Blend Sections
+
+**Manual Blending** (recommended for first installation):
 
 ```bash
-# Scenario 1: Greenfield project
-cd /path/to/new/project
-repomix --unpack /path/to/ce-workflow-docs.xml --target ./
+# Edit CLAUDE.md to mark sections
+vim CLAUDE.md
 
-# Scenario 2: Mature project (preserves existing files)
-cd /path/to/existing/project
-repomix --unpack /path/to/ce-workflow-docs.xml --target ./ --merge
-
-# Scenario 3: Upgrade existing CE installation
-cd /path/to/ce/project
-repomix --unpack /path/to/ce-workflow-docs.xml --target ./ --upgrade
+# Add [FRAMEWORK] or [PROJECT] markers to section headers:
+# ## [FRAMEWORK] Communication
+# ## [PROJECT] Project-Specific Communication
+# ## [FRAMEWORK] Core Principles
+# ## [PROJECT] Team Conventions
 ```
 
-**Repomix Options**:
-- `--target`: Destination directory
-- `--merge`: Merge with existing files (uses conflict resolution rules)
-- `--upgrade`: Upgrade mode (creates backup, validates)
-- `--dry-run`: Preview changes without applying
-
----
-
-## Memory Type System
-
-### Type Classifications
-
-| Type | Lifecycle | Removal | Examples |
-|------|-----------|---------|----------|
-| **critical** (🔒) | Forever | Never (admin override only) | Architecture decisions, security patterns, core principles |
-| **regular** (📝) | Project lifetime | Manual delete allowed | Testing standards, tool guides, coding conventions |
-| **feat** (🧪) | PRP-scoped | Auto-remove after PRP | Optimization notes, experimental approaches, session insights |
-
-### Memory Format
-
-Each memory file includes YAML front matter:
-
-```yaml
----
-type: critical|regular|feat
-priority: high|normal|low
-category: architecture|pattern|guide|reference|troubleshooting
-tags: [tag1, tag2, tag3]
-prp_id: "PRP-X" OR null
-expires: null|"2025-12-31"|"post-prp"|"session-clear"
-related: ["memory-id-1", "memory-id-2"]
-created: "2025-11-04T18:00:00Z"
-updated: "2025-11-04T18:30:00Z"
----
-
-# Memory Content Here
-```
-
-### Memory Lifecycle
-
-**Critical Memories**:
-- Created during framework initialization
-- Never automatically removed
-- Require admin override to delete
-- Examples: code-style-conventions, testing-standards, use-syntropy-tools-not-bash
-
-**Regular Memories**:
-- Created by users during project work
-- Persist for project lifetime
-- User can delete manually
-- Examples: Project-specific patterns, tool configurations, integration guides
-
-**Feature Memories**:
-- Created during PRP execution
-- Automatically removed after PRP completion
-- Used for temporary insights and experimental approaches
-- Examples: PRP-specific optimization notes, session debugging insights
-
-### Memory Management Commands
+**Automated Blending** (if framework provides blending tool):
 
 ```bash
-# List all memories with types
-serena_list_memories()
+# Use denoise command to merge sections
+/denoise CLAUDE.md
 
-# Create new memory
-serena_write_memory(
-  id="my-pattern",
-  content="...",
-  type="regular"
-)
+# Review merged output
+less CLAUDE.md
+```
 
-# Cleanup feature memories after PRP
-serena-cleanup-memories --prp PRP-32 --type feat
+### Step 4.4: Validate Blended CLAUDE.md
 
-# Classify existing memories (migration)
-serena-classify-memories --default-type regular
+```bash
+# Check for framework markers
+grep -c "\[FRAMEWORK\]" CLAUDE.md
+# Expected: Multiple framework sections marked
+
+# Check for project markers (if any)
+grep -c "\[PROJECT\]" CLAUDE.md
+# Expected: 0+ (depending on scenario)
+
+# Verify key framework sections present
+for section in "Communication" "Core Principles" "Quick Commands" "Tool Naming Convention"; do
+  grep -q "## .*$section" CLAUDE.md && echo "✓ $section section present" || echo "⚠ $section section missing"
+done
+```
+
+### Step 4.5: Add Project-Specific Sections
+
+**For Mature Project and CE 1.0 Upgrade**:
+
+Add project-specific sections to CLAUDE.md:
+
+```bash
+cat >> CLAUDE.md << 'EOF'
+
+---
+
+## [PROJECT] Project-Specific Information
+
+### Project Structure
+
+**Architecture**: [Your architecture description]
+
+**Key Components**:
+- Component 1: [Description]
+- Component 2: [Description]
+
+### Development Workflow
+
+**Branch Strategy**: [Your branching model]
+
+**Code Review Process**: [Your review process]
+
+### Testing Standards
+
+**Test Coverage**: [Your coverage requirements]
+
+**Test Frameworks**: [Your test tools]
+
+### Deployment Process
+
+**CI/CD Pipeline**: [Your pipeline description]
+
+**Deployment Stages**: [Your stages]
+
+---
+
+EOF
+```
+
+**Phase 4 Complete**: CLAUDE.md blended with framework + project sections. Proceed to Phase 5 (if applicable).
+
+---
+
+## Phase 5: Legacy Cleanup
+
+**Duration**: 0-5 minutes
+**Applies to**: CE 1.0 Upgrade only
+**Skip for**: Greenfield, Mature Project, Partial Install
+
+### Scenario Variations
+
+**Skip this phase if**:
+- **Greenfield**: No legacy files (new project)
+- **Mature Project**: No legacy CE files (first CE installation)
+- **Partial Install**: Selective cleanup only
+
+**Full cleanup if**:
+- **CE 1.0 Upgrade**: Aggressive cleanup of legacy CE 1.0 structure
+
+### Step 5.1: Verify Migration Completed
+
+```bash
+# Verify all files migrated to CE 1.1 structure
+test -d .ce/PRPs/system && echo "✓ System PRPs migrated"
+test -d .ce/examples/system && echo "✓ System examples migrated"
+test -d .serena/memories/system && echo "✓ System memories migrated"
+
+# Check for errors in migration
+if [ -f tmp/syntropy-initialization/phase2-report.txt ]; then
+  grep -i error tmp/syntropy-initialization/phase2-report.txt
+  # Expected: No errors
+fi
+```
+
+### Step 5.2: Archive Legacy Organization
+
+```bash
+# Create archive of legacy files before deletion (safety backup)
+mkdir -p tmp/syntropy-initialization/legacy-backup/
+
+# Archive legacy directories
+tar -czf "tmp/syntropy-initialization/legacy-backup/pre-ce-1.1-$(date +%Y%m%d-%H%M%S).tar.gz" \
+  PRPs/ \
+  examples/ \
+  .serena/memories/*.md \
+  2>/dev/null || true
+
+echo "✓ Legacy files archived"
+
+# Verify archive created
+ARCHIVE_FILE=$(ls -t tmp/syntropy-initialization/legacy-backup/*.tar.gz | head -n 1)
+test -f "$ARCHIVE_FILE" && echo "✓ Archive: $ARCHIVE_FILE" || echo "⚠ Archive not created"
+```
+
+### Step 5.3: Delete Legacy Organization Files
+
+**Delete legacy PRPs directory** (now in .ce/PRPs/):
+
+```bash
+if [ -d PRPs/ ]; then
+  # Count files before deletion
+  LEGACY_PRPS=$(find PRPs -name "*.md" | wc -l)
+
+  # Delete directory
+  rm -rf PRPs/
+
+  echo "✓ Deleted legacy PRPs/ ($LEGACY_PRPS files migrated to .ce/PRPs/)"
+fi
+```
+
+**Delete legacy examples directory** (now in .ce/examples/):
+
+```bash
+if [ -d examples/ ]; then
+  # Count files before deletion
+  LEGACY_EXAMPLES=$(find examples -name "*.md" | wc -l)
+
+  # Delete directory
+  rm -rf examples/
+
+  echo "✓ Deleted legacy examples/ ($LEGACY_EXAMPLES files migrated to .ce/examples/)"
+fi
+```
+
+**Delete legacy memories** (now in .serena/memories/system/):
+
+```bash
+# Delete only memories that were migrated to /system/
+# Preserve user memories (not in system/)
+if [ -d .serena/memories/ ]; then
+  find .serena/memories/ -maxdepth 1 -name "*.md" -type f | while read file; do
+    basename=$(basename "$file")
+    if [ -f .serena/memories/system/"$basename" ]; then
+      rm -f "$file"
+      echo "✓ Deleted legacy .serena/memories/$basename (migrated to system/)"
+    fi
+  done
+fi
+```
+
+### Step 5.4: Log Cleanup Summary
+
+```bash
+# Log cleanup actions to initialization report
+cat > tmp/syntropy-initialization/phase5-report.txt << EOF
+# Phase 5: Legacy Organization Cleanup Report
+
+## Deleted Legacy Files
+
+**PRPs Directory**: $(test ! -d PRPs && echo "Deleted" || echo "Still exists")
+**Examples Directory**: $(test ! -d examples && echo "Deleted" || echo "Still exists")
+**Legacy Memories**: $(find .serena/memories -maxdepth 1 -name "*.md" 2>/dev/null | wc -l) remaining at root level
+
+## Backup
+
+**Archive Created**: $(ls tmp/syntropy-initialization/legacy-backup/*.tar.gz | head -n 1)
+**Archive Size**: $(du -h tmp/syntropy-initialization/legacy-backup/*.tar.gz | head -n 1 | cut -f1)
+
+## Verification
+
+**CE 1.1 Structure Active**: $(test -d .ce/PRPs/system && test -d .ce/examples/system && test -d .serena/memories/system && echo "Yes" || echo "No")
+**Zero Noise**: $(test ! -d PRPs && test ! -d examples && echo "Yes - Clean project" || echo "No - Legacy files remain")
+
+EOF
+
+cat tmp/syntropy-initialization/phase5-report.txt
+```
+
+### Step 5.5: Zero Noise Verification
+
+```bash
+# Final verification: No legacy noise
+echo ""
+echo "=== Zero Noise Verification ==="
+
+# Check legacy directories deleted
+! test -d PRPs && echo "✅ PRPs/ removed" || echo "❌ PRPs/ still exists"
+! test -d examples && echo "✅ examples/ removed" || echo "❌ examples/ still exists"
+
+# Check no duplicate system memories
+DUPLICATE_SYSTEM_MEMORIES=$(find .serena/memories/ -maxdepth 1 -name "*.md" -type f | while read f; do
+  basename=$(basename "$f")
+  test -f .serena/memories/system/"$basename" && echo "$f"
+done | wc -l)
+
+test "$DUPLICATE_SYSTEM_MEMORIES" -eq 0 && echo "✅ No duplicate system memories" || echo "❌ $DUPLICATE_SYSTEM_MEMORIES duplicate system memories found"
+
+# Final status
+if [ ! -d PRPs ] && [ ! -d examples ] && [ "$DUPLICATE_SYSTEM_MEMORIES" -eq 0 ]; then
+  echo ""
+  echo "✅ PROJECT IS CLEAN - Zero noise achieved"
+else
+  echo ""
+  echo "⚠ PROJECT HAS LEGACY NOISE - Manual cleanup required"
+fi
+```
+
+**Phase 5 Complete**: Legacy files removed, CE 1.1 structure clean. Installation complete.
+
+---
+
+## Scenario-Specific Workflows
+
+### Scenario 1: Greenfield Project
+
+**Use when**: New project with no existing CE components
+
+**Phases**: 1, 3, 4 (skip 2, 5)
+
+**Duration**: ~10 minutes
+
+#### Quick Steps
+
+```bash
+# Phase 1: Bucket Collection (will be empty)
+mkdir -p tmp/syntropy-initialization/{serena,examples,prps,claude-md,claude-dir}
+echo "✓ Buckets created (empty for greenfield)"
+
+# Phase 2: SKIP (no user files)
+echo "⏭ Skipping Phase 2 (no user files)"
+
+# Phase 3: Repomix Package Handling
+repomix --unpack ce-infrastructure.xml --target ./
+cd tools && ./bootstrap.sh && cd ..
+echo "✓ Framework installed"
+
+# Phase 4: CLAUDE.md Blending (framework only)
+grep -q "## Communication" CLAUDE.md && echo "✓ Framework CLAUDE.md installed"
+
+# Phase 5: SKIP (no legacy files)
+echo "⏭ Skipping Phase 5 (no legacy files)"
+
+# Validate
+cd tools && uv run ce validate --level 4 && cd ..
+echo "✅ Greenfield installation complete"
 ```
 
 ---
 
-## PRP-0 Bootstrap Pattern
+### Scenario 2: Mature Project (No CE)
 
-### What is PRP-0?
+**Use when**: Existing codebase with no CE components
 
-**PRP-0** is a special bootstrap documentation file created during framework initialization. It documents:
-1. What was copied from CE framework
-2. Why this framework was chosen
-3. How to use the framework
-4. Framework version and installation date
+**Phases**: 1, 2, 3, 4 (skip 5)
 
-**Location**: `PRPs/executed/PRP-0-CONTEXT-ENGINEERING.md`
+**Duration**: ~45 minutes
 
-### PRP-0 Structure
-
-```markdown
----
-issue: LINEAR-INIT
-prp_id: PRP-0
-phase: bootstrap
-status: executed
-executed_at: 2025-11-04T18:00:00Z
-target_project: my-project
-ce_version: CE 1.1
 ---
 
-# PRP-0: Context Engineering Framework Initialization
+### Scenario 3: CE 1.0 Upgrade
 
-## Objective
-Bootstrap new project with Context Engineering workflow framework.
+**Use when**: Existing CE installation, no .ce/ directory (legacy structure)
 
-## What Was Copied
-[Complete inventory of installed components]
+**Phases**: 1, 2, 3, 4, 5 (all phases)
 
-## Why This Framework?
-[Rationale for CE framework adoption]
+**Duration**: ~40 minutes
 
-## How to Use This Framework
-[Quick start guide and next steps]
+---
 
-## Maintenance
-[Update process and version tracking]
+### Scenario 4: Partial Install (Completion)
 
-## Acceptance Criteria
-[Validation checklist]
-```
+**Use when**: Project has some CE components but missing others
 
-### Template Variables
+**Phases**: 1, 3, 4 (selective)
 
-PRP-0 is generated from a template with variables:
-- `{TIMESTAMP}`: Installation date (ISO 8601 format)
-- `{TARGET_PROJECT}`: Project name
-- `{CE_VERSION}`: Framework version (e.g., "CE 1.1")
-
-**Template location**: `examples/templates/PRP-0-CONTEXT-ENGINEERING.md`
-
-### Benefits
-
-1. **Transparency**: Clear record of what was installed
-2. **Maintenance**: Version tracking for future upgrades
-3. **Onboarding**: New team members understand project genesis
-4. **Audit Trail**: Why these docs are in the project
-5. **Updates**: Clear process for framework upgrades
+**Duration**: ~15 minutes
 
 ---
 
 ## Validation Checklist
 
-### Post-Installation Validation
-
-Run these checks after installing CE framework:
-
-#### 1. Framework Files Present
+### Structure Validation
 
 ```bash
-# Check essential framework files
-test -f .ce/RULES.md && echo "✓ Rules present"
-test -f CLAUDE.md && echo "✓ Project guide present"
-test -d .claude/commands && echo "✓ Commands installed"
-test -d .serena/memories && echo "✓ Memories initialized"
-test -d examples && echo "✓ Examples present"
-test -f PRPs/executed/PRP-0-CONTEXT-ENGINEERING.md && echo "✓ PRP-0 created"
+# Check CE 1.1 directory structure
+test -d .ce/examples/system && echo "✅ .ce/examples/system/"
+test -d .ce/PRPs/system && echo "✅ .ce/PRPs/system/"
+test -d .serena/memories/system && echo "✅ .serena/memories/system/"
+test -d .claude/commands && echo "✅ .claude/commands/"
+test -f CLAUDE.md && echo "✅ CLAUDE.md"
 ```
 
-#### 2. Settings Valid
+### Component Counts
 
 ```bash
-# Validate settings JSON
-jq empty .claude/settings.local.json && echo "✓ Settings valid"
-
-# Check permission counts
-echo "Auto-allowed commands: $(jq '.bash.permissions.allow | length' .claude/settings.local.json)"
-echo "Ask-first commands: $(jq '.bash.permissions.ask | length' .claude/settings.local.json)"
-
-# Expected: ~80 allow patterns, ~15 ask patterns
-```
-
-#### 3. Commands Executable
-
-```bash
-# List available commands
-ls -1 .claude/commands/*.md | wc -l
-# Expected: ≥7 commands
-
-# Verify key commands present
-test -f .claude/commands/generate-prp.md && echo "✓ generate-prp"
-test -f .claude/commands/execute-prp.md && echo "✓ execute-prp"
-test -f .claude/commands/batch-gen-prp.md && echo "✓ batch-gen-prp"
-test -f .claude/commands/vacuum.md && echo "✓ vacuum"
-```
-
-#### 4. Memories Have Type Headers
-
-```bash
-# Check memories for type classification
-grep -L "^type:" .serena/memories/*.md || echo "✓ All memories typed"
-
-# Count by type
-echo "Critical: $(grep -l "^type: critical" .serena/memories/*.md | wc -l)"
-echo "Regular: $(grep -l "^type: regular" .serena/memories/*.md | wc -l)"
-echo "Feature: $(grep -l "^type: feat" .serena/memories/*.md | wc -l)"
-
-# Expected: 6 critical, 17+ regular, 0 feat (feat are temporary)
-```
-
-#### 5. Context Drift Check
-
-```bash
-cd tools
-uv run ce analyze-context
-
-# Expected output:
-# Context drift: X.X% (should be <5% after fresh installation)
-# Exit code: 0 (healthy), 1 (warning 5-15%), 2 (critical ≥15%)
-```
-
-#### 6. Validation Level 4
-
-```bash
-cd tools
-uv run ce validate --level 4
-
-# Runs comprehensive validation:
-# Level 1: Structure (PRPs/, .serena/, .claude/)
-# Level 2: Content (YAML headers, file format)
-# Level 3: Integration (Linear, Serena, git)
-# Level 4: Context (drift, memory consistency)
+# Expected file counts
+echo "System memories: $(ls .serena/memories/system/*.md 2>/dev/null | wc -l) (expected: 23)"
+echo "System examples: $(ls .ce/examples/system/*.md 2>/dev/null | wc -l) (expected: 21)"
+echo "Framework commands: $(ls .claude/commands/*.md 2>/dev/null | wc -l) (expected: 11+)"
 ```
 
 ---
 
 ## Troubleshooting
 
-### Issue: "Serena not found"
-
-**Symptom**: `serena_list_memories()` returns error
+### Issue: Repomix command not found
 
 **Solution**:
+
 ```bash
-# Check Serena MCP connection
-mcp status | grep serena
+# Install repomix globally
+npm install -g repomix
 
-# Reconnect MCP servers
-/mcp
-
-# Verify Serena activated
-serena_activate("/absolute/path/to/project")
+# Or use npx
+npx repomix --unpack ce-infrastructure.xml --target ./
 ```
 
-### Issue: "Commands not available"
-
-**Symptom**: `/generate-prp` not recognized
+### Issue: Bootstrap script fails
 
 **Solution**:
+
 ```bash
-# Check commands directory
-ls -la .claude/commands/
-
-# Restart Claude Code to reload commands
-# Or manually load command:
-cat .claude/commands/generate-prp.md
-```
-
-### Issue: "Settings conflict"
-
-**Symptom**: `.claude/settings.local.json` already exists with custom settings
-
-**Solution**:
-```bash
-# Backup existing settings
-cp .claude/settings.local.json .claude/settings.local.json.backup
-
-# Merge settings (manual)
-# 1. Load framework settings from unpacked file
-# 2. Load your custom settings from backup
-# 3. Merge: framework defaults + your overrides
-# 4. Write merged result
-
-# Or use migration guide for existing installations:
-# See: examples/workflows/migration-existing-ce.md
-```
-
-### Issue: "Memory authentication failed"
-
-**Symptom**: Linear MCP shows "Not connected"
-
-**Solution**:
-```bash
-# Clear authentication cache
-rm -rf ~/.mcp-auth
-
-# Reconnect Linear
-/mcp
-
-# Re-authenticate when prompted
-```
-
-### Issue: "Context drift high after installation"
-
-**Symptom**: `ce analyze-context` shows >10% drift
-
-**Cause**: PRPs or examples out of sync with installed framework
-
-**Solution**:
-```bash
-# Update context to sync PRPs
 cd tools
-uv run ce update-context
 
-# Re-check drift
-uv run ce analyze-context
+# Install UV manually
+curl -LsSf https://astral.sh/uv/install.sh | sh
 
-# Expected: <5% after sync
-```
+# Retry bootstrap
+./bootstrap.sh
 
-### Issue: "PRP-0 not created"
-
-**Symptom**: No PRP-0 file in PRPs/executed/
-
-**Solution**:
-```bash
-# Manually create PRP-0 from template
-cp examples/templates/PRP-0-CONTEXT-ENGINEERING.md PRPs/executed/PRP-0-CONTEXT-ENGINEERING.md
-
-# Fill in variables:
-# - {TIMESTAMP}: $(date -u +%Y-%m-%dT%H:%M:%SZ)
-# - {TARGET_PROJECT}: your-project-name
-# - {CE_VERSION}: CE 1.1
-
-# Validate PRP-0
-grep -q "executed_at:" PRPs/executed/PRP-0-CONTEXT-ENGINEERING.md && echo "✓ Valid"
-```
-
-### Issue: "Tool not found" for Syntropy MCP tools
-
-**Symptom**: `mcp__syntropy__*` tools return errors
-
-**Cause**: Syntropy MCP not enabled or tools denied
-
-**Solution**:
-```bash
-# Check Syntropy MCP status
-/syntropy-health
-
-# Enable required tools
-mcp__syntropy__enable_tools(
-  enable=["serena_find_symbol", "context7_get_library_docs"]
-)
-
-# Sync settings with Syntropy state
-/sync-with-syntropy
-
-# Verify tools enabled
-cat .claude/settings.local.json | jq '.mcp.syntropy.tools.deny'
-```
-
-### Issue: "Repomix unpack failed"
-
-**Symptom**: `repomix --unpack` errors
-
-**Cause**: Corrupt XML or permission issues
-
-**Solution**:
-```bash
-# Verify XML is valid
-xmllint --noout ce-workflow-docs.xml && echo "✓ Valid XML"
-
-# Check file permissions
-chmod +r ce-workflow-docs.xml
-
-# Try unpack with verbose mode
-repomix --unpack ce-workflow-docs.xml --target ./ --verbose
-
-# If still failing, manual extraction:
-# 1. Open XML in editor
-# 2. Extract file contents from XML tags
-# 3. Write to target locations manually
+# Or install dependencies directly
+uv sync
 ```
 
 ---
 
-## Migration Scenarios
+## Success Criteria
 
-This initialization guide covers **greenfield installation** (new projects with no CE framework).
+Your installation is complete when:
 
-For other scenarios, see:
-
-1. **Mature Project** (existing code, adding CE):
-   - Guide: [examples/workflows/migration-mature-project.md](workflows/migration-mature-project.md)
-   - Scenario: Adding CE to existing codebase without disrupting structure
-
-2. **Existing CE** (legacy CE, upgrading):
-   - Guide: [examples/workflows/migration-existing-ce.md](workflows/migration-existing-ce.md)
-   - Scenario: Upgrading from legacy CE to modern CE 1.1 with conflict resolution
-
-3. **Partial CE** (incomplete installation):
-   - Guide: [examples/workflows/migration-partial-ce.md](workflows/migration-partial-ce.md)
-   - Scenario: Completing partial CE installation, filling missing components
-
-4. **Greenfield** (new project, no CE):
-   - Guide: [examples/workflows/migration-greenfield.md](workflows/migration-greenfield.md)
-   - Scenario: Clean installation (this Quick Start guide)
-
----
-
-## Next Steps
-
-### After Installation
-
-1. **Review Framework** (15 minutes):
-   - Read CLAUDE.md for project guide
-   - Browse examples/INDEX.md for available patterns
-   - Check .ce/RULES.md for validation rules
-
-2. **Understand Examples** (10 minutes):
-   - Review examples/linear-integration-example.md
-   - Check examples/patterns/ for reusable patterns
-   - Read examples/l4-validation-example.md
-
-3. **Generate First PRP** (5 minutes):
-   ```bash
-   # Create feature request
-   cat > feature-requests/my-feature/INITIAL.md << 'EOF'
-   # Feature: My First Feature
-
-   ## FEATURE
-   [Description]
-
-   ## EXAMPLES
-   [Code examples]
-   EOF
-
-   # Generate PRP
-   /generate-prp feature-requests/my-feature/INITIAL.md
-   ```
-
-4. **Validate PRP** (2 minutes):
-   ```bash
-   cd tools
-   uv run ce validate --level 4
-   ```
-
-5. **Execute PRP** (10 minutes):
-   ```bash
-   /execute-prp PRPs/feature-requests/PRP-1-my-first-feature.md
-   ```
-
-### Ongoing Maintenance
-
-**Weekly**:
-- Run `ce analyze-context` to check drift (<5% is healthy)
-- Review `.serena/memories/` for outdated patterns
-
-**Monthly**:
-- Update framework: `repomix --unpack ce-workflow-docs.xml --upgrade`
-- Validate installation: `ce validate --level 4`
-
-**Per PRP**:
-- Cleanup feature memories: `serena-cleanup-memories --prp PRP-X --type feat`
-- Validate changes: `ce validate --level 3`
-
----
-
-## Framework Version
-
-**Current**: CE 1.1 (Syntropy MCP 1.1 Release)
-**Released**: 2025-11-04
-**Source**: ctx-eng-plus project
-
-**What's New in 1.1**:
-- Memory type system (critical/regular/feat)
-- Repomix-based distribution
-- PRP-0 bootstrap pattern
-- Four migration scenarios documented
-- Conflict resolution rules for upgrades
-- Enhanced validation (Level 4)
-- Parallel PRP execution (batch mode)
-
-**Upgrade Path**:
-- From legacy CE → CE 1.1: See [migration-existing-ce.md](workflows/migration-existing-ce.md)
-- Version tracking in PRP-0 YAML header
+- ✅ All CE 1.1 directories created (`.ce/`, `.serena/`, `.claude/`)
+- ✅ System files installed (23 memories, 21 examples, 11 commands)
+- ✅ CLAUDE.md present with framework sections
+- ✅ Settings JSON valid and merged
+- ✅ CE tools installed (`ce --version` works)
+- ✅ Validation level 4 passes
+- ✅ Context drift <5%
+- ✅ Zero noise (no legacy directories for CE 1.0 upgrades)
+- ✅ Serena memories loaded
+- ✅ Linear configured (if using)
+- ✅ First PRP created successfully
 
 ---
 
 ## Related Documentation
 
-- **Migration Guides**: examples/workflows/
-- **PRP-0 Template**: examples/templates/PRP-0-CONTEXT-ENGINEERING.md
-- **Tool Usage Guide**: examples/TOOL-USAGE-GUIDE.md
-- **Pattern Library**: examples/patterns/
-- **Framework Rules**: .ce/RULES.md
-- **Project Guide**: CLAUDE.md
+- **Framework Rules**: `.ce/RULES.md`
+- **Tool Usage Guide**: `.ce/examples/system/TOOL-USAGE-GUIDE.md`
+- **PRP-0 Template**: `.ce/examples/system/templates/PRP-0-CONTEXT-ENGINEERING.md`
+- **Validation Levels**: `.serena/memories/system/validation-levels.md`
+- **Testing Standards**: `.serena/memories/system/testing-standards.md`
 
 ---
 
-**Questions or issues?** Check troubleshooting section above or consult migration guides for specific scenarios.
+**Installation Guide Version**: 1.1
+**Last Updated**: 2025-11-04
+**Framework Version**: CE 1.1
