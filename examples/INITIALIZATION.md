@@ -514,8 +514,8 @@ repomix --unpack ce-infrastructure.xml --target ./
 
 # Verify extraction
 echo "Framework files extracted:"
+echo "  PRP-0 template: $(test -f .ce/PRPs/executed/system/PRP-0-CONTEXT-ENGINEERING.md && echo '✓' || echo '✗')"
 echo "  System memories: $(ls .serena/memories/system/*.md 2>/dev/null | wc -l)"
-echo "  System examples: $(ls .ce/examples/system/*.md 2>/dev/null | wc -l)"
 echo "  Framework commands: $(ls .claude/commands/*.md 2>/dev/null | wc -l)"
 echo "  Tool files: $(find tools -name "*.py" 2>/dev/null | wc -l)"
 ```
@@ -523,13 +523,15 @@ echo "  Tool files: $(find tools -name "*.py" 2>/dev/null | wc -l)"
 **What gets extracted**:
 
 ```
-.ce/examples/system/          # 21 framework example files
+.ce/PRPs/executed/system/     # PRP-0 template (framework initialization)
 .serena/memories/system/      # 23 framework memories (6 critical + 17 regular)
 .claude/commands/             # 11 framework commands
 .claude/settings.local.json   # Framework settings (merged with existing)
 tools/                        # 33 tool source files
 CLAUDE.md                     # Framework sections (merged with existing)
 ```
+
+**Note**: Examples are NOT extracted from infrastructure. They are in `ce-workflow-docs.xml` (copied above for reference).
 
 ### Step 3.3: Validate Framework Installation
 
