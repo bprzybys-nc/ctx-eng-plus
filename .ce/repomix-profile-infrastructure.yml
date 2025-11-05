@@ -13,10 +13,11 @@ output:
   instructionFilePath: null
 
 include:
-  # Framework Examples (IsWorkflow=Yes, 21 files) -> .ce/examples/system/
-  - "examples/syntropy/*.md"
-  - "examples/workflows/*.md"
-  - "examples/config/*.md"
+  # Framework Examples (IsWorkflow=Yes) -> .ce/examples/system/
+  # Framework initialization (unified guide)
+  - "examples/INITIALIZATION.md"
+  - "examples/templates/PRP-0-CONTEXT-ENGINEERING.md"
+  # Workflow examples
   - "examples/patterns/dedrifting-lessons.md"
   - "examples/patterns/mocks-marking.md"
   - "examples/TOOL-USAGE-GUIDE.md"
@@ -27,8 +28,10 @@ include:
   - "examples/example.setting.local.md"
   - "examples/model/SystemModel.md"
   - "examples/INDEX.md"
+  - "examples/README.md"
 
-  # Framework Memories (23 files) -> .serena/memories/system/
+  # Framework Memories (23 files + README) -> .serena/memories/system/
+  - ".serena/memories/README.md"
   # Universal memories (6 critical)
   - ".serena/memories/code-style-conventions.md"
   - ".serena/memories/suggested-commands.md"
