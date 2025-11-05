@@ -13,10 +13,11 @@ Perform context-naive peer review of specified PRP work with optional execution 
 ### 1. prp-reference (optional, default: latest)
 Specify which PRP to review using one of these formats:
 
-- **PRP ID**: `PRP-8.8` or `8.8`
+- **PRP ID**: `PRP-8.8` or `8.8` or `34.2.1` (batch notation)
 - **File path**: `context-engineering/PRPs/PRP-8.8-web-ui-ux-improvements.md`
 - **Natural language**: `"shift pattern logic"` or `"web ui ux improvements"`
 - **Keyword**: `latest` (most recent PRP from conversation)
+- **Batch context**: If batch active, searches within batch PRPs first
 
 ### 2. exe|execution (optional)
 Control review mode:
@@ -24,6 +25,31 @@ Control review mode:
 - **Absent**: Document review only (default mode)
 - **exe**: Review PRP execution results (assumes PRP already executed)
 - **execution**: Alias for `exe` (same behavior, clearer intent)
+
+## Batch Context Integration
+
+When working within a batch workflow, `/peer-review` automatically understands batch context:
+
+```bash
+# After /batch-gen-prp or during /batch-exe-prp
+/peer-review 34.2.1              # Review specific PRP from batch 34
+/peer-review latest              # Review latest PRP in batch context
+/peer-review "classification"    # Search within batch 34 PRPs first
+
+# Execution review within batch
+/peer-review 34.2.1 exe          # Review execution of one PRP in batch
+/peer-review latest execution    # Review execution of latest PRP in batch
+```
+
+**Batch Context Detection**:
+- Checks for active batch in conversation (from `/batch-gen-prp` or `/batch-exe-prp`)
+- Prioritizes PRPs within active batch when searching
+- Falls back to all PRPs if not found in batch
+- **For full batch review**: Use `/batch-peer-review` for systematic review of all PRPs with inter-PRP consistency checks
+
+**When to Use Single vs Batch Review**:
+- **Use `/peer-review`** (this command): Deep dive into one specific PRP, detailed analysis, spot checks
+- **Use `/batch-peer-review`**: Systematic review of all PRPs, inter-PRP consistency, parallel efficiency
 
 ## Examples
 
@@ -34,14 +60,25 @@ Control review mode:
 # Review specific PRP by ID
 /peer-review PRP-8.8
 
+# Review specific PRP in batch (batch notation)
+/peer-review 34.2.1
+
 # Find PRP by natural language description
 /peer-review "shift pattern logic"
 
 # Review execution of already-executed PRP
 /peer-review PRP-8.8 exe
 
+# Review execution of batch PRP
+/peer-review 34.2.1 execution
+
 # Review execution of most recent PRP
-/peer-review latest( prp|prps)* (exe|execution)
+/peer-review latest execution
+
+# Batch workflow examples
+/peer-review 34.2.1              # Document review (before execution)
+/peer-review 34.2.1 exe          # Execution review (after execution)
+/peer-review latest              # Latest PRP in active batch
 ```
 
 ## Review Process
@@ -56,7 +93,7 @@ Control review mode:
    - ✅ Feasibility: Implementation approach sound?
    - ✅ Testability: Acceptance criteria measurable?
    - ✅ Edge Cases: Potential issues identified?
-   - ✅ Alignement with CLAUDE.md guidelines.
+   - ✅ Alignment with CLAUDE.md guidelines.
    - ✅ Existing patterns (ce examples) and architecture respectation
    - ✅ Existing code reuse
    - ✅ Check also serena memories for more guidelines
@@ -80,7 +117,7 @@ Control review mode:
    - ✅ No implementation violating guidelines specified in Document Review (CLAUDE.md)
    - ✅ No implementation violating existing patterns (ce examples) and architecture respectation
    - ✅ No implementation duplicating existing code (should extend existing code)
-   - ✅ Check also serena memories for more guidelines no to violate
+   - ✅ Check also serena memories for more guidelines not to violate
 
 4. **Provide Recommendations**: Actionable fixes
 5. **Apply Fixes**: Update code unless profound questions arise
@@ -184,7 +221,9 @@ Then review execution:
 
 ## Integration with Workflow
 
-### After Generate PRP (Document Review)
+### Single PRP Workflow
+
+#### After Generate PRP (Document Review)
 ```bash
 # Generate PRP
 /generate-prp "Web UI UX improvements"
@@ -195,7 +234,7 @@ Then review execution:
 # Result: PRP improved before any coding starts
 ```
 
-### After Execute PRP (Execution Review)
+#### After Execute PRP (Execution Review)
 ```bash
 # Execute PRP implementation
 /execute-prp PRP-8.8
@@ -206,7 +245,7 @@ Then review execution:
 # Result: Catches implementation issues vs spec
 ```
 
-### Complete Workflow Example
+#### Complete Single PRP Workflow
 ```bash
 # Step 1: Generate and review PRP document
 /generate-prp "simplify ZIP structure"
@@ -221,32 +260,82 @@ Then review execution:
 # Result: High-quality PRP + implementation
 ```
 
+### Batch PRP Workflow
+
+#### During Batch Execution (Individual PRP Review)
+```bash
+# Generate batch
+/batch-gen-prp PRP-34-INITIAL.md
+
+# Review individual PRP in batch (if needed)
+/peer-review 34.2.1              # Review doc before batch execution
+/peer-review "classification"    # Search by keyword in batch
+
+# Execute batch
+/batch-exe-prp --batch 34
+
+# Review individual PRP execution (if issues found)
+/peer-review 34.2.1 exe          # Review execution of one PRP
+/peer-review latest execution    # Review latest executed PRP in batch
+```
+
+#### When to Use Single vs Batch Review
+
+**Use `/peer-review` (single) when**:
+- Reviewing one specific PRP in detail
+- Fixing issues in one PRP during batch workflow
+- Iterating on one PRP before batch execution
+- Deep dive into one PRP's execution
+
+**Use `/batch-peer-review` (batch) when**:
+- Reviewing all PRPs in batch systematically
+- Checking inter-PRP consistency (deps, terminology, file conflicts)
+- Quality gate before/after batch execution
+- Parallel review of multiple PRPs
+
 ### Quality Gate Before Merge
 ```bash
-# Review completed PRP execution
+# Review completed PRP execution (single)
 /peer-review PRP-8.8 execution
+
+# Review completed batch execution (batch)
+/batch-peer-review --batch 34 --exe
 
 # Validates:
 # - All changes implemented correctly
 # - No unintended side effects
 # - Acceptance criteria met
+# - (Batch only) Inter-PRP integration correct
 ```
 
 ## Command Implementation
 
 This command should:
-1. Parse prp-reference parameter (ID, filepath, NL, or "latest")
-2. Locate PRP file in `context-engineering/PRPs/`
-3. **Phase 1 - Document Review**:
+1. **Detect Batch Context**:
+   - Search conversation for recent `/batch-gen-prp` or `/batch-exe-prp` calls (last 10 messages)
+   - Extract batch ID from command: `/batch-gen-prp PRP-34-INITIAL.md` → batch 34
+   - OR detect batch notation in PRP reference: `34.2.1` → batch 34
+   - OR scan for batch PRP files in recent context (e.g., `PRP-34.2.1.md`)
+   - Use detected batch ID to prioritize batch PRPs when searching (search `PRPs/feature-requests/PRP-{batch_id}.*` first)
+2. **Parse prp-reference parameter**:
+   - ID formats: `PRP-8.8`, `8.8`, `34.2.1` (batch notation)
+   - Filepath: `context-engineering/PRPs/PRP-8.8.md` or `PRPs/feature-requests/PRP-34.2.1.md`
+   - Natural language: Search within batch PRPs first (if batch active), then all PRPs
+   - "latest": Most recent PRP from conversation (prioritize batch context)
+3. **Locate PRP file**:
+   - If batch notation (e.g., `34.2.1`): Search `PRPs/feature-requests/PRP-34.2.1*.md`
+   - If standard notation: Search `.ce/PRPs/` or `PRPs/` or `context-engineering/PRPs/`
+   - If NL search: Prioritize batch PRPs (if batch active), then search all PRPs
+4. **Phase 1 - Document Review**:
    - Read PRP document (ignoring generation conversation)
-   - Perform systematic quality review
+   - Perform systematic quality review (9 checks)
    - Apply recommendations to PRP file
-4. **Phase 2 - Execution Review** (if exe|execution flag):
+5. **Phase 2 - Execution Review** (if exe|execution flag):
    - Check PRP has been executed (look for changed files from PRP specs)
    - Read implementation files (ignoring implementation conversation)
-   - Validate implementation vs PRP requirements
+   - Validate implementation vs PRP requirements (9 checks)
    - Apply fixes to code
-5. Output review summary with findings + fixes
+6. **Output review summary** with findings + fixes
 
 ## Best Practices
 
@@ -268,11 +357,22 @@ This command should:
 
 ## Related Commands
 
+**Single PRP Commands**:
 - `/generate-prp` - Generate new PRP from natural language
 - `/execute-prp` - Execute PRP implementation
+- `/peer-review` - Review single PRP (document or execution)
+
+**Batch PRP Commands**:
+- `/batch-gen-prp` - Generate multiple PRPs from master plan
+- `/batch-exe-prp` - Execute batch of PRPs in parallel
+- `/batch-peer-review` - Review entire batch (document or execution)
+
+**Context Management**:
 - `/update-context` - Update project context after PRP execution
 
 ## Workflow Integration
+
+### Single PRP Workflow
 
 ```
 ┌─────────────────┐
@@ -293,4 +393,49 @@ This command should:
 ┌─────────────────┐
 │ /peer-review exe│  Review execution results
 └─────────────────┘
+```
+
+### Batch PRP Workflow (with single peer-review for spot checks)
+
+```
+┌──────────────────────┐
+│  /batch-gen-prp      │  Create batch of PRPs
+└──────────┬───────────┘
+           │
+           ↓
+┌──────────────────────┐
+│ /batch-peer-review   │  Review all PRPs (document)
+└──────────┬───────────┘
+           │
+           ↓  (optional spot checks)
+    ┌──────┴──────┐
+    │             │
+    ↓             ↓
+┌──────────────┐ Continue
+│ /peer-review │ (individual PRP fixes)
+│   34.2.1     │
+└──────────────┘
+           │
+           ↓
+┌──────────────────────┐
+│  /batch-exe-prp      │  Execute batch (parallel)
+└──────────┬───────────┘
+           │
+           ↓
+┌──────────────────────┐
+│ /batch-peer-review   │  Review all executions
+│       --exe          │
+└──────────┬───────────┘
+           │
+           ↓  (optional spot checks)
+    ┌──────┴──────┐
+    │             │
+    ↓             ↓
+┌──────────────┐ Continue
+│ /peer-review │ (individual execution fixes)
+│  34.2.1 exe  │
+└──────────────┘
+           │
+           ↓
+      ✅ Done
 ```
