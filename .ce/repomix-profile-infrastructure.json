@@ -8,7 +8,6 @@
   },
   "include": [
     "examples/INITIALIZATION.md",
-    "examples/templates/PRP-0-CONTEXT-ENGINEERING.md",
     "examples/patterns/dedrifting-lessons.md",
     "examples/patterns/mocks-marking.md",
     "examples/TOOL-USAGE-GUIDE.md",
@@ -21,6 +20,7 @@
     "examples/INDEX.md",
     "examples/README.md",
     ".serena/memories/README.md",
+    "examples/templates/PRP-0-CONTEXT-ENGINEERING.md",
     ".serena/memories/code-style-conventions.md",
     ".serena/memories/suggested-commands.md",
     ".serena/memories/task-completion-checklist.md",
