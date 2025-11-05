@@ -120,7 +120,7 @@ packages:
 
       - type: "tools"
         count: 27
-        destination: "tools/"
+        destination: ".ce/tools/"
         filter: "All CE tool source code"
         files:
           - "ce/*.py (26 modules including generate.py, update_context.py)"

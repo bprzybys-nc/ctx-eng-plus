@@ -152,6 +152,8 @@ type: user
 
 **For tools/ commands**: Use `cd tools &&` or `uv run -C tools`
 
+**Note**: In THIS repo (ctx-eng-plus development), tools are at `tools/`. In TARGET projects that extract the infrastructure package, tools are installed to `.ce/tools/`.
+
 ## Hooks
 
 **Pre-Commit**: Runs `ce validate --level 4` before commit (skip: `--no-verify`)
