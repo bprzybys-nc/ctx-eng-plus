@@ -62,9 +62,15 @@ uv run ce run_py ../tmp/script.py
 
 ## Framework Initialization
 
-**First-time setup**: See [examples/INITIALIZATION.md](examples/INITIALIZATION.md) for complete CE 1.1 initialization guide.
+**Quick Start** (Automated - RECOMMENDED):
+```bash
+npx syntropy-mcp init ce-framework
+```
+Time: <5 minutes | Automatically extracts 50 files, reorganizes tools, blends settings
 
-**Key Steps** (5-phase workflow):
+**Manual Setup**: See [examples/INITIALIZATION.md](examples/INITIALIZATION.md) for complete CE 1.1 initialization guide.
+
+**Manual Key Steps** (5-phase workflow):
 1. **Bucket Collection**: Extract existing Serena memories, examples, PRPs, CLAUDE.md, .claude directory
 2. **User Files Migration**: Copy validated user files with `type: user` YAML headers
 3. **Repomix Package Handling**: Extract ce-infrastructure.xml to /system/ subfolders
@@ -84,9 +90,16 @@ npx repomix --unpack .ce/ce-infrastructure.xml --target tmp/extraction/
 ```
 
 **Repomix Package Structure** (CE 1.1):
-- **ce-workflow-docs.xml**: <60KB (reference package, not extracted)
-- **ce-infrastructure.xml**: <150KB (all framework files with /system/ organization)
-- **Combined**: <210KB total
+- **ce-workflow-docs.xml**: 85KB (reference package, not extracted)
+- **ce-infrastructure.xml**: 206KB (all framework files with /system/ organization)
+- **Combined**: 291KB total
+
+**Build and Distribution**:
+```bash
+# Regenerate packages and distribute to syntropy-mcp
+.ce/build-and-distribute.sh
+```
+This script regenerates both packages and copies them to `syntropy-mcp/boilerplate/ce-framework/` for automated init.
 
 **Migration Scenarios**:
 
@@ -176,15 +189,15 @@ Example: `mcp__syntropy__serena_find_symbol`
 
 **Post-Lockdown State** (after PRP-A & PRP-D):
 - **Before**: 87 MCP tools (via Syntropy aggregator)
-- **After**: 32 MCP tools (55 denied for native tool preference)
+- **After**: 28 MCP tools (59 denied for native tool preference)
 - **Token reduction**: ~44k tokens (96% reduction from 46k→2k)
 
 ### Kept Tools by Category
 
-**Serena** (11 tools): Code symbol navigation
-- find_symbol, get_symbols_overview, search_for_pattern
-- find_referencing_symbols, write_memory, read_memory, list_memories
-- create_text_file, read_file, list_dir, delete_memory
+**Serena** (13 tools): Code symbol navigation
+- activate_project, find_symbol, get_symbols_overview, search_for_pattern
+- find_referencing_symbols, replace_symbol_body, write_memory, read_memory
+- list_memories, create_text_file, read_file, list_dir, delete_memory
 
 **Linear** (9 tools): Project management integration
 - create_issue, get_issue, list_issues, update_issue
@@ -196,9 +209,10 @@ Example: `mcp__syntropy__serena_find_symbol`
 **Thinking** (1 tool): Complex reasoning
 - sequentialthinking
 
-**Syntropy System** (2 tools): System utilities
+**Syntropy System** (3 tools): System utilities
 - healthcheck (MCP diagnostics)
-- knowledge_search (semantic search across PRPs, memories)
+- enable_tools (dynamic tool management)
+- list_all_tools (list all available tools with states)
 
 **Bash Commands** (~50 patterns): See "Command Permissions" section below
 **Native Tools**: Read, Write, Edit, Glob, Grep, WebSearch, WebFetch

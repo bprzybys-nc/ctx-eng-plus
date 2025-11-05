@@ -58,11 +58,12 @@ packages:
   infrastructure:
     file: ce-32/builds/ce-infrastructure.xml
     profile: .ce/repomix-profile-infrastructure.json
-    description: "Complete CE framework installation package (NO examples, includes PRP-0)"
+    description: "Complete CE framework installation package (NO examples, includes PRP-0, unpacker, settings)"
     target_size: "<150KB"
-    actual_size: "201,724 tokens (726,785 chars)"
-    status: "Exceeds target by 35% - optimized after removing examples"
+    actual_size: "205,688 tokens (739,392 chars)"
+    status: "Exceeds target by 37% - includes unpacker tool and settings for automated init"
     post_process_note: "Reorganization script (.ce/reorganize-infrastructure.sh) will add /system/ subfolders during extraction"
+    build_script: ".ce/build-and-distribute.sh (regenerates and distributes to syntropy-mcp)"
     contents:
       - type: "prp-template"
         count: 1
@@ -119,16 +120,23 @@ packages:
           - "vacuum.md"
 
       - type: "tools"
-        count: 27
+        count: 28
         destination: ".ce/tools/"
-        filter: "All CE tool source code"
+        filter: "All CE tool source code (including repomix_unpack.py for automated init)"
         files:
-          - "ce/*.py (26 modules including generate.py, update_context.py)"
+          - "ce/*.py (27 modules including generate.py, update_context.py, repomix_unpack.py)"
           - "pyproject.toml"
           - "bootstrap.sh"
         top_files:
-          - "tools/ce/generate.py (20,030 tokens, 7.2%)"
-          - "tools/ce/update_context.py (20,020 tokens, 7.2%)"
+          - "tools/ce/generate.py (20,030 tokens, 9.7%)"
+          - "tools/ce/update_context.py (20,020 tokens, 9.7%)"
+
+      - type: "settings"
+        count: 1
+        destination: ".claude/settings.local.json"
+        filter: "Framework settings (blended with target project settings during init)"
+        files:
+          - ".claude/settings.local.json (28 MCP tools allowed, 59 denied)"
 
       - type: "documentation"
         count: 1
@@ -147,10 +155,12 @@ packages:
     use_cases:
       - "Complete framework installation (first-time setup)"
       - "CE 1.1 initialization with /system/ organization"
+      - "Automated initialization via Syntropy MCP (includes unpacker + settings)"
       - "PRP-0 template installation at .ce/PRPs/executed/system/"
       - "Serena memory population (23 framework memories)"
-      - "Command and tool installation (11 commands + 27 tool files)"
+      - "Command and tool installation (11 commands + 28 tool files)"
       - "CLAUDE.md framework section blending"
+      - "Settings.local.json intelligent blending with project settings"
 
     top_files:
       - "tools/ce/generate.py (20,030 tokens, 9.9%)"
@@ -167,9 +177,13 @@ regeneration:
 
 notes:
   - "Package organization fixed in PRP-32.4 (Nov 5, 2025)"
-  - "Workflow package: Examples only (NO PRP-0) - 83,365 tokens"
-  - "Infrastructure package: No examples (HAS PRP-0) - 201,724 tokens"
-  - "Total size: 285,089 tokens (33% reduction from 426K after removing duplication)"
+  - "Automated initialization added in PRP-33 (Nov 5, 2025)"
+  - "Workflow package: Examples only (NO PRP-0) - 85,148 tokens"
+  - "Infrastructure package: No examples (HAS PRP-0, unpacker, settings) - 205,688 tokens"
+  - "Total size: 290,836 tokens (32% reduction from 426K after removing duplication)"
   - "Only CLAUDE.md is shared between packages (intentional)"
-  - "SystemModel.md alone accounts for 35.6K tokens (42.7% of workflow package)"
+  - "SystemModel.md alone accounts for 35.6K tokens (41.8% of workflow package)"
   - "/system/ organization requires post-processing script during extraction"
+  - "Build script (.ce/build-and-distribute.sh) regenerates and distributes packages"
+  - "Unpacker tool (repomix_unpack.py) enables automated Syntropy MCP init"
+  - "Settings.local.json blending ensures CE tool permissions take precedence"

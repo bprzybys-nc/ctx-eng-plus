@@ -62,6 +62,7 @@
       "mcp__syntropy__serena_get_symbols_overview",
       "mcp__syntropy__serena_list_dir",
       "mcp__syntropy__serena_read_file",
+      "mcp__syntropy__serena_replace_symbol_body",
       "mcp__syntropy__serena_search_for_pattern",
       "mcp__syntropy__serena_write_memory",
       "mcp__syntropy__serena_read_memory",

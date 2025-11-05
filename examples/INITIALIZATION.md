@@ -69,6 +69,90 @@ START: What's your project's current state?
 
 ---
 
+## Quick Start: Automated Installation (RECOMMENDED)
+
+**Time**: <5 minutes | **Recommended for**: All scenarios
+
+Use Syntropy MCP for one-command CE framework installation:
+
+```bash
+npx syntropy-mcp init ce-framework
+```
+
+This command automatically:
+1. **Extracts unpacker tool** (`tools/ce/repomix_unpack.py` + `tools/pyproject.toml`)
+2. **Installs UV package manager** (if not already installed)
+3. **Extracts infrastructure package** (50 files):
+   - 23 framework memories (`.serena/memories/*.md`)
+   - 11 framework commands (`.claude/commands/*.md`)
+   - 27 CE tools (`tools/ce/*.py`)
+   - PRP-0 documentation (`.ce/PRPs/executed/system/PRP-0-CONTEXT-ENGINEERING.md`)
+   - Framework settings (`.claude/settings.local.json`)
+4. **Reorganizes tools** to `.ce/tools/` directory
+5. **Copies workflow docs** to `.ce/examples/ce-workflow-docs.xml`
+6. **Blends settings.local.json** with existing project settings (if any)
+7. **Verifies installation** (checks critical files exist)
+
+### What You Get
+
+After automated installation:
+- ✅ Complete CE 1.1 framework installed
+- ✅ All tools available at `.ce/tools/`
+- ✅ Framework commands ready to use
+- ✅ Settings blended with project defaults
+- ✅ No manual file copying needed
+
+### Next Steps
+
+1. **Verify installation**:
+   ```bash
+   ls .ce/tools/ce/repomix_unpack.py
+   ls .claude/commands/generate-prp.md
+   ls .ce/PRPs/executed/system/PRP-0-CONTEXT-ENGINEERING.md
+   ```
+
+2. **Install CE CLI tools** (optional but recommended):
+   ```bash
+   cd .ce/tools
+   uv sync
+   ```
+
+3. **Test a command**:
+   ```bash
+   /generate-prp   # Create your first PRP
+   ```
+
+4. **Review PRP-0** for complete framework documentation:
+   ```bash
+   cat .ce/PRPs/executed/system/PRP-0-CONTEXT-ENGINEERING.md
+   ```
+
+### Settings Blending
+
+The automated init intelligently blends CE framework settings with your project's existing `.claude/settings.local.json`:
+
+**Blending Rules**:
+1. **Deny list takes precedence**: If CE denies a tool, it's removed from your project's allow list
+2. **Merge lists**: CE entries added to corresponding allow/deny/ask lists (deduplicated)
+3. **CE list wins**: CE entries only appear in one list (their designated CE list)
+
+**Example**:
+```json
+// Your project allows filesystem_read_file
+// CE denies filesystem_read_file (prefer native Read tool)
+// Result: Removed from allow list, added to deny list
+```
+
+---
+
+## Manual Installation (Fallback)
+
+**Time**: 10-45 minutes depending on scenario | **Use when**: Syntropy MCP not available
+
+If you cannot use the automated installation, follow the manual 5-phase workflow below.
+
+---
+
 ## Prerequisites
 
 ### Required for All Scenarios
@@ -487,6 +571,8 @@ cat tmp/syntropy-initialization/phase2-report.txt
 **Duration**: 5 minutes
 **Applies to**: All scenarios
 
+**Note**: If you used automated installation (`npx syntropy-mcp init ce-framework`), this phase is already complete. Skip to Phase 4.
+
 ### Purpose
 
 Extract framework packages to install system documentation, memories, examples, commands, and tools.
@@ -586,6 +672,8 @@ cd ..
 
 **Duration**: 10 minutes
 **Applies to**: All scenarios
+
+**Note**: If you used automated installation (`npx syntropy-mcp init ce-framework`), settings.local.json blending is already complete. This phase covers CLAUDE.md blending only.
 
 ### Purpose
 
@@ -975,7 +1063,59 @@ echo "Framework commands: $(ls .claude/commands/*.md 2>/dev/null | wc -l) (expec
 
 ## Troubleshooting
 
-### Issue: Repomix command not found
+### Automated Installation Issues
+
+#### Issue: `syntropy-mcp command not found`
+
+**Solution**:
+
+```bash
+# Install syntropy-mcp globally
+npm install -g syntropy-mcp
+
+# Verify installation
+npx syntropy-mcp --version
+```
+
+#### Issue: `repomix_unpack.py not found` after init
+
+**Cause**: Infrastructure package may not include unpacker tool
+
+**Solution**:
+
+```bash
+# Verify infrastructure package includes unpacker
+grep "repomix_unpack.py" ce-infrastructure.xml
+
+# If missing, rebuild infrastructure package (ctx-eng-plus repo):
+cd ctx-eng-plus
+.ce/build-and-distribute.sh
+```
+
+#### Issue: Settings not blended correctly
+
+**Cause**: Settings blending logic may have failed
+
+**Solution**:
+
+```bash
+# Check if backup exists
+ls .claude/settings.local.json.backup
+
+# If backup exists, manually verify blending:
+cat .claude/settings.local.json | jq '.permissions.allow' | grep "mcp__syntropy__"
+cat .claude/settings.local.json | jq '.permissions.deny' | grep "mcp__syntropy__filesystem"
+
+# If incorrect, restore backup and re-run init
+cp .claude/settings.local.json.backup .claude/settings.local.json
+npx syntropy-mcp init ce-framework
+```
+
+---
+
+### Manual Installation Issues
+
+#### Issue: Repomix command not found
 
 **Solution**:
 
