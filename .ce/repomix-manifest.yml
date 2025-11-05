@@ -8,14 +8,14 @@ packages:
   workflow_docs:
     file: ce-32/builds/ce-workflow-docs.xml
     profile: .ce/repomix-profile-workflow.json
-    description: "Workflow examples and patterns from CE framework"
+    description: "Workflow examples and patterns from CE framework (NO PRP-0)"
     target_size: "<60KB"
-    actual_size: "88,213 tokens (288,431 chars)"
-    status: "Exceeds target by 47% - Phase 5 will regenerate with refined docs"
+    actual_size: "83,365 tokens (270,960 chars)"
+    status: "Within target range - examples only, no infrastructure"
     contents:
       - type: "examples"
         count: 13
-        filter: "IsWorkflow=Yes from examples/INDEX.md"
+        filter: "IsWorkflow=Yes from examples/INDEX.md (NO PRP-0 template)"
         files:
           - "examples/syntropy/*.md (6 files: README, context7, linear, memory, serena, thinking)"
           - "examples/workflows/*.md (5 files: batch execution, batch generation, context drift, denoise, vacuum)"
@@ -58,29 +58,18 @@ packages:
   infrastructure:
     file: ce-32/builds/ce-infrastructure.xml
     profile: .ce/repomix-profile-infrastructure.json
-    description: "Complete CE framework installation package (all components)"
+    description: "Complete CE framework installation package (NO examples, includes PRP-0)"
     target_size: "<150KB"
-    actual_size: "278,476 tokens (977,615 chars)"
-    status: "Exceeds target by 86% - Phase 5 will regenerate with refined docs"
+    actual_size: "201,724 tokens (726,785 chars)"
+    status: "Exceeds target by 35% - optimized after removing examples"
     post_process_note: "Reorganization script (.ce/reorganize-infrastructure.sh) will add /system/ subfolders during extraction"
     contents:
-      - type: "examples"
-        count: 14
-        destination: ".ce/examples/system/ (after extraction)"
-        filter: "IsWorkflow=Yes from examples/INDEX.md"
+      - type: "prp-template"
+        count: 1
+        destination: ".ce/PRPs/executed/system/ (after extraction)"
+        filter: "PRP-0 template only"
         files:
-          - "examples/INITIALIZATION.md (unified CE 1.1 guide)"
-          - "examples/templates/PRP-0-CONTEXT-ENGINEERING.md (PRP-0 template)"
-          - "examples/patterns/*.md (2 files: dedrifting-lessons, mocks-marking)"
-          - "examples/TOOL-USAGE-GUIDE.md"
-          - "examples/prp-decomposition-patterns.md"
-          - "examples/mermaid-color-palette.md"
-          - "examples/linear-integration-example.md"
-          - "examples/tmp-directory-convention.md"
-          - "examples/example.setting.local.md"
-          - "examples/model/SystemModel.md"
-          - "examples/INDEX.md"
-          - "examples/README.md"
+          - ".ce/PRPs/executed/system/PRP-0-CONTEXT-ENGINEERING.md (PRP-0 template)"
 
       - type: "memories"
         count: 23
@@ -158,16 +147,17 @@ packages:
     use_cases:
       - "Complete framework installation (first-time setup)"
       - "CE 1.1 initialization with /system/ organization"
+      - "PRP-0 template installation at .ce/PRPs/executed/system/"
       - "Serena memory population (23 framework memories)"
       - "Command and tool installation (11 commands + 27 tool files)"
       - "CLAUDE.md framework section blending"
 
     top_files:
-      - "examples/model/SystemModel.md (35,618 tokens, 12.8%)"
-      - "tools/ce/generate.py (20,030 tokens, 7.2%)"
-      - "tools/ce/update_context.py (20,020 tokens, 7.2%)"
-      - ".claude/commands/batch-exe-prp.md (10,772 tokens, 3.9%)"
-      - ".claude/commands/batch-gen-prp.md (9,951 tokens, 3.6%)"
+      - "tools/ce/generate.py (20,030 tokens, 9.9%)"
+      - "tools/ce/update_context.py (20,020 tokens, 9.9%)"
+      - ".claude/commands/batch-exe-prp.md (10,772 tokens, 5.3%)"
+      - ".claude/commands/batch-gen-prp.md (9,951 tokens, 4.9%)"
+      - "tools/ce/prp.py (9,482 tokens, 4.7%)"
 
 regeneration:
   schedule: "Phase 5 (PRP-32.5.1)"
@@ -176,8 +166,10 @@ regeneration:
   notes: "Initial generation uses current docs as-is. Phase 5 will regenerate with refined documentation to meet token targets (<60KB workflow, <150KB infrastructure, <210KB total)"
 
 notes:
-  - "Both packages exceed initial token targets due to comprehensive documentation"
-  - "SystemModel.md alone accounts for 35.6K tokens (40% of workflow package)"
-  - "Phase 4 will refine documentation to reduce token counts"
-  - "Phase 5 will regenerate packages with optimized documentation"
+  - "Package organization fixed in PRP-32.4 (Nov 5, 2025)"
+  - "Workflow package: Examples only (NO PRP-0) - 83,365 tokens"
+  - "Infrastructure package: No examples (HAS PRP-0) - 201,724 tokens"
+  - "Total size: 285,089 tokens (33% reduction from 426K after removing duplication)"
+  - "Only CLAUDE.md is shared between packages (intentional)"
+  - "SystemModel.md alone accounts for 35.6K tokens (42.7% of workflow package)"
   - "/system/ organization requires post-processing script during extraction"
