@@ -25,6 +25,7 @@ from .cli_handlers import (
     cmd_update_context,
     cmd_vacuum,
     cmd_blend,
+    cmd_cleanup,
 )
 
 
@@ -446,6 +447,24 @@ Examples:
         help="Skip specific strategy (can be used multiple times)"
     )
 
+    # === CLEANUP COMMAND ===
+    cleanup_parser = subparsers.add_parser(
+        "cleanup",
+        help="Remove legacy directories after CE 1.1 migration"
+    )
+    cleanup_parser.add_argument(
+        "--dry-run",
+        action="store_true",
+        default=True,
+        help="Show what would be removed without deleting (default: True)"
+    )
+    cleanup_parser.add_argument(
+        "--execute",
+        action="store_true",
+        default=False,
+        help="Execute cleanup (remove legacy directories)"
+    )
+
     # === BLEND COMMAND ===
     blend_parser = subparsers.add_parser(
         "blend",
@@ -512,6 +531,8 @@ Examples:
         return cmd_update_context(args)
     elif args.command == "vacuum":
         return cmd_vacuum(args)
+    elif args.command == "cleanup":
+        return cmd_cleanup(args)
     elif args.command == "blend":
         return cmd_blend(args)
     else:

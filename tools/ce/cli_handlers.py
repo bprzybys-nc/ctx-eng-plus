@@ -29,6 +29,7 @@ from .executors.mock import MockExecutor
 from .metrics import MetricsCollector
 from .update_context import sync_context
 from .blend import run_blend as blend_run_blend
+from .blending.cleanup import cleanup_legacy_dirs
 
 
 def format_output(data: Dict[str, Any], as_json: bool = False) -> str:
@@ -959,3 +960,38 @@ def cmd_vacuum(args):
 def cmd_blend(args) -> int:
     """Execute blend command."""
     return blend_run_blend(args)
+
+
+# === CLEANUP COMMAND ===
+
+def cmd_cleanup(args) -> int:
+    """Execute cleanup command."""
+    from pathlib import Path
+    from .blending.cleanup import cleanup_legacy_dirs
+
+    try:
+        # Determine dry_run mode
+        dry_run = not args.execute
+
+        target_project = Path.cwd()
+
+        status = cleanup_legacy_dirs(
+            target_project=target_project,
+            dry_run=dry_run
+        )
+
+        # Exit with success if all cleanups succeeded
+        if all(status.values()):
+            return 0
+        else:
+            return 1
+
+    except ValueError as e:
+        # Migration incomplete
+        print(f"❌ {e}", file=sys.stderr)
+        return 2
+    except Exception as e:
+        print(f"❌ Cleanup failed: {e}", file=sys.stderr)
+        import traceback
+        traceback.print_exc()
+        return 1
