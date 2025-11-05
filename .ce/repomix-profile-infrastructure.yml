@@ -58,7 +58,7 @@ include:
   - ".claude/commands/update-context.md"
   - ".claude/commands/vacuum.md"
 
-  # Tool Source Code -> tools/
+  # Tool Source Code -> tools/ (extracted to .ce/tools/ in target project)
   - "tools/ce/*.py"
   - "tools/pyproject.toml"
   - "tools/bootstrap.sh"

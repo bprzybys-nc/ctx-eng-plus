@@ -509,15 +509,19 @@ echo "✓ Workflow package copied to .ce/examples/system/ce-workflow-docs.xml"
 
 ```bash
 # Extract complete framework infrastructure
-# This creates /system/ subdirectories automatically
 repomix --unpack ce-infrastructure.xml --target ./
+
+# Reorganize tools to .ce/tools/ (framework convention)
+mkdir -p .ce/tools
+mv tools/* .ce/tools/
+rmdir tools
 
 # Verify extraction
 echo "Framework files extracted:"
 echo "  PRP-0 template: $(test -f .ce/PRPs/executed/system/PRP-0-CONTEXT-ENGINEERING.md && echo '✓' || echo '✗')"
 echo "  System memories: $(ls .serena/memories/system/*.md 2>/dev/null | wc -l)"
 echo "  Framework commands: $(ls .claude/commands/*.md 2>/dev/null | wc -l)"
-echo "  Tool files: $(find tools -name "*.py" 2>/dev/null | wc -l)"
+echo "  Tool files: $(find .ce/tools -name "*.py" 2>/dev/null | wc -l)"
 ```
 
 **What gets extracted**:
@@ -527,7 +531,7 @@ echo "  Tool files: $(find tools -name "*.py" 2>/dev/null | wc -l)"
 .serena/memories/system/      # 23 framework memories (6 critical + 17 regular)
 .claude/commands/             # 11 framework commands
 .claude/settings.local.json   # Framework settings (merged with existing)
-tools/                        # 33 tool source files
+.ce/tools/                    # 33 tool source files
 CLAUDE.md                     # Framework sections (merged with existing)
 ```
 
@@ -549,7 +553,7 @@ FRAMEWORK_COMMANDS=$(ls .claude/commands/*.md 2>/dev/null | wc -l)
 test $FRAMEWORK_COMMANDS -ge 11 && echo "✓ All 11 framework commands installed" || echo "⚠ Only $FRAMEWORK_COMMANDS commands found"
 
 # Check tool files (expected: 33)
-TOOL_FILES=$(find tools -name "*.py" 2>/dev/null | wc -l)
+TOOL_FILES=$(find .ce/tools -name "*.py" 2>/dev/null | wc -l)
 test $TOOL_FILES -ge 33 && echo "✓ Tool source files installed" || echo "⚠ Only $TOOL_FILES tool files found"
 
 # Check settings merged
@@ -560,7 +564,7 @@ test -f .claude/settings.local.json && jq empty .claude/settings.local.json && e
 
 ```bash
 # Install CE CLI tools
-cd tools
+cd .ce/tools
 ./bootstrap.sh
 
 # Verify installation
@@ -899,7 +903,7 @@ echo "⏭ Skipping Phase 2 (no user files)"
 
 # Phase 3: Repomix Package Handling
 repomix --unpack ce-infrastructure.xml --target ./
-cd tools && ./bootstrap.sh && cd ..
+cd .ce/tools && ./bootstrap.sh && cd ../..
 echo "✓ Framework installed"
 
 # Phase 4: CLAUDE.md Blending (framework only)
@@ -909,7 +913,7 @@ grep -q "## Communication" CLAUDE.md && echo "✓ Framework CLAUDE.md installed"
 echo "⏭ Skipping Phase 5 (no legacy files)"
 
 # Validate
-cd tools && uv run ce validate --level 4 && cd ..
+cd .ce/tools && uv run ce validate --level 4 && cd ../..
 echo "✅ Greenfield installation complete"
 ```
 
@@ -988,7 +992,7 @@ npx repomix --unpack ce-infrastructure.xml --target ./
 **Solution**:
 
 ```bash
-cd tools
+cd .ce/tools
 
 # Install UV manually
 curl -LsSf https://astral.sh/uv/install.sh | sh
