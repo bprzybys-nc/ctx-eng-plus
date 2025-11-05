@@ -6,12 +6,25 @@ Execute multiple PRPs in parallel using subagents with health checks, real-time 
 
 ```
 /batch-exe-prp [options] <prp-1> <prp-2> ... <prp-n>
+/batch-exe-prp --batch <batch-id> [options]
 ```
 
 **Examples:**
 ```bash
 # Execute 3 PRPs in parallel (auto-selects model per PRP)
 /batch-exe-prp PRP-A PRP-B PRP-C
+
+# Execute entire batch by ID (auto-review enabled by default)
+/batch-exe-prp --batch 34
+
+# Execute batch without automatic execution review
+/batch-exe-prp --batch 34 --no-auto-review
+
+# Execute specific stage only (auto-review enabled by default)
+/batch-exe-prp --batch 34 --stage 2
+
+# Resume interrupted batch execution
+/batch-exe-prp --batch 34 --resume
 
 # Force all PRPs to use Haiku (override auto-selection)
 /batch-exe-prp --model haiku PRP-A PRP-B PRP-C
@@ -33,6 +46,89 @@ Execute multiple PRPs in parallel using subagents with health checks, real-time 
 - **Batch-exe-prp** (this command): Coordinator - analyzes PRPs, assigns models, launches parallel agents, monitors health, aggregates results
 - **Execute-prp** (single PRP engine): Execution logic - phases, validation gates, self-healing, checkpoints (reused by batch agents)
 - **No duplication**: Batch delegates to execute-prp via Task agents, doesn't reimplement PRP logic
+
+## Execution Modes
+
+### Mode 1: Individual PRPs (Original Behavior)
+
+Execute specific PRPs in parallel, all at once:
+
+```bash
+/batch-exe-prp PRP-A PRP-B PRP-C
+```
+
+**Workflow**: Steps 1-8 below (analyze → validate → execute all → merge → cleanup)
+
+### Mode 2: Batch-Aware Execution (NEW)
+
+Execute all PRPs in a batch, with stage-by-stage execution and automatic peer review:
+
+```bash
+/batch-exe-prp --batch 34
+```
+
+**Key Features**:
+1. **Stage-aware**: Discovers all PRPs in batch, groups by stage, executes stages sequentially
+2. **Auto-review**: Runs `/batch-peer-review --exe` after each stage completes (default, use `--no-auto-review` to disable)
+3. **Quality gates**: Only proceeds to next stage if execution review passes
+4. **Checkpointing**: Saves state after each stage for resume capability
+5. **Resume support**: Continue from last checkpoint if interrupted
+
+**Batch Execution Workflow**:
+
+```
+Stage 1: Execute PRPs
+   ↓
+Stage 1: Auto-review execution (/batch-peer-review --batch 34 --exe --stage 1)
+   ↓
+   ├─ Issues found (minor) → Apply fixes automatically → Continue
+   ├─ Issues found (critical) → Pause, report, wait for user approval
+   └─ No issues → Continue
+   ↓
+Stage 1: Merge worktrees
+   ↓
+Checkpoint saved (.ce/tmp/batch-execution-34.json)
+   ↓
+Stage 2: Execute PRPs
+   ↓
+[Repeat review/merge/checkpoint cycle]
+   ↓
+... Stage 3, 4, etc.
+   ↓
+Final cleanup
+```
+
+**Stage Discovery** (automatic):
+1. Read master plan: `PRPs/feature-requests/PRP-34-INITIAL.md`
+2. Scan for all batch PRPs: `PRPs/feature-requests/PRP-34.*.*.md`
+3. Parse YAML headers, extract `stage` field
+4. Group by stage: `{1: [PRP-34.1.1], 2: [PRP-34.2.1, PRP-34.2.2, ...], ...}`
+5. Execute stages in order (1 → 2 → 3 → 4)
+
+**Execution Review** (automatic after each stage):
+- Calls `/batch-peer-review --batch 34 --exe --stage N` internally
+- Reviews all PRPs in stage N that just executed
+- Checks: Implementation matches specs, code quality, no guideline violations, etc. (9 checks)
+- Minor issues (typos, style): Auto-fix, continue
+- Critical issues (logic errors, security): Pause, escalate to user
+
+**Pause/Resume**:
+```bash
+# If batch execution paused (review failed, conflict, error)
+# Resume from last checkpoint
+/batch-exe-prp --batch 34 --resume
+
+# Reads: .ce/tmp/batch-execution-34.json
+# Determines: Last completed stage = 2
+# Resumes: Execute Stage 3 (skips Stages 1-2)
+```
+
+**Benefits**:
+- 🛡️ Quality gate between stages (catches errors early)
+- 🔄 Resume from interruptions (don't lose progress)
+- 📊 Stage-level validation (validate integration within stage)
+- 🚀 Parallel within stages (max speed for independent PRPs)
+- 🎯 Sequential across stages (respects dependencies)
 
 ### 1. Analyze PRP Complexity & Auto-Assign Models (Sequential)
 **Time**: ~5-10 seconds per PRP
@@ -484,8 +580,12 @@ cd tools && uv run ce update-context
 
 | Flag | Description | Default |
 |------|-------------|---------|
-| `--model <sonnet\|haiku\|opus>` | Model for subagents | `sonnet` |
-| `--max-parallel <N>` | Max concurrent PRPs | `unlimited` |
+| `--batch <N>` | Execute all PRPs in batch N (stages sequentially) | `none` |
+| `--stage <N>` | Execute specific stage only (requires --batch) | `all` |
+| `--resume` | Resume from last checkpoint (requires --batch) | `false` |
+| `--no-auto-review` | Disable automatic execution review after each stage | `false` (review enabled by default for --batch) |
+| `--model <sonnet\|haiku\|opus>` | Model for subagents (overrides auto-selection) | `auto` |
+| `--max-parallel <N>` | Max concurrent PRPs within stage | `unlimited` |
 | `--dry-run` | Parse PRPs without execution | `false` |
 | `--continue-on-error` | Don't abort if one PRP fails | `false` |
 | `--no-merge` | Skip worktree merge step | `false` |
@@ -732,6 +832,212 @@ Pausing batch execution for user input...
 - Skip to next PRP (C)
 - Report failure in aggregate results
 
+### Checkpoint & Resume
+
+**Purpose**: Save execution state after each stage for recovery from interruptions, failures, or manual pauses.
+
+**Checkpoint Format**
+
+**Location**: `.ce/tmp/batch-execution-{batch_id}.json`
+
+**Example**: `.ce/tmp/batch-execution-34.json`
+
+```json
+{
+  "batch_id": 34,
+  "started": "2025-11-05T10:00:00Z",
+  "updated": "2025-11-05T11:30:00Z",
+  "master_plan": "PRPs/feature-requests/PRP-34-INITIAL.md",
+  "total_stages": 4,
+  "last_stage_completed": 2,
+  "current_stage": 3,
+  "status": "IN_PROGRESS",
+  "stages": {
+    "1": {
+      "status": "COMPLETED",
+      "started": "2025-11-05T10:00:00Z",
+      "completed": "2025-11-05T10:25:00Z",
+      "prps": ["PRP-34.1.1"],
+      "results": {
+        "PRP-34.1.1": {
+          "status": "SUCCESS",
+          "phases_completed": 4,
+          "confidence_score": 10,
+          "commit_hash": "ab3118f",
+          "execution_time": "18m 32s"
+        }
+      },
+      "review_status": "PASSED",
+      "review_findings": [],
+      "merged": true,
+      "merge_commits": ["920edd4"]
+    },
+    "2": {
+      "status": "COMPLETED",
+      "started": "2025-11-05T10:26:00Z",
+      "completed": "2025-11-05T11:12:00Z",
+      "prps": ["PRP-34.2.1", "PRP-34.2.2", "PRP-34.2.3", "PRP-34.2.4", "PRP-34.2.5", "PRP-34.2.6"],
+      "results": { /* 6 PRP results */ },
+      "review_status": "PASSED_WITH_FIXES",
+      "review_findings": [
+        "Minor: Fixed typo in classification.py line 45",
+        "Minor: Added missing type hint in blending.py line 102"
+      ],
+      "merged": true,
+      "merge_commits": ["9af5bcc", "b53e184", "c64f295", "d75e3a6", "e86f4b7", "f97g5c8"]
+    },
+    "3": {
+      "status": "IN_PROGRESS",
+      "started": "2025-11-05T11:15:00Z",
+      "completed": null,
+      "prps": ["PRP-34.3.1", "PRP-34.3.2", "PRP-34.3.3"],
+      "results": null,
+      "review_status": "PENDING",
+      "review_findings": [],
+      "merged": false,
+      "merge_commits": []
+    },
+    "4": {
+      "status": "PENDING",
+      "started": null,
+      "completed": null,
+      "prps": ["PRP-34.4.1"],
+      "results": null,
+      "review_status": "PENDING",
+      "review_findings": [],
+      "merged": false,
+      "merge_commits": []
+    }
+  },
+  "aggregate_metrics": {
+    "prps_completed": 7,
+    "prps_total": 11,
+    "stages_completed": 2,
+    "total_execution_time": "72m 18s",
+    "total_self_heals": 3,
+    "review_fixes_applied": 2
+  }
+}
+```
+
+### When Checkpoints Are Created
+
+**Checkpoint triggers** (automatic):
+1. **After stage execution completes** (before review)
+2. **After execution review completes** (with review results)
+3. **After stage merge completes** (with merge commits)
+4. **On manual interruption** (Ctrl+C, user abort)
+5. **On error** (agent failure, validation failure, conflict)
+
+**Checkpoint updates** (incremental):
+- Only changed fields updated
+- Preserves history of completed stages
+- Timestamp updated on every write
+
+### Resume Behavior
+
+**Automatic detection**:
+```bash
+# Resume from last checkpoint
+/batch-exe-prp --batch 34 --resume
+```
+
+**Resume workflow**:
+1. **Read checkpoint**: `.ce/tmp/batch-execution-34.json`
+2. **Validate checkpoint**:
+   - Check batch ID matches
+   - Verify master plan exists
+   - Confirm PRPs still exist
+3. **Determine resume point**:
+   - `current_stage`: Stage that was executing when interrupted
+   - `last_stage_completed`: Last fully completed stage
+   - Resume from: `last_stage_completed + 1` OR `current_stage` (if partially done)
+4. **Skip completed stages**:
+   - Stages 1-2: COMPLETED → Skip
+   - Stage 3: IN_PROGRESS → Check if PRPs executed, review pending
+   - Stage 4: PENDING → Execute normally
+5. **Resume execution**:
+   - If stage 3 PRPs all executed → Run review only
+   - If stage 3 PRPs partially executed → Resume execution, then review
+   - If stage 3 not started → Execute from beginning
+
+**Resume scenarios**:
+
+**Scenario 1: Interrupted during execution**
+```
+Status: Stage 2 executing, interrupted by Ctrl+C
+Checkpoint: stage 2 IN_PROGRESS, last_stage_completed = 1
+
+Resume behavior:
+  1. Skip Stage 1 (already merged)
+  2. Check Stage 2 worktrees for partial progress
+  3. If PRPs executed: Run review, merge
+  4. If PRPs not executed: Re-execute Stage 2 from start
+  5. Continue to Stage 3
+```
+
+**Scenario 2: Paused during review (critical issue found)**
+```
+Status: Stage 2 execution complete, review found critical issue
+Checkpoint: stage 2 COMPLETED (execution), review_status = FAILED
+
+Resume behavior:
+  1. Skip Stage 1 (already merged)
+  2. Show Stage 2 review findings
+  3. Ask user: [F]ix manually and continue, [R]e-review, [S]kip stage
+  4. If fixed: Re-run review on Stage 2
+  5. If passed: Merge Stage 2, continue to Stage 3
+```
+
+**Scenario 3: Merge conflict**
+```
+Status: Stage 3 execution complete, review passed, merge conflict on PRP-34.3.2
+Checkpoint: stage 3 COMPLETED (execution + review), merged = false (conflict)
+
+Resume behavior:
+  1. Skip Stages 1-2 (already merged)
+  2. Detect unresolved merge conflict in Stage 3
+  3. Show conflict files, prompt user to resolve
+  4. After resolution: Complete Stage 3 merge
+  5. Continue to Stage 4
+```
+
+**Resume output**:
+```
+📂 Resuming batch 34 from checkpoint
+============================================================
+Checkpoint: .ce/tmp/batch-execution-34.json
+Last updated: 2025-11-05T11:30:00Z (15 minutes ago)
+
+Progress:
+  ✅ Stage 1: Completed (1 PRP, merged)
+  ✅ Stage 2: Completed (6 PRPs, merged)
+  ⏸️  Stage 3: Execution completed, review pending
+  ⏳ Stage 4: Not started
+
+Resuming from: Stage 3 execution review
+============================================================
+
+Running execution review for Stage 3...
+/batch-peer-review --batch 34 --exe --stage 3
+```
+
+**Checkpoint Cleanup**
+
+**Automatic cleanup** (on successful batch completion):
+- Checkpoint kept for 7 days
+- Moved to: `.ce/tmp/batch-execution-archive/batch-34-{timestamp}.json`
+
+**Manual cleanup**:
+```bash
+# Remove checkpoint (abort batch, can't resume)
+rm .ce/tmp/batch-execution-34.json
+
+# Archive checkpoint (preserve history)
+mkdir -p .ce/tmp/batch-execution-archive
+mv .ce/tmp/batch-execution-34.json .ce/tmp/batch-execution-archive/
+```
+
 ## Performance Metrics
 
 ### Sequential vs Parallel
@@ -827,65 +1133,125 @@ Human-readable dashboard with progress bars, health status, and aggregate report
 
 ## Common Workflows
 
-### Workflow 1: Stage-Based Execution
+### Workflow 1: Full Batch Execution (Recommended)
 
-Execute all PRPs from a single stage (e.g., Stage 1):
+Execute entire batch with automatic quality gates:
 
 ```bash
-# Extract stage-1 PRPs from REPLKAN
-grep "stage-1-parallel" TOOL-LOCKDOWN-REPLKAN.md
-# Output: PRP-A, PRP-B, PRP-C
+# Execute all stages sequentially with auto-review (default)
+/batch-exe-prp --batch 34
 
-# Execute in parallel
-/batch-exe-prp PRP-A PRP-B PRP-C
+# What happens:
+# 1. Discovers all PRP-34.*.* files
+# 2. Groups by stage (1, 2, 3, 4)
+# 3. For each stage:
+#    a. Execute PRPs in parallel
+#    b. Run execution review (auto-fix minor issues)
+#    c. Merge worktrees
+#    d. Save checkpoint
+# 4. If interrupted: resume with --resume flag
 
-# After completion, proceed to Stage 2
-/batch-exe-prp PRP-D PRP-E
+# Time: ~60-90 minutes (for 11-PRP batch)
+# Quality: High (peer review after each stage)
 ```
 
-### Workflow 2: Cost-Optimized Execution
+### Workflow 2: Stage-by-Stage Manual Execution
+
+Execute one stage at a time with manual validation:
+
+```bash
+# Stage 1: Foundation
+/batch-exe-prp --batch 34 --stage 1
+# Manual test, validate output
+
+# Stage 2: Core modules (6 PRPs in parallel)
+/batch-exe-prp --batch 34 --stage 2
+# Manual test, validate integration
+
+# Stage 3: Domain strategies
+/batch-exe-prp --batch 34 --stage 3
+
+# Stage 4: Integration
+/batch-exe-prp --batch 34 --stage 4
+```
+
+### Workflow 3: Resume from Interruption
+
+Continue batch execution after pause/error:
+
+```bash
+# Scenario: Stage 2 execution review found critical issue
+# You fixed it manually, now resume
+
+# Resume from checkpoint (skips completed stages)
+/batch-exe-prp --batch 34 --resume
+
+# Reads checkpoint: .ce/tmp/batch-execution-34.json
+# Determines: Stage 1 completed, Stage 2 needs re-review
+# Runs: Stage 2 execution review → merge → Stage 3 → Stage 4
+```
+
+### Workflow 4: Individual PRPs (Legacy Mode)
+
+Execute specific PRPs without batch-awareness:
+
+```bash
+# Extract stage-1 PRPs manually
+# Execute in parallel
+/batch-exe-prp PRP-34.1.1
+
+# After completion, proceed to Stage 2
+/batch-exe-prp PRP-34.2.1 PRP-34.2.2 PRP-34.2.3 PRP-34.2.4 PRP-34.2.5 PRP-34.2.6
+
+# Note: No auto-review, no checkpointing, manual merge management
+```
+
+### Workflow 5: Cost-Optimized Execution
 
 Use Haiku for simple PRPs, Sonnet for complex:
 
 ```bash
-# Stage 1 (simple edits): Use Haiku
-/batch-exe-prp --model haiku PRP-A PRP-B
-
-# Stage 2 (complex refactoring): Use Sonnet
-/batch-exe-prp --model sonnet PRP-D PRP-E
+# Force Haiku for simple batch (if auto-selection assigns Sonnet)
+/batch-exe-prp --batch 34 --model haiku
 
 # Cost savings: ~70% vs all-Sonnet
+# Trade-off: Lower quality, may need manual fixes
 ```
 
-### Workflow 3: Incremental Rollout
+### Workflow 6: Batch without Auto-Review
 
-Execute PRPs in batches, validate between batches:
+Execute batch quickly without peer review (risky):
 
 ```bash
-# Batch 1: Low-risk PRPs
-/batch-exe-prp PRP-A PRP-B
-# Validate, test manually
+# Disable auto-review (not recommended)
+/batch-exe-prp --batch 34 --no-auto-review
 
-# Batch 2: Medium-risk PRPs (only if Batch 1 succeeded)
-/batch-exe-prp PRP-C PRP-D
-# Validate, test manually
+# Use when:
+# - Already peer-reviewed PRPs manually
+# - Low-risk changes (docs, comments)
+# - Time-critical deployment
 
-# Batch 3: High-risk PRPs (only if Batches 1-2 succeeded)
-/batch-exe-prp PRP-E PRP-F
+# Risk: May merge code with quality issues
 ```
 
-### Workflow 4: Dry Run + Review
+### Workflow 7: Dry Run + Review
 
-Preview all PRPs before execution:
+Preview batch execution plan before committing:
 
 ```bash
-# Dry run: Parse PRPs, show execution plan
-/batch-exe-prp --dry-run PRP-A PRP-B PRP-C
+# Dry run: Show stages, PRPs, model assignments
+/batch-exe-prp --batch 34 --dry-run
 
-# Review output, adjust PRPs if needed
+# Output:
+# - Stage breakdown (which PRPs in each stage)
+# - Model assignments (Haiku vs Sonnet per PRP)
+# - Estimated time and cost
+# - Dependency graph
+
+# Review output, adjust PRP complexities if needed
 
 # Execute for real
-/batch-exe-prp PRP-A PRP-B PRP-C
+/batch-exe-prp --batch 34
 ```
 
 ## Troubleshooting
@@ -943,22 +1309,113 @@ mcp__syntropy__healthcheck(detailed=True)
 3. Re-run batch with adjusted order
 4. Consider splitting conflicting PRPs into separate batches
 
+### Issue: "Batch not found" or "No PRPs discovered"
+
+**Symptom**: `/batch-exe-prp --batch 34` reports "No PRPs found for batch 34"
+
+**Cause**: PRPs not in expected location or naming format
+
+**Solution**:
+```bash
+# Check if master plan exists
+ls PRPs/feature-requests/PRP-34-INITIAL.md
+
+# Check if batch PRPs exist
+ls PRPs/feature-requests/PRP-34.*.md
+
+# Verify naming format: PRP-34.1.1.md, PRP-34.2.1.md, etc.
+# NOT: PRP-34-1-1.md or PRP34.1.1.md
+```
+
+### Issue: "Checkpoint corrupted" or "Invalid checkpoint format"
+
+**Symptom**: `/batch-exe-prp --batch 34 --resume` fails to read checkpoint
+
+**Cause**: Checkpoint JSON malformed or manually edited
+
+**Solution**:
+```bash
+# Validate checkpoint JSON
+cat .ce/tmp/batch-execution-34.json | jq .
+
+# If invalid: Start fresh (lose resume capability)
+rm .ce/tmp/batch-execution-34.json
+/batch-exe-prp --batch 34
+
+# If valid but wrong state: Manually fix checkpoint
+# Example: Set last_stage_completed to correct value
+```
+
+### Issue: "Execution review paused" with no clear reason
+
+**Symptom**: Batch pauses after stage execution, says "review found critical issues" but doesn't show what
+
+**Cause**: Review findings not displayed, need to check checkpoint
+
+**Solution**:
+```bash
+# Read checkpoint to see review findings
+cat .ce/tmp/batch-execution-34.json | jq '.stages["2"].review_findings'
+
+# Output: ["Critical: Logic error in classification.py line 45"]
+
+# Fix issue manually, then resume
+vim tools/ce/blending/classification.py
+# Fix line 45
+
+# Resume (will re-run review)
+/batch-exe-prp --batch 34 --resume
+```
+
+### Issue: "Stage already completed but PRPs not merged"
+
+**Symptom**: Stage marked COMPLETED in checkpoint but changes not in main branch
+
+**Cause**: Merge step failed or was skipped, checkpoint not updated
+
+**Solution**:
+```bash
+# Check if worktrees still exist
+git worktree list
+
+# If worktrees exist: Manually merge
+git checkout main
+git merge prp-34-2-1 --no-ff
+git merge prp-34-2-2 --no-ff
+# ... (merge all stage PRPs)
+
+# Update checkpoint manually
+# Set stages.2.merged = true
+
+# Resume to next stage
+/batch-exe-prp --batch 34 --resume
+```
+
 ## CLI Command
 
 ```bash
 # From project root
 cd tools
+
+# Individual PRPs
 uv run ce batch-exe [options] <prp-1> <prp-2> ...
 
+# Batch-aware execution
+uv run ce batch-exe --batch <N> [options]
+
 # Options (same as slash command)
---model <sonnet|haiku|opus>
---max-parallel <N>
---dry-run
---continue-on-error
---no-merge
---no-cleanup
---timeout <minutes>
---json
+--batch <N>              # Execute all PRPs in batch N
+--stage <N>              # Execute specific stage only
+--resume                 # Resume from checkpoint
+--no-auto-review         # Disable auto-review (not recommended)
+--model <sonnet|haiku|opus>  # Override auto-selection
+--max-parallel <N>       # Limit parallelism within stage
+--dry-run                # Preview execution plan
+--continue-on-error      # Don't abort on failure
+--no-merge               # Skip merge step
+--no-cleanup             # Keep worktrees
+--timeout <minutes>      # Max execution time per PRP
+--json                   # JSON output
 ```
 
 ## Implementation Details
@@ -969,6 +1426,134 @@ uv run ce batch-exe [options] <prp-1> <prp-2> ...
 - **Agent Launch**: Uses Task tool with `subagent_type="general-purpose"`
 - **Monitoring**: Polling agent output every 30 seconds for health signals
 - **Error Recovery**: Preserves worktrees on failure for debugging
+
+### Checkpoint Implementation Requirements
+
+**Critical**: When implementing `--batch` mode, checkpoint handling is MANDATORY:
+
+1. **Checkpoint Creation** (after each stage):
+   ```python
+   import json
+   from pathlib import Path
+
+   checkpoint_path = Path(".ce/tmp/batch-execution-{batch_id}.json")
+   checkpoint_path.parent.mkdir(parents=True, exist_ok=True)
+
+   checkpoint = {
+       "batch_id": batch_id,
+       "started": start_time.isoformat(),
+       "updated": datetime.now(timezone.utc).isoformat(),
+       "master_plan": master_plan_path,
+       "total_stages": len(stages),
+       "last_stage_completed": completed_stage_num,
+       "current_stage": current_stage_num,
+       "status": "IN_PROGRESS",  # or "COMPLETED", "FAILED", "PAUSED"
+       "stages": { ... }
+   }
+
+   with open(checkpoint_path, 'w') as f:
+       json.dump(checkpoint, f, indent=2)
+   ```
+
+2. **Checkpoint Resume** (on `--resume` flag):
+   ```python
+   checkpoint_path = Path(f".ce/tmp/batch-execution-{batch_id}.json")
+
+   if not checkpoint_path.exists():
+       print(f"❌ No checkpoint found: {checkpoint_path}")
+       print(f"Start fresh: /batch-exe-prp --batch {batch_id}")
+       return
+
+   with open(checkpoint_path) as f:
+       checkpoint = json.load(f)
+
+   # Validate checkpoint
+   if checkpoint["batch_id"] != batch_id:
+       raise ValueError(f"Checkpoint batch ID mismatch")
+
+   # Determine resume point
+   last_completed = checkpoint["last_stage_completed"]
+   resume_from_stage = last_completed + 1
+
+   # Skip completed stages, resume from next
+   for stage_num in range(resume_from_stage, checkpoint["total_stages"] + 1):
+       execute_stage(stage_num)
+   ```
+
+3. **Auto-Review Integration** (after stage execution):
+   ```python
+   # After stage N execution completes
+   if not args.no_auto_review:
+       print(f"\n🔍 Running execution review for Stage {stage_num}...")
+
+       # Call /batch-peer-review internally via SlashCommand tool
+       review_result = SlashCommand(
+           command=f"/batch-peer-review --batch {batch_id} --exe --stage {stage_num}"
+       )
+
+       # Update checkpoint with review results
+       checkpoint["stages"][str(stage_num)]["review_status"] = review_result.status
+       checkpoint["stages"][str(stage_num)]["review_findings"] = review_result.findings
+
+       # Handle review failures
+       if review_result.status == "FAILED":
+           print(f"❌ Stage {stage_num} execution review FAILED")
+           print(f"Findings: {review_result.findings}")
+           print(f"\nPausing batch execution.")
+           print(f"Fix issues and resume: /batch-exe-prp --batch {batch_id} --resume")
+
+           checkpoint["status"] = "PAUSED"
+           save_checkpoint(checkpoint)
+           return  # Exit, don't proceed to next stage
+
+       # Minor issues auto-fixed, continue
+       if review_result.fixes_applied:
+           print(f"✅ Auto-fixed {len(review_result.fixes_applied)} minor issues")
+   ```
+
+4. **Stage Discovery** (for `--batch` mode):
+   ```python
+   def discover_batch_prps(batch_id):
+       """Find all PRPs in batch, group by stage"""
+
+       # Find master plan
+       master_plan = Path(f"PRPs/feature-requests/PRP-{batch_id}-INITIAL.md")
+       if not master_plan.exists():
+           raise FileNotFoundError(f"Master plan not found: {master_plan}")
+
+       # Find all batch PRPs: PRP-34.1.1.md, PRP-34.2.1.md, etc.
+       prp_files = list(Path("PRPs/feature-requests").glob(f"PRP-{batch_id}.*.*.md"))
+
+       # Parse YAML headers, extract stage field
+       stages = {}
+       for prp_file in prp_files:
+           yaml_header = parse_yaml_header(prp_file)
+           stage = yaml_header.get("stage", 1)  # Default to stage 1
+
+           if stage not in stages:
+               stages[stage] = []
+           stages[stage].append(prp_file)
+
+       # Sort stages
+       return dict(sorted(stages.items()))
+   ```
+
+5. **Checkpoint Cleanup** (on success):
+   ```python
+   # After all stages complete successfully
+   checkpoint["status"] = "COMPLETED"
+   save_checkpoint(checkpoint)
+
+   # Archive checkpoint
+   archive_dir = Path(".ce/tmp/batch-execution-archive")
+   archive_dir.mkdir(parents=True, exist_ok=True)
+
+   timestamp = datetime.now().strftime("%Y%m%d-%H%M%S")
+   archive_path = archive_dir / f"batch-{batch_id}-{timestamp}.json"
+
+   checkpoint_path.rename(archive_path)
+   print(f"✅ Checkpoint archived: {archive_path}")
+   ```
 
 ## Related Commands
 
