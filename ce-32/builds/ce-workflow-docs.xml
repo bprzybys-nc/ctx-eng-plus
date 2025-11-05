@@ -33,7 +33,7 @@ The content is organized as follows:
 <notes>
 - Some files may have been excluded based on .gitignore rules and Repomix's configuration
 - Binary files are not included in this packed representation. Please refer to the Repository Structure section for a complete list of file paths, including binary files
-- Only files matching these patterns are included: examples/INITIALIZATION.md, examples/templates/PRP-0-CONTEXT-ENGINEERING.md, examples/patterns/dedrifting-lessons.md, examples/patterns/mocks-marking.md, examples/TOOL-USAGE-GUIDE.md, examples/prp-decomposition-patterns.md, examples/mermaid-color-palette.md, examples/linear-integration-example.md, examples/tmp-directory-convention.md, examples/example.setting.local.md, examples/model/SystemModel.md, examples/INDEX.md, examples/README.md, CLAUDE.md
+- Only files matching these patterns are included: examples/INITIALIZATION.md, examples/patterns/dedrifting-lessons.md, examples/patterns/mocks-marking.md, examples/TOOL-USAGE-GUIDE.md, examples/prp-decomposition-patterns.md, examples/mermaid-color-palette.md, examples/linear-integration-example.md, examples/tmp-directory-convention.md, examples/example.setting.local.md, examples/model/SystemModel.md, examples/INDEX.md, examples/README.md, CLAUDE.md
 - Files matching these patterns are excluded: examples/patterns/example-simple-feature.md, examples/patterns/git-message-rules.md, examples/l4-validation-example.md, examples/syntropy-status-hook-system.md, .git/**, .tmp/**, node_modules/**, __pycache__/**
 - Files matching patterns in .gitignore are excluded
 - Files matching default ignore patterns are excluded
@@ -50,8 +50,6 @@ examples/
   patterns/
     dedrifting-lessons.md
     mocks-marking.md
-  templates/
-    PRP-0-CONTEXT-ENGINEERING.md
   example.setting.local.md
   INDEX.md
   INITIALIZATION.md
@@ -1512,284 +1510,6 @@ This section contains the contents of the repository's files.
 128: mv .tmp/batch-gen/* tmp/batch-gen/ 2>/dev/null || true
 129: rmdir .tmp/batch-gen .tmp 2>/dev/null || true
 130: ```
-</file>
-
-<file path="examples/templates/PRP-0-CONTEXT-ENGINEERING.md">
-  1: ---
-  2: prp_id: PRP-0
-  3: title: Context Engineering Framework Installation
-  4: status: executed
-  5: created: {TIMESTAMP}
-  6: executed: {TIMESTAMP}
-  7: batch: 0
-  8: phase: 0
-  9: order: 0
- 10: estimated_hours: {INSTALL_TIME}
- 11: complexity: low
- 12: risk_level: low
- 13: ce_version: {CE_VERSION}
- 14: installation_method: {METHOD}
- 15: ---
- 16: 
- 17: # PRP-0: Context Engineering Framework Installation
- 18: 
- 19: ## 📋 TL;DR
- 20: 
- 21: **What**: Installed Context Engineering (CE) framework version {CE_VERSION} into {PROJECT_NAME}
- 22: 
- 23: **When**: {TIMESTAMP}
- 24: 
- 25: **How**: {INSTALLATION_METHOD}
- 26: 
- 27: **Result**: CE 1.1 framework fully installed with /system/ organization
- 28: 
- 29: ---
- 30: 
- 31: ## Installation Details
- 32: 
- 33: ### CE Version
- 34: 
- 35: **Version**: {CE_VERSION}
- 36: **Release Date**: {CE_RELEASE_DATE}
- 37: **Distribution Package**: `ce-infrastructure.xml` ({SIZE}KB)
- 38: 
- 39: ### Installation Method
- 40: 
- 41: **Method**: {METHOD}
- 42: 
- 43: **Options**:
- 44: - `greenfield` - New project, no existing CE
- 45: - `mature-project` - Existing code, added CE
- 46: - `existing-ce` - Upgraded CE 1.0 → CE 1.1
- 47: - `partial-ce` - Completed incomplete installation
- 48: 
- 49: ### Installation Date
- 50: 
- 51: **Started**: {START_TIMESTAMP}
- 52: **Completed**: {END_TIMESTAMP}
- 53: **Duration**: {DURATION} minutes
- 54: 
- 55: ---
- 56: 
- 57: ## Components Installed
- 58: 
- 59: ### Framework Memories (23 files)
- 60: 
- 61: **Location**: `.serena/memories/system/`
- 62: 
- 63: **Critical Memories (6)**:
- 64: - code-style-conventions.md
- 65: - suggested-commands.md
- 66: - task-completion-checklist.md
- 67: - testing-standards.md
- 68: - tool-usage-syntropy.md
- 69: - use-syntropy-tools-not-bash.md
- 70: 
- 71: **Regular Memories (17)**:
- 72: - batch-generation-patterns.md
- 73: - ce-tool-patterns.md
- 74: - complexity-estimation.md
- 75: - context-drift-monitoring.md
- 76: - file-structure-best-practices.md
- 77: - git-worktree-patterns.md
- 78: - prp-execution-checklist.md
- 79: - prp-sizing-thresholds.md
- 80: - sequential-thinking-usage.md
- 81: - syntropy-mcp-architecture.md
- 82: - syntropy-tool-management.md
- 83: - testing-strategy-pattern.md
- 84: - token-optimization-strategies.md
- 85: - tool-selection-decision-tree.md
- 86: - validation-levels.md
- 87: - worktree-conflict-resolution.md
- 88: - xml-package-generation.md
- 89: 
- 90: ### Framework Examples (21 files)
- 91: 
- 92: **Location**: `.ce/examples/system/`
- 93: 
- 94: **Files Installed**:
- 95: {LIST_OF_EXAMPLE_FILES}
- 96: 
- 97: ### Framework Commands (11 files)
- 98: 
- 99: **Location**: `.claude/commands/`
-100: 
-101: **Commands Installed**:
-102: - batch-exe-prp.md
-103: - batch-gen-prp.md
-104: - denoise.md
-105: - execute-prp.md
-106: - generate-prp.md
-107: - peer-review.md
-108: - sync-with-syntropy.md
-109: - syntropy-health.md
-110: - tools-misuse-scan.md
-111: - update-context.md
-112: - vacuum.md
-113: 
-114: ### Tool Source Code (33 files)
-115: 
-116: **Location**: `tools/`
-117: 
-118: **Modules Installed**:
-119: {LIST_OF_TOOL_MODULES}
-120: 
-121: ### CLAUDE.md Sections
-122: 
-123: **Framework Sections Added**:
-124: - Communication
-125: - Core Principles
-126: - UV Package Management
-127: - Ad-Hoc Code Policy
-128: - Quick Commands
-129: - Tool Naming Convention
-130: - Allowed Tools Summary
-131: - Command Permissions
-132: - Quick Tool Selection
-133: - Project Structure
-134: - Testing Standards
-135: - Code Quality
-136: 
-137: ---
-138: 
-139: ## Validation Results
-140: 
-141: ### Component Verification
-142: 
-143: ```bash
-144: # Run validation checklist
-145: {VALIDATION_COMMAND_OUTPUT}
-146: ```
-147: 
-148: **Results**:
-149: - ✅ 23 system memories installed
-150: - ✅ 21 system examples installed
-151: - ✅ 11 framework commands installed
-152: - ✅ 33 tool files installed
-153: - ✅ CLAUDE.md framework sections added
-154: - ✅ CE 1.1 /system/ organization verified
-155: 
-156: ### Token Counts
-157: 
-158: **Framework Documentation**:
-159: - System memories: ~{MEMORY_TOKENS}k tokens
-160: - System examples: ~{EXAMPLE_TOKENS}k tokens
-161: - Commands: ~{COMMAND_TOKENS}k tokens
-162: - **Total**: ~{TOTAL_TOKENS}k tokens
-163: 
-164: ---
-165: 
-166: ## Project Integration
-167: 
-168: ### Existing Project Context
-169: 
-170: **Project Name**: {PROJECT_NAME}
-171: **Project Type**: {PROJECT_TYPE}
-172: **Primary Language**: {PRIMARY_LANGUAGE}
-173: **Repository**: {REPO_URL}
-174: 
-175: **Pre-Installation State**:
-176: {PRE_INSTALL_STATE}
-177: 
-178: ### Post-Installation Configuration
-179: 
-180: **Syntropy MCP**:
-181: - Status: {MCP_STATUS}
-182: - Servers: {MCP_SERVERS}
-183: 
-184: **Linear Integration**:
-185: - Status: {LINEAR_STATUS}
-186: - Project: {LINEAR_PROJECT}
-187: - Team: {LINEAR_TEAM}
-188: 
-189: **UV Tools**:
-190: - Status: {UV_STATUS}
-191: - Python Version: {PYTHON_VERSION}
-192: 
-193: ---
-194: 
-195: ## Next Steps
-196: 
-197: ### Immediate Actions
-198: 
-199: 1. **Test framework commands**:
-200:    ```bash
-201:    /generate-prp
-202:    /vacuum --dry-run
-203:    /syntropy-health
-204:    ```
-205: 
-206: 2. **Configure project settings**:
-207:    - Update `.claude/settings.local.json` with project-specific permissions
-208:    - Update `CLAUDE.md` with user sections
-209: 
-210: 3. **Create first user PRP**:
-211:    - Document initial feature or bug fix
-212:    - Practice PRP workflow
-213: 
-214: ### Recommended Reading
-215: 
-216: **Essential Documentation**:
-217: - `.ce/examples/system/TOOL-USAGE-GUIDE.md` - Tool selection reference
-218: - `.ce/examples/system/prp-decomposition-patterns.md` - PRP sizing
-219: - `.serena/memories/system/task-completion-checklist.md` - Workflow checklist
-220: 
-221: **Migration Guide**:
-222: - `examples/INITIALIZATION.md` - Complete CE 1.1 initialization guide (5-phase workflow, scenario-aware)
-223: 
-224: ---
-225: 
-226: ## Troubleshooting
-227: 
-228: **Issue**: Commands not found
-229: 
-230: **Solution**:
-231: ```bash
-232: # Verify commands directory
-233: ls .claude/commands/
-234: 
-235: # Check Claude Code settings
-236: cat .claude/settings.local.json | grep commands
-237: ```
-238: 
-239: **Issue**: MCP servers not connected
-240: 
-241: **Solution**:
-242: ```bash
-243: # Remove auth cache
-244: rm -rf ~/.mcp-auth
-245: 
-246: # Restart Claude Code
-247: /mcp
-248: ```
-249: 
-250: ---
-251: 
-252: ## Changelog
-253: 
-254: ### {TIMESTAMP} - Initial Installation
-255: 
-256: - Installed CE {CE_VERSION} via {INSTALLATION_METHOD}
-257: - Added 23 framework memories to `.serena/memories/system/`
-258: - Added 21 framework examples to `.ce/examples/system/`
-259: - Added 11 framework commands to `.claude/commands/`
-260: - Configured CLAUDE.md with framework sections
-261: 
-262: ---
-263: 
-264: ## References
-265: 
-266: - **CE Framework Documentation**: `.ce/examples/system/`
-267: - **Migration Guides**: `examples/workflows/migration-*.md`
-268: - **Master Initialization Guide**: `examples/INITIALIZATION.md`
-269: - **Repomix Packages**: `.ce/ce-infrastructure.xml`, `.ce/ce-workflow-docs.xml`
-270: 
-271: ---
-272: 
-273: **Installation Completed**: {TIMESTAMP}
-274: **Installed By**: {INSTALLER_NAME}
-275: **CE Version**: {CE_VERSION}
 </file>
 
 <file path="examples/model/SystemModel.md">
@@ -6257,8 +5977,8 @@ This section contains the contents of the repository's files.
  514: 
  515: # Verify extraction
  516: echo "Framework files extracted:"
- 517: echo "  System memories: $(ls .serena/memories/system/*.md 2>/dev/null | wc -l)"
- 518: echo "  System examples: $(ls .ce/examples/system/*.md 2>/dev/null | wc -l)"
+ 517: echo "  PRP-0 template: $(test -f .ce/PRPs/executed/system/PRP-0-CONTEXT-ENGINEERING.md && echo '✓' || echo '✗')"
+ 518: echo "  System memories: $(ls .serena/memories/system/*.md 2>/dev/null | wc -l)"
  519: echo "  Framework commands: $(ls .claude/commands/*.md 2>/dev/null | wc -l)"
  520: echo "  Tool files: $(find tools -name "*.py" 2>/dev/null | wc -l)"
  521: ```
@@ -6266,7 +5986,7 @@ This section contains the contents of the repository's files.
  523: **What gets extracted**:
  524: 
  525: ```
- 526: .ce/examples/system/          # 21 framework example files
+ 526: .ce/PRPs/executed/system/     # PRP-0 template (framework initialization)
  527: .serena/memories/system/      # 23 framework memories (6 critical + 17 regular)
  528: .claude/commands/             # 11 framework commands
  529: .claude/settings.local.json   # Framework settings (merged with existing)
@@ -6274,506 +5994,508 @@ This section contains the contents of the repository's files.
  531: CLAUDE.md                     # Framework sections (merged with existing)
  532: ```
  533: 
- 534: ### Step 3.3: Validate Framework Installation
+ 534: **Note**: Examples are NOT extracted from infrastructure. They are in `ce-workflow-docs.xml` (copied above for reference).
  535: 
- 536: ```bash
- 537: # Check system memories (expected: 23)
- 538: SYSTEM_MEMORIES=$(ls .serena/memories/system/*.md 2>/dev/null | wc -l)
- 539: test $SYSTEM_MEMORIES -eq 23 && echo "✓ All 23 system memories installed" || echo "⚠ Only $SYSTEM_MEMORIES system memories found"
- 540: 
- 541: # Check system examples (expected: 21)
- 542: SYSTEM_EXAMPLES=$(ls .ce/examples/system/*.md 2>/dev/null | wc -l)
- 543: test $SYSTEM_EXAMPLES -eq 21 && echo "✓ All 21 system examples installed" || echo "⚠ Only $SYSTEM_EXAMPLES system examples found"
- 544: 
- 545: # Check framework commands (expected: 11)
- 546: FRAMEWORK_COMMANDS=$(ls .claude/commands/*.md 2>/dev/null | wc -l)
- 547: test $FRAMEWORK_COMMANDS -ge 11 && echo "✓ All 11 framework commands installed" || echo "⚠ Only $FRAMEWORK_COMMANDS commands found"
- 548: 
- 549: # Check tool files (expected: 33)
- 550: TOOL_FILES=$(find tools -name "*.py" 2>/dev/null | wc -l)
- 551: test $TOOL_FILES -ge 33 && echo "✓ Tool source files installed" || echo "⚠ Only $TOOL_FILES tool files found"
- 552: 
- 553: # Check settings merged
- 554: test -f .claude/settings.local.json && jq empty .claude/settings.local.json && echo "✓ Settings valid JSON" || echo "⚠ Settings invalid"
- 555: ```
- 556: 
- 557: ### Step 3.4: Initialize CE Tools
+ 536: ### Step 3.3: Validate Framework Installation
+ 537: 
+ 538: ```bash
+ 539: # Check system memories (expected: 23)
+ 540: SYSTEM_MEMORIES=$(ls .serena/memories/system/*.md 2>/dev/null | wc -l)
+ 541: test $SYSTEM_MEMORIES -eq 23 && echo "✓ All 23 system memories installed" || echo "⚠ Only $SYSTEM_MEMORIES system memories found"
+ 542: 
+ 543: # Check system examples (expected: 21)
+ 544: SYSTEM_EXAMPLES=$(ls .ce/examples/system/*.md 2>/dev/null | wc -l)
+ 545: test $SYSTEM_EXAMPLES -eq 21 && echo "✓ All 21 system examples installed" || echo "⚠ Only $SYSTEM_EXAMPLES system examples found"
+ 546: 
+ 547: # Check framework commands (expected: 11)
+ 548: FRAMEWORK_COMMANDS=$(ls .claude/commands/*.md 2>/dev/null | wc -l)
+ 549: test $FRAMEWORK_COMMANDS -ge 11 && echo "✓ All 11 framework commands installed" || echo "⚠ Only $FRAMEWORK_COMMANDS commands found"
+ 550: 
+ 551: # Check tool files (expected: 33)
+ 552: TOOL_FILES=$(find tools -name "*.py" 2>/dev/null | wc -l)
+ 553: test $TOOL_FILES -ge 33 && echo "✓ Tool source files installed" || echo "⚠ Only $TOOL_FILES tool files found"
+ 554: 
+ 555: # Check settings merged
+ 556: test -f .claude/settings.local.json && jq empty .claude/settings.local.json && echo "✓ Settings valid JSON" || echo "⚠ Settings invalid"
+ 557: ```
  558: 
- 559: ```bash
- 560: # Install CE CLI tools
- 561: cd tools
- 562: ./bootstrap.sh
- 563: 
- 564: # Verify installation
- 565: uv run ce --version
- 566: # Expected: ce version 1.1.0
- 567: 
- 568: # Run basic validation
- 569: uv run ce validate --level 1
- 570: # Expected: Structure validation passes
- 571: 
- 572: cd ..
- 573: ```
- 574: 
- 575: **Phase 3 Complete**: Framework installed with /system/ organization. Proceed to Phase 4.
+ 559: ### Step 3.4: Initialize CE Tools
+ 560: 
+ 561: ```bash
+ 562: # Install CE CLI tools
+ 563: cd tools
+ 564: ./bootstrap.sh
+ 565: 
+ 566: # Verify installation
+ 567: uv run ce --version
+ 568: # Expected: ce version 1.1.0
+ 569: 
+ 570: # Run basic validation
+ 571: uv run ce validate --level 1
+ 572: # Expected: Structure validation passes
+ 573: 
+ 574: cd ..
+ 575: ```
  576: 
- 577: ---
+ 577: **Phase 3 Complete**: Framework installed with /system/ organization. Proceed to Phase 4.
  578: 
- 579: ## Phase 4: CLAUDE.md Blending (Universal)
+ 579: ---
  580: 
- 581: **Duration**: 10 minutes
- 582: **Applies to**: All scenarios
- 583: 
- 584: ### Purpose
+ 581: ## Phase 4: CLAUDE.md Blending (Universal)
+ 582: 
+ 583: **Duration**: 10 minutes
+ 584: **Applies to**: All scenarios
  585: 
- 586: Merge framework CLAUDE.md sections with project-specific sections, creating a single unified project guide.
+ 586: ### Purpose
  587: 
- 588: ### Step 4.1: Backup Existing CLAUDE.md
+ 588: Merge framework CLAUDE.md sections with project-specific sections, creating a single unified project guide.
  589: 
- 590: ```bash
- 591: # Backup user's CLAUDE.md (if exists)
- 592: if [ -f CLAUDE.md ]; then
- 593:   cp CLAUDE.md "CLAUDE.md.backup-$(date +%Y%m%d-%H%M%S)"
- 594:   echo "✓ CLAUDE.md backed up"
- 595: else
- 596:   echo "ℹ No existing CLAUDE.md (fresh installation)"
- 597: fi
- 598: ```
- 599: 
- 600: ### Step 4.2: Identify Framework vs Project Sections
+ 590: ### Step 4.1: Backup Existing CLAUDE.md
+ 591: 
+ 592: ```bash
+ 593: # Backup user's CLAUDE.md (if exists)
+ 594: if [ -f CLAUDE.md ]; then
+ 595:   cp CLAUDE.md "CLAUDE.md.backup-$(date +%Y%m%d-%H%M%S)"
+ 596:   echo "✓ CLAUDE.md backed up"
+ 597: else
+ 598:   echo "ℹ No existing CLAUDE.md (fresh installation)"
+ 599: fi
+ 600: ```
  601: 
- 602: Framework sections (from ce-infrastructure.xml):
- 603: - Communication
- 604: - Core Principles
- 605: - UV Package Management
- 606: - Ad-Hoc Code Policy
- 607: - Quick Commands
- 608: - Tool Naming Convention
- 609: - Allowed Tools Summary
- 610: - Command Permissions
- 611: - Quick Tool Selection
- 612: - Project Structure
- 613: - Testing Standards
- 614: - Code Quality
- 615: - Context Commands
- 616: - Syntropy MCP Tool Sync
- 617: - Linear Integration
- 618: - Batch PRP Generation
- 619: - PRP Sizing
- 620: - Testing Patterns
- 621: - Documentation Standards
- 622: - Efficient Doc Review
- 623: - Resources
- 624: - Keyboard Shortcuts
- 625: - Git Worktree
- 626: - Troubleshooting
- 627: 
- 628: Project sections (user-defined) are any sections not in framework list.
+ 602: ### Step 4.2: Identify Framework vs Project Sections
+ 603: 
+ 604: Framework sections (from ce-infrastructure.xml):
+ 605: - Communication
+ 606: - Core Principles
+ 607: - UV Package Management
+ 608: - Ad-Hoc Code Policy
+ 609: - Quick Commands
+ 610: - Tool Naming Convention
+ 611: - Allowed Tools Summary
+ 612: - Command Permissions
+ 613: - Quick Tool Selection
+ 614: - Project Structure
+ 615: - Testing Standards
+ 616: - Code Quality
+ 617: - Context Commands
+ 618: - Syntropy MCP Tool Sync
+ 619: - Linear Integration
+ 620: - Batch PRP Generation
+ 621: - PRP Sizing
+ 622: - Testing Patterns
+ 623: - Documentation Standards
+ 624: - Efficient Doc Review
+ 625: - Resources
+ 626: - Keyboard Shortcuts
+ 627: - Git Worktree
+ 628: - Troubleshooting
  629: 
- 630: ### Step 4.3: Blend Sections
+ 630: Project sections (user-defined) are any sections not in framework list.
  631: 
- 632: **Manual Blending** (recommended for first installation):
+ 632: ### Step 4.3: Blend Sections
  633: 
- 634: ```bash
- 635: # Edit CLAUDE.md to mark sections
- 636: vim CLAUDE.md
- 637: 
- 638: # Add [FRAMEWORK] or [PROJECT] markers to section headers:
- 639: # ## [FRAMEWORK] Communication
- 640: # ## [PROJECT] Project-Specific Communication
- 641: # ## [FRAMEWORK] Core Principles
- 642: # ## [PROJECT] Team Conventions
- 643: ```
- 644: 
- 645: **Automated Blending** (if framework provides blending tool):
+ 634: **Manual Blending** (recommended for first installation):
+ 635: 
+ 636: ```bash
+ 637: # Edit CLAUDE.md to mark sections
+ 638: vim CLAUDE.md
+ 639: 
+ 640: # Add [FRAMEWORK] or [PROJECT] markers to section headers:
+ 641: # ## [FRAMEWORK] Communication
+ 642: # ## [PROJECT] Project-Specific Communication
+ 643: # ## [FRAMEWORK] Core Principles
+ 644: # ## [PROJECT] Team Conventions
+ 645: ```
  646: 
- 647: ```bash
- 648: # Use denoise command to merge sections
- 649: /denoise CLAUDE.md
- 650: 
- 651: # Review merged output
- 652: less CLAUDE.md
- 653: ```
- 654: 
- 655: ### Step 4.4: Validate Blended CLAUDE.md
+ 647: **Automated Blending** (if framework provides blending tool):
+ 648: 
+ 649: ```bash
+ 650: # Use denoise command to merge sections
+ 651: /denoise CLAUDE.md
+ 652: 
+ 653: # Review merged output
+ 654: less CLAUDE.md
+ 655: ```
  656: 
- 657: ```bash
- 658: # Check for framework markers
- 659: grep -c "\[FRAMEWORK\]" CLAUDE.md
- 660: # Expected: Multiple framework sections marked
- 661: 
- 662: # Check for project markers (if any)
- 663: grep -c "\[PROJECT\]" CLAUDE.md
- 664: # Expected: 0+ (depending on scenario)
- 665: 
- 666: # Verify key framework sections present
- 667: for section in "Communication" "Core Principles" "Quick Commands" "Tool Naming Convention"; do
- 668:   grep -q "## .*$section" CLAUDE.md && echo "✓ $section section present" || echo "⚠ $section section missing"
- 669: done
- 670: ```
- 671: 
- 672: ### Step 4.5: Add Project-Specific Sections
+ 657: ### Step 4.4: Validate Blended CLAUDE.md
+ 658: 
+ 659: ```bash
+ 660: # Check for framework markers
+ 661: grep -c "\[FRAMEWORK\]" CLAUDE.md
+ 662: # Expected: Multiple framework sections marked
+ 663: 
+ 664: # Check for project markers (if any)
+ 665: grep -c "\[PROJECT\]" CLAUDE.md
+ 666: # Expected: 0+ (depending on scenario)
+ 667: 
+ 668: # Verify key framework sections present
+ 669: for section in "Communication" "Core Principles" "Quick Commands" "Tool Naming Convention"; do
+ 670:   grep -q "## .*$section" CLAUDE.md && echo "✓ $section section present" || echo "⚠ $section section missing"
+ 671: done
+ 672: ```
  673: 
- 674: **For Mature Project and CE 1.0 Upgrade**:
+ 674: ### Step 4.5: Add Project-Specific Sections
  675: 
- 676: Add project-specific sections to CLAUDE.md:
+ 676: **For Mature Project and CE 1.0 Upgrade**:
  677: 
- 678: ```bash
- 679: cat >> CLAUDE.md << 'EOF'
- 680: 
- 681: ---
+ 678: Add project-specific sections to CLAUDE.md:
+ 679: 
+ 680: ```bash
+ 681: cat >> CLAUDE.md << 'EOF'
  682: 
- 683: ## [PROJECT] Project-Specific Information
+ 683: ---
  684: 
- 685: ### Project Structure
+ 685: ## [PROJECT] Project-Specific Information
  686: 
- 687: **Architecture**: [Your architecture description]
+ 687: ### Project Structure
  688: 
- 689: **Key Components**:
- 690: - Component 1: [Description]
- 691: - Component 2: [Description]
- 692: 
- 693: ### Development Workflow
+ 689: **Architecture**: [Your architecture description]
+ 690: 
+ 691: **Key Components**:
+ 692: - Component 1: [Description]
+ 693: - Component 2: [Description]
  694: 
- 695: **Branch Strategy**: [Your branching model]
+ 695: ### Development Workflow
  696: 
- 697: **Code Review Process**: [Your review process]
+ 697: **Branch Strategy**: [Your branching model]
  698: 
- 699: ### Testing Standards
+ 699: **Code Review Process**: [Your review process]
  700: 
- 701: **Test Coverage**: [Your coverage requirements]
+ 701: ### Testing Standards
  702: 
- 703: **Test Frameworks**: [Your test tools]
+ 703: **Test Coverage**: [Your coverage requirements]
  704: 
- 705: ### Deployment Process
+ 705: **Test Frameworks**: [Your test tools]
  706: 
- 707: **CI/CD Pipeline**: [Your pipeline description]
+ 707: ### Deployment Process
  708: 
- 709: **Deployment Stages**: [Your stages]
+ 709: **CI/CD Pipeline**: [Your pipeline description]
  710: 
- 711: ---
+ 711: **Deployment Stages**: [Your stages]
  712: 
- 713: EOF
- 714: ```
- 715: 
- 716: **Phase 4 Complete**: CLAUDE.md blended with framework + project sections. Proceed to Phase 5 (if applicable).
+ 713: ---
+ 714: 
+ 715: EOF
+ 716: ```
  717: 
- 718: ---
+ 718: **Phase 4 Complete**: CLAUDE.md blended with framework + project sections. Proceed to Phase 5 (if applicable).
  719: 
- 720: ## Phase 5: Legacy Cleanup
+ 720: ---
  721: 
- 722: **Duration**: 0-5 minutes
- 723: **Applies to**: CE 1.0 Upgrade only
- 724: **Skip for**: Greenfield, Mature Project, Partial Install
- 725: 
- 726: ### Scenario Variations
+ 722: ## Phase 5: Legacy Cleanup
+ 723: 
+ 724: **Duration**: 0-5 minutes
+ 725: **Applies to**: CE 1.0 Upgrade only
+ 726: **Skip for**: Greenfield, Mature Project, Partial Install
  727: 
- 728: **Skip this phase if**:
- 729: - **Greenfield**: No legacy files (new project)
- 730: - **Mature Project**: No legacy CE files (first CE installation)
- 731: - **Partial Install**: Selective cleanup only
- 732: 
- 733: **Full cleanup if**:
- 734: - **CE 1.0 Upgrade**: Aggressive cleanup of legacy CE 1.0 structure
- 735: 
- 736: ### Step 5.1: Verify Migration Completed
+ 728: ### Scenario Variations
+ 729: 
+ 730: **Skip this phase if**:
+ 731: - **Greenfield**: No legacy files (new project)
+ 732: - **Mature Project**: No legacy CE files (first CE installation)
+ 733: - **Partial Install**: Selective cleanup only
+ 734: 
+ 735: **Full cleanup if**:
+ 736: - **CE 1.0 Upgrade**: Aggressive cleanup of legacy CE 1.0 structure
  737: 
- 738: ```bash
- 739: # Verify all files migrated to CE 1.1 structure
- 740: test -d .ce/PRPs/system && echo "✓ System PRPs migrated"
- 741: test -d .ce/examples/system && echo "✓ System examples migrated"
- 742: test -d .serena/memories/system && echo "✓ System memories migrated"
- 743: 
- 744: # Check for errors in migration
- 745: if [ -f tmp/syntropy-initialization/phase2-report.txt ]; then
- 746:   grep -i error tmp/syntropy-initialization/phase2-report.txt
- 747:   # Expected: No errors
- 748: fi
- 749: ```
- 750: 
- 751: ### Step 5.2: Archive Legacy Organization
+ 738: ### Step 5.1: Verify Migration Completed
+ 739: 
+ 740: ```bash
+ 741: # Verify all files migrated to CE 1.1 structure
+ 742: test -d .ce/PRPs/system && echo "✓ System PRPs migrated"
+ 743: test -d .ce/examples/system && echo "✓ System examples migrated"
+ 744: test -d .serena/memories/system && echo "✓ System memories migrated"
+ 745: 
+ 746: # Check for errors in migration
+ 747: if [ -f tmp/syntropy-initialization/phase2-report.txt ]; then
+ 748:   grep -i error tmp/syntropy-initialization/phase2-report.txt
+ 749:   # Expected: No errors
+ 750: fi
+ 751: ```
  752: 
- 753: ```bash
- 754: # Create archive of legacy files before deletion (safety backup)
- 755: mkdir -p tmp/syntropy-initialization/legacy-backup/
- 756: 
- 757: # Archive legacy directories
- 758: tar -czf "tmp/syntropy-initialization/legacy-backup/pre-ce-1.1-$(date +%Y%m%d-%H%M%S).tar.gz" \
- 759:   PRPs/ \
- 760:   examples/ \
- 761:   .serena/memories/*.md \
- 762:   2>/dev/null || true
- 763: 
- 764: echo "✓ Legacy files archived"
+ 753: ### Step 5.2: Archive Legacy Organization
+ 754: 
+ 755: ```bash
+ 756: # Create archive of legacy files before deletion (safety backup)
+ 757: mkdir -p tmp/syntropy-initialization/legacy-backup/
+ 758: 
+ 759: # Archive legacy directories
+ 760: tar -czf "tmp/syntropy-initialization/legacy-backup/pre-ce-1.1-$(date +%Y%m%d-%H%M%S).tar.gz" \
+ 761:   PRPs/ \
+ 762:   examples/ \
+ 763:   .serena/memories/*.md \
+ 764:   2>/dev/null || true
  765: 
- 766: # Verify archive created
- 767: ARCHIVE_FILE=$(ls -t tmp/syntropy-initialization/legacy-backup/*.tar.gz | head -n 1)
- 768: test -f "$ARCHIVE_FILE" && echo "✓ Archive: $ARCHIVE_FILE" || echo "⚠ Archive not created"
- 769: ```
- 770: 
- 771: ### Step 5.3: Delete Legacy Organization Files
+ 766: echo "✓ Legacy files archived"
+ 767: 
+ 768: # Verify archive created
+ 769: ARCHIVE_FILE=$(ls -t tmp/syntropy-initialization/legacy-backup/*.tar.gz | head -n 1)
+ 770: test -f "$ARCHIVE_FILE" && echo "✓ Archive: $ARCHIVE_FILE" || echo "⚠ Archive not created"
+ 771: ```
  772: 
- 773: **Delete legacy PRPs directory** (now in .ce/PRPs/):
+ 773: ### Step 5.3: Delete Legacy Organization Files
  774: 
- 775: ```bash
- 776: if [ -d PRPs/ ]; then
- 777:   # Count files before deletion
- 778:   LEGACY_PRPS=$(find PRPs -name "*.md" | wc -l)
- 779: 
- 780:   # Delete directory
- 781:   rm -rf PRPs/
- 782: 
- 783:   echo "✓ Deleted legacy PRPs/ ($LEGACY_PRPS files migrated to .ce/PRPs/)"
- 784: fi
- 785: ```
- 786: 
- 787: **Delete legacy examples directory** (now in .ce/examples/):
+ 775: **Delete legacy PRPs directory** (now in .ce/PRPs/):
+ 776: 
+ 777: ```bash
+ 778: if [ -d PRPs/ ]; then
+ 779:   # Count files before deletion
+ 780:   LEGACY_PRPS=$(find PRPs -name "*.md" | wc -l)
+ 781: 
+ 782:   # Delete directory
+ 783:   rm -rf PRPs/
+ 784: 
+ 785:   echo "✓ Deleted legacy PRPs/ ($LEGACY_PRPS files migrated to .ce/PRPs/)"
+ 786: fi
+ 787: ```
  788: 
- 789: ```bash
- 790: if [ -d examples/ ]; then
- 791:   # Count files before deletion
- 792:   LEGACY_EXAMPLES=$(find examples -name "*.md" | wc -l)
- 793: 
- 794:   # Delete directory
- 795:   rm -rf examples/
- 796: 
- 797:   echo "✓ Deleted legacy examples/ ($LEGACY_EXAMPLES files migrated to .ce/examples/)"
- 798: fi
- 799: ```
- 800: 
- 801: **Delete legacy memories** (now in .serena/memories/system/):
+ 789: **Delete legacy examples directory** (now in .ce/examples/):
+ 790: 
+ 791: ```bash
+ 792: if [ -d examples/ ]; then
+ 793:   # Count files before deletion
+ 794:   LEGACY_EXAMPLES=$(find examples -name "*.md" | wc -l)
+ 795: 
+ 796:   # Delete directory
+ 797:   rm -rf examples/
+ 798: 
+ 799:   echo "✓ Deleted legacy examples/ ($LEGACY_EXAMPLES files migrated to .ce/examples/)"
+ 800: fi
+ 801: ```
  802: 
- 803: ```bash
- 804: # Delete only memories that were migrated to /system/
- 805: # Preserve user memories (not in system/)
- 806: if [ -d .serena/memories/ ]; then
- 807:   find .serena/memories/ -maxdepth 1 -name "*.md" -type f | while read file; do
- 808:     basename=$(basename "$file")
- 809:     if [ -f .serena/memories/system/"$basename" ]; then
- 810:       rm -f "$file"
- 811:       echo "✓ Deleted legacy .serena/memories/$basename (migrated to system/)"
- 812:     fi
- 813:   done
- 814: fi
- 815: ```
- 816: 
- 817: ### Step 5.4: Log Cleanup Summary
+ 803: **Delete legacy memories** (now in .serena/memories/system/):
+ 804: 
+ 805: ```bash
+ 806: # Delete only memories that were migrated to /system/
+ 807: # Preserve user memories (not in system/)
+ 808: if [ -d .serena/memories/ ]; then
+ 809:   find .serena/memories/ -maxdepth 1 -name "*.md" -type f | while read file; do
+ 810:     basename=$(basename "$file")
+ 811:     if [ -f .serena/memories/system/"$basename" ]; then
+ 812:       rm -f "$file"
+ 813:       echo "✓ Deleted legacy .serena/memories/$basename (migrated to system/)"
+ 814:     fi
+ 815:   done
+ 816: fi
+ 817: ```
  818: 
- 819: ```bash
- 820: # Log cleanup actions to initialization report
- 821: cat > tmp/syntropy-initialization/phase5-report.txt << EOF
- 822: # Phase 5: Legacy Organization Cleanup Report
- 823: 
- 824: ## Deleted Legacy Files
+ 819: ### Step 5.4: Log Cleanup Summary
+ 820: 
+ 821: ```bash
+ 822: # Log cleanup actions to initialization report
+ 823: cat > tmp/syntropy-initialization/phase5-report.txt << EOF
+ 824: # Phase 5: Legacy Organization Cleanup Report
  825: 
- 826: **PRPs Directory**: $(test ! -d PRPs && echo "Deleted" || echo "Still exists")
- 827: **Examples Directory**: $(test ! -d examples && echo "Deleted" || echo "Still exists")
- 828: **Legacy Memories**: $(find .serena/memories -maxdepth 1 -name "*.md" 2>/dev/null | wc -l) remaining at root level
- 829: 
- 830: ## Backup
+ 826: ## Deleted Legacy Files
+ 827: 
+ 828: **PRPs Directory**: $(test ! -d PRPs && echo "Deleted" || echo "Still exists")
+ 829: **Examples Directory**: $(test ! -d examples && echo "Deleted" || echo "Still exists")
+ 830: **Legacy Memories**: $(find .serena/memories -maxdepth 1 -name "*.md" 2>/dev/null | wc -l) remaining at root level
  831: 
- 832: **Archive Created**: $(ls tmp/syntropy-initialization/legacy-backup/*.tar.gz | head -n 1)
- 833: **Archive Size**: $(du -h tmp/syntropy-initialization/legacy-backup/*.tar.gz | head -n 1 | cut -f1)
- 834: 
- 835: ## Verification
+ 832: ## Backup
+ 833: 
+ 834: **Archive Created**: $(ls tmp/syntropy-initialization/legacy-backup/*.tar.gz | head -n 1)
+ 835: **Archive Size**: $(du -h tmp/syntropy-initialization/legacy-backup/*.tar.gz | head -n 1 | cut -f1)
  836: 
- 837: **CE 1.1 Structure Active**: $(test -d .ce/PRPs/system && test -d .ce/examples/system && test -d .serena/memories/system && echo "Yes" || echo "No")
- 838: **Zero Noise**: $(test ! -d PRPs && test ! -d examples && echo "Yes - Clean project" || echo "No - Legacy files remain")
- 839: 
- 840: EOF
+ 837: ## Verification
+ 838: 
+ 839: **CE 1.1 Structure Active**: $(test -d .ce/PRPs/system && test -d .ce/examples/system && test -d .serena/memories/system && echo "Yes" || echo "No")
+ 840: **Zero Noise**: $(test ! -d PRPs && test ! -d examples && echo "Yes - Clean project" || echo "No - Legacy files remain")
  841: 
- 842: cat tmp/syntropy-initialization/phase5-report.txt
- 843: ```
- 844: 
- 845: ### Step 5.5: Zero Noise Verification
+ 842: EOF
+ 843: 
+ 844: cat tmp/syntropy-initialization/phase5-report.txt
+ 845: ```
  846: 
- 847: ```bash
- 848: # Final verification: No legacy noise
- 849: echo ""
- 850: echo "=== Zero Noise Verification ==="
- 851: 
- 852: # Check legacy directories deleted
- 853: ! test -d PRPs && echo "✅ PRPs/ removed" || echo "❌ PRPs/ still exists"
- 854: ! test -d examples && echo "✅ examples/ removed" || echo "❌ examples/ still exists"
- 855: 
- 856: # Check no duplicate system memories
- 857: DUPLICATE_SYSTEM_MEMORIES=$(find .serena/memories/ -maxdepth 1 -name "*.md" -type f | while read f; do
- 858:   basename=$(basename "$f")
- 859:   test -f .serena/memories/system/"$basename" && echo "$f"
- 860: done | wc -l)
- 861: 
- 862: test "$DUPLICATE_SYSTEM_MEMORIES" -eq 0 && echo "✅ No duplicate system memories" || echo "❌ $DUPLICATE_SYSTEM_MEMORIES duplicate system memories found"
+ 847: ### Step 5.5: Zero Noise Verification
+ 848: 
+ 849: ```bash
+ 850: # Final verification: No legacy noise
+ 851: echo ""
+ 852: echo "=== Zero Noise Verification ==="
+ 853: 
+ 854: # Check legacy directories deleted
+ 855: ! test -d PRPs && echo "✅ PRPs/ removed" || echo "❌ PRPs/ still exists"
+ 856: ! test -d examples && echo "✅ examples/ removed" || echo "❌ examples/ still exists"
+ 857: 
+ 858: # Check no duplicate system memories
+ 859: DUPLICATE_SYSTEM_MEMORIES=$(find .serena/memories/ -maxdepth 1 -name "*.md" -type f | while read f; do
+ 860:   basename=$(basename "$f")
+ 861:   test -f .serena/memories/system/"$basename" && echo "$f"
+ 862: done | wc -l)
  863: 
- 864: # Final status
- 865: if [ ! -d PRPs ] && [ ! -d examples ] && [ "$DUPLICATE_SYSTEM_MEMORIES" -eq 0 ]; then
- 866:   echo ""
- 867:   echo "✅ PROJECT IS CLEAN - Zero noise achieved"
- 868: else
- 869:   echo ""
- 870:   echo "⚠ PROJECT HAS LEGACY NOISE - Manual cleanup required"
- 871: fi
- 872: ```
- 873: 
- 874: **Phase 5 Complete**: Legacy files removed, CE 1.1 structure clean. Installation complete.
+ 864: test "$DUPLICATE_SYSTEM_MEMORIES" -eq 0 && echo "✅ No duplicate system memories" || echo "❌ $DUPLICATE_SYSTEM_MEMORIES duplicate system memories found"
+ 865: 
+ 866: # Final status
+ 867: if [ ! -d PRPs ] && [ ! -d examples ] && [ "$DUPLICATE_SYSTEM_MEMORIES" -eq 0 ]; then
+ 868:   echo ""
+ 869:   echo "✅ PROJECT IS CLEAN - Zero noise achieved"
+ 870: else
+ 871:   echo ""
+ 872:   echo "⚠ PROJECT HAS LEGACY NOISE - Manual cleanup required"
+ 873: fi
+ 874: ```
  875: 
- 876: ---
+ 876: **Phase 5 Complete**: Legacy files removed, CE 1.1 structure clean. Installation complete.
  877: 
- 878: ## Scenario-Specific Workflows
+ 878: ---
  879: 
- 880: ### Scenario 1: Greenfield Project
+ 880: ## Scenario-Specific Workflows
  881: 
- 882: **Use when**: New project with no existing CE components
+ 882: ### Scenario 1: Greenfield Project
  883: 
- 884: **Phases**: 1, 3, 4 (skip 2, 5)
+ 884: **Use when**: New project with no existing CE components
  885: 
- 886: **Duration**: ~10 minutes
+ 886: **Phases**: 1, 3, 4 (skip 2, 5)
  887: 
- 888: #### Quick Steps
+ 888: **Duration**: ~10 minutes
  889: 
- 890: ```bash
- 891: # Phase 1: Bucket Collection (will be empty)
- 892: mkdir -p tmp/syntropy-initialization/{serena,examples,prps,claude-md,claude-dir}
- 893: echo "✓ Buckets created (empty for greenfield)"
- 894: 
- 895: # Phase 2: SKIP (no user files)
- 896: echo "⏭ Skipping Phase 2 (no user files)"
- 897: 
- 898: # Phase 3: Repomix Package Handling
- 899: repomix --unpack ce-infrastructure.xml --target ./
- 900: cd tools && ./bootstrap.sh && cd ..
- 901: echo "✓ Framework installed"
- 902: 
- 903: # Phase 4: CLAUDE.md Blending (framework only)
- 904: grep -q "## Communication" CLAUDE.md && echo "✓ Framework CLAUDE.md installed"
- 905: 
- 906: # Phase 5: SKIP (no legacy files)
- 907: echo "⏭ Skipping Phase 5 (no legacy files)"
- 908: 
- 909: # Validate
- 910: cd tools && uv run ce validate --level 4 && cd ..
- 911: echo "✅ Greenfield installation complete"
- 912: ```
- 913: 
- 914: ---
+ 890: #### Quick Steps
+ 891: 
+ 892: ```bash
+ 893: # Phase 1: Bucket Collection (will be empty)
+ 894: mkdir -p tmp/syntropy-initialization/{serena,examples,prps,claude-md,claude-dir}
+ 895: echo "✓ Buckets created (empty for greenfield)"
+ 896: 
+ 897: # Phase 2: SKIP (no user files)
+ 898: echo "⏭ Skipping Phase 2 (no user files)"
+ 899: 
+ 900: # Phase 3: Repomix Package Handling
+ 901: repomix --unpack ce-infrastructure.xml --target ./
+ 902: cd tools && ./bootstrap.sh && cd ..
+ 903: echo "✓ Framework installed"
+ 904: 
+ 905: # Phase 4: CLAUDE.md Blending (framework only)
+ 906: grep -q "## Communication" CLAUDE.md && echo "✓ Framework CLAUDE.md installed"
+ 907: 
+ 908: # Phase 5: SKIP (no legacy files)
+ 909: echo "⏭ Skipping Phase 5 (no legacy files)"
+ 910: 
+ 911: # Validate
+ 912: cd tools && uv run ce validate --level 4 && cd ..
+ 913: echo "✅ Greenfield installation complete"
+ 914: ```
  915: 
- 916: ### Scenario 2: Mature Project (No CE)
+ 916: ---
  917: 
- 918: **Use when**: Existing codebase with no CE components
+ 918: ### Scenario 2: Mature Project (No CE)
  919: 
- 920: **Phases**: 1, 2, 3, 4 (skip 5)
+ 920: **Use when**: Existing codebase with no CE components
  921: 
- 922: **Duration**: ~45 minutes
+ 922: **Phases**: 1, 2, 3, 4 (skip 5)
  923: 
- 924: ---
+ 924: **Duration**: ~45 minutes
  925: 
- 926: ### Scenario 3: CE 1.0 Upgrade
+ 926: ---
  927: 
- 928: **Use when**: Existing CE installation, no .ce/ directory (legacy structure)
+ 928: ### Scenario 3: CE 1.0 Upgrade
  929: 
- 930: **Phases**: 1, 2, 3, 4, 5 (all phases)
+ 930: **Use when**: Existing CE installation, no .ce/ directory (legacy structure)
  931: 
- 932: **Duration**: ~40 minutes
+ 932: **Phases**: 1, 2, 3, 4, 5 (all phases)
  933: 
- 934: ---
+ 934: **Duration**: ~40 minutes
  935: 
- 936: ### Scenario 4: Partial Install (Completion)
+ 936: ---
  937: 
- 938: **Use when**: Project has some CE components but missing others
+ 938: ### Scenario 4: Partial Install (Completion)
  939: 
- 940: **Phases**: 1, 3, 4 (selective)
+ 940: **Use when**: Project has some CE components but missing others
  941: 
- 942: **Duration**: ~15 minutes
+ 942: **Phases**: 1, 3, 4 (selective)
  943: 
- 944: ---
+ 944: **Duration**: ~15 minutes
  945: 
- 946: ## Validation Checklist
+ 946: ---
  947: 
- 948: ### Structure Validation
+ 948: ## Validation Checklist
  949: 
- 950: ```bash
- 951: # Check CE 1.1 directory structure
- 952: test -d .ce/examples/system && echo "✅ .ce/examples/system/"
- 953: test -d .ce/PRPs/system && echo "✅ .ce/PRPs/system/"
- 954: test -d .serena/memories/system && echo "✅ .serena/memories/system/"
- 955: test -d .claude/commands && echo "✅ .claude/commands/"
- 956: test -f CLAUDE.md && echo "✅ CLAUDE.md"
- 957: ```
- 958: 
- 959: ### Component Counts
+ 950: ### Structure Validation
+ 951: 
+ 952: ```bash
+ 953: # Check CE 1.1 directory structure
+ 954: test -d .ce/examples/system && echo "✅ .ce/examples/system/"
+ 955: test -d .ce/PRPs/system && echo "✅ .ce/PRPs/system/"
+ 956: test -d .serena/memories/system && echo "✅ .serena/memories/system/"
+ 957: test -d .claude/commands && echo "✅ .claude/commands/"
+ 958: test -f CLAUDE.md && echo "✅ CLAUDE.md"
+ 959: ```
  960: 
- 961: ```bash
- 962: # Expected file counts
- 963: echo "System memories: $(ls .serena/memories/system/*.md 2>/dev/null | wc -l) (expected: 23)"
- 964: echo "System examples: $(ls .ce/examples/system/*.md 2>/dev/null | wc -l) (expected: 21)"
- 965: echo "Framework commands: $(ls .claude/commands/*.md 2>/dev/null | wc -l) (expected: 11+)"
- 966: ```
- 967: 
- 968: ---
+ 961: ### Component Counts
+ 962: 
+ 963: ```bash
+ 964: # Expected file counts
+ 965: echo "System memories: $(ls .serena/memories/system/*.md 2>/dev/null | wc -l) (expected: 23)"
+ 966: echo "System examples: $(ls .ce/examples/system/*.md 2>/dev/null | wc -l) (expected: 21)"
+ 967: echo "Framework commands: $(ls .claude/commands/*.md 2>/dev/null | wc -l) (expected: 11+)"
+ 968: ```
  969: 
- 970: ## Troubleshooting
+ 970: ---
  971: 
- 972: ### Issue: Repomix command not found
+ 972: ## Troubleshooting
  973: 
- 974: **Solution**:
+ 974: ### Issue: Repomix command not found
  975: 
- 976: ```bash
- 977: # Install repomix globally
- 978: npm install -g repomix
- 979: 
- 980: # Or use npx
- 981: npx repomix --unpack ce-infrastructure.xml --target ./
- 982: ```
- 983: 
- 984: ### Issue: Bootstrap script fails
+ 976: **Solution**:
+ 977: 
+ 978: ```bash
+ 979: # Install repomix globally
+ 980: npm install -g repomix
+ 981: 
+ 982: # Or use npx
+ 983: npx repomix --unpack ce-infrastructure.xml --target ./
+ 984: ```
  985: 
- 986: **Solution**:
+ 986: ### Issue: Bootstrap script fails
  987: 
- 988: ```bash
- 989: cd tools
- 990: 
- 991: # Install UV manually
- 992: curl -LsSf https://astral.sh/uv/install.sh | sh
- 993: 
- 994: # Retry bootstrap
- 995: ./bootstrap.sh
- 996: 
- 997: # Or install dependencies directly
- 998: uv sync
- 999: ```
-1000: 
-1001: ---
+ 988: **Solution**:
+ 989: 
+ 990: ```bash
+ 991: cd tools
+ 992: 
+ 993: # Install UV manually
+ 994: curl -LsSf https://astral.sh/uv/install.sh | sh
+ 995: 
+ 996: # Retry bootstrap
+ 997: ./bootstrap.sh
+ 998: 
+ 999: # Or install dependencies directly
+1000: uv sync
+1001: ```
 1002: 
-1003: ## Success Criteria
+1003: ---
 1004: 
-1005: Your installation is complete when:
+1005: ## Success Criteria
 1006: 
-1007: - ✅ All CE 1.1 directories created (`.ce/`, `.serena/`, `.claude/`)
-1008: - ✅ System files installed (23 memories, 21 examples, 11 commands)
-1009: - ✅ CLAUDE.md present with framework sections
-1010: - ✅ Settings JSON valid and merged
-1011: - ✅ CE tools installed (`ce --version` works)
-1012: - ✅ Validation level 4 passes
-1013: - ✅ Context drift <5%
-1014: - ✅ Zero noise (no legacy directories for CE 1.0 upgrades)
-1015: - ✅ Serena memories loaded
-1016: - ✅ Linear configured (if using)
-1017: - ✅ First PRP created successfully
-1018: 
-1019: ---
+1007: Your installation is complete when:
+1008: 
+1009: - ✅ All CE 1.1 directories created (`.ce/`, `.serena/`, `.claude/`)
+1010: - ✅ System files installed (23 memories, 21 examples, 11 commands)
+1011: - ✅ CLAUDE.md present with framework sections
+1012: - ✅ Settings JSON valid and merged
+1013: - ✅ CE tools installed (`ce --version` works)
+1014: - ✅ Validation level 4 passes
+1015: - ✅ Context drift <5%
+1016: - ✅ Zero noise (no legacy directories for CE 1.0 upgrades)
+1017: - ✅ Serena memories loaded
+1018: - ✅ Linear configured (if using)
+1019: - ✅ First PRP created successfully
 1020: 
-1021: ## Related Documentation
+1021: ---
 1022: 
-1023: - **Framework Rules**: `.ce/RULES.md`
-1024: - **Tool Usage Guide**: `.ce/examples/system/TOOL-USAGE-GUIDE.md`
-1025: - **PRP-0 Template**: `.ce/examples/system/templates/PRP-0-CONTEXT-ENGINEERING.md`
-1026: - **Validation Levels**: `.serena/memories/system/validation-levels.md`
-1027: - **Testing Standards**: `.serena/memories/system/testing-standards.md`
-1028: 
-1029: ---
+1023: ## Related Documentation
+1024: 
+1025: - **Framework Rules**: `.ce/RULES.md`
+1026: - **Tool Usage Guide**: `.ce/examples/system/TOOL-USAGE-GUIDE.md`
+1027: - **PRP-0 Template**: `.ce/examples/system/templates/PRP-0-CONTEXT-ENGINEERING.md`
+1028: - **Validation Levels**: `.serena/memories/system/validation-levels.md`
+1029: - **Testing Standards**: `.serena/memories/system/testing-standards.md`
 1030: 
-1031: **Installation Guide Version**: 1.1
-1032: **Last Updated**: 2025-11-04
-1033: **Framework Version**: CE 1.1
+1031: ---
+1032: 
+1033: **Installation Guide Version**: 1.1
+1034: **Last Updated**: 2025-11-04
+1035: **Framework Version**: CE 1.1
 </file>
 
 <file path="CLAUDE.md">
