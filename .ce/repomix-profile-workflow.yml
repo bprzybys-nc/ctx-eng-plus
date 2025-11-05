@@ -12,10 +12,11 @@ output:
   instructionFilePath: null
 
 include:
+  # Framework initialization (unified guide)
+  - "examples/INITIALIZATION.md"
+  - "examples/templates/PRP-0-CONTEXT-ENGINEERING.md"
+
   # Workflow examples (IsWorkflow=Yes from INDEX.md)
-  - "examples/syntropy/*.md"
-  - "examples/workflows/*.md"
-  - "examples/config/*.md"
   - "examples/patterns/dedrifting-lessons.md"
   - "examples/patterns/mocks-marking.md"
   - "examples/TOOL-USAGE-GUIDE.md"
@@ -26,6 +27,7 @@ include:
   - "examples/example.setting.local.md"
   - "examples/model/SystemModel.md"
   - "examples/INDEX.md"
+  - "examples/README.md"
 
   # CLAUDE.md (full file - workflow sections will be extracted manually if needed)
   - "CLAUDE.md"

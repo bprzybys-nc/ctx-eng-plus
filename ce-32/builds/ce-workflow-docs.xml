@@ -33,7 +33,7 @@ The content is organized as follows:
 <notes>
 - Some files may have been excluded based on .gitignore rules and Repomix's configuration
 - Binary files are not included in this packed representation. Please refer to the Repository Structure section for a complete list of file paths, including binary files
-- Only files matching these patterns are included: examples/syntropy/*.md, examples/workflows/*.md, examples/config/*.md, examples/patterns/dedrifting-lessons.md, examples/patterns/mocks-marking.md, examples/TOOL-USAGE-GUIDE.md, examples/prp-decomposition-patterns.md, examples/mermaid-color-palette.md, examples/linear-integration-example.md, examples/tmp-directory-convention.md, examples/example.setting.local.md, examples/model/SystemModel.md, examples/INDEX.md, CLAUDE.md
+- Only files matching these patterns are included: examples/INITIALIZATION.md, examples/templates/PRP-0-CONTEXT-ENGINEERING.md, examples/patterns/dedrifting-lessons.md, examples/patterns/mocks-marking.md, examples/TOOL-USAGE-GUIDE.md, examples/prp-decomposition-patterns.md, examples/mermaid-color-palette.md, examples/linear-integration-example.md, examples/tmp-directory-convention.md, examples/example.setting.local.md, examples/model/SystemModel.md, examples/INDEX.md, examples/README.md, CLAUDE.md
 - Files matching these patterns are excluded: examples/patterns/example-simple-feature.md, examples/patterns/git-message-rules.md, examples/l4-validation-example.md, examples/syntropy-status-hook-system.md, .git/**, .tmp/**, node_modules/**, __pycache__/**
 - Files matching patterns in .gitignore are excluded
 - Files matching default ignore patterns are excluded
@@ -50,11 +50,15 @@ examples/
   patterns/
     dedrifting-lessons.md
     mocks-marking.md
+  templates/
+    PRP-0-CONTEXT-ENGINEERING.md
   example.setting.local.md
   INDEX.md
+  INITIALIZATION.md
   linear-integration-example.md
   mermaid-color-palette.md
   prp-decomposition-patterns.md
+  README.md
   tmp-directory-convention.md
   TOOL-USAGE-GUIDE.md
 CLAUDE.md
@@ -1309,6 +1313,74 @@ This section contains the contents of the repository's files.
 357: - [PRP-8: Sizing Constraint Analysis](../PRPs/feature-requests/PRP-8-prp-sizing-constraint-analysis-and-optimal-breakdown-strategy.md)
 </file>
 
+<file path="examples/README.md">
+ 1: # Code Patterns & Examples
+ 2: 
+ 3: This directory contains reusable code patterns for reference during PRP implementation.
+ 4: 
+ 5: ## Structure
+ 6: 
+ 7: - `patterns/` - Common implementation patterns
+ 8:   - API patterns
+ 9:   - Database patterns
+10:   - Test patterns
+11:   - Error handling patterns
+12: 
+13: ## Usage
+14: 
+15: Reference these patterns in PRPs CONTEXT section:
+16: 
+17: - Similar implementation: `examples/patterns/api-crud.py:15-42`
+18: 
+19: ## Adding Patterns
+20: 
+21: When you implement a particularly good solution, extract it as a pattern:
+22: 
+23: 1. Create a new file in `patterns/` with descriptive name
+24: 2. Include clear comments explaining the pattern
+25: 3. Add usage notes and gotchas
+26: 4. Reference from future PRPs
+27: 
+28: ## Pattern Categories
+29: 
+30: ### API Patterns
+31: 
+32: - RESTful endpoint design
+33: - Request validation
+34: - Response formatting
+35: - Error handling
+36: 
+37: ### Database Patterns
+38: 
+39: - Query builders
+40: - Transaction handling
+41: - Schema migrations
+42: - Connection pooling
+43: 
+44: ### Test Patterns
+45: 
+46: - Unit test structure
+47: - Integration test setup
+48: - Mock patterns
+49: - Fixture management
+50: 
+51: ### Error Handling Patterns
+52: 
+53: - Exception hierarchy
+54: - Error logging
+55: - User-facing error messages
+56: - Recovery strategies
+57: 
+58: ## Contributing
+59: 
+60: Keep patterns:
+61: 
+62: - **Simple**: Single responsibility
+63: - **Documented**: Clear comments
+64: - **Tested**: Include test examples
+65: - **Practical**: Real-world usage
+</file>
+
 <file path="examples/tmp-directory-convention.md">
   1: # tmp/ Directory Convention
   2: 
@@ -1440,6 +1512,284 @@ This section contains the contents of the repository's files.
 128: mv .tmp/batch-gen/* tmp/batch-gen/ 2>/dev/null || true
 129: rmdir .tmp/batch-gen .tmp 2>/dev/null || true
 130: ```
+</file>
+
+<file path="examples/templates/PRP-0-CONTEXT-ENGINEERING.md">
+  1: ---
+  2: prp_id: PRP-0
+  3: title: Context Engineering Framework Installation
+  4: status: executed
+  5: created: {TIMESTAMP}
+  6: executed: {TIMESTAMP}
+  7: batch: 0
+  8: phase: 0
+  9: order: 0
+ 10: estimated_hours: {INSTALL_TIME}
+ 11: complexity: low
+ 12: risk_level: low
+ 13: ce_version: {CE_VERSION}
+ 14: installation_method: {METHOD}
+ 15: ---
+ 16: 
+ 17: # PRP-0: Context Engineering Framework Installation
+ 18: 
+ 19: ## 📋 TL;DR
+ 20: 
+ 21: **What**: Installed Context Engineering (CE) framework version {CE_VERSION} into {PROJECT_NAME}
+ 22: 
+ 23: **When**: {TIMESTAMP}
+ 24: 
+ 25: **How**: {INSTALLATION_METHOD}
+ 26: 
+ 27: **Result**: CE 1.1 framework fully installed with /system/ organization
+ 28: 
+ 29: ---
+ 30: 
+ 31: ## Installation Details
+ 32: 
+ 33: ### CE Version
+ 34: 
+ 35: **Version**: {CE_VERSION}
+ 36: **Release Date**: {CE_RELEASE_DATE}
+ 37: **Distribution Package**: `ce-infrastructure.xml` ({SIZE}KB)
+ 38: 
+ 39: ### Installation Method
+ 40: 
+ 41: **Method**: {METHOD}
+ 42: 
+ 43: **Options**:
+ 44: - `greenfield` - New project, no existing CE
+ 45: - `mature-project` - Existing code, added CE
+ 46: - `existing-ce` - Upgraded CE 1.0 → CE 1.1
+ 47: - `partial-ce` - Completed incomplete installation
+ 48: 
+ 49: ### Installation Date
+ 50: 
+ 51: **Started**: {START_TIMESTAMP}
+ 52: **Completed**: {END_TIMESTAMP}
+ 53: **Duration**: {DURATION} minutes
+ 54: 
+ 55: ---
+ 56: 
+ 57: ## Components Installed
+ 58: 
+ 59: ### Framework Memories (23 files)
+ 60: 
+ 61: **Location**: `.serena/memories/system/`
+ 62: 
+ 63: **Critical Memories (6)**:
+ 64: - code-style-conventions.md
+ 65: - suggested-commands.md
+ 66: - task-completion-checklist.md
+ 67: - testing-standards.md
+ 68: - tool-usage-syntropy.md
+ 69: - use-syntropy-tools-not-bash.md
+ 70: 
+ 71: **Regular Memories (17)**:
+ 72: - batch-generation-patterns.md
+ 73: - ce-tool-patterns.md
+ 74: - complexity-estimation.md
+ 75: - context-drift-monitoring.md
+ 76: - file-structure-best-practices.md
+ 77: - git-worktree-patterns.md
+ 78: - prp-execution-checklist.md
+ 79: - prp-sizing-thresholds.md
+ 80: - sequential-thinking-usage.md
+ 81: - syntropy-mcp-architecture.md
+ 82: - syntropy-tool-management.md
+ 83: - testing-strategy-pattern.md
+ 84: - token-optimization-strategies.md
+ 85: - tool-selection-decision-tree.md
+ 86: - validation-levels.md
+ 87: - worktree-conflict-resolution.md
+ 88: - xml-package-generation.md
+ 89: 
+ 90: ### Framework Examples (21 files)
+ 91: 
+ 92: **Location**: `.ce/examples/system/`
+ 93: 
+ 94: **Files Installed**:
+ 95: {LIST_OF_EXAMPLE_FILES}
+ 96: 
+ 97: ### Framework Commands (11 files)
+ 98: 
+ 99: **Location**: `.claude/commands/`
+100: 
+101: **Commands Installed**:
+102: - batch-exe-prp.md
+103: - batch-gen-prp.md
+104: - denoise.md
+105: - execute-prp.md
+106: - generate-prp.md
+107: - peer-review.md
+108: - sync-with-syntropy.md
+109: - syntropy-health.md
+110: - tools-misuse-scan.md
+111: - update-context.md
+112: - vacuum.md
+113: 
+114: ### Tool Source Code (33 files)
+115: 
+116: **Location**: `tools/`
+117: 
+118: **Modules Installed**:
+119: {LIST_OF_TOOL_MODULES}
+120: 
+121: ### CLAUDE.md Sections
+122: 
+123: **Framework Sections Added**:
+124: - Communication
+125: - Core Principles
+126: - UV Package Management
+127: - Ad-Hoc Code Policy
+128: - Quick Commands
+129: - Tool Naming Convention
+130: - Allowed Tools Summary
+131: - Command Permissions
+132: - Quick Tool Selection
+133: - Project Structure
+134: - Testing Standards
+135: - Code Quality
+136: 
+137: ---
+138: 
+139: ## Validation Results
+140: 
+141: ### Component Verification
+142: 
+143: ```bash
+144: # Run validation checklist
+145: {VALIDATION_COMMAND_OUTPUT}
+146: ```
+147: 
+148: **Results**:
+149: - ✅ 23 system memories installed
+150: - ✅ 21 system examples installed
+151: - ✅ 11 framework commands installed
+152: - ✅ 33 tool files installed
+153: - ✅ CLAUDE.md framework sections added
+154: - ✅ CE 1.1 /system/ organization verified
+155: 
+156: ### Token Counts
+157: 
+158: **Framework Documentation**:
+159: - System memories: ~{MEMORY_TOKENS}k tokens
+160: - System examples: ~{EXAMPLE_TOKENS}k tokens
+161: - Commands: ~{COMMAND_TOKENS}k tokens
+162: - **Total**: ~{TOTAL_TOKENS}k tokens
+163: 
+164: ---
+165: 
+166: ## Project Integration
+167: 
+168: ### Existing Project Context
+169: 
+170: **Project Name**: {PROJECT_NAME}
+171: **Project Type**: {PROJECT_TYPE}
+172: **Primary Language**: {PRIMARY_LANGUAGE}
+173: **Repository**: {REPO_URL}
+174: 
+175: **Pre-Installation State**:
+176: {PRE_INSTALL_STATE}
+177: 
+178: ### Post-Installation Configuration
+179: 
+180: **Syntropy MCP**:
+181: - Status: {MCP_STATUS}
+182: - Servers: {MCP_SERVERS}
+183: 
+184: **Linear Integration**:
+185: - Status: {LINEAR_STATUS}
+186: - Project: {LINEAR_PROJECT}
+187: - Team: {LINEAR_TEAM}
+188: 
+189: **UV Tools**:
+190: - Status: {UV_STATUS}
+191: - Python Version: {PYTHON_VERSION}
+192: 
+193: ---
+194: 
+195: ## Next Steps
+196: 
+197: ### Immediate Actions
+198: 
+199: 1. **Test framework commands**:
+200:    ```bash
+201:    /generate-prp
+202:    /vacuum --dry-run
+203:    /syntropy-health
+204:    ```
+205: 
+206: 2. **Configure project settings**:
+207:    - Update `.claude/settings.local.json` with project-specific permissions
+208:    - Update `CLAUDE.md` with user sections
+209: 
+210: 3. **Create first user PRP**:
+211:    - Document initial feature or bug fix
+212:    - Practice PRP workflow
+213: 
+214: ### Recommended Reading
+215: 
+216: **Essential Documentation**:
+217: - `.ce/examples/system/TOOL-USAGE-GUIDE.md` - Tool selection reference
+218: - `.ce/examples/system/prp-decomposition-patterns.md` - PRP sizing
+219: - `.serena/memories/system/task-completion-checklist.md` - Workflow checklist
+220: 
+221: **Migration Guide**:
+222: - `examples/INITIALIZATION.md` - Complete CE 1.1 initialization guide (5-phase workflow, scenario-aware)
+223: 
+224: ---
+225: 
+226: ## Troubleshooting
+227: 
+228: **Issue**: Commands not found
+229: 
+230: **Solution**:
+231: ```bash
+232: # Verify commands directory
+233: ls .claude/commands/
+234: 
+235: # Check Claude Code settings
+236: cat .claude/settings.local.json | grep commands
+237: ```
+238: 
+239: **Issue**: MCP servers not connected
+240: 
+241: **Solution**:
+242: ```bash
+243: # Remove auth cache
+244: rm -rf ~/.mcp-auth
+245: 
+246: # Restart Claude Code
+247: /mcp
+248: ```
+249: 
+250: ---
+251: 
+252: ## Changelog
+253: 
+254: ### {TIMESTAMP} - Initial Installation
+255: 
+256: - Installed CE {CE_VERSION} via {INSTALLATION_METHOD}
+257: - Added 23 framework memories to `.serena/memories/system/`
+258: - Added 21 framework examples to `.ce/examples/system/`
+259: - Added 11 framework commands to `.claude/commands/`
+260: - Configured CLAUDE.md with framework sections
+261: 
+262: ---
+263: 
+264: ## References
+265: 
+266: - **CE Framework Documentation**: `.ce/examples/system/`
+267: - **Migration Guides**: `examples/workflows/migration-*.md`
+268: - **Master Initialization Guide**: `examples/INITIALIZATION.md`
+269: - **Repomix Packages**: `.ce/ce-infrastructure.xml`, `.ce/ce-workflow-docs.xml`
+270: 
+271: ---
+272: 
+273: **Installation Completed**: {TIMESTAMP}
+274: **Installed By**: {INSTALLER_NAME}
+275: **CE Version**: {CE_VERSION}
 </file>
 
 <file path="examples/model/SystemModel.md">
@@ -4426,361 +4776,6 @@ This section contains the contents of the repository's files.
 2981: - Maintain version history
 </file>
 
-<file path="examples/INDEX.md">
-  1: # Context Engineering Examples Index
-  2: 
-  3: Comprehensive catalog of all Context Engineering framework examples, organized by type and category for easy discovery.
-  4: 
-  5: ## Quick Reference
-  6: 
-  7: **I want to...**
-  8: 
-  9: - Initialize CE framework → [Framework Initialization](#framework-initialization)
- 10: - Learn Syntropy MCP tools → [Tool Usage Guide](TOOL-USAGE-GUIDE.md)
- 11: - Initialize Serena memories → [Serena Memory Templates](#serena-memory-templates) (23 framework memories with YAML headers)
- 12: - Run batch PRPs → Slash commands: `/batch-gen-prp`, `/batch-exe-prp` (see `.claude/commands/`)
- 13: - Clean up my project → Slash command: `/vacuum` (see `.claude/commands/vacuum.md`)
- 14: - Fix context drift → `cd tools && uv run ce context health`
- 15: - Configure commands/hooks → [Slash Commands](#slash-commands)
- 16: - Understand patterns → [Patterns](#patterns)
- 17: - Migrate existing project → [Migration Workflows](#migration-workflows)
- 18: 
- 19: ## All Examples
- 20: 
- 21: | Name | Type | Category | IsWorkflow | Description | Path |
- 22: |------|------|----------|-----------|-------------|------|
- 23: | **FRAMEWORK INITIALIZATION** | | | | | |
- 24: | Initialization Guide | Guide | Initialization | Yes | Master CE 1.1 framework initialization (5 phases: buckets, user files, repomix, blending, cleanup). Covers 4 scenarios: Greenfield, Mature Project, CE 1.0 Upgrade, Partial Install | [INITIALIZATION.md](INITIALIZATION.md) |
- 25: | **TEMPLATES** | | | | | |
- 26: | PRP-0 Template | Template | Initialization | Yes | Document framework installation in meta-PRP (PRP-0-CONTEXT-ENGINEERING.md template) | [templates/PRP-0-CONTEXT-ENGINEERING.md](templates/PRP-0-CONTEXT-ENGINEERING.md) |
- 27: | **SLASH COMMANDS** | | | | | |
- 28: | Batch PRP Execution | Command | Batch | Yes | Execute PRPs in parallel stages with health monitoring (see `.claude/commands/batch-exe-prp.md`) | Command: `/batch-exe-prp` |
- 29: | Batch PRP Generation | Command | Batch | Yes | Generate multiple PRPs from plan with dependency analysis (see `.claude/commands/batch-gen-prp.md`) | Command: `/batch-gen-prp` |
- 30: | Context Drift Check | Command | Context | Yes | Fast drift score check without full validation (see `.claude/commands/analyze-context.md`) | Command: `/analyze-context` |
- 31: | Denoise Documents | Command | Cleanup | Yes | Compress verbose documentation with AI-powered denoising (see `.claude/commands/denoise.md`) | Command: `/denoise` |
- 32: | Vacuum Cleanup | Command | Cleanup | Yes | Identify and remove project noise with confidence-based deletion (see `.claude/commands/vacuum.md`) | Command: `/vacuum` |
- 33: | **PATTERNS** | | | | | |
- 34: | Dedrifting Lessons | Pattern | Context | Yes | Root cause analysis for context drift with prevention strategies | [patterns/dedrifting-lessons.md](patterns/dedrifting-lessons.md) |
- 35: | Example Simple Feature | Pattern | PRP | No | Complete PRP example for adding git status summary command (ctx-eng-plus specific) | [patterns/example-simple-feature.md](patterns/example-simple-feature.md) |
- 36: | Git Message Rules | Pattern | Git | No | Git commit message formatting and convention rules (ctx-eng-plus specific) | [patterns/git-message-rules.md](patterns/git-message-rules.md) |
- 37: | Mock Marking Pattern | Pattern | Testing | Yes | Mark mocks with FIXME comments for tracking temporary test code | [patterns/mocks-marking.md](patterns/mocks-marking.md) |
- 38: | **GUIDES** | | | | | |
- 39: | Tool Usage Guide | Guide | Tools | Yes | Complete tool selection guide with native-first philosophy, decision trees and examples | [TOOL-USAGE-GUIDE.md](TOOL-USAGE-GUIDE.md) |
- 40: | PRP Decomposition Patterns | Guide | PRP | Yes | Patterns for breaking down large features into manageable PRPs | [prp-decomposition-patterns.md](prp-decomposition-patterns.md) |
- 41: | **REFERENCE** | | | | | |
- 42: | L4 Validation Example | Reference | Validation | No | Level 4 pattern conformance validation example (ctx-eng-plus specific) | [l4-validation-example.md](l4-validation-example.md) |
- 43: | Linear Integration Example | Reference | MCP | Yes | Linear MCP integration example with configuration defaults | [linear-integration-example.md](linear-integration-example.md) |
- 44: | Mermaid Color Palette | Reference | Diagrams | Yes | Standard color palette for mermaid diagrams with light/dark themes | [mermaid-color-palette.md](mermaid-color-palette.md) |
- 45: | Syntropy Status Hook | Reference | MCP | No | Syntropy MCP health check system (references ctx-eng-plus scripts) | [syntropy-status-hook-system.md](syntropy-status-hook-system.md) |
- 46: | Settings Local Example | Reference | Configuration | Yes | Example .claude/settings.local.json with permissions (framework template) | [example.setting.local.md](example.setting.local.md) |
- 47: | tmp/ Directory Convention | Reference | Standards | Yes | Conventions for temporary file storage and cleanup | [tmp-directory-convention.md](tmp-directory-convention.md) |
- 48: | **MODEL** | | | | | |
- 49: | System Model | Model | Architecture | Yes | Complete Context Engineering framework architecture and design | [model/SystemModel.md](model/SystemModel.md) |
- 50: 
- 51: ## Statistics
- 52: 
- 53: ### Examples & Documentation
- 54: 
- 55: - **Total Examples**: 23 files
- 56: - **Framework Initialization**: 6 (Main guide + 4 migration workflows + integration summary)
- 57: - **Templates**: 1 (PRP-0-CONTEXT-ENGINEERING.md)
- 58: - **Slash Commands**: 5 (Reference - actual commands in `.claude/commands/`)
- 59: - **Patterns**: 4 (Git, testing, context, PRP)
- 60: - **Guides**: 2 (Tools, PRP decomposition)
- 61: - **Reference**: 6 (Validation, diagrams, standards, Syntropy overview)
- 62: - **Model**: 1 (System architecture)
- 63: 
- 64: **Note**: Workflows previously referenced in INDEX.md now exist as slash commands (`.claude/commands/`) or CLI tools (`ce` command). Migration guides and initialization documentation are new additions for CE 1.1.
- 65: 
- 66: ### Serena Memories
- 67: 
- 68: - **Total Memories**: 23 files (~3,621 lines) with YAML type headers (CE 1.1)
- 69: - **Type System**: All framework memories default to `type: regular` (users upgrade to `type: critical` during target project initialization)
- 70: - **Categories**: documentation (13), pattern (5), architecture (2), configuration (4), troubleshooting (1)
- 71: - **Critical Memory Candidates**: 6 memories (code-style-conventions, suggested-commands, task-completion-checklist, testing-standards, tool-usage-syntropy, use-syntropy-tools-not-bash)
- 72: - **Memory Type README**: See `.serena/memories/README.md` for complete type system documentation
- 73: - **Storage**: `.serena/memories/` (created automatically by Serena MCP)
- 74: 
- 75: ## Categories
- 76: 
- 77: ### Framework Initialization
- 78: 
- 79: Complete CE 1.1 framework initialization and migration workflows:
- 80: 
- 81: | Example | Type | Duration | Description |
- 82: |---------|------|----------|-------------|
- 83: | [Initialization Guide](INITIALIZATION.md) | Guide | Variable | Master CE 1.1 framework initialization guide (5 phases: buckets, user files, repomix, blending, cleanup). Covers 4 scenarios: Greenfield (10 min), Mature Project (45 min), CE 1.0 Upgrade (40 min), Partial Install (15 min) |
- 84: | [PRP-0 Template](templates/PRP-0-CONTEXT-ENGINEERING.md) | Template | - | Document framework installation in meta-PRP |
- 85: 
- 86: **Total**: 2 files (1 master guide + 1 template)
- 87: 
- 88: **Key Features**:
- 89: - 5-phase initialization (bucket collection, user files, repomix, blending, cleanup)
- 90: - /system/ organization for framework files (separation from user files)
- 91: - YAML header system for memories and PRPs (type: regular/critical/user)
- 92: - Zero noise guarantee (legacy files cleaned up after migration)
- 93: - PRP-0 convention (document installation in meta-PRP)
- 94: 
- 95: ### Serena Memory Templates
- 96: 
- 97: #### Recommended Memory Types for New Projects
- 98: 
- 99: Recommended initial knowledge base for Serena memory initialization in new projects:
-100: 
-101: | Memory Type | Purpose | IsWorkflow | When to Use | Example Topics |
-102: |-------------|---------|-----------|-------------|-----------------|
-103: | `architecture` | Document architectural decisions and design rationale | Yes | Record why certain patterns/structures were chosen | Validation approach, error handling strategy, module organization |
-104: | `pattern` | Build reusable solution library | Yes | Store recurring solution patterns discovered during development | Retry strategies, error recovery, async patterns, testing approaches |
-105: | `troubleshooting` | Capture issue resolution steps for recurring problems | Yes | Document root causes and fixes for common issues | MCP connection errors, git conflicts, validation failures |
-106: | `configuration` | Setup notes and configuration guidelines | Yes | Record framework setup decisions and best practices | Serena project activation, hook configuration, path conventions |
-107: | `documentation` | Cache frequently-accessed library documentation | Yes | Store Context7-fetched docs for quick offline access | Next.js routing, React patterns, Python asyncio guides |
-108: | `note` | Record session insights, handoffs, and observations | Conditional | Preserve context between sessions; project-specific when filled | Session end state, discovered gotchas, optimization insights |
-109: 
-110: **Initialization Strategy**: When activating Serena for a new CE project, create template memories for architecture, pattern, troubleshooting, and configuration types with framework-level guidance. Let projects accumulate documentation and note types organically during development.
-111: 
-112: #### Existing Project Memories
-113: 
-114: Current knowledge base in `.serena/memories/` (23 files, ~3,719 lines):
-115: 
-116: **Universal Memories (IsWorkflow = Yes)** - Suitable for copying to new projects:
-117: 
-118: | Memory | Type | Purpose | Lines |
-119: |--------|------|---------|-------|
-120: | [code-style-conventions.md](.serena/memories/code-style-conventions.md) | pattern | Coding principles: KISS, no fishy fallbacks, mock marking, function/file size limits | 129 |
-121: | [suggested-commands.md](.serena/memories/suggested-commands.md) | documentation | Common commands reference (UV, pytest, CE tools, Darwin) | 98 |
-122: | [task-completion-checklist.md](.serena/memories/task-completion-checklist.md) | documentation | Pre-commit verification checklist with all quality gates | 80 |
-123: | [testing-standards.md](.serena/memories/testing-standards.md) | pattern | Testing philosophy: real functionality, no mocks, TDD approach | 87 |
-124: | [tool-usage-syntropy.md](.serena/memories/tool-usage-syntropy.md) | documentation | Comprehensive Syntropy tool selection guide with decision trees | 425 |
-125: | [use-syntropy-tools-not-bash.md](.serena/memories/use-syntropy-tools-not-bash.md) | pattern | Core principle & migration patterns: prefer Syntropy over bash | 200 |
-126: 
-127: **Project-Specific Memories (IsWorkflow = No)** - Ctx-eng-plus custom knowledge:
-128: 
-129: | Memory | Type | Purpose | Lines |
-130: |--------|------|---------|-------|
-131: | [codebase-structure.md](.serena/memories/codebase-structure.md) | architecture | Complete directory layout and module organization | 196 |
-132: | [cwe78-prp22-newline-escape-issue.md](.serena/memories/cwe78-prp22-newline-escape-issue.md) | troubleshooting | Security issue with Serena regex replacement and workaround | 100 |
-133: | [l4-validation-usage.md](.serena/memories/l4-validation-usage.md) | pattern | L4 validation system usage, modules, and drift thresholds | 150 |
-134: | [linear-issue-creation-pattern.md](.serena/memories/linear-issue-creation-pattern.md) | pattern | Working example for Linear issue creation with PRP metadata | 69 |
-135: | [linear-issue-tracking-integration.md](.serena/memories/linear-issue-tracking-integration.md) | pattern | Bi-directional Linear/PRP integration workflow | 213 |
-136: | [linear-mcp-integration-example.md](.serena/memories/linear-mcp-integration-example.md) | pattern | Linear MCP integration with configuration defaults | 101 |
-137: | [linear-mcp-integration.md](.serena/memories/linear-mcp-integration.md) | documentation | Complete Linear MCP tool reference (20+ tools) | 114 |
-138: | [project-overview.md](.serena/memories/project-overview.md) | documentation | Master project documentation with tech stack & features | 188 |
-139: | [PRP-15-remediation-workflow-implementation.md](.serena/memories/PRP-15-remediation-workflow-implementation.md) | documentation | Implementation record for PRP-15 remediation workflow | 206 |
-140: | [prp-2-implementation-patterns.md](.serena/memories/prp-2-implementation-patterns.md) | pattern | State management patterns and atomic write practices | 330 |
-141: | [prp-backlog-system.md](.serena/memories/prp-backlog-system.md) | configuration | PRP backlog directory system and workflow | 106 |
-142: | [prp-structure-initialized.md](.serena/memories/prp-structure-initialized.md) | documentation | PRP structure initialization completion record | 80 |
-143: | [serena-implementation-verification-pattern.md](.serena/memories/serena-implementation-verification-pattern.md) | pattern | Pattern for verifying PRP implementations with Serena symbol lookup | 139 |
-144: | [serena-mcp-tool-restrictions.md](.serena/memories/serena-mcp-tool-restrictions.md) | configuration | Current tool restrictions, allowed tools, and workarounds | 236 |
-145: | [syntropy-status-hook-pattern.md](.serena/memories/syntropy-status-hook-pattern.md) | pattern | Cache-based architecture for SessionStart hook MCP access | 177 |
-146: | [system-model-specification.md](.serena/memories/system-model-specification.md) | documentation | Formal specification of Context Engineering target architecture | 157 |
-147: | [tool-config-optimization-completed.md](.serena/memories/tool-config-optimization-completed.md) | documentation | Completion record for tool config optimization (7 violations resolved) | 63 |
-148: 
-149: **Summary**: 23 framework memories with YAML type headers (CE 1.1)
-150: - 6 critical memory candidates (type: regular by default, upgrade to type: critical during initialization)
-151: - 17 project-specific memories (ctx-eng-plus custom knowledge)
-152: - See `.serena/memories/README.md` for complete memory type system documentation
-153: 
-154: **Storage**: `.serena/memories/` (created automatically by Serena MCP)
-155: 
-156: **Related Documentation**:
-157: - [Tool Usage Guide](TOOL-USAGE-GUIDE.md) - Native-first tool selection philosophy
-158: - [Initialization Guide](INITIALIZATION.md) - Framework initialization and memory setup
-159: 
-160: ### Slash Commands & CLI Tools
-161: 
-162: Workflow automation via slash commands and CLI tools:
-163: 
-164: | Command | Type | Description |
-165: |---------|------|-------------|
-166: | `/batch-gen-prp` | Slash Command | Generate multiple PRPs from plan with dependency analysis (see `.claude/commands/batch-gen-prp.md`) |
-167: | `/batch-exe-prp` | Slash Command | Execute PRPs in parallel stages with health monitoring (see `.claude/commands/batch-exe-prp.md`) |
-168: | `/vacuum` | Slash Command | Identify and remove project noise with confidence-based deletion (see `.claude/commands/vacuum.md`) |
-169: | `/denoise` | Slash Command | Compress verbose documentation with AI-powered denoising (see `.claude/commands/denoise.md`) |
-170: | `/analyze-context` | Slash Command | Fast drift score check without full validation (see `.claude/commands/analyze-context.md`) |
-171: | `ce context health` | CLI Tool | Context health check with drift analysis (see `tools/ce/context.py`) |
-172: | `ce validate --level 4` | CLI Tool | Full validation suite with L1-L4 checks (see `tools/ce/validate.py`) |
-173: | `ce vacuum` | CLI Tool | Vacuum cleanup with execute/auto modes (see `tools/ce/` CLI) |
-174: 
-175: **Total**: 5 slash commands + 3 CLI tools
-176: 
-177: **Documentation**: All slash commands documented in `.claude/commands/`, CLI tools documented in `tools/README.md`
-178: 
-179: ### Configuration
-180: 
-181: Commands and hooks:
-182: 
-183: | Example | Lines | Focus |
-184: |---------|-------|-------|
-185: | [Hook Configuration](config/hook-configuration.md) | 649 | Lifecycle hooks (pre-commit, session-start) |
-186: | [Slash Command Template](config/slash-command-template.md) | 622 | Custom command creation |
-187: 
-188: **Total**: 2 examples, 1,271 lines
-189: 
-190: ### Patterns
-191: 
-192: Reusable patterns and practices:
-193: 
-194: | Example | Lines | Focus |
-195: |---------|-------|-------|
-196: | [Dedrifting Lessons](patterns/dedrifting-lessons.md) | 241 | Context drift prevention |
-197: | [Git Message Rules](patterns/git-message-rules.md) | 205 | Commit message conventions |
-198: | [Example Simple Feature](patterns/example-simple-feature.md) | 182 | Complete PRP example |
-199: | [Mock Marking](patterns/mocks-marking.md) | 96 | Test mock tracking |
-200: 
-201: **Total**: 4 examples, 724 lines
-202: 
-203: ### Guides
-204: 
-205: Comprehensive guides:
-206: 
-207: | Example | Lines | Focus |
-208: |---------|-------|-------|
-209: | [Tool Usage Guide](TOOL-USAGE-GUIDE.md) | 606 | Native-first tool selection philosophy |
-210: | [PRP Decomposition Patterns](prp-decomposition-patterns.md) | 357 | Breaking down large features |
-211: 
-212: **Total**: 2 examples, 963 lines
-213: 
-214: ### Reference
-215: 
-216: Quick reference materials:
-217: 
-218: | Example | Lines | Focus |
-219: |---------|-------|-------|
-220: | [Mermaid Color Palette](mermaid-color-palette.md) | 313 | Diagram color standards |
-221: | [L4 Validation Example](l4-validation-example.md) | 290 | Pattern conformance validation |
-222: | [Linear Integration Example](linear-integration-example.md) | 204 | Legacy Linear example |
-223: | [Syntropy Status Hook](syntropy-status-hook-system.md) | 149 | MCP health check |
-224: | [tmp/ Convention](tmp-directory-convention.md) | 130 | Temp file standards |
-225: | [Settings Local Example](example.setting.local.md) | 17 | Configuration example |
-226: 
-227: **Total**: 6 examples, 1,103 lines
-228: 
-229: ### Model
-230: 
-231: System architecture:
-232: 
-233: | Example | Lines | Focus |
-234: |---------|-------|-------|
-235: | [System Model](model/SystemModel.md) | 2,981 | Complete framework architecture |
-236: 
-237: **Total**: 1 example, 2,981 lines
-238: 
-239: ## IsWorkflow Distribution
-240: 
-241: ### Examples
-242: 
-243: - **Yes** (Universal/Framework): 21 examples (84%)
-244: - **No** (Project-Specific): 4 examples (16%)
-245: 
-246: ### Serena Memories
-247: 
-248: - **Yes** (Universal/Framework): 6 memories (1,013 lines, 28%) - Suitable for all CE projects
-249: - **No** (Project-Specific): 17 memories (2,608 lines, 72%) - Ctx-eng-plus custom knowledge
-250: 
-251: ### Classification Legend
-252: 
-253: **IsWorkflow = Yes**: Universal CE framework documentation that should be copied to any target project during initialization. Includes MCP patterns, generic workflows, framework config templates, reusable practices, and essential coding/testing standards.
-254: 
-255: **IsWorkflow = No**: Project-specific documentation tied to ctx-eng-plus codebase, conventions, or implementation details. Not suitable for general distribution to other projects.
-256: 
-257: ### Project-Specific Examples (No)
-258: 
-259: 1. **Example Simple Feature** (patterns/) - Demonstrates adding git status summary command specific to ctx-eng-plus
-260: 2. **Git Message Rules** (patterns/) - Commit message conventions specific to this project
-261: 3. **L4 Validation Example** (reference/) - Validation patterns specific to ctx-eng-plus infrastructure
-262: 4. **Syntropy Status Hook** (reference/) - References ctx-eng-plus-specific scripts (scripts/session-startup.sh)
-263: 
-264: ### Universal Serena Memories to Copy to New Projects
-265: 
-266: 1. **code-style-conventions** (pattern) - Coding principles and standards
-267: 2. **suggested-commands** (documentation) - Common command reference
-268: 3. **task-completion-checklist** (documentation) - Quality gates verification
-269: 4. **testing-standards** (pattern) - Testing philosophy and practices
-270: 5. **tool-usage-syntropy** (documentation) - Syntropy tool selection guide
-271: 6. **use-syntropy-tools-not-bash** (pattern) - Migration patterns and principles
-272: 
-273: ## Syntropy Integration
-274: 
-275: **Examples using Syntropy MCP**: 9/25 (36%)
-276: 
-277: - **Heavy usage** (20+ references): Serena Symbol Search (58), Linear Integration (30), Context7 Docs (29), Tool Usage Guide (34), Memory Management (34), Syntropy README (navigation hub)
-278: - **Moderate usage** (5-20 references): Thinking Sequential (17), System Model (2)
-279: - **Light usage** (1-5 references): Syntropy Status Hook (1), Slash Command Template (1)
-280: 
-281: ## Usage Patterns
-282: 
-283: ### By Use Case
-284: 
-285: **Starting with Context Engineering**:
-286: 
-287: 1. [System Model](model/SystemModel.md) - Understand framework architecture
-288: 2. [Tool Usage Guide](TOOL-USAGE-GUIDE.md) - Learn tool selection
-289: 3. [Example Simple Feature](patterns/example-simple-feature.md) - See complete PRP
-290: 4. [Execute PRP workflow](workflows/batch-prp-execution.md) - Implement PRPs
-291: 
-292: **Learning Syntropy MCP**:
-293: 
-294: 1. [Syntropy README](syntropy/README.md) - Master overview, decision matrix, tool naming
-295: 2. [Serena Symbol Search](syntropy/serena-symbol-search.md) - Code navigation and refactoring
-296: 3. [Context7 Docs Fetch](syntropy/context7-docs-fetch.md) - Library documentation fetching
-297: 4. [Linear Integration](syntropy/linear-integration.md) - Issue tracking and project management
-298: 
-299: **Maintaining Project Health**:
-300: 
-301: 1. [Context Drift Remediation](workflows/context-drift-remediation.md) - Sync PRPs
-302: 2. [Vacuum Cleanup](workflows/vacuum-cleanup.md) - Remove noise
-303: 3. [Denoise Documents](workflows/denoise-documents.md) - Compress docs
-304: 4. [Dedrifting Lessons](patterns/dedrifting-lessons.md) - Prevention strategies
-305: 
-306: **Batch Operations**:
-307: 
-308: 1. [Batch PRP Generation](workflows/batch-prp-generation.md) - Generate from plan
-309: 2. [Batch PRP Execution](workflows/batch-prp-execution.md) - Execute in parallel
-310: 3. [PRP Decomposition Patterns](prp-decomposition-patterns.md) - Break down features
-311: 
-312: **Configuration**:
-313: 
-314: 1. [Slash Command Template](config/slash-command-template.md) - Create commands
-315: 2. [Hook Configuration](config/hook-configuration.md) - Lifecycle hooks
-316: 3. [Settings Local Example](example.setting.local.md) - Configuration format
-317: 
-318: ## Maintenance
-319: 
-320: **Updating this index**:
-321: 
-322: When adding new examples:
-323: 
-324: 1. Create example file following content template (150-300 lines)
-325: 2. Add entry to appropriate category section above
-326: 3. Update statistics
-327: 4. Commit: `git add examples/ && git commit -m "Examples: Added [name]"`
-328: 
-329: **Content template**:
-330: 
-331: - **Purpose**: What this example demonstrates, when to use
-332: - **Prerequisites**: Required setup
-333: - **Examples**: 3-4 concrete examples with input/output
-334: - **Common Patterns**: 3-5 patterns
-335: - **Anti-Patterns**: 2-3 things not to do
-336: - **Related**: Links to related examples
-337: 
-338: ## Related Documentation
-339: 
-340: - [CLAUDE.md](../CLAUDE.md) - Project guide and quick commands
-341: - [PRPs/](../PRPs/) - Executed and feature request PRPs
-342: - [.claude/commands/](../.claude/commands/) - Slash commands (11 framework commands including peer-review)
-343: 
-344: ## Contributing
-345: 
-346: To add new examples:
-347: 
-348: 1. Follow [content template](syntropy/README.md#content-template) structure
-349: 2. Add to appropriate directory (syntropy/, workflows/, config/, patterns/)
-350: 3. Update INDEX.md with new entry
-351: 4. Cross-link with related examples
-352: 5. Run validation: `cd tools && uv run ce validate --level 4`
-</file>
-
 <file path="examples/TOOL-USAGE-GUIDE.md">
   1: # Tool Usage Guide - Claude Code Native-First Philosophy
   2: 
@@ -5388,6 +5383,1397 @@ This section contains the contents of the repository's files.
 604: **End of Guide**
 605: 
 606: For questions or suggestions, update this guide via PR following Context Engineering framework.
+</file>
+
+<file path="examples/INDEX.md">
+  1: # Context Engineering Examples Index
+  2: 
+  3: Comprehensive catalog of all Context Engineering framework examples, organized by type and category for easy discovery.
+  4: 
+  5: ## Quick Reference
+  6: 
+  7: **I want to...**
+  8: 
+  9: - Initialize CE framework → [Framework Initialization](#framework-initialization)
+ 10: - Learn Syntropy MCP tools → [Tool Usage Guide](TOOL-USAGE-GUIDE.md)
+ 11: - Initialize Serena memories → [Serena Memory Templates](#serena-memory-templates) (23 framework memories with YAML headers)
+ 12: - Run batch PRPs → Slash commands: `/batch-gen-prp`, `/batch-exe-prp` (see `.claude/commands/`)
+ 13: - Clean up my project → Slash command: `/vacuum` (see `.claude/commands/vacuum.md`)
+ 14: - Fix context drift → `cd tools && uv run ce context health`
+ 15: - Configure commands/hooks → [Slash Commands](#slash-commands)
+ 16: - Understand patterns → [Patterns](#patterns)
+ 17: - Migrate existing project → [Migration Workflows](#migration-workflows)
+ 18: 
+ 19: ## All Examples
+ 20: 
+ 21: | Name | Type | Category | IsWorkflow | Description | Path |
+ 22: |------|------|----------|-----------|-------------|------|
+ 23: | **FRAMEWORK INITIALIZATION** | | | | | |
+ 24: | Initialization Guide | Guide | Initialization | Yes | Master CE 1.1 framework initialization (5 phases: buckets, user files, repomix, blending, cleanup). Covers 4 scenarios: Greenfield, Mature Project, CE 1.0 Upgrade, Partial Install | [INITIALIZATION.md](INITIALIZATION.md) |
+ 25: | **TEMPLATES** | | | | | |
+ 26: | PRP-0 Template | Template | Initialization | Yes | Document framework installation in meta-PRP (PRP-0-CONTEXT-ENGINEERING.md template) | [templates/PRP-0-CONTEXT-ENGINEERING.md](templates/PRP-0-CONTEXT-ENGINEERING.md) |
+ 27: | **SLASH COMMANDS** | | | | | |
+ 28: | Batch PRP Execution | Command | Batch | Yes | Execute PRPs in parallel stages with health monitoring (see `.claude/commands/batch-exe-prp.md`) | Command: `/batch-exe-prp` |
+ 29: | Batch PRP Generation | Command | Batch | Yes | Generate multiple PRPs from plan with dependency analysis (see `.claude/commands/batch-gen-prp.md`) | Command: `/batch-gen-prp` |
+ 30: | Context Drift Check | Command | Context | Yes | Fast drift score check without full validation (see `.claude/commands/analyze-context.md`) | Command: `/analyze-context` |
+ 31: | Denoise Documents | Command | Cleanup | Yes | Compress verbose documentation with AI-powered denoising (see `.claude/commands/denoise.md`) | Command: `/denoise` |
+ 32: | Vacuum Cleanup | Command | Cleanup | Yes | Identify and remove project noise with confidence-based deletion (see `.claude/commands/vacuum.md`) | Command: `/vacuum` |
+ 33: | **PATTERNS** | | | | | |
+ 34: | Dedrifting Lessons | Pattern | Context | Yes | Root cause analysis for context drift with prevention strategies | [patterns/dedrifting-lessons.md](patterns/dedrifting-lessons.md) |
+ 35: | Example Simple Feature | Pattern | PRP | No | Complete PRP example for adding git status summary command (ctx-eng-plus specific) | [patterns/example-simple-feature.md](patterns/example-simple-feature.md) |
+ 36: | Git Message Rules | Pattern | Git | No | Git commit message formatting and convention rules (ctx-eng-plus specific) | [patterns/git-message-rules.md](patterns/git-message-rules.md) |
+ 37: | Mock Marking Pattern | Pattern | Testing | Yes | Mark mocks with FIXME comments for tracking temporary test code | [patterns/mocks-marking.md](patterns/mocks-marking.md) |
+ 38: | **GUIDES** | | | | | |
+ 39: | Tool Usage Guide | Guide | Tools | Yes | Complete tool selection guide with native-first philosophy, decision trees and examples | [TOOL-USAGE-GUIDE.md](TOOL-USAGE-GUIDE.md) |
+ 40: | PRP Decomposition Patterns | Guide | PRP | Yes | Patterns for breaking down large features into manageable PRPs | [prp-decomposition-patterns.md](prp-decomposition-patterns.md) |
+ 41: | **REFERENCE** | | | | | |
+ 42: | L4 Validation Example | Reference | Validation | No | Level 4 pattern conformance validation example (ctx-eng-plus specific) | [l4-validation-example.md](l4-validation-example.md) |
+ 43: | Linear Integration Example | Reference | MCP | Yes | Linear MCP integration example with configuration defaults | [linear-integration-example.md](linear-integration-example.md) |
+ 44: | Mermaid Color Palette | Reference | Diagrams | Yes | Standard color palette for mermaid diagrams with light/dark themes | [mermaid-color-palette.md](mermaid-color-palette.md) |
+ 45: | Syntropy Status Hook | Reference | MCP | No | Syntropy MCP health check system (references ctx-eng-plus scripts) | [syntropy-status-hook-system.md](syntropy-status-hook-system.md) |
+ 46: | Settings Local Example | Reference | Configuration | Yes | Example .claude/settings.local.json with permissions (framework template) | [example.setting.local.md](example.setting.local.md) |
+ 47: | tmp/ Directory Convention | Reference | Standards | Yes | Conventions for temporary file storage and cleanup | [tmp-directory-convention.md](tmp-directory-convention.md) |
+ 48: | **MODEL** | | | | | |
+ 49: | System Model | Model | Architecture | Yes | Complete Context Engineering framework architecture and design | [model/SystemModel.md](model/SystemModel.md) |
+ 50: 
+ 51: ## Statistics
+ 52: 
+ 53: ### Examples & Documentation
+ 54: 
+ 55: - **Total Examples**: 23 files
+ 56: - **Framework Initialization**: 6 (Main guide + 4 migration workflows + integration summary)
+ 57: - **Templates**: 1 (PRP-0-CONTEXT-ENGINEERING.md)
+ 58: - **Slash Commands**: 5 (Reference - actual commands in `.claude/commands/`)
+ 59: - **Patterns**: 4 (Git, testing, context, PRP)
+ 60: - **Guides**: 2 (Tools, PRP decomposition)
+ 61: - **Reference**: 6 (Validation, diagrams, standards, Syntropy overview)
+ 62: - **Model**: 1 (System architecture)
+ 63: 
+ 64: **Note**: Workflows previously referenced in INDEX.md now exist as slash commands (`.claude/commands/`) or CLI tools (`ce` command). Migration guides and initialization documentation are new additions for CE 1.1.
+ 65: 
+ 66: ### Serena Memories
+ 67: 
+ 68: - **Total Memories**: 23 files (~3,621 lines) with YAML type headers (CE 1.1)
+ 69: - **Type System**: All framework memories default to `type: regular` (users upgrade to `type: critical` during target project initialization)
+ 70: - **Categories**: documentation (13), pattern (5), architecture (2), configuration (4), troubleshooting (1)
+ 71: - **Critical Memory Candidates**: 6 memories (code-style-conventions, suggested-commands, task-completion-checklist, testing-standards, tool-usage-syntropy, use-syntropy-tools-not-bash)
+ 72: - **Memory Type README**: See `.serena/memories/README.md` for complete type system documentation
+ 73: - **Storage**: `.serena/memories/` (created automatically by Serena MCP)
+ 74: 
+ 75: ## Categories
+ 76: 
+ 77: ### Framework Initialization
+ 78: 
+ 79: Complete CE 1.1 framework initialization and migration workflows:
+ 80: 
+ 81: | Example | Type | Duration | Description |
+ 82: |---------|------|----------|-------------|
+ 83: | [Initialization Guide](INITIALIZATION.md) | Guide | Variable | Master CE 1.1 framework initialization guide (5 phases: buckets, user files, repomix, blending, cleanup). Covers 4 scenarios: Greenfield (10 min), Mature Project (45 min), CE 1.0 Upgrade (40 min), Partial Install (15 min) |
+ 84: | [PRP-0 Template](templates/PRP-0-CONTEXT-ENGINEERING.md) | Template | - | Document framework installation in meta-PRP |
+ 85: 
+ 86: **Total**: 2 files (1 master guide + 1 template)
+ 87: 
+ 88: **Key Features**:
+ 89: - 5-phase initialization (bucket collection, user files, repomix, blending, cleanup)
+ 90: - /system/ organization for framework files (separation from user files)
+ 91: - YAML header system for memories and PRPs (type: regular/critical/user)
+ 92: - Zero noise guarantee (legacy files cleaned up after migration)
+ 93: - PRP-0 convention (document installation in meta-PRP)
+ 94: 
+ 95: ### Serena Memory Templates
+ 96: 
+ 97: #### Recommended Memory Types for New Projects
+ 98: 
+ 99: Recommended initial knowledge base for Serena memory initialization in new projects:
+100: 
+101: | Memory Type | Purpose | IsWorkflow | When to Use | Example Topics |
+102: |-------------|---------|-----------|-------------|-----------------|
+103: | `architecture` | Document architectural decisions and design rationale | Yes | Record why certain patterns/structures were chosen | Validation approach, error handling strategy, module organization |
+104: | `pattern` | Build reusable solution library | Yes | Store recurring solution patterns discovered during development | Retry strategies, error recovery, async patterns, testing approaches |
+105: | `troubleshooting` | Capture issue resolution steps for recurring problems | Yes | Document root causes and fixes for common issues | MCP connection errors, git conflicts, validation failures |
+106: | `configuration` | Setup notes and configuration guidelines | Yes | Record framework setup decisions and best practices | Serena project activation, hook configuration, path conventions |
+107: | `documentation` | Cache frequently-accessed library documentation | Yes | Store Context7-fetched docs for quick offline access | Next.js routing, React patterns, Python asyncio guides |
+108: | `note` | Record session insights, handoffs, and observations | Conditional | Preserve context between sessions; project-specific when filled | Session end state, discovered gotchas, optimization insights |
+109: 
+110: **Initialization Strategy**: When activating Serena for a new CE project, create template memories for architecture, pattern, troubleshooting, and configuration types with framework-level guidance. Let projects accumulate documentation and note types organically during development.
+111: 
+112: #### Existing Project Memories
+113: 
+114: Current knowledge base in `.serena/memories/` (23 files, ~3,719 lines):
+115: 
+116: **Universal Memories (IsWorkflow = Yes)** - Suitable for copying to new projects:
+117: 
+118: | Memory | Type | Purpose | Lines |
+119: |--------|------|---------|-------|
+120: | [code-style-conventions.md](.serena/memories/code-style-conventions.md) | pattern | Coding principles: KISS, no fishy fallbacks, mock marking, function/file size limits | 129 |
+121: | [suggested-commands.md](.serena/memories/suggested-commands.md) | documentation | Common commands reference (UV, pytest, CE tools, Darwin) | 98 |
+122: | [task-completion-checklist.md](.serena/memories/task-completion-checklist.md) | documentation | Pre-commit verification checklist with all quality gates | 80 |
+123: | [testing-standards.md](.serena/memories/testing-standards.md) | pattern | Testing philosophy: real functionality, no mocks, TDD approach | 87 |
+124: | [tool-usage-syntropy.md](.serena/memories/tool-usage-syntropy.md) | documentation | Comprehensive Syntropy tool selection guide with decision trees | 425 |
+125: | [use-syntropy-tools-not-bash.md](.serena/memories/use-syntropy-tools-not-bash.md) | pattern | Core principle & migration patterns: prefer Syntropy over bash | 200 |
+126: 
+127: **Project-Specific Memories (IsWorkflow = No)** - Ctx-eng-plus custom knowledge:
+128: 
+129: | Memory | Type | Purpose | Lines |
+130: |--------|------|---------|-------|
+131: | [codebase-structure.md](.serena/memories/codebase-structure.md) | architecture | Complete directory layout and module organization | 196 |
+132: | [cwe78-prp22-newline-escape-issue.md](.serena/memories/cwe78-prp22-newline-escape-issue.md) | troubleshooting | Security issue with Serena regex replacement and workaround | 100 |
+133: | [l4-validation-usage.md](.serena/memories/l4-validation-usage.md) | pattern | L4 validation system usage, modules, and drift thresholds | 150 |
+134: | [linear-issue-creation-pattern.md](.serena/memories/linear-issue-creation-pattern.md) | pattern | Working example for Linear issue creation with PRP metadata | 69 |
+135: | [linear-issue-tracking-integration.md](.serena/memories/linear-issue-tracking-integration.md) | pattern | Bi-directional Linear/PRP integration workflow | 213 |
+136: | [linear-mcp-integration-example.md](.serena/memories/linear-mcp-integration-example.md) | pattern | Linear MCP integration with configuration defaults | 101 |
+137: | [linear-mcp-integration.md](.serena/memories/linear-mcp-integration.md) | documentation | Complete Linear MCP tool reference (20+ tools) | 114 |
+138: | [project-overview.md](.serena/memories/project-overview.md) | documentation | Master project documentation with tech stack & features | 188 |
+139: | [PRP-15-remediation-workflow-implementation.md](.serena/memories/PRP-15-remediation-workflow-implementation.md) | documentation | Implementation record for PRP-15 remediation workflow | 206 |
+140: | [prp-2-implementation-patterns.md](.serena/memories/prp-2-implementation-patterns.md) | pattern | State management patterns and atomic write practices | 330 |
+141: | [prp-backlog-system.md](.serena/memories/prp-backlog-system.md) | configuration | PRP backlog directory system and workflow | 106 |
+142: | [prp-structure-initialized.md](.serena/memories/prp-structure-initialized.md) | documentation | PRP structure initialization completion record | 80 |
+143: | [serena-implementation-verification-pattern.md](.serena/memories/serena-implementation-verification-pattern.md) | pattern | Pattern for verifying PRP implementations with Serena symbol lookup | 139 |
+144: | [serena-mcp-tool-restrictions.md](.serena/memories/serena-mcp-tool-restrictions.md) | configuration | Current tool restrictions, allowed tools, and workarounds | 236 |
+145: | [syntropy-status-hook-pattern.md](.serena/memories/syntropy-status-hook-pattern.md) | pattern | Cache-based architecture for SessionStart hook MCP access | 177 |
+146: | [system-model-specification.md](.serena/memories/system-model-specification.md) | documentation | Formal specification of Context Engineering target architecture | 157 |
+147: | [tool-config-optimization-completed.md](.serena/memories/tool-config-optimization-completed.md) | documentation | Completion record for tool config optimization (7 violations resolved) | 63 |
+148: 
+149: **Summary**: 23 framework memories with YAML type headers (CE 1.1)
+150: - 6 critical memory candidates (type: regular by default, upgrade to type: critical during initialization)
+151: - 17 project-specific memories (ctx-eng-plus custom knowledge)
+152: - See `.serena/memories/README.md` for complete memory type system documentation
+153: 
+154: **Storage**: `.serena/memories/` (created automatically by Serena MCP)
+155: 
+156: **Related Documentation**:
+157: - [Tool Usage Guide](TOOL-USAGE-GUIDE.md) - Native-first tool selection philosophy
+158: - [Initialization Guide](INITIALIZATION.md) - Framework initialization and memory setup
+159: 
+160: ### Slash Commands & CLI Tools
+161: 
+162: Workflow automation via slash commands and CLI tools:
+163: 
+164: | Command | Type | Description |
+165: |---------|------|-------------|
+166: | `/batch-gen-prp` | Slash Command | Generate multiple PRPs from plan with dependency analysis (see `.claude/commands/batch-gen-prp.md`) |
+167: | `/batch-exe-prp` | Slash Command | Execute PRPs in parallel stages with health monitoring (see `.claude/commands/batch-exe-prp.md`) |
+168: | `/vacuum` | Slash Command | Identify and remove project noise with confidence-based deletion (see `.claude/commands/vacuum.md`) |
+169: | `/denoise` | Slash Command | Compress verbose documentation with AI-powered denoising (see `.claude/commands/denoise.md`) |
+170: | `/analyze-context` | Slash Command | Fast drift score check without full validation (see `.claude/commands/analyze-context.md`) |
+171: | `ce context health` | CLI Tool | Context health check with drift analysis (see `tools/ce/context.py`) |
+172: | `ce validate --level 4` | CLI Tool | Full validation suite with L1-L4 checks (see `tools/ce/validate.py`) |
+173: | `ce vacuum` | CLI Tool | Vacuum cleanup with execute/auto modes (see `tools/ce/` CLI) |
+174: 
+175: **Total**: 5 slash commands + 3 CLI tools
+176: 
+177: **Documentation**: All slash commands documented in `.claude/commands/`, CLI tools documented in `tools/README.md`
+178: 
+179: ### Configuration
+180: 
+181: Commands and hooks:
+182: 
+183: | Example | Lines | Focus |
+184: |---------|-------|-------|
+185: | [Hook Configuration](config/hook-configuration.md) | 649 | Lifecycle hooks (pre-commit, session-start) |
+186: | [Slash Command Template](config/slash-command-template.md) | 622 | Custom command creation |
+187: 
+188: **Total**: 2 examples, 1,271 lines
+189: 
+190: ### Patterns
+191: 
+192: Reusable patterns and practices:
+193: 
+194: | Example | Lines | Focus |
+195: |---------|-------|-------|
+196: | [Dedrifting Lessons](patterns/dedrifting-lessons.md) | 241 | Context drift prevention |
+197: | [Git Message Rules](patterns/git-message-rules.md) | 205 | Commit message conventions |
+198: | [Example Simple Feature](patterns/example-simple-feature.md) | 182 | Complete PRP example |
+199: | [Mock Marking](patterns/mocks-marking.md) | 96 | Test mock tracking |
+200: 
+201: **Total**: 4 examples, 724 lines
+202: 
+203: ### Guides
+204: 
+205: Comprehensive guides:
+206: 
+207: | Example | Lines | Focus |
+208: |---------|-------|-------|
+209: | [Tool Usage Guide](TOOL-USAGE-GUIDE.md) | 606 | Native-first tool selection philosophy |
+210: | [PRP Decomposition Patterns](prp-decomposition-patterns.md) | 357 | Breaking down large features |
+211: 
+212: **Total**: 2 examples, 963 lines
+213: 
+214: ### Reference
+215: 
+216: Quick reference materials:
+217: 
+218: | Example | Lines | Focus |
+219: |---------|-------|-------|
+220: | [Mermaid Color Palette](mermaid-color-palette.md) | 313 | Diagram color standards |
+221: | [L4 Validation Example](l4-validation-example.md) | 290 | Pattern conformance validation |
+222: | [Linear Integration Example](linear-integration-example.md) | 204 | Legacy Linear example |
+223: | [Syntropy Status Hook](syntropy-status-hook-system.md) | 149 | MCP health check |
+224: | [tmp/ Convention](tmp-directory-convention.md) | 130 | Temp file standards |
+225: | [Settings Local Example](example.setting.local.md) | 17 | Configuration example |
+226: 
+227: **Total**: 6 examples, 1,103 lines
+228: 
+229: ### Model
+230: 
+231: System architecture:
+232: 
+233: | Example | Lines | Focus |
+234: |---------|-------|-------|
+235: | [System Model](model/SystemModel.md) | 2,981 | Complete framework architecture |
+236: 
+237: **Total**: 1 example, 2,981 lines
+238: 
+239: ## IsWorkflow Distribution
+240: 
+241: ### Examples
+242: 
+243: - **Yes** (Universal/Framework): 21 examples (84%)
+244: - **No** (Project-Specific): 4 examples (16%)
+245: 
+246: ### Serena Memories
+247: 
+248: - **Yes** (Universal/Framework): 6 memories (1,013 lines, 28%) - Suitable for all CE projects
+249: - **No** (Project-Specific): 17 memories (2,608 lines, 72%) - Ctx-eng-plus custom knowledge
+250: 
+251: ### Classification Legend
+252: 
+253: **IsWorkflow = Yes**: Universal CE framework documentation that should be copied to any target project during initialization. Includes MCP patterns, generic workflows, framework config templates, reusable practices, and essential coding/testing standards.
+254: 
+255: **IsWorkflow = No**: Project-specific documentation tied to ctx-eng-plus codebase, conventions, or implementation details. Not suitable for general distribution to other projects.
+256: 
+257: ### Project-Specific Examples (No)
+258: 
+259: 1. **Example Simple Feature** (patterns/) - Demonstrates adding git status summary command specific to ctx-eng-plus
+260: 2. **Git Message Rules** (patterns/) - Commit message conventions specific to this project
+261: 3. **L4 Validation Example** (reference/) - Validation patterns specific to ctx-eng-plus infrastructure
+262: 4. **Syntropy Status Hook** (reference/) - References ctx-eng-plus-specific scripts (scripts/session-startup.sh)
+263: 
+264: ### Universal Serena Memories to Copy to New Projects
+265: 
+266: 1. **code-style-conventions** (pattern) - Coding principles and standards
+267: 2. **suggested-commands** (documentation) - Common command reference
+268: 3. **task-completion-checklist** (documentation) - Quality gates verification
+269: 4. **testing-standards** (pattern) - Testing philosophy and practices
+270: 5. **tool-usage-syntropy** (documentation) - Syntropy tool selection guide
+271: 6. **use-syntropy-tools-not-bash** (pattern) - Migration patterns and principles
+272: 
+273: ## Syntropy Integration
+274: 
+275: **Examples using Syntropy MCP**: 9/25 (36%)
+276: 
+277: - **Heavy usage** (20+ references): Serena Symbol Search (58), Linear Integration (30), Context7 Docs (29), Tool Usage Guide (34), Memory Management (34), Syntropy README (navigation hub)
+278: - **Moderate usage** (5-20 references): Thinking Sequential (17), System Model (2)
+279: - **Light usage** (1-5 references): Syntropy Status Hook (1), Slash Command Template (1)
+280: 
+281: ## Usage Patterns
+282: 
+283: ### By Use Case
+284: 
+285: **Starting with Context Engineering**:
+286: 
+287: 1. [System Model](model/SystemModel.md) - Understand framework architecture
+288: 2. [Tool Usage Guide](TOOL-USAGE-GUIDE.md) - Learn tool selection
+289: 3. [Example Simple Feature](patterns/example-simple-feature.md) - See complete PRP
+290: 4. [Execute PRP workflow](workflows/batch-prp-execution.md) - Implement PRPs
+291: 
+292: **Learning Syntropy MCP**:
+293: 
+294: 1. [Syntropy README](syntropy/README.md) - Master overview, decision matrix, tool naming
+295: 2. [Serena Symbol Search](syntropy/serena-symbol-search.md) - Code navigation and refactoring
+296: 3. [Context7 Docs Fetch](syntropy/context7-docs-fetch.md) - Library documentation fetching
+297: 4. [Linear Integration](syntropy/linear-integration.md) - Issue tracking and project management
+298: 
+299: **Maintaining Project Health**:
+300: 
+301: 1. [Context Drift Remediation](workflows/context-drift-remediation.md) - Sync PRPs
+302: 2. [Vacuum Cleanup](workflows/vacuum-cleanup.md) - Remove noise
+303: 3. [Denoise Documents](workflows/denoise-documents.md) - Compress docs
+304: 4. [Dedrifting Lessons](patterns/dedrifting-lessons.md) - Prevention strategies
+305: 
+306: **Batch Operations**:
+307: 
+308: 1. [Batch PRP Generation](workflows/batch-prp-generation.md) - Generate from plan
+309: 2. [Batch PRP Execution](workflows/batch-prp-execution.md) - Execute in parallel
+310: 3. [PRP Decomposition Patterns](prp-decomposition-patterns.md) - Break down features
+311: 
+312: **Configuration**:
+313: 
+314: 1. [Slash Command Template](config/slash-command-template.md) - Create commands
+315: 2. [Hook Configuration](config/hook-configuration.md) - Lifecycle hooks
+316: 3. [Settings Local Example](example.setting.local.md) - Configuration format
+317: 
+318: ## Maintenance
+319: 
+320: **Updating this index**:
+321: 
+322: When adding new examples:
+323: 
+324: 1. Create example file following content template (150-300 lines)
+325: 2. Add entry to appropriate category section above
+326: 3. Update statistics
+327: 4. Commit: `git add examples/ && git commit -m "Examples: Added [name]"`
+328: 
+329: **Content template**:
+330: 
+331: - **Purpose**: What this example demonstrates, when to use
+332: - **Prerequisites**: Required setup
+333: - **Examples**: 3-4 concrete examples with input/output
+334: - **Common Patterns**: 3-5 patterns
+335: - **Anti-Patterns**: 2-3 things not to do
+336: - **Related**: Links to related examples
+337: 
+338: ## Related Documentation
+339: 
+340: - [CLAUDE.md](../CLAUDE.md) - Project guide and quick commands
+341: - [PRPs/](../PRPs/) - Executed and feature request PRPs
+342: - [.claude/commands/](../.claude/commands/) - Slash commands (11 framework commands including peer-review)
+343: 
+344: ## Contributing
+345: 
+346: To add new examples:
+347: 
+348: 1. Follow [content template](syntropy/README.md#content-template) structure
+349: 2. Add to appropriate directory (syntropy/, workflows/, config/, patterns/)
+350: 3. Update INDEX.md with new entry
+351: 4. Cross-link with related examples
+352: 5. Run validation: `cd tools && uv run ce validate --level 4`
+</file>
+
+<file path="examples/INITIALIZATION.md">
+   1: # CE 1.1 Framework Initialization Guide
+   2: 
+   3: **Purpose**: Complete guide for installing and configuring the Context Engineering (CE) 1.1 framework across all project scenarios
+   4: 
+   5: **Version**: 1.1
+   6: 
+   7: **Last Updated**: 2025-11-04
+   8: 
+   9: **NOTE (2025-11-04)**: Historical references to `.ce/examples/system/` directory in this guide refer to a planned structure that was consolidated. All framework examples now reside in `examples/` directory. See PRP-32.2.1 for details on the consolidation.
+  10: 
+  11: ---
+  12: 
+  13: ## Overview
+  14: 
+  15: This guide covers the complete process of installing the Context Engineering framework into target projects using a unified 5-phase workflow. The process adapts to your specific scenario while maintaining consistent structure and validation.
+  16: 
+  17: ### What is CE 1.1?
+  18: 
+  19: Context Engineering is a framework for managing project context, documentation, and workflows through:
+  20: 
+  21: - **Structured knowledge base** (Serena memories)
+  22: - **Automated workflows** (slash commands)
+  23: - **PRP-based development** (Plan-Review-Produce pattern)
+  24: - **Tool integration** (Syntropy MCP, Linear, UV)
+  25: - **System/user separation** (framework vs project docs)
+  26: 
+  27: ### Key Benefits
+  28: 
+  29: - **Zero noise**: Clean separation of framework and project files
+  30: - **Consistent validation**: Multi-level validation gates
+  31: - **Automated workflows**: 11 framework commands for common tasks
+  32: - **Knowledge persistence**: 23 framework memories + your project memories
+  33: - **Easy upgrades**: System docs updated independently
+  34: 
+  35: ---
+  36: 
+  37: ## Quick Start: Choose Your Scenario
+  38: 
+  39: Use this decision tree to identify your installation scenario:
+  40: 
+  41: ```
+  42: START: What's your project's current state?
+  43: │
+  44: ├─ NO CE components exist
+  45: │  │
+  46: │  ├─ New project (empty or minimal code)
+  47: │  │  └─→ SCENARIO 1: Greenfield (~10 min)
+  48: │  │
+  49: │  └─ Existing codebase with working code
+  50: │     └─→ SCENARIO 2: Mature Project (~45 min)
+  51: │
+  52: └─ Has CE components
+  53:    │
+  54:    ├─ Has .ce/ directory (CE 1.1)
+  55:    │  └─→ SCENARIO 4: Partial Install (~15 min)
+  56:    │
+  57:    └─ No .ce/ directory (CE 1.0 or legacy)
+  58:       └─→ SCENARIO 3: CE 1.0 Upgrade (~40 min)
+  59: ```
+  60: 
+  61: ### Scenario Descriptions
+  62: 
+  63: | Scenario | When to Use | Phases | Time |
+  64: |----------|-------------|--------|------|
+  65: | **Greenfield** | New project, no CE components | 1, 3, 4 (skip 2, 5) | 10 min |
+  66: | **Mature Project** | Existing code, no CE | 1, 2, 3, 4 (skip 5) | 45 min |
+  67: | **CE 1.0 Upgrade** | Legacy CE installation | 1, 2, 3, 4, 5 (all) | 40 min |
+  68: | **Partial Install** | Missing CE components | 1, 3, 4 (selective) | 15 min |
+  69: 
+  70: ---
+  71: 
+  72: ## Prerequisites
+  73: 
+  74: ### Required for All Scenarios
+  75: 
+  76: - **Repomix CLI**: `npm install -g repomix`
+  77: - **CE framework packages**:
+  78:   - `ce-infrastructure.xml` (complete framework)
+  79:   - `ce-workflow-docs.xml` (reference documentation)
+  80: - **Git repository**: Project initialized with git
+  81: - **Project directory**: Write access to target directory
+  82: 
+  83: ### Optional (Recommended)
+  84: 
+  85: - **Backup branch**: `git checkout -b pre-ce-backup`
+  86: - **Linear account**: For issue tracking integration
+  87: - **Syntropy MCP**: For tool integration
+  88: - **UV package manager**: For CE CLI tools
+  89: 
+  90: ### Before You Begin
+  91: 
+  92: ```bash
+  93: # Verify prerequisites
+  94: which repomix && echo "✓ Repomix installed"
+  95: which git && echo "✓ Git installed"
+  96: test -f ce-infrastructure.xml && echo "✓ Framework package available"
+  97: 
+  98: # Create backup (recommended)
+  99: git checkout -b pre-ce-backup
+ 100: git push origin pre-ce-backup
+ 101: git checkout main
+ 102: ```
+ 103: 
+ 104: ---
+ 105: 
+ 106: ## The 5-Phase Workflow
+ 107: 
+ 108: ### Phase Overview
+ 109: 
+ 110: 1. **Bucket Collection** (5-10 min) - Stage files for validation
+ 111: 2. **User Files Copy** (0-15 min) - Migrate project-specific files
+ 112: 3. **Repomix Package Handling** (5 min) - Extract framework packages
+ 113: 4. **CLAUDE.md Blending** (10 min) - Merge framework + project guide
+ 114: 5. **Legacy Cleanup** (0-5 min) - Remove duplicate legacy files
+ 115: 
+ 116: **Note**: Not all scenarios execute all phases. See scenario-specific instructions below.
+ 117: 
+ 118: ---
+ 119: 
+ 120: ## Phase 1: Bucket Collection (Universal)
+ 121: 
+ 122: **Duration**: 5-10 minutes
+ 123: **Applies to**: All scenarios
+ 124: 
+ 125: ### Purpose
+ 126: 
+ 127: Create a staging area to organize and validate files before copying to CE 1.1 destinations.
+ 128: 
+ 129: ### Step 1.1: Create Staging Area
+ 130: 
+ 131: ```bash
+ 132: # Create bucket directories
+ 133: mkdir -p tmp/syntropy-initialization/{serena,examples,prps,claude-md,claude-dir}
+ 134: 
+ 135: # Verify structure
+ 136: ls -d tmp/syntropy-initialization/*/
+ 137: # Expected:
+ 138: # tmp/syntropy-initialization/serena/
+ 139: # tmp/syntropy-initialization/examples/
+ 140: # tmp/syntropy-initialization/prps/
+ 141: # tmp/syntropy-initialization/claude-md/
+ 142: # tmp/syntropy-initialization/claude-dir/
+ 143: ```
+ 144: 
+ 145: ### Step 1.2: Copy Files to Buckets
+ 146: 
+ 147: **Bucket 1: Serena Memories**
+ 148: 
+ 149: ```bash
+ 150: # Copy existing Serena memories (if any)
+ 151: if [ -d .serena/memories ]; then
+ 152:   cp -R .serena/memories/*.md tmp/syntropy-initialization/serena/ 2>/dev/null || true
+ 153:   echo "Serena files: $(ls tmp/syntropy-initialization/serena/*.md 2>/dev/null | wc -l)"
+ 154: fi
+ 155: ```
+ 156: 
+ 157: **Bucket 2: Examples**
+ 158: 
+ 159: ```bash
+ 160: # Copy existing examples (if any)
+ 161: if [ -d examples ]; then
+ 162:   find examples -name "*.md" -exec cp {} tmp/syntropy-initialization/examples/ \; 2>/dev/null || true
+ 163:   echo "Example files: $(ls tmp/syntropy-initialization/examples/*.md 2>/dev/null | wc -l)"
+ 164: fi
+ 165: ```
+ 166: 
+ 167: **Bucket 3: PRPs**
+ 168: 
+ 169: ```bash
+ 170: # Copy existing PRPs (if any)
+ 171: if [ -d PRPs ]; then
+ 172:   find PRPs -name "*.md" -exec cp {} tmp/syntropy-initialization/prps/ \; 2>/dev/null || true
+ 173:   echo "PRP files: $(ls tmp/syntropy-initialization/prps/*.md 2>/dev/null | wc -l)"
+ 174: fi
+ 175: ```
+ 176: 
+ 177: **Bucket 4: CLAUDE.md**
+ 178: 
+ 179: ```bash
+ 180: # Copy existing CLAUDE.md (if any)
+ 181: if [ -f CLAUDE.md ]; then
+ 182:   cp CLAUDE.md tmp/syntropy-initialization/claude-md/
+ 183:   echo "✓ CLAUDE.md copied"
+ 184: fi
+ 185: ```
+ 186: 
+ 187: **Bucket 5: Claude Directory**
+ 188: 
+ 189: ```bash
+ 190: # Copy existing .claude directory (if any)
+ 191: if [ -d .claude ]; then
+ 192:   cp -R .claude/* tmp/syntropy-initialization/claude-dir/ 2>/dev/null || true
+ 193:   echo "Claude files: $(ls tmp/syntropy-initialization/claude-dir/ 2>/dev/null | wc -l)"
+ 194: fi
+ 195: ```
+ 196: 
+ 197: ### Step 1.3: Validate Bucket Contents
+ 198: 
+ 199: Review files in each bucket to verify they match bucket characteristics:
+ 200: 
+ 201: **Serena Bucket Validation**
+ 202: 
+ 203: ```bash
+ 204: cd tmp/syntropy-initialization/serena/
+ 205: 
+ 206: for file in *.md 2>/dev/null; do
+ 207:   # Check for memory-like content
+ 208:   if ! grep -qi "memory\|pattern\|guide" "$file" 2>/dev/null; then
+ 209:     mv "$file" "$file.fake"
+ 210:     echo "⚠ Marked $file as fake (not a memory)"
+ 211:   fi
+ 212: done
+ 213: ```
+ 214: 
+ 215: **Examples Bucket Validation**
+ 216: 
+ 217: ```bash
+ 218: cd tmp/syntropy-initialization/examples/
+ 219: 
+ 220: for file in *.md 2>/dev/null; do
+ 221:   # Check for example/pattern structure
+ 222:   if ! grep -qi "example\|pattern\|workflow\|guide" "$file" 2>/dev/null; then
+ 223:     mv "$file" "$file.fake"
+ 224:     echo "⚠ Marked $file as fake (not an example)"
+ 225:   fi
+ 226: done
+ 227: ```
+ 228: 
+ 229: **PRPs Bucket Validation**
+ 230: 
+ 231: ```bash
+ 232: cd tmp/syntropy-initialization/prps/
+ 233: 
+ 234: for file in *.md 2>/dev/null; do
+ 235:   # Check for PRP structure (YAML header or PRP-ID in filename)
+ 236:   if ! grep -q "^---" "$file" 2>/dev/null && ! echo "$file" | grep -qi "prp-"; then
+ 237:     mv "$file" "$file.fake"
+ 238:     echo "⚠ Marked $file as fake (not a PRP)"
+ 239:   fi
+ 240: done
+ 241: ```
+ 242: 
+ 243: ### Step 1.4: Bucket Summary
+ 244: 
+ 245: ```bash
+ 246: # Return to project root
+ 247: cd /path/to/your/project
+ 248: 
+ 249: # Generate bucket report
+ 250: cat > tmp/syntropy-initialization/bucket-report.txt << 'EOF'
+ 251: # Bucket Collection Report
+ 252: 
+ 253: ## Serena Bucket
+ 254: Valid: $(ls tmp/syntropy-initialization/serena/*.md 2>/dev/null | grep -v ".fake" | wc -l)
+ 255: Fake: $(ls tmp/syntropy-initialization/serena/*.fake 2>/dev/null | wc -l)
+ 256: 
+ 257: ## Examples Bucket
+ 258: Valid: $(ls tmp/syntropy-initialization/examples/*.md 2>/dev/null | grep -v ".fake" | wc -l)
+ 259: Fake: $(ls tmp/syntropy-initialization/examples/*.fake 2>/dev/null | wc -l)
+ 260: 
+ 261: ## PRPs Bucket
+ 262: Valid: $(ls tmp/syntropy-initialization/prps/*.md 2>/dev/null | grep -v ".fake" | wc -l)
+ 263: Fake: $(ls tmp/syntropy-initialization/prps/*.fake 2>/dev/null | wc -l)
+ 264: 
+ 265: ## CLAUDE.md Bucket
+ 266: Valid: $(ls tmp/syntropy-initialization/claude-md/CLAUDE.md 2>/dev/null | wc -l)
+ 267: 
+ 268: ## Claude Dir Bucket
+ 269: Files: $(ls tmp/syntropy-initialization/claude-dir/ 2>/dev/null | wc -l)
+ 270: EOF
+ 271: 
+ 272: # Display report
+ 273: cat tmp/syntropy-initialization/bucket-report.txt
+ 274: ```
+ 275: 
+ 276: **Phase 1 Complete**: Files staged and validated. Proceed to Phase 2 (or skip if Greenfield).
+ 277: 
+ 278: ---
+ 279: 
+ 280: ## Phase 2: User Files Copy
+ 281: 
+ 282: **Duration**: 0-15 minutes
+ 283: **Applies to**: Mature Project, CE 1.0 Upgrade, Partial Install
+ 284: **Skip for**: Greenfield
+ 285: 
+ 286: ### Scenario Variations
+ 287: 
+ 288: **Skip this phase if**:
+ 289: - **Greenfield**: No user files exist yet
+ 290: 
+ 291: **Full migration if**:
+ 292: - **Mature Project**: Copy all validated files from buckets
+ 293: - **CE 1.0 Upgrade**: Copy all validated files + classify existing files
+ 294: 
+ 295: **Selective migration if**:
+ 296: - **Partial Install**: Copy only missing components
+ 297: 
+ 298: ### Step 2.1: User Memory Migration
+ 299: 
+ 300: **For Mature Project and CE 1.0 Upgrade**:
+ 301: 
+ 302: ```bash
+ 303: # Copy validated user memories (non-.fake files)
+ 304: find tmp/syntropy-initialization/serena -name "*.md" ! -name "*.fake" -exec cp {} .serena/memories/ \; 2>/dev/null || true
+ 305: 
+ 306: # Add YAML headers to memories without them
+ 307: cd .serena/memories/
+ 308: 
+ 309: for memory in *.md 2>/dev/null; do
+ 310:   # Skip if already has YAML header
+ 311:   if head -n 1 "$memory" | grep -q "^---"; then
+ 312:     continue
+ 313:   fi
+ 314: 
+ 315:   # Determine type (heuristic based on content)
+ 316:   if grep -qi "architecture\|security\|core principle\|critical" "$memory"; then
+ 317:     TYPE="critical"
+ 318:   else
+ 319:     TYPE="regular"
+ 320:   fi
+ 321: 
+ 322:   # Add YAML header for user memory
+ 323:   cat > "${memory}.tmp" << EOF
+ 324: ---
+ 325: type: user
+ 326: source: target-project
+ 327: created: "$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+ 328: updated: "$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+ 329: ---
+ 330: 
+ 331: $(cat "$memory")
+ 332: EOF
+ 333:   mv "${memory}.tmp" "$memory"
+ 334:   echo "✓ Added YAML header to $memory (type: $TYPE)"
+ 335: done
+ 336: 
+ 337: cd ../..
+ 338: ```
+ 339: 
+ 340: ### Step 2.2: User PRP Migration
+ 341: 
+ 342: **For Mature Project and CE 1.0 Upgrade**:
+ 343: 
+ 344: ```bash
+ 345: # Create PRP directories if needed
+ 346: mkdir -p .ce/PRPs/{executed,feature-requests,archived}
+ 347: 
+ 348: # Copy validated user PRPs (non-.fake files)
+ 349: find tmp/syntropy-initialization/prps -name "*.md" ! -name "*.fake" -exec sh -c '
+ 350:   for prp; do
+ 351:     # Determine destination based on filename or content
+ 352:     if echo "$prp" | grep -qi "executed"; then
+ 353:       cp "$prp" .ce/PRPs/executed/
+ 354:     elif echo "$prp" | grep -qi "feature\|request"; then
+ 355:       cp "$prp" .ce/PRPs/feature-requests/
+ 356:     else
+ 357:       cp "$prp" .ce/PRPs/executed/
+ 358:     fi
+ 359:   done
+ 360: ' sh {} +
+ 361: 
+ 362: # Add YAML headers to user PRPs (if missing)
+ 363: cd .ce/PRPs/executed/
+ 364: 
+ 365: for prp in *.md 2>/dev/null; do
+ 366:   # Skip if already has YAML header
+ 367:   if head -n 1 "$prp" | grep -q "^---"; then
+ 368:     continue
+ 369:   fi
+ 370: 
+ 371:   # Extract PRP ID from filename (e.g., USER-001 from USER-001-feature.md)
+ 372:   PRP_ID=$(echo "$prp" | sed 's/\.md$//' | cut -d'-' -f1-2)
+ 373:   TITLE=$(echo "$prp" | sed 's/\.md$//' | sed 's/^[^-]*-[^-]*-//' | tr '-' ' ')
+ 374: 
+ 375:   # Add YAML header for user PRP
+ 376:   cat > "${prp}.tmp" << EOF
+ 377: ---
+ 378: prp_id: $PRP_ID
+ 379: title: $TITLE
+ 380: status: completed
+ 381: created: "$(date -u +%Y-%m-%d)"
+ 382: source: target-project
+ 383: type: user
+ 384: ---
+ 385: 
+ 386: $(cat "$prp")
+ 387: EOF
+ 388:   mv "${prp}.tmp" "$prp"
+ 389:   echo "✓ Added YAML header to $prp"
+ 390: done
+ 391: 
+ 392: cd ../../..
+ 393: echo "✓ User PRPs migrated to .ce/PRPs/"
+ 394: ```
+ 395: 
+ 396: **User PRP YAML Header Format**:
+ 397: 
+ 398: ```yaml
+ 399: ---
+ 400: prp_id: USER-001
+ 401: title: User Feature Implementation
+ 402: status: completed
+ 403: created: "2025-11-04"
+ 404: source: target-project
+ 405: type: user
+ 406: ---
+ 407: ```
+ 408: 
+ 409: **Notes**:
+ 410: - `type: user` distinguishes user PRPs from framework PRPs
+ 411: - `source: target-project` indicates origin (vs. framework source: ctx-eng-plus)
+ 412: - Framework PRPs use `type: regular` or `type: critical`
+ 413: 
+ 414: ### Step 2.3: User Examples Migration
+ 415: 
+ 416: **For Mature Project and CE 1.0 Upgrade**:
+ 417: 
+ 418: ```bash
+ 419: # Create examples directory if needed
+ 420: mkdir -p .ce/examples
+ 421: 
+ 422: # Copy validated user examples (non-.fake files)
+ 423: find tmp/syntropy-initialization/examples -name "*.md" ! -name "*.fake" -exec cp {} .ce/examples/ \; 2>/dev/null || true
+ 424: 
+ 425: echo "✓ User examples migrated to .ce/examples/"
+ 426: ```
+ 427: 
+ 428: ### Step 2.4: User Commands/Settings Migration
+ 429: 
+ 430: **For all scenarios with existing .claude/ content**:
+ 431: 
+ 432: ```bash
+ 433: # Copy custom commands (preserve existing)
+ 434: if [ -d tmp/syntropy-initialization/claude-dir/commands ]; then
+ 435:   mkdir -p .claude/commands
+ 436:   cp -n tmp/syntropy-initialization/claude-dir/commands/*.md .claude/commands/ 2>/dev/null || true
+ 437:   echo "✓ User commands preserved"
+ 438: fi
+ 439: 
+ 440: # Backup existing settings (will be merged in Phase 3)
+ 441: if [ -f tmp/syntropy-initialization/claude-dir/settings.local.json ]; then
+ 442:   mkdir -p .claude
+ 443:   cp tmp/syntropy-initialization/claude-dir/settings.local.json .claude/settings.pre-ce.json
+ 444:   echo "✓ Existing settings backed up"
+ 445: fi
+ 446: ```
+ 447: 
+ 448: ### Step 2.5: Migration Summary
+ 449: 
+ 450: ```bash
+ 451: # Generate migration report
+ 452: cat > tmp/syntropy-initialization/phase2-report.txt << EOF
+ 453: # Phase 2: User Files Migration Report
+ 454: 
+ 455: ## Memories Migrated
+ 456: User memories: $(find .serena/memories -maxdepth 1 -name "*.md" 2>/dev/null | wc -l)
+ 457: Headers added (type: user): $(grep -l "^type: user" .serena/memories/*.md 2>/dev/null | wc -l)
+ 458: 
+ 459: ## PRPs Migrated
+ 460: Executed: $(ls .ce/PRPs/executed/*.md 2>/dev/null | wc -l)
+ 461: Feature requests: $(ls .ce/PRPs/feature-requests/*.md 2>/dev/null | wc -l)
+ 462: Headers added (type: user): $(grep -l "^type: user" .ce/PRPs/executed/*.md 2>/dev/null | wc -l)
+ 463: 
+ 464: ## Examples Migrated
+ 465: User examples: $(ls .ce/examples/*.md 2>/dev/null | wc -l)
+ 466: 
+ 467: ## Commands/Settings
+ 468: Custom commands: $(ls .claude/commands/*.md 2>/dev/null | wc -l)
+ 469: Settings backed up: $(test -f .claude/settings.pre-ce.json && echo "yes" || echo "no")
+ 470: 
+ 471: ## YAML Header Summary
+ 472: - User memories: type: user, source: target-project
+ 473: - User PRPs: type: user, source: target-project, prp_id, title, status
+ 474: - Framework memories: type: regular (default) or type: critical (upgraded manually)
+ 475: - Framework PRPs: Standard PRP YAML with batch_id, stage, order
+ 476: EOF
+ 477: 
+ 478: cat tmp/syntropy-initialization/phase2-report.txt
+ 479: ```
+ 480: 
+ 481: **Phase 2 Complete**: User files migrated with YAML headers (`type: user`). Framework files use `type: regular` or `type: critical`. Proceed to Phase 3.
+ 482: 
+ 483: ---
+ 484: 
+ 485: ## Phase 3: Repomix Package Handling (Universal)
+ 486: 
+ 487: **Duration**: 5 minutes
+ 488: **Applies to**: All scenarios
+ 489: 
+ 490: ### Purpose
+ 491: 
+ 492: Extract framework packages to install system documentation, memories, examples, commands, and tools.
+ 493: 
+ 494: ### Step 3.1: Copy Workflow Package
+ 495: 
+ 496: ```bash
+ 497: # Create system directory
+ 498: mkdir -p .ce/examples/system/
+ 499: 
+ 500: # Copy workflow documentation package (reference only, not extracted)
+ 501: cp ce-workflow-docs.xml .ce/examples/system/
+ 502: 
+ 503: echo "✓ Workflow package copied to .ce/examples/system/ce-workflow-docs.xml"
+ 504: ```
+ 505: 
+ 506: **Note**: `ce-workflow-docs.xml` is stored as-is for reference and redistribution. The actual framework files come from `ce-infrastructure.xml` extraction below.
+ 507: 
+ 508: ### Step 3.2: Extract Infrastructure Package
+ 509: 
+ 510: ```bash
+ 511: # Extract complete framework infrastructure
+ 512: # This creates /system/ subdirectories automatically
+ 513: repomix --unpack ce-infrastructure.xml --target ./
+ 514: 
+ 515: # Verify extraction
+ 516: echo "Framework files extracted:"
+ 517: echo "  System memories: $(ls .serena/memories/system/*.md 2>/dev/null | wc -l)"
+ 518: echo "  System examples: $(ls .ce/examples/system/*.md 2>/dev/null | wc -l)"
+ 519: echo "  Framework commands: $(ls .claude/commands/*.md 2>/dev/null | wc -l)"
+ 520: echo "  Tool files: $(find tools -name "*.py" 2>/dev/null | wc -l)"
+ 521: ```
+ 522: 
+ 523: **What gets extracted**:
+ 524: 
+ 525: ```
+ 526: .ce/examples/system/          # 21 framework example files
+ 527: .serena/memories/system/      # 23 framework memories (6 critical + 17 regular)
+ 528: .claude/commands/             # 11 framework commands
+ 529: .claude/settings.local.json   # Framework settings (merged with existing)
+ 530: tools/                        # 33 tool source files
+ 531: CLAUDE.md                     # Framework sections (merged with existing)
+ 532: ```
+ 533: 
+ 534: ### Step 3.3: Validate Framework Installation
+ 535: 
+ 536: ```bash
+ 537: # Check system memories (expected: 23)
+ 538: SYSTEM_MEMORIES=$(ls .serena/memories/system/*.md 2>/dev/null | wc -l)
+ 539: test $SYSTEM_MEMORIES -eq 23 && echo "✓ All 23 system memories installed" || echo "⚠ Only $SYSTEM_MEMORIES system memories found"
+ 540: 
+ 541: # Check system examples (expected: 21)
+ 542: SYSTEM_EXAMPLES=$(ls .ce/examples/system/*.md 2>/dev/null | wc -l)
+ 543: test $SYSTEM_EXAMPLES -eq 21 && echo "✓ All 21 system examples installed" || echo "⚠ Only $SYSTEM_EXAMPLES system examples found"
+ 544: 
+ 545: # Check framework commands (expected: 11)
+ 546: FRAMEWORK_COMMANDS=$(ls .claude/commands/*.md 2>/dev/null | wc -l)
+ 547: test $FRAMEWORK_COMMANDS -ge 11 && echo "✓ All 11 framework commands installed" || echo "⚠ Only $FRAMEWORK_COMMANDS commands found"
+ 548: 
+ 549: # Check tool files (expected: 33)
+ 550: TOOL_FILES=$(find tools -name "*.py" 2>/dev/null | wc -l)
+ 551: test $TOOL_FILES -ge 33 && echo "✓ Tool source files installed" || echo "⚠ Only $TOOL_FILES tool files found"
+ 552: 
+ 553: # Check settings merged
+ 554: test -f .claude/settings.local.json && jq empty .claude/settings.local.json && echo "✓ Settings valid JSON" || echo "⚠ Settings invalid"
+ 555: ```
+ 556: 
+ 557: ### Step 3.4: Initialize CE Tools
+ 558: 
+ 559: ```bash
+ 560: # Install CE CLI tools
+ 561: cd tools
+ 562: ./bootstrap.sh
+ 563: 
+ 564: # Verify installation
+ 565: uv run ce --version
+ 566: # Expected: ce version 1.1.0
+ 567: 
+ 568: # Run basic validation
+ 569: uv run ce validate --level 1
+ 570: # Expected: Structure validation passes
+ 571: 
+ 572: cd ..
+ 573: ```
+ 574: 
+ 575: **Phase 3 Complete**: Framework installed with /system/ organization. Proceed to Phase 4.
+ 576: 
+ 577: ---
+ 578: 
+ 579: ## Phase 4: CLAUDE.md Blending (Universal)
+ 580: 
+ 581: **Duration**: 10 minutes
+ 582: **Applies to**: All scenarios
+ 583: 
+ 584: ### Purpose
+ 585: 
+ 586: Merge framework CLAUDE.md sections with project-specific sections, creating a single unified project guide.
+ 587: 
+ 588: ### Step 4.1: Backup Existing CLAUDE.md
+ 589: 
+ 590: ```bash
+ 591: # Backup user's CLAUDE.md (if exists)
+ 592: if [ -f CLAUDE.md ]; then
+ 593:   cp CLAUDE.md "CLAUDE.md.backup-$(date +%Y%m%d-%H%M%S)"
+ 594:   echo "✓ CLAUDE.md backed up"
+ 595: else
+ 596:   echo "ℹ No existing CLAUDE.md (fresh installation)"
+ 597: fi
+ 598: ```
+ 599: 
+ 600: ### Step 4.2: Identify Framework vs Project Sections
+ 601: 
+ 602: Framework sections (from ce-infrastructure.xml):
+ 603: - Communication
+ 604: - Core Principles
+ 605: - UV Package Management
+ 606: - Ad-Hoc Code Policy
+ 607: - Quick Commands
+ 608: - Tool Naming Convention
+ 609: - Allowed Tools Summary
+ 610: - Command Permissions
+ 611: - Quick Tool Selection
+ 612: - Project Structure
+ 613: - Testing Standards
+ 614: - Code Quality
+ 615: - Context Commands
+ 616: - Syntropy MCP Tool Sync
+ 617: - Linear Integration
+ 618: - Batch PRP Generation
+ 619: - PRP Sizing
+ 620: - Testing Patterns
+ 621: - Documentation Standards
+ 622: - Efficient Doc Review
+ 623: - Resources
+ 624: - Keyboard Shortcuts
+ 625: - Git Worktree
+ 626: - Troubleshooting
+ 627: 
+ 628: Project sections (user-defined) are any sections not in framework list.
+ 629: 
+ 630: ### Step 4.3: Blend Sections
+ 631: 
+ 632: **Manual Blending** (recommended for first installation):
+ 633: 
+ 634: ```bash
+ 635: # Edit CLAUDE.md to mark sections
+ 636: vim CLAUDE.md
+ 637: 
+ 638: # Add [FRAMEWORK] or [PROJECT] markers to section headers:
+ 639: # ## [FRAMEWORK] Communication
+ 640: # ## [PROJECT] Project-Specific Communication
+ 641: # ## [FRAMEWORK] Core Principles
+ 642: # ## [PROJECT] Team Conventions
+ 643: ```
+ 644: 
+ 645: **Automated Blending** (if framework provides blending tool):
+ 646: 
+ 647: ```bash
+ 648: # Use denoise command to merge sections
+ 649: /denoise CLAUDE.md
+ 650: 
+ 651: # Review merged output
+ 652: less CLAUDE.md
+ 653: ```
+ 654: 
+ 655: ### Step 4.4: Validate Blended CLAUDE.md
+ 656: 
+ 657: ```bash
+ 658: # Check for framework markers
+ 659: grep -c "\[FRAMEWORK\]" CLAUDE.md
+ 660: # Expected: Multiple framework sections marked
+ 661: 
+ 662: # Check for project markers (if any)
+ 663: grep -c "\[PROJECT\]" CLAUDE.md
+ 664: # Expected: 0+ (depending on scenario)
+ 665: 
+ 666: # Verify key framework sections present
+ 667: for section in "Communication" "Core Principles" "Quick Commands" "Tool Naming Convention"; do
+ 668:   grep -q "## .*$section" CLAUDE.md && echo "✓ $section section present" || echo "⚠ $section section missing"
+ 669: done
+ 670: ```
+ 671: 
+ 672: ### Step 4.5: Add Project-Specific Sections
+ 673: 
+ 674: **For Mature Project and CE 1.0 Upgrade**:
+ 675: 
+ 676: Add project-specific sections to CLAUDE.md:
+ 677: 
+ 678: ```bash
+ 679: cat >> CLAUDE.md << 'EOF'
+ 680: 
+ 681: ---
+ 682: 
+ 683: ## [PROJECT] Project-Specific Information
+ 684: 
+ 685: ### Project Structure
+ 686: 
+ 687: **Architecture**: [Your architecture description]
+ 688: 
+ 689: **Key Components**:
+ 690: - Component 1: [Description]
+ 691: - Component 2: [Description]
+ 692: 
+ 693: ### Development Workflow
+ 694: 
+ 695: **Branch Strategy**: [Your branching model]
+ 696: 
+ 697: **Code Review Process**: [Your review process]
+ 698: 
+ 699: ### Testing Standards
+ 700: 
+ 701: **Test Coverage**: [Your coverage requirements]
+ 702: 
+ 703: **Test Frameworks**: [Your test tools]
+ 704: 
+ 705: ### Deployment Process
+ 706: 
+ 707: **CI/CD Pipeline**: [Your pipeline description]
+ 708: 
+ 709: **Deployment Stages**: [Your stages]
+ 710: 
+ 711: ---
+ 712: 
+ 713: EOF
+ 714: ```
+ 715: 
+ 716: **Phase 4 Complete**: CLAUDE.md blended with framework + project sections. Proceed to Phase 5 (if applicable).
+ 717: 
+ 718: ---
+ 719: 
+ 720: ## Phase 5: Legacy Cleanup
+ 721: 
+ 722: **Duration**: 0-5 minutes
+ 723: **Applies to**: CE 1.0 Upgrade only
+ 724: **Skip for**: Greenfield, Mature Project, Partial Install
+ 725: 
+ 726: ### Scenario Variations
+ 727: 
+ 728: **Skip this phase if**:
+ 729: - **Greenfield**: No legacy files (new project)
+ 730: - **Mature Project**: No legacy CE files (first CE installation)
+ 731: - **Partial Install**: Selective cleanup only
+ 732: 
+ 733: **Full cleanup if**:
+ 734: - **CE 1.0 Upgrade**: Aggressive cleanup of legacy CE 1.0 structure
+ 735: 
+ 736: ### Step 5.1: Verify Migration Completed
+ 737: 
+ 738: ```bash
+ 739: # Verify all files migrated to CE 1.1 structure
+ 740: test -d .ce/PRPs/system && echo "✓ System PRPs migrated"
+ 741: test -d .ce/examples/system && echo "✓ System examples migrated"
+ 742: test -d .serena/memories/system && echo "✓ System memories migrated"
+ 743: 
+ 744: # Check for errors in migration
+ 745: if [ -f tmp/syntropy-initialization/phase2-report.txt ]; then
+ 746:   grep -i error tmp/syntropy-initialization/phase2-report.txt
+ 747:   # Expected: No errors
+ 748: fi
+ 749: ```
+ 750: 
+ 751: ### Step 5.2: Archive Legacy Organization
+ 752: 
+ 753: ```bash
+ 754: # Create archive of legacy files before deletion (safety backup)
+ 755: mkdir -p tmp/syntropy-initialization/legacy-backup/
+ 756: 
+ 757: # Archive legacy directories
+ 758: tar -czf "tmp/syntropy-initialization/legacy-backup/pre-ce-1.1-$(date +%Y%m%d-%H%M%S).tar.gz" \
+ 759:   PRPs/ \
+ 760:   examples/ \
+ 761:   .serena/memories/*.md \
+ 762:   2>/dev/null || true
+ 763: 
+ 764: echo "✓ Legacy files archived"
+ 765: 
+ 766: # Verify archive created
+ 767: ARCHIVE_FILE=$(ls -t tmp/syntropy-initialization/legacy-backup/*.tar.gz | head -n 1)
+ 768: test -f "$ARCHIVE_FILE" && echo "✓ Archive: $ARCHIVE_FILE" || echo "⚠ Archive not created"
+ 769: ```
+ 770: 
+ 771: ### Step 5.3: Delete Legacy Organization Files
+ 772: 
+ 773: **Delete legacy PRPs directory** (now in .ce/PRPs/):
+ 774: 
+ 775: ```bash
+ 776: if [ -d PRPs/ ]; then
+ 777:   # Count files before deletion
+ 778:   LEGACY_PRPS=$(find PRPs -name "*.md" | wc -l)
+ 779: 
+ 780:   # Delete directory
+ 781:   rm -rf PRPs/
+ 782: 
+ 783:   echo "✓ Deleted legacy PRPs/ ($LEGACY_PRPS files migrated to .ce/PRPs/)"
+ 784: fi
+ 785: ```
+ 786: 
+ 787: **Delete legacy examples directory** (now in .ce/examples/):
+ 788: 
+ 789: ```bash
+ 790: if [ -d examples/ ]; then
+ 791:   # Count files before deletion
+ 792:   LEGACY_EXAMPLES=$(find examples -name "*.md" | wc -l)
+ 793: 
+ 794:   # Delete directory
+ 795:   rm -rf examples/
+ 796: 
+ 797:   echo "✓ Deleted legacy examples/ ($LEGACY_EXAMPLES files migrated to .ce/examples/)"
+ 798: fi
+ 799: ```
+ 800: 
+ 801: **Delete legacy memories** (now in .serena/memories/system/):
+ 802: 
+ 803: ```bash
+ 804: # Delete only memories that were migrated to /system/
+ 805: # Preserve user memories (not in system/)
+ 806: if [ -d .serena/memories/ ]; then
+ 807:   find .serena/memories/ -maxdepth 1 -name "*.md" -type f | while read file; do
+ 808:     basename=$(basename "$file")
+ 809:     if [ -f .serena/memories/system/"$basename" ]; then
+ 810:       rm -f "$file"
+ 811:       echo "✓ Deleted legacy .serena/memories/$basename (migrated to system/)"
+ 812:     fi
+ 813:   done
+ 814: fi
+ 815: ```
+ 816: 
+ 817: ### Step 5.4: Log Cleanup Summary
+ 818: 
+ 819: ```bash
+ 820: # Log cleanup actions to initialization report
+ 821: cat > tmp/syntropy-initialization/phase5-report.txt << EOF
+ 822: # Phase 5: Legacy Organization Cleanup Report
+ 823: 
+ 824: ## Deleted Legacy Files
+ 825: 
+ 826: **PRPs Directory**: $(test ! -d PRPs && echo "Deleted" || echo "Still exists")
+ 827: **Examples Directory**: $(test ! -d examples && echo "Deleted" || echo "Still exists")
+ 828: **Legacy Memories**: $(find .serena/memories -maxdepth 1 -name "*.md" 2>/dev/null | wc -l) remaining at root level
+ 829: 
+ 830: ## Backup
+ 831: 
+ 832: **Archive Created**: $(ls tmp/syntropy-initialization/legacy-backup/*.tar.gz | head -n 1)
+ 833: **Archive Size**: $(du -h tmp/syntropy-initialization/legacy-backup/*.tar.gz | head -n 1 | cut -f1)
+ 834: 
+ 835: ## Verification
+ 836: 
+ 837: **CE 1.1 Structure Active**: $(test -d .ce/PRPs/system && test -d .ce/examples/system && test -d .serena/memories/system && echo "Yes" || echo "No")
+ 838: **Zero Noise**: $(test ! -d PRPs && test ! -d examples && echo "Yes - Clean project" || echo "No - Legacy files remain")
+ 839: 
+ 840: EOF
+ 841: 
+ 842: cat tmp/syntropy-initialization/phase5-report.txt
+ 843: ```
+ 844: 
+ 845: ### Step 5.5: Zero Noise Verification
+ 846: 
+ 847: ```bash
+ 848: # Final verification: No legacy noise
+ 849: echo ""
+ 850: echo "=== Zero Noise Verification ==="
+ 851: 
+ 852: # Check legacy directories deleted
+ 853: ! test -d PRPs && echo "✅ PRPs/ removed" || echo "❌ PRPs/ still exists"
+ 854: ! test -d examples && echo "✅ examples/ removed" || echo "❌ examples/ still exists"
+ 855: 
+ 856: # Check no duplicate system memories
+ 857: DUPLICATE_SYSTEM_MEMORIES=$(find .serena/memories/ -maxdepth 1 -name "*.md" -type f | while read f; do
+ 858:   basename=$(basename "$f")
+ 859:   test -f .serena/memories/system/"$basename" && echo "$f"
+ 860: done | wc -l)
+ 861: 
+ 862: test "$DUPLICATE_SYSTEM_MEMORIES" -eq 0 && echo "✅ No duplicate system memories" || echo "❌ $DUPLICATE_SYSTEM_MEMORIES duplicate system memories found"
+ 863: 
+ 864: # Final status
+ 865: if [ ! -d PRPs ] && [ ! -d examples ] && [ "$DUPLICATE_SYSTEM_MEMORIES" -eq 0 ]; then
+ 866:   echo ""
+ 867:   echo "✅ PROJECT IS CLEAN - Zero noise achieved"
+ 868: else
+ 869:   echo ""
+ 870:   echo "⚠ PROJECT HAS LEGACY NOISE - Manual cleanup required"
+ 871: fi
+ 872: ```
+ 873: 
+ 874: **Phase 5 Complete**: Legacy files removed, CE 1.1 structure clean. Installation complete.
+ 875: 
+ 876: ---
+ 877: 
+ 878: ## Scenario-Specific Workflows
+ 879: 
+ 880: ### Scenario 1: Greenfield Project
+ 881: 
+ 882: **Use when**: New project with no existing CE components
+ 883: 
+ 884: **Phases**: 1, 3, 4 (skip 2, 5)
+ 885: 
+ 886: **Duration**: ~10 minutes
+ 887: 
+ 888: #### Quick Steps
+ 889: 
+ 890: ```bash
+ 891: # Phase 1: Bucket Collection (will be empty)
+ 892: mkdir -p tmp/syntropy-initialization/{serena,examples,prps,claude-md,claude-dir}
+ 893: echo "✓ Buckets created (empty for greenfield)"
+ 894: 
+ 895: # Phase 2: SKIP (no user files)
+ 896: echo "⏭ Skipping Phase 2 (no user files)"
+ 897: 
+ 898: # Phase 3: Repomix Package Handling
+ 899: repomix --unpack ce-infrastructure.xml --target ./
+ 900: cd tools && ./bootstrap.sh && cd ..
+ 901: echo "✓ Framework installed"
+ 902: 
+ 903: # Phase 4: CLAUDE.md Blending (framework only)
+ 904: grep -q "## Communication" CLAUDE.md && echo "✓ Framework CLAUDE.md installed"
+ 905: 
+ 906: # Phase 5: SKIP (no legacy files)
+ 907: echo "⏭ Skipping Phase 5 (no legacy files)"
+ 908: 
+ 909: # Validate
+ 910: cd tools && uv run ce validate --level 4 && cd ..
+ 911: echo "✅ Greenfield installation complete"
+ 912: ```
+ 913: 
+ 914: ---
+ 915: 
+ 916: ### Scenario 2: Mature Project (No CE)
+ 917: 
+ 918: **Use when**: Existing codebase with no CE components
+ 919: 
+ 920: **Phases**: 1, 2, 3, 4 (skip 5)
+ 921: 
+ 922: **Duration**: ~45 minutes
+ 923: 
+ 924: ---
+ 925: 
+ 926: ### Scenario 3: CE 1.0 Upgrade
+ 927: 
+ 928: **Use when**: Existing CE installation, no .ce/ directory (legacy structure)
+ 929: 
+ 930: **Phases**: 1, 2, 3, 4, 5 (all phases)
+ 931: 
+ 932: **Duration**: ~40 minutes
+ 933: 
+ 934: ---
+ 935: 
+ 936: ### Scenario 4: Partial Install (Completion)
+ 937: 
+ 938: **Use when**: Project has some CE components but missing others
+ 939: 
+ 940: **Phases**: 1, 3, 4 (selective)
+ 941: 
+ 942: **Duration**: ~15 minutes
+ 943: 
+ 944: ---
+ 945: 
+ 946: ## Validation Checklist
+ 947: 
+ 948: ### Structure Validation
+ 949: 
+ 950: ```bash
+ 951: # Check CE 1.1 directory structure
+ 952: test -d .ce/examples/system && echo "✅ .ce/examples/system/"
+ 953: test -d .ce/PRPs/system && echo "✅ .ce/PRPs/system/"
+ 954: test -d .serena/memories/system && echo "✅ .serena/memories/system/"
+ 955: test -d .claude/commands && echo "✅ .claude/commands/"
+ 956: test -f CLAUDE.md && echo "✅ CLAUDE.md"
+ 957: ```
+ 958: 
+ 959: ### Component Counts
+ 960: 
+ 961: ```bash
+ 962: # Expected file counts
+ 963: echo "System memories: $(ls .serena/memories/system/*.md 2>/dev/null | wc -l) (expected: 23)"
+ 964: echo "System examples: $(ls .ce/examples/system/*.md 2>/dev/null | wc -l) (expected: 21)"
+ 965: echo "Framework commands: $(ls .claude/commands/*.md 2>/dev/null | wc -l) (expected: 11+)"
+ 966: ```
+ 967: 
+ 968: ---
+ 969: 
+ 970: ## Troubleshooting
+ 971: 
+ 972: ### Issue: Repomix command not found
+ 973: 
+ 974: **Solution**:
+ 975: 
+ 976: ```bash
+ 977: # Install repomix globally
+ 978: npm install -g repomix
+ 979: 
+ 980: # Or use npx
+ 981: npx repomix --unpack ce-infrastructure.xml --target ./
+ 982: ```
+ 983: 
+ 984: ### Issue: Bootstrap script fails
+ 985: 
+ 986: **Solution**:
+ 987: 
+ 988: ```bash
+ 989: cd tools
+ 990: 
+ 991: # Install UV manually
+ 992: curl -LsSf https://astral.sh/uv/install.sh | sh
+ 993: 
+ 994: # Retry bootstrap
+ 995: ./bootstrap.sh
+ 996: 
+ 997: # Or install dependencies directly
+ 998: uv sync
+ 999: ```
+1000: 
+1001: ---
+1002: 
+1003: ## Success Criteria
+1004: 
+1005: Your installation is complete when:
+1006: 
+1007: - ✅ All CE 1.1 directories created (`.ce/`, `.serena/`, `.claude/`)
+1008: - ✅ System files installed (23 memories, 21 examples, 11 commands)
+1009: - ✅ CLAUDE.md present with framework sections
+1010: - ✅ Settings JSON valid and merged
+1011: - ✅ CE tools installed (`ce --version` works)
+1012: - ✅ Validation level 4 passes
+1013: - ✅ Context drift <5%
+1014: - ✅ Zero noise (no legacy directories for CE 1.0 upgrades)
+1015: - ✅ Serena memories loaded
+1016: - ✅ Linear configured (if using)
+1017: - ✅ First PRP created successfully
+1018: 
+1019: ---
+1020: 
+1021: ## Related Documentation
+1022: 
+1023: - **Framework Rules**: `.ce/RULES.md`
+1024: - **Tool Usage Guide**: `.ce/examples/system/TOOL-USAGE-GUIDE.md`
+1025: - **PRP-0 Template**: `.ce/examples/system/templates/PRP-0-CONTEXT-ENGINEERING.md`
+1026: - **Validation Levels**: `.serena/memories/system/validation-levels.md`
+1027: - **Testing Standards**: `.serena/memories/system/testing-standards.md`
+1028: 
+1029: ---
+1030: 
+1031: **Installation Guide Version**: 1.1
+1032: **Last Updated**: 2025-11-04
+1033: **Framework Version**: CE 1.1
 </file>
 
 <file path="CLAUDE.md">
