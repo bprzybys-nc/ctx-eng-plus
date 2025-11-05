@@ -69,7 +69,7 @@ Tool.*not available
 **Known Denied Tools**:
 | Tool | Reason | Alternative |
 |------|--------|-------------|
-| `mcp__serena__replace_symbol_body` | Permission restricted | `mcp__serena__replace_regex()` or `mcp__filesystem__edit_file()` |
+| `mcp__serena__replace_symbol_body` (old) | Legacy tool (pre-Syntropy aggregator) | `mcp__syntropy__serena_replace_symbol_body` (new, allowed) or `Edit` (native) |
 
 ---
 
@@ -114,11 +114,11 @@ Scan conversation for:
 
 ### Category 2: Denied Tools ({count})
 
-1. **Error**: mcp__serena__replace_symbol_body
-   - **Issue**: Permission denied, no direct substitute
-   - **Remedy**: Use `mcp__serena__replace_regex()` for targeted edits
+1. **Error**: mcp__serena__replace_symbol_body (old naming)
+   - **Issue**: Legacy tool (pre-Syntropy aggregator)
+   - **Remedy**: Use `mcp__syntropy__serena_replace_symbol_body` (new, allowed) or `Edit` (native)
    - **Location**: Message #{n}
-   - **Documentation**: See .serena/memories/serena-mcp-tool-restrictions.md
+   - **Documentation**: See examples/TOOL-USAGE-GUIDE.md
 ```
 
 ---
@@ -191,11 +191,11 @@ When running this command:
 
 ### Category 2: Denied Tools (1 error)
 
-1. **Error**: mcp__serena__replace_symbol_body
-   - **Issue**: Permission denied for symbol mutation
-   - **Remedy**: Use `mcp__serena__replace_regex()` for targeted edits
-   - **Alternative**: Use `mcp__filesystem__edit_file()` for line-based changes
-   - **Documentation**: .serena/memories/serena-mcp-tool-restrictions.md
+1. **Error**: mcp__serena__replace_symbol_body (old naming)
+   - **Issue**: Legacy tool (pre-Syntropy aggregator)
+   - **Remedy**: Use `mcp__syntropy__serena_replace_symbol_body` (new, allowed)
+   - **Alternative**: Use `Edit` (native) for direct file modifications
+   - **Documentation**: examples/TOOL-USAGE-GUIDE.md
 
 ---
 

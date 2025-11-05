@@ -381,12 +381,19 @@ gh pr create --title "Fix" --body "Description"
 
 | Tool | Purpose | Example |
 |------|---------|---------|
+| `serena_activate_project` | Activate project for symbol indexing | `projectPath="/abs/path/to/project"` |
 | `serena_find_symbol` | Find symbol definition | `name_path="MyClass.method"` |
 | `serena_get_symbols_overview` | List all symbols in file | `relative_path="src/utils.py"` |
 | `serena_find_referencing_symbols` | Find symbol usages | `name_path="MyClass.method"` |
+| `serena_replace_symbol_body` | Replace function/class body | `name_path="MyClass.method", new_body="..."` |
 | `serena_search_for_pattern` | Regex search | `pattern="def.*async"` |
-| `serena_write_memory` | Store project context | `memory_type="architecture", content="..."` |
-| `serena_read_memory` | Retrieve context | `memory_type="architecture"` |
+| `serena_list_dir` | List directory contents | `relative_path="src/"` |
+| `serena_read_file` | Read file contents | `relative_path="src/main.py"` |
+| `serena_create_text_file` | Create new text file | `relative_path="new.py", content="..."` |
+| `serena_write_memory` | Store project context | `memory_name="architecture", content="..."` |
+| `serena_read_memory` | Retrieve context | `memory_name="architecture"` |
+| `serena_list_memories` | List all memories | No parameters |
+| `serena_delete_memory` | Delete memory | `memory_name="temporary"` |
 
 #### Linear (Project Management)
 

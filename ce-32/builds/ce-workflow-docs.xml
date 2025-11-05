@@ -4880,229 +4880,236 @@ This section contains the contents of the repository's files.
 381: 
 382: | Tool | Purpose | Example |
 383: |------|---------|---------|
-384: | `serena_find_symbol` | Find symbol definition | `name_path="MyClass.method"` |
-385: | `serena_get_symbols_overview` | List all symbols in file | `relative_path="src/utils.py"` |
-386: | `serena_find_referencing_symbols` | Find symbol usages | `name_path="MyClass.method"` |
-387: | `serena_search_for_pattern` | Regex search | `pattern="def.*async"` |
-388: | `serena_write_memory` | Store project context | `memory_type="architecture", content="..."` |
-389: | `serena_read_memory` | Retrieve context | `memory_type="architecture"` |
-390: 
-391: #### Linear (Project Management)
-392: 
-393: | Tool | Purpose | Example |
-394: |------|---------|---------|
-395: | `linear_list_issues` | List issues | `team_id="TEAM-123"` |
-396: | `linear_create_issue` | Create issue | `title="Bug", team_id="..."` |
-397: | `linear_get_issue` | Get issue details | `issue_id="ISSUE-123"` |
-398: | `linear_update_issue` | Update issue | `issue_id="...", updates={...}` |
+384: | `serena_activate_project` | Activate project for symbol indexing | `projectPath="/abs/path/to/project"` |
+385: | `serena_find_symbol` | Find symbol definition | `name_path="MyClass.method"` |
+386: | `serena_get_symbols_overview` | List all symbols in file | `relative_path="src/utils.py"` |
+387: | `serena_find_referencing_symbols` | Find symbol usages | `name_path="MyClass.method"` |
+388: | `serena_replace_symbol_body` | Replace function/class body | `name_path="MyClass.method", new_body="..."` |
+389: | `serena_search_for_pattern` | Regex search | `pattern="def.*async"` |
+390: | `serena_list_dir` | List directory contents | `relative_path="src/"` |
+391: | `serena_read_file` | Read file contents | `relative_path="src/main.py"` |
+392: | `serena_create_text_file` | Create new text file | `relative_path="new.py", content="..."` |
+393: | `serena_write_memory` | Store project context | `memory_name="architecture", content="..."` |
+394: | `serena_read_memory` | Retrieve context | `memory_name="architecture"` |
+395: | `serena_list_memories` | List all memories | No parameters |
+396: | `serena_delete_memory` | Delete memory | `memory_name="temporary"` |
+397: 
+398: #### Linear (Project Management)
 399: 
-400: #### Context7 (Library Docs)
-401: 
-402: | Tool | Purpose | Example |
-403: |------|---------|---------|
-404: | `context7_resolve_library_id` | Find library ID | `libraryName="numpy"` |
-405: | `context7_get_library_docs` | Fetch docs | `context7CompatibleLibraryID="/numpy/doc"` |
+400: | Tool | Purpose | Example |
+401: |------|---------|---------|
+402: | `linear_list_issues` | List issues | `team_id="TEAM-123"` |
+403: | `linear_create_issue` | Create issue | `title="Bug", team_id="..."` |
+404: | `linear_get_issue` | Get issue details | `issue_id="ISSUE-123"` |
+405: | `linear_update_issue` | Update issue | `issue_id="...", updates={...}` |
 406: 
-407: #### Thinking (Reasoning)
+407: #### Context7 (Library Docs)
 408: 
 409: | Tool | Purpose | Example |
 410: |------|---------|---------|
-411: | `thinking_sequentialthinking` | Structured reasoning | `thought="...", thoughtNumber=1` |
-412: 
-413: #### Syntropy (System)
-414: 
-415: | Tool | Purpose | Example |
-416: |------|---------|---------|
-417: | `healthcheck` | Check MCP servers | `detailed=True` |
-418: | `enable_tools` | Enable/disable tools dynamically | `enable=["tool1"], disable=["tool2"]` |
-419: | `list_all_tools` | List all tools with enabled/disabled status | `{}` (no args) |
-420: 
-421: ---
-422: 
-423: ## Migration Table: Denied Tools → Alternatives
-424: 
-425: ### Filesystem (8 tools denied)
-426: 
-427: | Denied Tool | Alternative | Example |
-428: |-------------|-------------|---------|
-429: | `filesystem_read_file` | **Read** (native) | `Read(file_path="/abs/path/file.py")` |
-430: | `filesystem_read_text_file` | **Read** (native) | Same as above |
-431: | `filesystem_write_file` | **Write** (native) | `Write(file_path="...", content="...")` |
-432: | `filesystem_edit_file` | **Edit** (native) | `Edit(file_path="...", old_string="...", new_string="...")` |
-433: | `filesystem_list_directory` | **Bash** (ls) | `Bash(command="ls -la /path")` |
-434: | `filesystem_search_files` | **Glob** (native) | `Glob(pattern="**/*.py")` |
-435: | `filesystem_directory_tree` | **Bash** (tree) | `Bash(command="tree -L 2")` |
-436: | `filesystem_get_file_info` | **Bash** (stat) | `Bash(command="stat file.py")` |
-437: 
-438: ### Git (5 tools denied)
-439: 
-440: | Denied Tool | Alternative | Example |
-441: |-------------|-------------|---------|
-442: | `git_git_status` | **Bash(git)** | `Bash(command="git status")` |
-443: | `git_git_diff` | **Bash(git)** | `Bash(command="git diff --staged")` |
-444: | `git_git_log` | **Bash(git)** | `Bash(command="git log --oneline -10")` |
-445: | `git_git_add` | **Bash(git)** | `Bash(command="git add file.py")` |
-446: | `git_git_commit` | **Bash(git)** | `Bash(command='git commit -m "msg"')` |
-447: 
-448: ### GitHub (26 tools denied)
-449: 
-450: | Denied Tool | Alternative | Example |
-451: |-------------|-------------|---------|
-452: | `github_create_or_update_file` | **Bash(gh)** | `gh api repos/owner/repo/contents/path -f content=...` |
-453: | `github_search_repositories` | **Bash(gh)** | `gh search repos "keyword"` |
-454: | `github_create_repository` | **Bash(gh)** | `gh repo create name --public` |
-455: | `github_get_file_contents` | **Bash(gh)** | `gh api repos/owner/repo/contents/path` |
-456: | `github_push_files` | **Bash(git)** | `git add . && git commit -m "msg" && git push` |
-457: | `github_create_issue` | **Bash(gh)** | `gh issue create --title "Bug" --body "..."` |
-458: | `github_create_pull_request` | **Bash(gh)** | `gh pr create --title "Fix" --body "..."` |
-459: | `github_fork_repository` | **Bash(gh)** | `gh repo fork owner/repo` |
-460: | `github_create_branch` | **Bash(git)** | `git checkout -b branch-name` |
-461: | `github_list_commits` | **Bash(gh)** | `gh api repos/owner/repo/commits` |
-462: | `github_list_issues` | **Bash(gh)** | `gh issue list --label bug` |
-463: | `github_update_issue` | **Bash(gh)** | `gh issue edit 123 --title "New"` |
-464: | `github_add_issue_comment` | **Bash(gh)** | `gh issue comment 123 --body "..."` |
-465: | `github_search_code` | **Bash(gh)** | `gh search code "query"` |
-466: | `github_search_issues` | **Bash(gh)** | `gh search issues "bug"` |
-467: | `github_search_users` | **Bash(gh)** | `gh search users "name"` |
-468: | `github_get_issue` | **Bash(gh)** | `gh issue view 123` |
-469: | `github_get_pull_request` | **Bash(gh)** | `gh pr view 123` |
-470: | `github_list_pull_requests` | **Bash(gh)** | `gh pr list --state open` |
-471: | `github_create_pull_request_review` | **Bash(gh)** | `gh pr review 123 --approve` |
-472: | `github_merge_pull_request` | **Bash(gh)** | `gh pr merge 123 --squash` |
-473: | `github_get_pull_request_files` | **Bash(gh)** | `gh pr diff 123` |
-474: | `github_get_pull_request_status` | **Bash(gh)** | `gh pr checks 123` |
-475: | `github_update_pull_request_branch` | **Bash(git)** | `git checkout branch && git pull origin main` |
-476: | `github_get_pull_request_comments` | **Bash(gh)** | `gh pr view 123 --comments` |
-477: | `github_get_pull_request_reviews` | **Bash(gh)** | `gh api repos/owner/repo/pulls/123/reviews` |
-478: 
-479: ### Repomix (4 tools denied)
-480: 
-481: | Denied Tool | Alternative | Example |
-482: |-------------|-------------|---------|
-483: | `repomix_pack_codebase` | **Glob + Grep + Read** | Incremental exploration |
-484: | `repomix_grep_repomix_output` | **Grep** (native) | `Grep(pattern="...", output_mode="content")` |
-485: | `repomix_read_repomix_output` | **Read** (native) | `Read(file_path="...")` |
-486: | `repomix_pack_remote_repository` | **Bash(git clone)** + native tools | `git clone <url> && Glob/Grep/Read` |
+411: | `context7_resolve_library_id` | Find library ID | `libraryName="numpy"` |
+412: | `context7_get_library_docs` | Fetch docs | `context7CompatibleLibraryID="/numpy/doc"` |
+413: 
+414: #### Thinking (Reasoning)
+415: 
+416: | Tool | Purpose | Example |
+417: |------|---------|---------|
+418: | `thinking_sequentialthinking` | Structured reasoning | `thought="...", thoughtNumber=1` |
+419: 
+420: #### Syntropy (System)
+421: 
+422: | Tool | Purpose | Example |
+423: |------|---------|---------|
+424: | `healthcheck` | Check MCP servers | `detailed=True` |
+425: | `enable_tools` | Enable/disable tools dynamically | `enable=["tool1"], disable=["tool2"]` |
+426: | `list_all_tools` | List all tools with enabled/disabled status | `{}` (no args) |
+427: 
+428: ---
+429: 
+430: ## Migration Table: Denied Tools → Alternatives
+431: 
+432: ### Filesystem (8 tools denied)
+433: 
+434: | Denied Tool | Alternative | Example |
+435: |-------------|-------------|---------|
+436: | `filesystem_read_file` | **Read** (native) | `Read(file_path="/abs/path/file.py")` |
+437: | `filesystem_read_text_file` | **Read** (native) | Same as above |
+438: | `filesystem_write_file` | **Write** (native) | `Write(file_path="...", content="...")` |
+439: | `filesystem_edit_file` | **Edit** (native) | `Edit(file_path="...", old_string="...", new_string="...")` |
+440: | `filesystem_list_directory` | **Bash** (ls) | `Bash(command="ls -la /path")` |
+441: | `filesystem_search_files` | **Glob** (native) | `Glob(pattern="**/*.py")` |
+442: | `filesystem_directory_tree` | **Bash** (tree) | `Bash(command="tree -L 2")` |
+443: | `filesystem_get_file_info` | **Bash** (stat) | `Bash(command="stat file.py")` |
+444: 
+445: ### Git (5 tools denied)
+446: 
+447: | Denied Tool | Alternative | Example |
+448: |-------------|-------------|---------|
+449: | `git_git_status` | **Bash(git)** | `Bash(command="git status")` |
+450: | `git_git_diff` | **Bash(git)** | `Bash(command="git diff --staged")` |
+451: | `git_git_log` | **Bash(git)** | `Bash(command="git log --oneline -10")` |
+452: | `git_git_add` | **Bash(git)** | `Bash(command="git add file.py")` |
+453: | `git_git_commit` | **Bash(git)** | `Bash(command='git commit -m "msg"')` |
+454: 
+455: ### GitHub (26 tools denied)
+456: 
+457: | Denied Tool | Alternative | Example |
+458: |-------------|-------------|---------|
+459: | `github_create_or_update_file` | **Bash(gh)** | `gh api repos/owner/repo/contents/path -f content=...` |
+460: | `github_search_repositories` | **Bash(gh)** | `gh search repos "keyword"` |
+461: | `github_create_repository` | **Bash(gh)** | `gh repo create name --public` |
+462: | `github_get_file_contents` | **Bash(gh)** | `gh api repos/owner/repo/contents/path` |
+463: | `github_push_files` | **Bash(git)** | `git add . && git commit -m "msg" && git push` |
+464: | `github_create_issue` | **Bash(gh)** | `gh issue create --title "Bug" --body "..."` |
+465: | `github_create_pull_request` | **Bash(gh)** | `gh pr create --title "Fix" --body "..."` |
+466: | `github_fork_repository` | **Bash(gh)** | `gh repo fork owner/repo` |
+467: | `github_create_branch` | **Bash(git)** | `git checkout -b branch-name` |
+468: | `github_list_commits` | **Bash(gh)** | `gh api repos/owner/repo/commits` |
+469: | `github_list_issues` | **Bash(gh)** | `gh issue list --label bug` |
+470: | `github_update_issue` | **Bash(gh)** | `gh issue edit 123 --title "New"` |
+471: | `github_add_issue_comment` | **Bash(gh)** | `gh issue comment 123 --body "..."` |
+472: | `github_search_code` | **Bash(gh)** | `gh search code "query"` |
+473: | `github_search_issues` | **Bash(gh)** | `gh search issues "bug"` |
+474: | `github_search_users` | **Bash(gh)** | `gh search users "name"` |
+475: | `github_get_issue` | **Bash(gh)** | `gh issue view 123` |
+476: | `github_get_pull_request` | **Bash(gh)** | `gh pr view 123` |
+477: | `github_list_pull_requests` | **Bash(gh)** | `gh pr list --state open` |
+478: | `github_create_pull_request_review` | **Bash(gh)** | `gh pr review 123 --approve` |
+479: | `github_merge_pull_request` | **Bash(gh)** | `gh pr merge 123 --squash` |
+480: | `github_get_pull_request_files` | **Bash(gh)** | `gh pr diff 123` |
+481: | `github_get_pull_request_status` | **Bash(gh)** | `gh pr checks 123` |
+482: | `github_update_pull_request_branch` | **Bash(git)** | `git checkout branch && git pull origin main` |
+483: | `github_get_pull_request_comments` | **Bash(gh)** | `gh pr view 123 --comments` |
+484: | `github_get_pull_request_reviews` | **Bash(gh)** | `gh api repos/owner/repo/pulls/123/reviews` |
+485: 
+486: ### Repomix (4 tools denied)
 487: 
-488: ### Playwright (6 tools denied)
-489: 
-490: | Denied Tool | Alternative | Example |
-491: |-------------|-------------|---------|
-492: | `playwright_navigate` | **WebFetch** (static) or **Bash(playwright CLI)** (dynamic) | `WebFetch(url="...", prompt="...")` |
-493: | `playwright_screenshot` | **Bash(playwright CLI)** | `playwright screenshot <url> screenshot.png` |
-494: | `playwright_click` | **Bash(playwright CLI)** | Rarely needed for CLI tooling |
-495: | `playwright_fill` | **Bash(playwright CLI)** | Rarely needed for CLI tooling |
-496: | `playwright_evaluate` | **Bash(playwright CLI)** | Rarely needed for CLI tooling |
-497: | `playwright_get_visible_text` | **WebFetch** | `WebFetch(url="...", prompt="Extract text")` |
-498: 
-499: ### Perplexity (1 tool denied)
-500: 
-501: | Denied Tool | Alternative | Example |
-502: |-------------|-------------|---------|
-503: | `perplexity_perplexity_ask` | **WebSearch** (native) | `WebSearch(query="Python asyncio patterns")` |
-504: 
-505: ### Syntropy System (5 tools denied)
-506: 
-507: | Denied Tool | Alternative | Example |
-508: |-------------|-------------|---------|
-509: | `init_project` | **Manual setup** | One-time operation, rarely needed |
-510: | `get_system_doc` | **Read** (native) | `Read(file_path=".ce/RULES.md")` |
-511: | `get_user_doc` | **Read** (native) | `Read(file_path="PRPs/executed/PRP-1.md")` |
-512: | `get_summary` | **Read** + manual analysis | Read REPLKAN, analyze structure |
-513: | `denoise` | **Edit** (native) | Manually edit verbose docs |
-514: 
-515: ---
-516: 
-517: ## Best Practices
-518: 
-519: ### 1. Start with Native Tools
-520: 
-521: Always check if Read/Write/Edit/Glob/Grep/Bash can solve the task before reaching for MCP tools.
-522: 
-523: ### 2. Use Serena for Symbol Navigation
-524: 
-525: When you need to find a specific function/class definition or its usages across the codebase.
-526: 
-527: ### 3. Incremental > Monolithic
-528: 
-529: Prefer Glob → Grep → Read over packing entire codebase with Repomix.
-530: 
-531: ### 4. Bash for System Commands
-532: 
-533: Git, gh, tree, ls, find, etc. are pre-approved and more flexible than MCP wrappers.
-534: 
-535: ### 5. MCP for Integration
-536: 
-537: Use MCP tools when you need external service integration (Linear, Context7) not available via native tools.
-538: 
-539: ### 6. Validate with Healthcheck
-540: 
-541: Periodically run `mcp__syntropy__healthcheck(detailed=True)` to ensure all servers are connected.
-542: 
-543: ---
-544: 
-545: ## Troubleshooting
-546: 
-547: ### Issue: "Tool not found" error
-548: 
-549: **Cause**: Tool is in deny list or MCP server disconnected.
-550: 
-551: **Fix**:
-552: 
-553: 1. Check `.claude/settings.local.json` permissions.deny
-554: 2. Run `mcp__syntropy__healthcheck(detailed=True)`
-555: 3. Reconnect MCP: `/mcp` (in main repo, not worktrees)
-556: 
-557: ### Issue: "Permission denied" for Bash command
-558: 
-559: **Cause**: Command not in allow list.
-560: 
-561: **Fix**:
-562: 
-563: 1. Check if command matches allow pattern: `Bash(git:*)`, `Bash(uv run:*)`, etc.
-564: 2. If needed frequently, add to allow list in settings
-565: 3. Temporary: User can approve via prompt
-566: 
-567: ### Issue: MCP tool slow or timing out
-568: 
-569: **Cause**: Server connectivity issue or large operation.
-570: 
-571: **Fix**:
-572: 
-573: 1. Check server health: `mcp__syntropy__healthcheck()`
-574: 2. Increase timeout if supported
-575: 3. Consider native alternative (e.g., Grep instead of repomix)
-576: 
-577: ### Issue: Serena "symbol not found"
-578: 
-579: **Cause**: Incorrect name_path format or file not indexed.
-580: 
-581: **Fix**:
-582: 
-583: 1. Use `serena_get_symbols_overview` to list all symbols in file
-584: 2. Ensure format: `ClassName.method_name` or `function_name`
-585: 3. Check relative_path is correct from project root
-586: 
-587: ---
-588: 
-589: ## See Also
-590: 
-591: **Code Examples**:
-592: 
-593: - `tools/ce/examples/syntropy/` - MCP tool usage patterns in Python
-594: - `.serena/memories/` - Serena memory management examples and patterns
+488: | Denied Tool | Alternative | Example |
+489: |-------------|-------------|---------|
+490: | `repomix_pack_codebase` | **Glob + Grep + Read** | Incremental exploration |
+491: | `repomix_grep_repomix_output` | **Grep** (native) | `Grep(pattern="...", output_mode="content")` |
+492: | `repomix_read_repomix_output` | **Read** (native) | `Read(file_path="...")` |
+493: | `repomix_pack_remote_repository` | **Bash(git clone)** + native tools | `git clone <url> && Glob/Grep/Read` |
+494: 
+495: ### Playwright (6 tools denied)
+496: 
+497: | Denied Tool | Alternative | Example |
+498: |-------------|-------------|---------|
+499: | `playwright_navigate` | **WebFetch** (static) or **Bash(playwright CLI)** (dynamic) | `WebFetch(url="...", prompt="...")` |
+500: | `playwright_screenshot` | **Bash(playwright CLI)** | `playwright screenshot <url> screenshot.png` |
+501: | `playwright_click` | **Bash(playwright CLI)** | Rarely needed for CLI tooling |
+502: | `playwright_fill` | **Bash(playwright CLI)** | Rarely needed for CLI tooling |
+503: | `playwright_evaluate` | **Bash(playwright CLI)** | Rarely needed for CLI tooling |
+504: | `playwright_get_visible_text` | **WebFetch** | `WebFetch(url="...", prompt="Extract text")` |
+505: 
+506: ### Perplexity (1 tool denied)
+507: 
+508: | Denied Tool | Alternative | Example |
+509: |-------------|-------------|---------|
+510: | `perplexity_perplexity_ask` | **WebSearch** (native) | `WebSearch(query="Python asyncio patterns")` |
+511: 
+512: ### Syntropy System (5 tools denied)
+513: 
+514: | Denied Tool | Alternative | Example |
+515: |-------------|-------------|---------|
+516: | `init_project` | **Manual setup** | One-time operation, rarely needed |
+517: | `get_system_doc` | **Read** (native) | `Read(file_path=".ce/RULES.md")` |
+518: | `get_user_doc` | **Read** (native) | `Read(file_path="PRPs/executed/PRP-1.md")` |
+519: | `get_summary` | **Read** + manual analysis | Read REPLKAN, analyze structure |
+520: | `denoise` | **Edit** (native) | Manually edit verbose docs |
+521: 
+522: ---
+523: 
+524: ## Best Practices
+525: 
+526: ### 1. Start with Native Tools
+527: 
+528: Always check if Read/Write/Edit/Glob/Grep/Bash can solve the task before reaching for MCP tools.
+529: 
+530: ### 2. Use Serena for Symbol Navigation
+531: 
+532: When you need to find a specific function/class definition or its usages across the codebase.
+533: 
+534: ### 3. Incremental > Monolithic
+535: 
+536: Prefer Glob → Grep → Read over packing entire codebase with Repomix.
+537: 
+538: ### 4. Bash for System Commands
+539: 
+540: Git, gh, tree, ls, find, etc. are pre-approved and more flexible than MCP wrappers.
+541: 
+542: ### 5. MCP for Integration
+543: 
+544: Use MCP tools when you need external service integration (Linear, Context7) not available via native tools.
+545: 
+546: ### 6. Validate with Healthcheck
+547: 
+548: Periodically run `mcp__syntropy__healthcheck(detailed=True)` to ensure all servers are connected.
+549: 
+550: ---
+551: 
+552: ## Troubleshooting
+553: 
+554: ### Issue: "Tool not found" error
+555: 
+556: **Cause**: Tool is in deny list or MCP server disconnected.
+557: 
+558: **Fix**:
+559: 
+560: 1. Check `.claude/settings.local.json` permissions.deny
+561: 2. Run `mcp__syntropy__healthcheck(detailed=True)`
+562: 3. Reconnect MCP: `/mcp` (in main repo, not worktrees)
+563: 
+564: ### Issue: "Permission denied" for Bash command
+565: 
+566: **Cause**: Command not in allow list.
+567: 
+568: **Fix**:
+569: 
+570: 1. Check if command matches allow pattern: `Bash(git:*)`, `Bash(uv run:*)`, etc.
+571: 2. If needed frequently, add to allow list in settings
+572: 3. Temporary: User can approve via prompt
+573: 
+574: ### Issue: MCP tool slow or timing out
+575: 
+576: **Cause**: Server connectivity issue or large operation.
+577: 
+578: **Fix**:
+579: 
+580: 1. Check server health: `mcp__syntropy__healthcheck()`
+581: 2. Increase timeout if supported
+582: 3. Consider native alternative (e.g., Grep instead of repomix)
+583: 
+584: ### Issue: Serena "symbol not found"
+585: 
+586: **Cause**: Incorrect name_path format or file not indexed.
+587: 
+588: **Fix**:
+589: 
+590: 1. Use `serena_get_symbols_overview` to list all symbols in file
+591: 2. Ensure format: `ClassName.method_name` or `function_name`
+592: 3. Check relative_path is correct from project root
+593: 
+594: ---
 595: 
-596: **Related Documentation**:
+596: ## See Also
 597: 
-598: - `CLAUDE.md` - Project guide and quick commands
-599: - `TOOL-PERMISSION-LOCKDOWN-PLAN.md` - Detailed rationale for tool deny list
-600: - `PRPs/executed/PRP-B-tool-usage-guide.md` - PRP that created this guide
-601: 
-602: ---
-603: 
-604: **End of Guide**
-605: 
-606: For questions or suggestions, update this guide via PR following Context Engineering framework.
+598: **Code Examples**:
+599: 
+600: - `tools/ce/examples/syntropy/` - MCP tool usage patterns in Python
+601: - `.serena/memories/` - Serena memory management examples and patterns
+602: 
+603: **Related Documentation**:
+604: 
+605: - `CLAUDE.md` - Project guide and quick commands
+606: - `TOOL-PERMISSION-LOCKDOWN-PLAN.md` - Detailed rationale for tool deny list
+607: - `PRPs/executed/PRP-B-tool-usage-guide.md` - PRP that created this guide
+608: 
+609: ---
+610: 
+611: **End of Guide**
+612: 
+613: For questions or suggestions, update this guide via PR following Context Engineering framework.
 </file>
 
 <file path="examples/INDEX.md">
@@ -5532,970 +5539,1114 @@ This section contains the contents of the repository's files.
   69: 
   70: ---
   71: 
-  72: ## Prerequisites
+  72: ## Quick Start: Automated Installation (RECOMMENDED)
   73: 
-  74: ### Required for All Scenarios
+  74: **Time**: <5 minutes | **Recommended for**: All scenarios
   75: 
-  76: - **Repomix CLI**: `npm install -g repomix`
-  77: - **CE framework packages**:
-  78:   - `ce-infrastructure.xml` (complete framework)
-  79:   - `ce-workflow-docs.xml` (reference documentation)
-  80: - **Git repository**: Project initialized with git
-  81: - **Project directory**: Write access to target directory
-  82: 
-  83: ### Optional (Recommended)
-  84: 
-  85: - **Backup branch**: `git checkout -b pre-ce-backup`
-  86: - **Linear account**: For issue tracking integration
-  87: - **Syntropy MCP**: For tool integration
-  88: - **UV package manager**: For CE CLI tools
-  89: 
-  90: ### Before You Begin
-  91: 
-  92: ```bash
-  93: # Verify prerequisites
-  94: which repomix && echo "✓ Repomix installed"
-  95: which git && echo "✓ Git installed"
-  96: test -f ce-infrastructure.xml && echo "✓ Framework package available"
+  76: Use Syntropy MCP for one-command CE framework installation:
+  77: 
+  78: ```bash
+  79: npx syntropy-mcp init ce-framework
+  80: ```
+  81: 
+  82: This command automatically:
+  83: 1. **Extracts unpacker tool** (`tools/ce/repomix_unpack.py` + `tools/pyproject.toml`)
+  84: 2. **Installs UV package manager** (if not already installed)
+  85: 3. **Extracts infrastructure package** (50 files):
+  86:    - 23 framework memories (`.serena/memories/*.md`)
+  87:    - 11 framework commands (`.claude/commands/*.md`)
+  88:    - 27 CE tools (`tools/ce/*.py`)
+  89:    - PRP-0 documentation (`.ce/PRPs/executed/system/PRP-0-CONTEXT-ENGINEERING.md`)
+  90:    - Framework settings (`.claude/settings.local.json`)
+  91: 4. **Reorganizes tools** to `.ce/tools/` directory
+  92: 5. **Copies workflow docs** to `.ce/examples/ce-workflow-docs.xml`
+  93: 6. **Blends settings.local.json** with existing project settings (if any)
+  94: 7. **Verifies installation** (checks critical files exist)
+  95: 
+  96: ### What You Get
   97: 
-  98: # Create backup (recommended)
-  99: git checkout -b pre-ce-backup
- 100: git push origin pre-ce-backup
- 101: git checkout main
- 102: ```
- 103: 
- 104: ---
- 105: 
- 106: ## The 5-Phase Workflow
- 107: 
- 108: ### Phase Overview
- 109: 
- 110: 1. **Bucket Collection** (5-10 min) - Stage files for validation
- 111: 2. **User Files Copy** (0-15 min) - Migrate project-specific files
- 112: 3. **Repomix Package Handling** (5 min) - Extract framework packages
- 113: 4. **CLAUDE.md Blending** (10 min) - Merge framework + project guide
- 114: 5. **Legacy Cleanup** (0-5 min) - Remove duplicate legacy files
- 115: 
- 116: **Note**: Not all scenarios execute all phases. See scenario-specific instructions below.
- 117: 
- 118: ---
+  98: After automated installation:
+  99: - ✅ Complete CE 1.1 framework installed
+ 100: - ✅ All tools available at `.ce/tools/`
+ 101: - ✅ Framework commands ready to use
+ 102: - ✅ Settings blended with project defaults
+ 103: - ✅ No manual file copying needed
+ 104: 
+ 105: ### Next Steps
+ 106: 
+ 107: 1. **Verify installation**:
+ 108:    ```bash
+ 109:    ls .ce/tools/ce/repomix_unpack.py
+ 110:    ls .claude/commands/generate-prp.md
+ 111:    ls .ce/PRPs/executed/system/PRP-0-CONTEXT-ENGINEERING.md
+ 112:    ```
+ 113: 
+ 114: 2. **Install CE CLI tools** (optional but recommended):
+ 115:    ```bash
+ 116:    cd .ce/tools
+ 117:    uv sync
+ 118:    ```
  119: 
- 120: ## Phase 1: Bucket Collection (Universal)
- 121: 
- 122: **Duration**: 5-10 minutes
- 123: **Applies to**: All scenarios
+ 120: 3. **Test a command**:
+ 121:    ```bash
+ 122:    /generate-prp   # Create your first PRP
+ 123:    ```
  124: 
- 125: ### Purpose
- 126: 
- 127: Create a staging area to organize and validate files before copying to CE 1.1 destinations.
- 128: 
- 129: ### Step 1.1: Create Staging Area
- 130: 
- 131: ```bash
- 132: # Create bucket directories
- 133: mkdir -p tmp/syntropy-initialization/{serena,examples,prps,claude-md,claude-dir}
- 134: 
- 135: # Verify structure
- 136: ls -d tmp/syntropy-initialization/*/
- 137: # Expected:
- 138: # tmp/syntropy-initialization/serena/
- 139: # tmp/syntropy-initialization/examples/
- 140: # tmp/syntropy-initialization/prps/
- 141: # tmp/syntropy-initialization/claude-md/
- 142: # tmp/syntropy-initialization/claude-dir/
- 143: ```
- 144: 
- 145: ### Step 1.2: Copy Files to Buckets
- 146: 
- 147: **Bucket 1: Serena Memories**
- 148: 
- 149: ```bash
- 150: # Copy existing Serena memories (if any)
- 151: if [ -d .serena/memories ]; then
- 152:   cp -R .serena/memories/*.md tmp/syntropy-initialization/serena/ 2>/dev/null || true
- 153:   echo "Serena files: $(ls tmp/syntropy-initialization/serena/*.md 2>/dev/null | wc -l)"
- 154: fi
- 155: ```
- 156: 
- 157: **Bucket 2: Examples**
- 158: 
- 159: ```bash
- 160: # Copy existing examples (if any)
- 161: if [ -d examples ]; then
- 162:   find examples -name "*.md" -exec cp {} tmp/syntropy-initialization/examples/ \; 2>/dev/null || true
- 163:   echo "Example files: $(ls tmp/syntropy-initialization/examples/*.md 2>/dev/null | wc -l)"
- 164: fi
- 165: ```
+ 125: 4. **Review PRP-0** for complete framework documentation:
+ 126:    ```bash
+ 127:    cat .ce/PRPs/executed/system/PRP-0-CONTEXT-ENGINEERING.md
+ 128:    ```
+ 129: 
+ 130: ### Settings Blending
+ 131: 
+ 132: The automated init intelligently blends CE framework settings with your project's existing `.claude/settings.local.json`:
+ 133: 
+ 134: **Blending Rules**:
+ 135: 1. **Deny list takes precedence**: If CE denies a tool, it's removed from your project's allow list
+ 136: 2. **Merge lists**: CE entries added to corresponding allow/deny/ask lists (deduplicated)
+ 137: 3. **CE list wins**: CE entries only appear in one list (their designated CE list)
+ 138: 
+ 139: **Example**:
+ 140: ```json
+ 141: // Your project allows filesystem_read_file
+ 142: // CE denies filesystem_read_file (prefer native Read tool)
+ 143: // Result: Removed from allow list, added to deny list
+ 144: ```
+ 145: 
+ 146: ---
+ 147: 
+ 148: ## Manual Installation (Fallback)
+ 149: 
+ 150: **Time**: 10-45 minutes depending on scenario | **Use when**: Syntropy MCP not available
+ 151: 
+ 152: If you cannot use the automated installation, follow the manual 5-phase workflow below.
+ 153: 
+ 154: ---
+ 155: 
+ 156: ## Prerequisites
+ 157: 
+ 158: ### Required for All Scenarios
+ 159: 
+ 160: - **Repomix CLI**: `npm install -g repomix`
+ 161: - **CE framework packages**:
+ 162:   - `ce-infrastructure.xml` (complete framework)
+ 163:   - `ce-workflow-docs.xml` (reference documentation)
+ 164: - **Git repository**: Project initialized with git
+ 165: - **Project directory**: Write access to target directory
  166: 
- 167: **Bucket 3: PRPs**
+ 167: ### Optional (Recommended)
  168: 
- 169: ```bash
- 170: # Copy existing PRPs (if any)
- 171: if [ -d PRPs ]; then
- 172:   find PRPs -name "*.md" -exec cp {} tmp/syntropy-initialization/prps/ \; 2>/dev/null || true
- 173:   echo "PRP files: $(ls tmp/syntropy-initialization/prps/*.md 2>/dev/null | wc -l)"
- 174: fi
- 175: ```
- 176: 
- 177: **Bucket 4: CLAUDE.md**
- 178: 
- 179: ```bash
- 180: # Copy existing CLAUDE.md (if any)
- 181: if [ -f CLAUDE.md ]; then
- 182:   cp CLAUDE.md tmp/syntropy-initialization/claude-md/
- 183:   echo "✓ CLAUDE.md copied"
- 184: fi
- 185: ```
- 186: 
- 187: **Bucket 5: Claude Directory**
- 188: 
- 189: ```bash
- 190: # Copy existing .claude directory (if any)
- 191: if [ -d .claude ]; then
- 192:   cp -R .claude/* tmp/syntropy-initialization/claude-dir/ 2>/dev/null || true
- 193:   echo "Claude files: $(ls tmp/syntropy-initialization/claude-dir/ 2>/dev/null | wc -l)"
- 194: fi
- 195: ```
- 196: 
- 197: ### Step 1.3: Validate Bucket Contents
- 198: 
- 199: Review files in each bucket to verify they match bucket characteristics:
- 200: 
- 201: **Serena Bucket Validation**
- 202: 
- 203: ```bash
- 204: cd tmp/syntropy-initialization/serena/
+ 169: - **Backup branch**: `git checkout -b pre-ce-backup`
+ 170: - **Linear account**: For issue tracking integration
+ 171: - **Syntropy MCP**: For tool integration
+ 172: - **UV package manager**: For CE CLI tools
+ 173: 
+ 174: ### Before You Begin
+ 175: 
+ 176: ```bash
+ 177: # Verify prerequisites
+ 178: which repomix && echo "✓ Repomix installed"
+ 179: which git && echo "✓ Git installed"
+ 180: test -f ce-infrastructure.xml && echo "✓ Framework package available"
+ 181: 
+ 182: # Create backup (recommended)
+ 183: git checkout -b pre-ce-backup
+ 184: git push origin pre-ce-backup
+ 185: git checkout main
+ 186: ```
+ 187: 
+ 188: ---
+ 189: 
+ 190: ## The 5-Phase Workflow
+ 191: 
+ 192: ### Phase Overview
+ 193: 
+ 194: 1. **Bucket Collection** (5-10 min) - Stage files for validation
+ 195: 2. **User Files Copy** (0-15 min) - Migrate project-specific files
+ 196: 3. **Repomix Package Handling** (5 min) - Extract framework packages
+ 197: 4. **CLAUDE.md Blending** (10 min) - Merge framework + project guide
+ 198: 5. **Legacy Cleanup** (0-5 min) - Remove duplicate legacy files
+ 199: 
+ 200: **Note**: Not all scenarios execute all phases. See scenario-specific instructions below.
+ 201: 
+ 202: ---
+ 203: 
+ 204: ## Phase 1: Bucket Collection (Universal)
  205: 
- 206: for file in *.md 2>/dev/null; do
- 207:   # Check for memory-like content
- 208:   if ! grep -qi "memory\|pattern\|guide" "$file" 2>/dev/null; then
- 209:     mv "$file" "$file.fake"
- 210:     echo "⚠ Marked $file as fake (not a memory)"
- 211:   fi
- 212: done
- 213: ```
+ 206: **Duration**: 5-10 minutes
+ 207: **Applies to**: All scenarios
+ 208: 
+ 209: ### Purpose
+ 210: 
+ 211: Create a staging area to organize and validate files before copying to CE 1.1 destinations.
+ 212: 
+ 213: ### Step 1.1: Create Staging Area
  214: 
- 215: **Examples Bucket Validation**
- 216: 
- 217: ```bash
- 218: cd tmp/syntropy-initialization/examples/
- 219: 
- 220: for file in *.md 2>/dev/null; do
- 221:   # Check for example/pattern structure
- 222:   if ! grep -qi "example\|pattern\|workflow\|guide" "$file" 2>/dev/null; then
- 223:     mv "$file" "$file.fake"
- 224:     echo "⚠ Marked $file as fake (not an example)"
- 225:   fi
- 226: done
+ 215: ```bash
+ 216: # Create bucket directories
+ 217: mkdir -p tmp/syntropy-initialization/{serena,examples,prps,claude-md,claude-dir}
+ 218: 
+ 219: # Verify structure
+ 220: ls -d tmp/syntropy-initialization/*/
+ 221: # Expected:
+ 222: # tmp/syntropy-initialization/serena/
+ 223: # tmp/syntropy-initialization/examples/
+ 224: # tmp/syntropy-initialization/prps/
+ 225: # tmp/syntropy-initialization/claude-md/
+ 226: # tmp/syntropy-initialization/claude-dir/
  227: ```
  228: 
- 229: **PRPs Bucket Validation**
+ 229: ### Step 1.2: Copy Files to Buckets
  230: 
- 231: ```bash
- 232: cd tmp/syntropy-initialization/prps/
- 233: 
- 234: for file in *.md 2>/dev/null; do
- 235:   # Check for PRP structure (YAML header or PRP-ID in filename)
- 236:   if ! grep -q "^---" "$file" 2>/dev/null && ! echo "$file" | grep -qi "prp-"; then
- 237:     mv "$file" "$file.fake"
- 238:     echo "⚠ Marked $file as fake (not a PRP)"
- 239:   fi
- 240: done
- 241: ```
+ 231: **Bucket 1: Serena Memories**
+ 232: 
+ 233: ```bash
+ 234: # Copy existing Serena memories (if any)
+ 235: if [ -d .serena/memories ]; then
+ 236:   cp -R .serena/memories/*.md tmp/syntropy-initialization/serena/ 2>/dev/null || true
+ 237:   echo "Serena files: $(ls tmp/syntropy-initialization/serena/*.md 2>/dev/null | wc -l)"
+ 238: fi
+ 239: ```
+ 240: 
+ 241: **Bucket 2: Examples**
  242: 
- 243: ### Step 1.4: Bucket Summary
- 244: 
- 245: ```bash
- 246: # Return to project root
- 247: cd /path/to/your/project
- 248: 
- 249: # Generate bucket report
- 250: cat > tmp/syntropy-initialization/bucket-report.txt << 'EOF'
- 251: # Bucket Collection Report
+ 243: ```bash
+ 244: # Copy existing examples (if any)
+ 245: if [ -d examples ]; then
+ 246:   find examples -name "*.md" -exec cp {} tmp/syntropy-initialization/examples/ \; 2>/dev/null || true
+ 247:   echo "Example files: $(ls tmp/syntropy-initialization/examples/*.md 2>/dev/null | wc -l)"
+ 248: fi
+ 249: ```
+ 250: 
+ 251: **Bucket 3: PRPs**
  252: 
- 253: ## Serena Bucket
- 254: Valid: $(ls tmp/syntropy-initialization/serena/*.md 2>/dev/null | grep -v ".fake" | wc -l)
- 255: Fake: $(ls tmp/syntropy-initialization/serena/*.fake 2>/dev/null | wc -l)
- 256: 
- 257: ## Examples Bucket
- 258: Valid: $(ls tmp/syntropy-initialization/examples/*.md 2>/dev/null | grep -v ".fake" | wc -l)
- 259: Fake: $(ls tmp/syntropy-initialization/examples/*.fake 2>/dev/null | wc -l)
+ 253: ```bash
+ 254: # Copy existing PRPs (if any)
+ 255: if [ -d PRPs ]; then
+ 256:   find PRPs -name "*.md" -exec cp {} tmp/syntropy-initialization/prps/ \; 2>/dev/null || true
+ 257:   echo "PRP files: $(ls tmp/syntropy-initialization/prps/*.md 2>/dev/null | wc -l)"
+ 258: fi
+ 259: ```
  260: 
- 261: ## PRPs Bucket
- 262: Valid: $(ls tmp/syntropy-initialization/prps/*.md 2>/dev/null | grep -v ".fake" | wc -l)
- 263: Fake: $(ls tmp/syntropy-initialization/prps/*.fake 2>/dev/null | wc -l)
- 264: 
- 265: ## CLAUDE.md Bucket
- 266: Valid: $(ls tmp/syntropy-initialization/claude-md/CLAUDE.md 2>/dev/null | wc -l)
- 267: 
- 268: ## Claude Dir Bucket
- 269: Files: $(ls tmp/syntropy-initialization/claude-dir/ 2>/dev/null | wc -l)
- 270: EOF
- 271: 
- 272: # Display report
- 273: cat tmp/syntropy-initialization/bucket-report.txt
- 274: ```
- 275: 
- 276: **Phase 1 Complete**: Files staged and validated. Proceed to Phase 2 (or skip if Greenfield).
- 277: 
- 278: ---
- 279: 
- 280: ## Phase 2: User Files Copy
- 281: 
- 282: **Duration**: 0-15 minutes
- 283: **Applies to**: Mature Project, CE 1.0 Upgrade, Partial Install
- 284: **Skip for**: Greenfield
- 285: 
- 286: ### Scenario Variations
- 287: 
- 288: **Skip this phase if**:
- 289: - **Greenfield**: No user files exist yet
- 290: 
- 291: **Full migration if**:
- 292: - **Mature Project**: Copy all validated files from buckets
- 293: - **CE 1.0 Upgrade**: Copy all validated files + classify existing files
- 294: 
- 295: **Selective migration if**:
- 296: - **Partial Install**: Copy only missing components
- 297: 
- 298: ### Step 2.1: User Memory Migration
- 299: 
- 300: **For Mature Project and CE 1.0 Upgrade**:
- 301: 
- 302: ```bash
- 303: # Copy validated user memories (non-.fake files)
- 304: find tmp/syntropy-initialization/serena -name "*.md" ! -name "*.fake" -exec cp {} .serena/memories/ \; 2>/dev/null || true
- 305: 
- 306: # Add YAML headers to memories without them
- 307: cd .serena/memories/
- 308: 
- 309: for memory in *.md 2>/dev/null; do
- 310:   # Skip if already has YAML header
- 311:   if head -n 1 "$memory" | grep -q "^---"; then
- 312:     continue
- 313:   fi
+ 261: **Bucket 4: CLAUDE.md**
+ 262: 
+ 263: ```bash
+ 264: # Copy existing CLAUDE.md (if any)
+ 265: if [ -f CLAUDE.md ]; then
+ 266:   cp CLAUDE.md tmp/syntropy-initialization/claude-md/
+ 267:   echo "✓ CLAUDE.md copied"
+ 268: fi
+ 269: ```
+ 270: 
+ 271: **Bucket 5: Claude Directory**
+ 272: 
+ 273: ```bash
+ 274: # Copy existing .claude directory (if any)
+ 275: if [ -d .claude ]; then
+ 276:   cp -R .claude/* tmp/syntropy-initialization/claude-dir/ 2>/dev/null || true
+ 277:   echo "Claude files: $(ls tmp/syntropy-initialization/claude-dir/ 2>/dev/null | wc -l)"
+ 278: fi
+ 279: ```
+ 280: 
+ 281: ### Step 1.3: Validate Bucket Contents
+ 282: 
+ 283: Review files in each bucket to verify they match bucket characteristics:
+ 284: 
+ 285: **Serena Bucket Validation**
+ 286: 
+ 287: ```bash
+ 288: cd tmp/syntropy-initialization/serena/
+ 289: 
+ 290: for file in *.md 2>/dev/null; do
+ 291:   # Check for memory-like content
+ 292:   if ! grep -qi "memory\|pattern\|guide" "$file" 2>/dev/null; then
+ 293:     mv "$file" "$file.fake"
+ 294:     echo "⚠ Marked $file as fake (not a memory)"
+ 295:   fi
+ 296: done
+ 297: ```
+ 298: 
+ 299: **Examples Bucket Validation**
+ 300: 
+ 301: ```bash
+ 302: cd tmp/syntropy-initialization/examples/
+ 303: 
+ 304: for file in *.md 2>/dev/null; do
+ 305:   # Check for example/pattern structure
+ 306:   if ! grep -qi "example\|pattern\|workflow\|guide" "$file" 2>/dev/null; then
+ 307:     mv "$file" "$file.fake"
+ 308:     echo "⚠ Marked $file as fake (not an example)"
+ 309:   fi
+ 310: done
+ 311: ```
+ 312: 
+ 313: **PRPs Bucket Validation**
  314: 
- 315:   # Determine type (heuristic based on content)
- 316:   if grep -qi "architecture\|security\|core principle\|critical" "$memory"; then
- 317:     TYPE="critical"
- 318:   else
- 319:     TYPE="regular"
- 320:   fi
- 321: 
- 322:   # Add YAML header for user memory
- 323:   cat > "${memory}.tmp" << EOF
- 324: ---
- 325: type: user
- 326: source: target-project
- 327: created: "$(date -u +%Y-%m-%dT%H:%M:%SZ)"
- 328: updated: "$(date -u +%Y-%m-%dT%H:%M:%SZ)"
- 329: ---
- 330: 
- 331: $(cat "$memory")
- 332: EOF
- 333:   mv "${memory}.tmp" "$memory"
- 334:   echo "✓ Added YAML header to $memory (type: $TYPE)"
- 335: done
+ 315: ```bash
+ 316: cd tmp/syntropy-initialization/prps/
+ 317: 
+ 318: for file in *.md 2>/dev/null; do
+ 319:   # Check for PRP structure (YAML header or PRP-ID in filename)
+ 320:   if ! grep -q "^---" "$file" 2>/dev/null && ! echo "$file" | grep -qi "prp-"; then
+ 321:     mv "$file" "$file.fake"
+ 322:     echo "⚠ Marked $file as fake (not a PRP)"
+ 323:   fi
+ 324: done
+ 325: ```
+ 326: 
+ 327: ### Step 1.4: Bucket Summary
+ 328: 
+ 329: ```bash
+ 330: # Return to project root
+ 331: cd /path/to/your/project
+ 332: 
+ 333: # Generate bucket report
+ 334: cat > tmp/syntropy-initialization/bucket-report.txt << 'EOF'
+ 335: # Bucket Collection Report
  336: 
- 337: cd ../..
- 338: ```
- 339: 
- 340: ### Step 2.2: User PRP Migration
- 341: 
- 342: **For Mature Project and CE 1.0 Upgrade**:
- 343: 
- 344: ```bash
- 345: # Create PRP directories if needed
- 346: mkdir -p .ce/PRPs/{executed,feature-requests,archived}
- 347: 
- 348: # Copy validated user PRPs (non-.fake files)
- 349: find tmp/syntropy-initialization/prps -name "*.md" ! -name "*.fake" -exec sh -c '
- 350:   for prp; do
- 351:     # Determine destination based on filename or content
- 352:     if echo "$prp" | grep -qi "executed"; then
- 353:       cp "$prp" .ce/PRPs/executed/
- 354:     elif echo "$prp" | grep -qi "feature\|request"; then
- 355:       cp "$prp" .ce/PRPs/feature-requests/
- 356:     else
- 357:       cp "$prp" .ce/PRPs/executed/
- 358:     fi
- 359:   done
- 360: ' sh {} +
+ 337: ## Serena Bucket
+ 338: Valid: $(ls tmp/syntropy-initialization/serena/*.md 2>/dev/null | grep -v ".fake" | wc -l)
+ 339: Fake: $(ls tmp/syntropy-initialization/serena/*.fake 2>/dev/null | wc -l)
+ 340: 
+ 341: ## Examples Bucket
+ 342: Valid: $(ls tmp/syntropy-initialization/examples/*.md 2>/dev/null | grep -v ".fake" | wc -l)
+ 343: Fake: $(ls tmp/syntropy-initialization/examples/*.fake 2>/dev/null | wc -l)
+ 344: 
+ 345: ## PRPs Bucket
+ 346: Valid: $(ls tmp/syntropy-initialization/prps/*.md 2>/dev/null | grep -v ".fake" | wc -l)
+ 347: Fake: $(ls tmp/syntropy-initialization/prps/*.fake 2>/dev/null | wc -l)
+ 348: 
+ 349: ## CLAUDE.md Bucket
+ 350: Valid: $(ls tmp/syntropy-initialization/claude-md/CLAUDE.md 2>/dev/null | wc -l)
+ 351: 
+ 352: ## Claude Dir Bucket
+ 353: Files: $(ls tmp/syntropy-initialization/claude-dir/ 2>/dev/null | wc -l)
+ 354: EOF
+ 355: 
+ 356: # Display report
+ 357: cat tmp/syntropy-initialization/bucket-report.txt
+ 358: ```
+ 359: 
+ 360: **Phase 1 Complete**: Files staged and validated. Proceed to Phase 2 (or skip if Greenfield).
  361: 
- 362: # Add YAML headers to user PRPs (if missing)
- 363: cd .ce/PRPs/executed/
- 364: 
- 365: for prp in *.md 2>/dev/null; do
- 366:   # Skip if already has YAML header
- 367:   if head -n 1 "$prp" | grep -q "^---"; then
- 368:     continue
- 369:   fi
- 370: 
- 371:   # Extract PRP ID from filename (e.g., USER-001 from USER-001-feature.md)
- 372:   PRP_ID=$(echo "$prp" | sed 's/\.md$//' | cut -d'-' -f1-2)
- 373:   TITLE=$(echo "$prp" | sed 's/\.md$//' | sed 's/^[^-]*-[^-]*-//' | tr '-' ' ')
+ 362: ---
+ 363: 
+ 364: ## Phase 2: User Files Copy
+ 365: 
+ 366: **Duration**: 0-15 minutes
+ 367: **Applies to**: Mature Project, CE 1.0 Upgrade, Partial Install
+ 368: **Skip for**: Greenfield
+ 369: 
+ 370: ### Scenario Variations
+ 371: 
+ 372: **Skip this phase if**:
+ 373: - **Greenfield**: No user files exist yet
  374: 
- 375:   # Add YAML header for user PRP
- 376:   cat > "${prp}.tmp" << EOF
- 377: ---
- 378: prp_id: $PRP_ID
- 379: title: $TITLE
- 380: status: completed
- 381: created: "$(date -u +%Y-%m-%d)"
- 382: source: target-project
- 383: type: user
- 384: ---
+ 375: **Full migration if**:
+ 376: - **Mature Project**: Copy all validated files from buckets
+ 377: - **CE 1.0 Upgrade**: Copy all validated files + classify existing files
+ 378: 
+ 379: **Selective migration if**:
+ 380: - **Partial Install**: Copy only missing components
+ 381: 
+ 382: ### Step 2.1: User Memory Migration
+ 383: 
+ 384: **For Mature Project and CE 1.0 Upgrade**:
  385: 
- 386: $(cat "$prp")
- 387: EOF
- 388:   mv "${prp}.tmp" "$prp"
- 389:   echo "✓ Added YAML header to $prp"
- 390: done
- 391: 
- 392: cd ../../..
- 393: echo "✓ User PRPs migrated to .ce/PRPs/"
- 394: ```
- 395: 
- 396: **User PRP YAML Header Format**:
- 397: 
- 398: ```yaml
- 399: ---
- 400: prp_id: USER-001
- 401: title: User Feature Implementation
- 402: status: completed
- 403: created: "2025-11-04"
- 404: source: target-project
- 405: type: user
- 406: ---
- 407: ```
- 408: 
- 409: **Notes**:
- 410: - `type: user` distinguishes user PRPs from framework PRPs
- 411: - `source: target-project` indicates origin (vs. framework source: ctx-eng-plus)
- 412: - Framework PRPs use `type: regular` or `type: critical`
- 413: 
- 414: ### Step 2.3: User Examples Migration
- 415: 
- 416: **For Mature Project and CE 1.0 Upgrade**:
- 417: 
- 418: ```bash
- 419: # Create examples directory if needed
- 420: mkdir -p .ce/examples
- 421: 
- 422: # Copy validated user examples (non-.fake files)
- 423: find tmp/syntropy-initialization/examples -name "*.md" ! -name "*.fake" -exec cp {} .ce/examples/ \; 2>/dev/null || true
- 424: 
- 425: echo "✓ User examples migrated to .ce/examples/"
- 426: ```
+ 386: ```bash
+ 387: # Copy validated user memories (non-.fake files)
+ 388: find tmp/syntropy-initialization/serena -name "*.md" ! -name "*.fake" -exec cp {} .serena/memories/ \; 2>/dev/null || true
+ 389: 
+ 390: # Add YAML headers to memories without them
+ 391: cd .serena/memories/
+ 392: 
+ 393: for memory in *.md 2>/dev/null; do
+ 394:   # Skip if already has YAML header
+ 395:   if head -n 1 "$memory" | grep -q "^---"; then
+ 396:     continue
+ 397:   fi
+ 398: 
+ 399:   # Determine type (heuristic based on content)
+ 400:   if grep -qi "architecture\|security\|core principle\|critical" "$memory"; then
+ 401:     TYPE="critical"
+ 402:   else
+ 403:     TYPE="regular"
+ 404:   fi
+ 405: 
+ 406:   # Add YAML header for user memory
+ 407:   cat > "${memory}.tmp" << EOF
+ 408: ---
+ 409: type: user
+ 410: source: target-project
+ 411: created: "$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+ 412: updated: "$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+ 413: ---
+ 414: 
+ 415: $(cat "$memory")
+ 416: EOF
+ 417:   mv "${memory}.tmp" "$memory"
+ 418:   echo "✓ Added YAML header to $memory (type: $TYPE)"
+ 419: done
+ 420: 
+ 421: cd ../..
+ 422: ```
+ 423: 
+ 424: ### Step 2.2: User PRP Migration
+ 425: 
+ 426: **For Mature Project and CE 1.0 Upgrade**:
  427: 
- 428: ### Step 2.4: User Commands/Settings Migration
- 429: 
- 430: **For all scenarios with existing .claude/ content**:
+ 428: ```bash
+ 429: # Create PRP directories if needed
+ 430: mkdir -p .ce/PRPs/{executed,feature-requests,archived}
  431: 
- 432: ```bash
- 433: # Copy custom commands (preserve existing)
- 434: if [ -d tmp/syntropy-initialization/claude-dir/commands ]; then
- 435:   mkdir -p .claude/commands
- 436:   cp -n tmp/syntropy-initialization/claude-dir/commands/*.md .claude/commands/ 2>/dev/null || true
- 437:   echo "✓ User commands preserved"
- 438: fi
- 439: 
- 440: # Backup existing settings (will be merged in Phase 3)
- 441: if [ -f tmp/syntropy-initialization/claude-dir/settings.local.json ]; then
- 442:   mkdir -p .claude
- 443:   cp tmp/syntropy-initialization/claude-dir/settings.local.json .claude/settings.pre-ce.json
- 444:   echo "✓ Existing settings backed up"
- 445: fi
- 446: ```
- 447: 
- 448: ### Step 2.5: Migration Summary
- 449: 
- 450: ```bash
- 451: # Generate migration report
- 452: cat > tmp/syntropy-initialization/phase2-report.txt << EOF
- 453: # Phase 2: User Files Migration Report
+ 432: # Copy validated user PRPs (non-.fake files)
+ 433: find tmp/syntropy-initialization/prps -name "*.md" ! -name "*.fake" -exec sh -c '
+ 434:   for prp; do
+ 435:     # Determine destination based on filename or content
+ 436:     if echo "$prp" | grep -qi "executed"; then
+ 437:       cp "$prp" .ce/PRPs/executed/
+ 438:     elif echo "$prp" | grep -qi "feature\|request"; then
+ 439:       cp "$prp" .ce/PRPs/feature-requests/
+ 440:     else
+ 441:       cp "$prp" .ce/PRPs/executed/
+ 442:     fi
+ 443:   done
+ 444: ' sh {} +
+ 445: 
+ 446: # Add YAML headers to user PRPs (if missing)
+ 447: cd .ce/PRPs/executed/
+ 448: 
+ 449: for prp in *.md 2>/dev/null; do
+ 450:   # Skip if already has YAML header
+ 451:   if head -n 1 "$prp" | grep -q "^---"; then
+ 452:     continue
+ 453:   fi
  454: 
- 455: ## Memories Migrated
- 456: User memories: $(find .serena/memories -maxdepth 1 -name "*.md" 2>/dev/null | wc -l)
- 457: Headers added (type: user): $(grep -l "^type: user" .serena/memories/*.md 2>/dev/null | wc -l)
+ 455:   # Extract PRP ID from filename (e.g., USER-001 from USER-001-feature.md)
+ 456:   PRP_ID=$(echo "$prp" | sed 's/\.md$//' | cut -d'-' -f1-2)
+ 457:   TITLE=$(echo "$prp" | sed 's/\.md$//' | sed 's/^[^-]*-[^-]*-//' | tr '-' ' ')
  458: 
- 459: ## PRPs Migrated
- 460: Executed: $(ls .ce/PRPs/executed/*.md 2>/dev/null | wc -l)
- 461: Feature requests: $(ls .ce/PRPs/feature-requests/*.md 2>/dev/null | wc -l)
- 462: Headers added (type: user): $(grep -l "^type: user" .ce/PRPs/executed/*.md 2>/dev/null | wc -l)
- 463: 
- 464: ## Examples Migrated
- 465: User examples: $(ls .ce/examples/*.md 2>/dev/null | wc -l)
- 466: 
- 467: ## Commands/Settings
- 468: Custom commands: $(ls .claude/commands/*.md 2>/dev/null | wc -l)
- 469: Settings backed up: $(test -f .claude/settings.pre-ce.json && echo "yes" || echo "no")
- 470: 
- 471: ## YAML Header Summary
- 472: - User memories: type: user, source: target-project
- 473: - User PRPs: type: user, source: target-project, prp_id, title, status
- 474: - Framework memories: type: regular (default) or type: critical (upgraded manually)
- 475: - Framework PRPs: Standard PRP YAML with batch_id, stage, order
- 476: EOF
- 477: 
- 478: cat tmp/syntropy-initialization/phase2-report.txt
- 479: ```
- 480: 
- 481: **Phase 2 Complete**: User files migrated with YAML headers (`type: user`). Framework files use `type: regular` or `type: critical`. Proceed to Phase 3.
- 482: 
+ 459:   # Add YAML header for user PRP
+ 460:   cat > "${prp}.tmp" << EOF
+ 461: ---
+ 462: prp_id: $PRP_ID
+ 463: title: $TITLE
+ 464: status: completed
+ 465: created: "$(date -u +%Y-%m-%d)"
+ 466: source: target-project
+ 467: type: user
+ 468: ---
+ 469: 
+ 470: $(cat "$prp")
+ 471: EOF
+ 472:   mv "${prp}.tmp" "$prp"
+ 473:   echo "✓ Added YAML header to $prp"
+ 474: done
+ 475: 
+ 476: cd ../../..
+ 477: echo "✓ User PRPs migrated to .ce/PRPs/"
+ 478: ```
+ 479: 
+ 480: **User PRP YAML Header Format**:
+ 481: 
+ 482: ```yaml
  483: ---
- 484: 
- 485: ## Phase 3: Repomix Package Handling (Universal)
- 486: 
- 487: **Duration**: 5 minutes
- 488: **Applies to**: All scenarios
- 489: 
- 490: ### Purpose
- 491: 
- 492: Extract framework packages to install system documentation, memories, examples, commands, and tools.
- 493: 
- 494: ### Step 3.1: Copy Workflow Package
- 495: 
- 496: ```bash
- 497: # Create system directory
- 498: mkdir -p .ce/examples/system/
+ 484: prp_id: USER-001
+ 485: title: User Feature Implementation
+ 486: status: completed
+ 487: created: "2025-11-04"
+ 488: source: target-project
+ 489: type: user
+ 490: ---
+ 491: ```
+ 492: 
+ 493: **Notes**:
+ 494: - `type: user` distinguishes user PRPs from framework PRPs
+ 495: - `source: target-project` indicates origin (vs. framework source: ctx-eng-plus)
+ 496: - Framework PRPs use `type: regular` or `type: critical`
+ 497: 
+ 498: ### Step 2.3: User Examples Migration
  499: 
- 500: # Copy workflow documentation package (reference only, not extracted)
- 501: cp ce-workflow-docs.xml .ce/examples/system/
- 502: 
- 503: echo "✓ Workflow package copied to .ce/examples/system/ce-workflow-docs.xml"
- 504: ```
+ 500: **For Mature Project and CE 1.0 Upgrade**:
+ 501: 
+ 502: ```bash
+ 503: # Create examples directory if needed
+ 504: mkdir -p .ce/examples
  505: 
- 506: **Note**: `ce-workflow-docs.xml` is stored as-is for reference and redistribution. The actual framework files come from `ce-infrastructure.xml` extraction below.
- 507: 
- 508: ### Step 3.2: Extract Infrastructure Package
- 509: 
- 510: ```bash
- 511: # Extract complete framework infrastructure
- 512: # This creates /system/ subdirectories automatically
- 513: repomix --unpack ce-infrastructure.xml --target ./
- 514: 
- 515: # Verify extraction
- 516: echo "Framework files extracted:"
- 517: echo "  PRP-0 template: $(test -f .ce/PRPs/executed/system/PRP-0-CONTEXT-ENGINEERING.md && echo '✓' || echo '✗')"
- 518: echo "  System memories: $(ls .serena/memories/system/*.md 2>/dev/null | wc -l)"
- 519: echo "  Framework commands: $(ls .claude/commands/*.md 2>/dev/null | wc -l)"
- 520: echo "  Tool files: $(find tools -name "*.py" 2>/dev/null | wc -l)"
- 521: ```
- 522: 
- 523: **What gets extracted**:
- 524: 
- 525: ```
- 526: .ce/PRPs/executed/system/     # PRP-0 template (framework initialization)
- 527: .serena/memories/system/      # 23 framework memories (6 critical + 17 regular)
- 528: .claude/commands/             # 11 framework commands
- 529: .claude/settings.local.json   # Framework settings (merged with existing)
- 530: tools/                        # 33 tool source files
- 531: CLAUDE.md                     # Framework sections (merged with existing)
- 532: ```
+ 506: # Copy validated user examples (non-.fake files)
+ 507: find tmp/syntropy-initialization/examples -name "*.md" ! -name "*.fake" -exec cp {} .ce/examples/ \; 2>/dev/null || true
+ 508: 
+ 509: echo "✓ User examples migrated to .ce/examples/"
+ 510: ```
+ 511: 
+ 512: ### Step 2.4: User Commands/Settings Migration
+ 513: 
+ 514: **For all scenarios with existing .claude/ content**:
+ 515: 
+ 516: ```bash
+ 517: # Copy custom commands (preserve existing)
+ 518: if [ -d tmp/syntropy-initialization/claude-dir/commands ]; then
+ 519:   mkdir -p .claude/commands
+ 520:   cp -n tmp/syntropy-initialization/claude-dir/commands/*.md .claude/commands/ 2>/dev/null || true
+ 521:   echo "✓ User commands preserved"
+ 522: fi
+ 523: 
+ 524: # Backup existing settings (will be merged in Phase 3)
+ 525: if [ -f tmp/syntropy-initialization/claude-dir/settings.local.json ]; then
+ 526:   mkdir -p .claude
+ 527:   cp tmp/syntropy-initialization/claude-dir/settings.local.json .claude/settings.pre-ce.json
+ 528:   echo "✓ Existing settings backed up"
+ 529: fi
+ 530: ```
+ 531: 
+ 532: ### Step 2.5: Migration Summary
  533: 
- 534: **Note**: Examples are NOT extracted from infrastructure. They are in `ce-workflow-docs.xml` (copied above for reference).
- 535: 
- 536: ### Step 3.3: Validate Framework Installation
- 537: 
- 538: ```bash
- 539: # Check system memories (expected: 23)
- 540: SYSTEM_MEMORIES=$(ls .serena/memories/system/*.md 2>/dev/null | wc -l)
- 541: test $SYSTEM_MEMORIES -eq 23 && echo "✓ All 23 system memories installed" || echo "⚠ Only $SYSTEM_MEMORIES system memories found"
+ 534: ```bash
+ 535: # Generate migration report
+ 536: cat > tmp/syntropy-initialization/phase2-report.txt << EOF
+ 537: # Phase 2: User Files Migration Report
+ 538: 
+ 539: ## Memories Migrated
+ 540: User memories: $(find .serena/memories -maxdepth 1 -name "*.md" 2>/dev/null | wc -l)
+ 541: Headers added (type: user): $(grep -l "^type: user" .serena/memories/*.md 2>/dev/null | wc -l)
  542: 
- 543: # Check system examples (expected: 21)
- 544: SYSTEM_EXAMPLES=$(ls .ce/examples/system/*.md 2>/dev/null | wc -l)
- 545: test $SYSTEM_EXAMPLES -eq 21 && echo "✓ All 21 system examples installed" || echo "⚠ Only $SYSTEM_EXAMPLES system examples found"
- 546: 
- 547: # Check framework commands (expected: 11)
- 548: FRAMEWORK_COMMANDS=$(ls .claude/commands/*.md 2>/dev/null | wc -l)
- 549: test $FRAMEWORK_COMMANDS -ge 11 && echo "✓ All 11 framework commands installed" || echo "⚠ Only $FRAMEWORK_COMMANDS commands found"
+ 543: ## PRPs Migrated
+ 544: Executed: $(ls .ce/PRPs/executed/*.md 2>/dev/null | wc -l)
+ 545: Feature requests: $(ls .ce/PRPs/feature-requests/*.md 2>/dev/null | wc -l)
+ 546: Headers added (type: user): $(grep -l "^type: user" .ce/PRPs/executed/*.md 2>/dev/null | wc -l)
+ 547: 
+ 548: ## Examples Migrated
+ 549: User examples: $(ls .ce/examples/*.md 2>/dev/null | wc -l)
  550: 
- 551: # Check tool files (expected: 33)
- 552: TOOL_FILES=$(find tools -name "*.py" 2>/dev/null | wc -l)
- 553: test $TOOL_FILES -ge 33 && echo "✓ Tool source files installed" || echo "⚠ Only $TOOL_FILES tool files found"
+ 551: ## Commands/Settings
+ 552: Custom commands: $(ls .claude/commands/*.md 2>/dev/null | wc -l)
+ 553: Settings backed up: $(test -f .claude/settings.pre-ce.json && echo "yes" || echo "no")
  554: 
- 555: # Check settings merged
- 556: test -f .claude/settings.local.json && jq empty .claude/settings.local.json && echo "✓ Settings valid JSON" || echo "⚠ Settings invalid"
- 557: ```
- 558: 
- 559: ### Step 3.4: Initialize CE Tools
- 560: 
- 561: ```bash
- 562: # Install CE CLI tools
- 563: cd tools
- 564: ./bootstrap.sh
- 565: 
- 566: # Verify installation
- 567: uv run ce --version
- 568: # Expected: ce version 1.1.0
- 569: 
- 570: # Run basic validation
- 571: uv run ce validate --level 1
- 572: # Expected: Structure validation passes
+ 555: ## YAML Header Summary
+ 556: - User memories: type: user, source: target-project
+ 557: - User PRPs: type: user, source: target-project, prp_id, title, status
+ 558: - Framework memories: type: regular (default) or type: critical (upgraded manually)
+ 559: - Framework PRPs: Standard PRP YAML with batch_id, stage, order
+ 560: EOF
+ 561: 
+ 562: cat tmp/syntropy-initialization/phase2-report.txt
+ 563: ```
+ 564: 
+ 565: **Phase 2 Complete**: User files migrated with YAML headers (`type: user`). Framework files use `type: regular` or `type: critical`. Proceed to Phase 3.
+ 566: 
+ 567: ---
+ 568: 
+ 569: ## Phase 3: Repomix Package Handling (Universal)
+ 570: 
+ 571: **Duration**: 5 minutes
+ 572: **Applies to**: All scenarios
  573: 
- 574: cd ..
- 575: ```
- 576: 
- 577: **Phase 3 Complete**: Framework installed with /system/ organization. Proceed to Phase 4.
- 578: 
- 579: ---
- 580: 
- 581: ## Phase 4: CLAUDE.md Blending (Universal)
- 582: 
- 583: **Duration**: 10 minutes
- 584: **Applies to**: All scenarios
+ 574: **Note**: If you used automated installation (`npx syntropy-mcp init ce-framework`), this phase is already complete. Skip to Phase 4.
+ 575: 
+ 576: ### Purpose
+ 577: 
+ 578: Extract framework packages to install system documentation, memories, examples, commands, and tools.
+ 579: 
+ 580: ### Step 3.1: Copy Workflow Package
+ 581: 
+ 582: ```bash
+ 583: # Create system directory
+ 584: mkdir -p .ce/examples/system/
  585: 
- 586: ### Purpose
- 587: 
- 588: Merge framework CLAUDE.md sections with project-specific sections, creating a single unified project guide.
- 589: 
- 590: ### Step 4.1: Backup Existing CLAUDE.md
+ 586: # Copy workflow documentation package (reference only, not extracted)
+ 587: cp ce-workflow-docs.xml .ce/examples/system/
+ 588: 
+ 589: echo "✓ Workflow package copied to .ce/examples/system/ce-workflow-docs.xml"
+ 590: ```
  591: 
- 592: ```bash
- 593: # Backup user's CLAUDE.md (if exists)
- 594: if [ -f CLAUDE.md ]; then
- 595:   cp CLAUDE.md "CLAUDE.md.backup-$(date +%Y%m%d-%H%M%S)"
- 596:   echo "✓ CLAUDE.md backed up"
- 597: else
- 598:   echo "ℹ No existing CLAUDE.md (fresh installation)"
- 599: fi
- 600: ```
- 601: 
- 602: ### Step 4.2: Identify Framework vs Project Sections
- 603: 
- 604: Framework sections (from ce-infrastructure.xml):
- 605: - Communication
- 606: - Core Principles
- 607: - UV Package Management
- 608: - Ad-Hoc Code Policy
- 609: - Quick Commands
- 610: - Tool Naming Convention
- 611: - Allowed Tools Summary
- 612: - Command Permissions
- 613: - Quick Tool Selection
- 614: - Project Structure
- 615: - Testing Standards
- 616: - Code Quality
- 617: - Context Commands
- 618: - Syntropy MCP Tool Sync
- 619: - Linear Integration
- 620: - Batch PRP Generation
- 621: - PRP Sizing
- 622: - Testing Patterns
- 623: - Documentation Standards
- 624: - Efficient Doc Review
- 625: - Resources
- 626: - Keyboard Shortcuts
- 627: - Git Worktree
- 628: - Troubleshooting
- 629: 
- 630: Project sections (user-defined) are any sections not in framework list.
- 631: 
- 632: ### Step 4.3: Blend Sections
- 633: 
- 634: **Manual Blending** (recommended for first installation):
- 635: 
- 636: ```bash
- 637: # Edit CLAUDE.md to mark sections
- 638: vim CLAUDE.md
- 639: 
- 640: # Add [FRAMEWORK] or [PROJECT] markers to section headers:
- 641: # ## [FRAMEWORK] Communication
- 642: # ## [PROJECT] Project-Specific Communication
- 643: # ## [FRAMEWORK] Core Principles
- 644: # ## [PROJECT] Team Conventions
- 645: ```
- 646: 
- 647: **Automated Blending** (if framework provides blending tool):
+ 592: **Note**: `ce-workflow-docs.xml` is stored as-is for reference and redistribution. The actual framework files come from `ce-infrastructure.xml` extraction below.
+ 593: 
+ 594: ### Step 3.2: Extract Infrastructure Package
+ 595: 
+ 596: ```bash
+ 597: # Extract complete framework infrastructure
+ 598: repomix --unpack ce-infrastructure.xml --target ./
+ 599: 
+ 600: # Reorganize tools to .ce/tools/ (framework convention)
+ 601: mkdir -p .ce/tools
+ 602: mv tools/* .ce/tools/
+ 603: rmdir tools
+ 604: 
+ 605: # Verify extraction
+ 606: echo "Framework files extracted:"
+ 607: echo "  PRP-0 template: $(test -f .ce/PRPs/executed/system/PRP-0-CONTEXT-ENGINEERING.md && echo '✓' || echo '✗')"
+ 608: echo "  System memories: $(ls .serena/memories/system/*.md 2>/dev/null | wc -l)"
+ 609: echo "  Framework commands: $(ls .claude/commands/*.md 2>/dev/null | wc -l)"
+ 610: echo "  Tool files: $(find .ce/tools -name "*.py" 2>/dev/null | wc -l)"
+ 611: ```
+ 612: 
+ 613: **What gets extracted**:
+ 614: 
+ 615: ```
+ 616: .ce/PRPs/executed/system/     # PRP-0 template (framework initialization)
+ 617: .serena/memories/system/      # 23 framework memories (6 critical + 17 regular)
+ 618: .claude/commands/             # 11 framework commands
+ 619: .claude/settings.local.json   # Framework settings (merged with existing)
+ 620: .ce/tools/                    # 33 tool source files
+ 621: CLAUDE.md                     # Framework sections (merged with existing)
+ 622: ```
+ 623: 
+ 624: **Note**: Examples are NOT extracted from infrastructure. They are in `ce-workflow-docs.xml` (copied above for reference).
+ 625: 
+ 626: ### Step 3.3: Validate Framework Installation
+ 627: 
+ 628: ```bash
+ 629: # Check system memories (expected: 23)
+ 630: SYSTEM_MEMORIES=$(ls .serena/memories/system/*.md 2>/dev/null | wc -l)
+ 631: test $SYSTEM_MEMORIES -eq 23 && echo "✓ All 23 system memories installed" || echo "⚠ Only $SYSTEM_MEMORIES system memories found"
+ 632: 
+ 633: # Check system examples (expected: 21)
+ 634: SYSTEM_EXAMPLES=$(ls .ce/examples/system/*.md 2>/dev/null | wc -l)
+ 635: test $SYSTEM_EXAMPLES -eq 21 && echo "✓ All 21 system examples installed" || echo "⚠ Only $SYSTEM_EXAMPLES system examples found"
+ 636: 
+ 637: # Check framework commands (expected: 11)
+ 638: FRAMEWORK_COMMANDS=$(ls .claude/commands/*.md 2>/dev/null | wc -l)
+ 639: test $FRAMEWORK_COMMANDS -ge 11 && echo "✓ All 11 framework commands installed" || echo "⚠ Only $FRAMEWORK_COMMANDS commands found"
+ 640: 
+ 641: # Check tool files (expected: 33)
+ 642: TOOL_FILES=$(find .ce/tools -name "*.py" 2>/dev/null | wc -l)
+ 643: test $TOOL_FILES -ge 33 && echo "✓ Tool source files installed" || echo "⚠ Only $TOOL_FILES tool files found"
+ 644: 
+ 645: # Check settings merged
+ 646: test -f .claude/settings.local.json && jq empty .claude/settings.local.json && echo "✓ Settings valid JSON" || echo "⚠ Settings invalid"
+ 647: ```
  648: 
- 649: ```bash
- 650: # Use denoise command to merge sections
- 651: /denoise CLAUDE.md
- 652: 
- 653: # Review merged output
- 654: less CLAUDE.md
- 655: ```
- 656: 
- 657: ### Step 4.4: Validate Blended CLAUDE.md
- 658: 
- 659: ```bash
- 660: # Check for framework markers
- 661: grep -c "\[FRAMEWORK\]" CLAUDE.md
- 662: # Expected: Multiple framework sections marked
+ 649: ### Step 3.4: Initialize CE Tools
+ 650: 
+ 651: ```bash
+ 652: # Install CE CLI tools
+ 653: cd .ce/tools
+ 654: ./bootstrap.sh
+ 655: 
+ 656: # Verify installation
+ 657: uv run ce --version
+ 658: # Expected: ce version 1.1.0
+ 659: 
+ 660: # Run basic validation
+ 661: uv run ce validate --level 1
+ 662: # Expected: Structure validation passes
  663: 
- 664: # Check for project markers (if any)
- 665: grep -c "\[PROJECT\]" CLAUDE.md
- 666: # Expected: 0+ (depending on scenario)
- 667: 
- 668: # Verify key framework sections present
- 669: for section in "Communication" "Core Principles" "Quick Commands" "Tool Naming Convention"; do
- 670:   grep -q "## .*$section" CLAUDE.md && echo "✓ $section section present" || echo "⚠ $section section missing"
- 671: done
- 672: ```
- 673: 
- 674: ### Step 4.5: Add Project-Specific Sections
+ 664: cd ..
+ 665: ```
+ 666: 
+ 667: **Phase 3 Complete**: Framework installed with /system/ organization. Proceed to Phase 4.
+ 668: 
+ 669: ---
+ 670: 
+ 671: ## Phase 4: CLAUDE.md Blending (Universal)
+ 672: 
+ 673: **Duration**: 10 minutes
+ 674: **Applies to**: All scenarios
  675: 
- 676: **For Mature Project and CE 1.0 Upgrade**:
+ 676: **Note**: If you used automated installation (`npx syntropy-mcp init ce-framework`), settings.local.json blending is already complete. This phase covers CLAUDE.md blending only.
  677: 
- 678: Add project-specific sections to CLAUDE.md:
+ 678: ### Purpose
  679: 
- 680: ```bash
- 681: cat >> CLAUDE.md << 'EOF'
- 682: 
- 683: ---
- 684: 
- 685: ## [PROJECT] Project-Specific Information
- 686: 
- 687: ### Project Structure
- 688: 
- 689: **Architecture**: [Your architecture description]
- 690: 
- 691: **Key Components**:
- 692: - Component 1: [Description]
- 693: - Component 2: [Description]
- 694: 
- 695: ### Development Workflow
- 696: 
- 697: **Branch Strategy**: [Your branching model]
- 698: 
- 699: **Code Review Process**: [Your review process]
- 700: 
- 701: ### Testing Standards
- 702: 
- 703: **Test Coverage**: [Your coverage requirements]
- 704: 
- 705: **Test Frameworks**: [Your test tools]
- 706: 
- 707: ### Deployment Process
- 708: 
- 709: **CI/CD Pipeline**: [Your pipeline description]
- 710: 
- 711: **Deployment Stages**: [Your stages]
- 712: 
- 713: ---
- 714: 
- 715: EOF
- 716: ```
- 717: 
- 718: **Phase 4 Complete**: CLAUDE.md blended with framework + project sections. Proceed to Phase 5 (if applicable).
- 719: 
- 720: ---
+ 680: Merge framework CLAUDE.md sections with project-specific sections, creating a single unified project guide.
+ 681: 
+ 682: ### Step 4.1: Backup Existing CLAUDE.md
+ 683: 
+ 684: ```bash
+ 685: # Backup user's CLAUDE.md (if exists)
+ 686: if [ -f CLAUDE.md ]; then
+ 687:   cp CLAUDE.md "CLAUDE.md.backup-$(date +%Y%m%d-%H%M%S)"
+ 688:   echo "✓ CLAUDE.md backed up"
+ 689: else
+ 690:   echo "ℹ No existing CLAUDE.md (fresh installation)"
+ 691: fi
+ 692: ```
+ 693: 
+ 694: ### Step 4.2: Identify Framework vs Project Sections
+ 695: 
+ 696: Framework sections (from ce-infrastructure.xml):
+ 697: - Communication
+ 698: - Core Principles
+ 699: - UV Package Management
+ 700: - Ad-Hoc Code Policy
+ 701: - Quick Commands
+ 702: - Tool Naming Convention
+ 703: - Allowed Tools Summary
+ 704: - Command Permissions
+ 705: - Quick Tool Selection
+ 706: - Project Structure
+ 707: - Testing Standards
+ 708: - Code Quality
+ 709: - Context Commands
+ 710: - Syntropy MCP Tool Sync
+ 711: - Linear Integration
+ 712: - Batch PRP Generation
+ 713: - PRP Sizing
+ 714: - Testing Patterns
+ 715: - Documentation Standards
+ 716: - Efficient Doc Review
+ 717: - Resources
+ 718: - Keyboard Shortcuts
+ 719: - Git Worktree
+ 720: - Troubleshooting
  721: 
- 722: ## Phase 5: Legacy Cleanup
+ 722: Project sections (user-defined) are any sections not in framework list.
  723: 
- 724: **Duration**: 0-5 minutes
- 725: **Applies to**: CE 1.0 Upgrade only
- 726: **Skip for**: Greenfield, Mature Project, Partial Install
+ 724: ### Step 4.3: Blend Sections
+ 725: 
+ 726: **Manual Blending** (recommended for first installation):
  727: 
- 728: ### Scenario Variations
- 729: 
- 730: **Skip this phase if**:
- 731: - **Greenfield**: No legacy files (new project)
- 732: - **Mature Project**: No legacy CE files (first CE installation)
- 733: - **Partial Install**: Selective cleanup only
- 734: 
- 735: **Full cleanup if**:
- 736: - **CE 1.0 Upgrade**: Aggressive cleanup of legacy CE 1.0 structure
- 737: 
- 738: ### Step 5.1: Verify Migration Completed
- 739: 
- 740: ```bash
- 741: # Verify all files migrated to CE 1.1 structure
- 742: test -d .ce/PRPs/system && echo "✓ System PRPs migrated"
- 743: test -d .ce/examples/system && echo "✓ System examples migrated"
- 744: test -d .serena/memories/system && echo "✓ System memories migrated"
- 745: 
- 746: # Check for errors in migration
- 747: if [ -f tmp/syntropy-initialization/phase2-report.txt ]; then
- 748:   grep -i error tmp/syntropy-initialization/phase2-report.txt
- 749:   # Expected: No errors
- 750: fi
- 751: ```
- 752: 
- 753: ### Step 5.2: Archive Legacy Organization
- 754: 
- 755: ```bash
- 756: # Create archive of legacy files before deletion (safety backup)
- 757: mkdir -p tmp/syntropy-initialization/legacy-backup/
- 758: 
- 759: # Archive legacy directories
- 760: tar -czf "tmp/syntropy-initialization/legacy-backup/pre-ce-1.1-$(date +%Y%m%d-%H%M%S).tar.gz" \
- 761:   PRPs/ \
- 762:   examples/ \
- 763:   .serena/memories/*.md \
- 764:   2>/dev/null || true
+ 728: ```bash
+ 729: # Edit CLAUDE.md to mark sections
+ 730: vim CLAUDE.md
+ 731: 
+ 732: # Add [FRAMEWORK] or [PROJECT] markers to section headers:
+ 733: # ## [FRAMEWORK] Communication
+ 734: # ## [PROJECT] Project-Specific Communication
+ 735: # ## [FRAMEWORK] Core Principles
+ 736: # ## [PROJECT] Team Conventions
+ 737: ```
+ 738: 
+ 739: **Automated Blending** (if framework provides blending tool):
+ 740: 
+ 741: ```bash
+ 742: # Use denoise command to merge sections
+ 743: /denoise CLAUDE.md
+ 744: 
+ 745: # Review merged output
+ 746: less CLAUDE.md
+ 747: ```
+ 748: 
+ 749: ### Step 4.4: Validate Blended CLAUDE.md
+ 750: 
+ 751: ```bash
+ 752: # Check for framework markers
+ 753: grep -c "\[FRAMEWORK\]" CLAUDE.md
+ 754: # Expected: Multiple framework sections marked
+ 755: 
+ 756: # Check for project markers (if any)
+ 757: grep -c "\[PROJECT\]" CLAUDE.md
+ 758: # Expected: 0+ (depending on scenario)
+ 759: 
+ 760: # Verify key framework sections present
+ 761: for section in "Communication" "Core Principles" "Quick Commands" "Tool Naming Convention"; do
+ 762:   grep -q "## .*$section" CLAUDE.md && echo "✓ $section section present" || echo "⚠ $section section missing"
+ 763: done
+ 764: ```
  765: 
- 766: echo "✓ Legacy files archived"
+ 766: ### Step 4.5: Add Project-Specific Sections
  767: 
- 768: # Verify archive created
- 769: ARCHIVE_FILE=$(ls -t tmp/syntropy-initialization/legacy-backup/*.tar.gz | head -n 1)
- 770: test -f "$ARCHIVE_FILE" && echo "✓ Archive: $ARCHIVE_FILE" || echo "⚠ Archive not created"
- 771: ```
- 772: 
- 773: ### Step 5.3: Delete Legacy Organization Files
+ 768: **For Mature Project and CE 1.0 Upgrade**:
+ 769: 
+ 770: Add project-specific sections to CLAUDE.md:
+ 771: 
+ 772: ```bash
+ 773: cat >> CLAUDE.md << 'EOF'
  774: 
- 775: **Delete legacy PRPs directory** (now in .ce/PRPs/):
+ 775: ---
  776: 
- 777: ```bash
- 778: if [ -d PRPs/ ]; then
- 779:   # Count files before deletion
- 780:   LEGACY_PRPS=$(find PRPs -name "*.md" | wc -l)
- 781: 
- 782:   # Delete directory
- 783:   rm -rf PRPs/
- 784: 
- 785:   echo "✓ Deleted legacy PRPs/ ($LEGACY_PRPS files migrated to .ce/PRPs/)"
- 786: fi
- 787: ```
+ 777: ## [PROJECT] Project-Specific Information
+ 778: 
+ 779: ### Project Structure
+ 780: 
+ 781: **Architecture**: [Your architecture description]
+ 782: 
+ 783: **Key Components**:
+ 784: - Component 1: [Description]
+ 785: - Component 2: [Description]
+ 786: 
+ 787: ### Development Workflow
  788: 
- 789: **Delete legacy examples directory** (now in .ce/examples/):
+ 789: **Branch Strategy**: [Your branching model]
  790: 
- 791: ```bash
- 792: if [ -d examples/ ]; then
- 793:   # Count files before deletion
- 794:   LEGACY_EXAMPLES=$(find examples -name "*.md" | wc -l)
- 795: 
- 796:   # Delete directory
- 797:   rm -rf examples/
+ 791: **Code Review Process**: [Your review process]
+ 792: 
+ 793: ### Testing Standards
+ 794: 
+ 795: **Test Coverage**: [Your coverage requirements]
+ 796: 
+ 797: **Test Frameworks**: [Your test tools]
  798: 
- 799:   echo "✓ Deleted legacy examples/ ($LEGACY_EXAMPLES files migrated to .ce/examples/)"
- 800: fi
- 801: ```
+ 799: ### Deployment Process
+ 800: 
+ 801: **CI/CD Pipeline**: [Your pipeline description]
  802: 
- 803: **Delete legacy memories** (now in .serena/memories/system/):
+ 803: **Deployment Stages**: [Your stages]
  804: 
- 805: ```bash
- 806: # Delete only memories that were migrated to /system/
- 807: # Preserve user memories (not in system/)
- 808: if [ -d .serena/memories/ ]; then
- 809:   find .serena/memories/ -maxdepth 1 -name "*.md" -type f | while read file; do
- 810:     basename=$(basename "$file")
- 811:     if [ -f .serena/memories/system/"$basename" ]; then
- 812:       rm -f "$file"
- 813:       echo "✓ Deleted legacy .serena/memories/$basename (migrated to system/)"
- 814:     fi
- 815:   done
- 816: fi
- 817: ```
- 818: 
- 819: ### Step 5.4: Log Cleanup Summary
- 820: 
- 821: ```bash
- 822: # Log cleanup actions to initialization report
- 823: cat > tmp/syntropy-initialization/phase5-report.txt << EOF
- 824: # Phase 5: Legacy Organization Cleanup Report
- 825: 
- 826: ## Deleted Legacy Files
- 827: 
- 828: **PRPs Directory**: $(test ! -d PRPs && echo "Deleted" || echo "Still exists")
- 829: **Examples Directory**: $(test ! -d examples && echo "Deleted" || echo "Still exists")
- 830: **Legacy Memories**: $(find .serena/memories -maxdepth 1 -name "*.md" 2>/dev/null | wc -l) remaining at root level
+ 805: ---
+ 806: 
+ 807: EOF
+ 808: ```
+ 809: 
+ 810: **Phase 4 Complete**: CLAUDE.md blended with framework + project sections. Proceed to Phase 5 (if applicable).
+ 811: 
+ 812: ---
+ 813: 
+ 814: ## Phase 5: Legacy Cleanup
+ 815: 
+ 816: **Duration**: 0-5 minutes
+ 817: **Applies to**: CE 1.0 Upgrade only
+ 818: **Skip for**: Greenfield, Mature Project, Partial Install
+ 819: 
+ 820: ### Scenario Variations
+ 821: 
+ 822: **Skip this phase if**:
+ 823: - **Greenfield**: No legacy files (new project)
+ 824: - **Mature Project**: No legacy CE files (first CE installation)
+ 825: - **Partial Install**: Selective cleanup only
+ 826: 
+ 827: **Full cleanup if**:
+ 828: - **CE 1.0 Upgrade**: Aggressive cleanup of legacy CE 1.0 structure
+ 829: 
+ 830: ### Step 5.1: Verify Migration Completed
  831: 
- 832: ## Backup
- 833: 
- 834: **Archive Created**: $(ls tmp/syntropy-initialization/legacy-backup/*.tar.gz | head -n 1)
- 835: **Archive Size**: $(du -h tmp/syntropy-initialization/legacy-backup/*.tar.gz | head -n 1 | cut -f1)
- 836: 
- 837: ## Verification
- 838: 
- 839: **CE 1.1 Structure Active**: $(test -d .ce/PRPs/system && test -d .ce/examples/system && test -d .serena/memories/system && echo "Yes" || echo "No")
- 840: **Zero Noise**: $(test ! -d PRPs && test ! -d examples && echo "Yes - Clean project" || echo "No - Legacy files remain")
- 841: 
- 842: EOF
- 843: 
- 844: cat tmp/syntropy-initialization/phase5-report.txt
- 845: ```
+ 832: ```bash
+ 833: # Verify all files migrated to CE 1.1 structure
+ 834: test -d .ce/PRPs/system && echo "✓ System PRPs migrated"
+ 835: test -d .ce/examples/system && echo "✓ System examples migrated"
+ 836: test -d .serena/memories/system && echo "✓ System memories migrated"
+ 837: 
+ 838: # Check for errors in migration
+ 839: if [ -f tmp/syntropy-initialization/phase2-report.txt ]; then
+ 840:   grep -i error tmp/syntropy-initialization/phase2-report.txt
+ 841:   # Expected: No errors
+ 842: fi
+ 843: ```
+ 844: 
+ 845: ### Step 5.2: Archive Legacy Organization
  846: 
- 847: ### Step 5.5: Zero Noise Verification
- 848: 
- 849: ```bash
- 850: # Final verification: No legacy noise
- 851: echo ""
- 852: echo "=== Zero Noise Verification ==="
- 853: 
- 854: # Check legacy directories deleted
- 855: ! test -d PRPs && echo "✅ PRPs/ removed" || echo "❌ PRPs/ still exists"
- 856: ! test -d examples && echo "✅ examples/ removed" || echo "❌ examples/ still exists"
+ 847: ```bash
+ 848: # Create archive of legacy files before deletion (safety backup)
+ 849: mkdir -p tmp/syntropy-initialization/legacy-backup/
+ 850: 
+ 851: # Archive legacy directories
+ 852: tar -czf "tmp/syntropy-initialization/legacy-backup/pre-ce-1.1-$(date +%Y%m%d-%H%M%S).tar.gz" \
+ 853:   PRPs/ \
+ 854:   examples/ \
+ 855:   .serena/memories/*.md \
+ 856:   2>/dev/null || true
  857: 
- 858: # Check no duplicate system memories
- 859: DUPLICATE_SYSTEM_MEMORIES=$(find .serena/memories/ -maxdepth 1 -name "*.md" -type f | while read f; do
- 860:   basename=$(basename "$f")
- 861:   test -f .serena/memories/system/"$basename" && echo "$f"
- 862: done | wc -l)
- 863: 
- 864: test "$DUPLICATE_SYSTEM_MEMORIES" -eq 0 && echo "✅ No duplicate system memories" || echo "❌ $DUPLICATE_SYSTEM_MEMORIES duplicate system memories found"
- 865: 
- 866: # Final status
- 867: if [ ! -d PRPs ] && [ ! -d examples ] && [ "$DUPLICATE_SYSTEM_MEMORIES" -eq 0 ]; then
- 868:   echo ""
- 869:   echo "✅ PROJECT IS CLEAN - Zero noise achieved"
- 870: else
- 871:   echo ""
- 872:   echo "⚠ PROJECT HAS LEGACY NOISE - Manual cleanup required"
- 873: fi
- 874: ```
- 875: 
- 876: **Phase 5 Complete**: Legacy files removed, CE 1.1 structure clean. Installation complete.
- 877: 
- 878: ---
- 879: 
- 880: ## Scenario-Specific Workflows
- 881: 
- 882: ### Scenario 1: Greenfield Project
- 883: 
- 884: **Use when**: New project with no existing CE components
- 885: 
- 886: **Phases**: 1, 3, 4 (skip 2, 5)
+ 858: echo "✓ Legacy files archived"
+ 859: 
+ 860: # Verify archive created
+ 861: ARCHIVE_FILE=$(ls -t tmp/syntropy-initialization/legacy-backup/*.tar.gz | head -n 1)
+ 862: test -f "$ARCHIVE_FILE" && echo "✓ Archive: $ARCHIVE_FILE" || echo "⚠ Archive not created"
+ 863: ```
+ 864: 
+ 865: ### Step 5.3: Delete Legacy Organization Files
+ 866: 
+ 867: **Delete legacy PRPs directory** (now in .ce/PRPs/):
+ 868: 
+ 869: ```bash
+ 870: if [ -d PRPs/ ]; then
+ 871:   # Count files before deletion
+ 872:   LEGACY_PRPS=$(find PRPs -name "*.md" | wc -l)
+ 873: 
+ 874:   # Delete directory
+ 875:   rm -rf PRPs/
+ 876: 
+ 877:   echo "✓ Deleted legacy PRPs/ ($LEGACY_PRPS files migrated to .ce/PRPs/)"
+ 878: fi
+ 879: ```
+ 880: 
+ 881: **Delete legacy examples directory** (now in .ce/examples/):
+ 882: 
+ 883: ```bash
+ 884: if [ -d examples/ ]; then
+ 885:   # Count files before deletion
+ 886:   LEGACY_EXAMPLES=$(find examples -name "*.md" | wc -l)
  887: 
- 888: **Duration**: ~10 minutes
- 889: 
- 890: #### Quick Steps
- 891: 
- 892: ```bash
- 893: # Phase 1: Bucket Collection (will be empty)
- 894: mkdir -p tmp/syntropy-initialization/{serena,examples,prps,claude-md,claude-dir}
- 895: echo "✓ Buckets created (empty for greenfield)"
+ 888:   # Delete directory
+ 889:   rm -rf examples/
+ 890: 
+ 891:   echo "✓ Deleted legacy examples/ ($LEGACY_EXAMPLES files migrated to .ce/examples/)"
+ 892: fi
+ 893: ```
+ 894: 
+ 895: **Delete legacy memories** (now in .serena/memories/system/):
  896: 
- 897: # Phase 2: SKIP (no user files)
- 898: echo "⏭ Skipping Phase 2 (no user files)"
- 899: 
- 900: # Phase 3: Repomix Package Handling
- 901: repomix --unpack ce-infrastructure.xml --target ./
- 902: cd tools && ./bootstrap.sh && cd ..
- 903: echo "✓ Framework installed"
- 904: 
- 905: # Phase 4: CLAUDE.md Blending (framework only)
- 906: grep -q "## Communication" CLAUDE.md && echo "✓ Framework CLAUDE.md installed"
- 907: 
- 908: # Phase 5: SKIP (no legacy files)
- 909: echo "⏭ Skipping Phase 5 (no legacy files)"
+ 897: ```bash
+ 898: # Delete only memories that were migrated to /system/
+ 899: # Preserve user memories (not in system/)
+ 900: if [ -d .serena/memories/ ]; then
+ 901:   find .serena/memories/ -maxdepth 1 -name "*.md" -type f | while read file; do
+ 902:     basename=$(basename "$file")
+ 903:     if [ -f .serena/memories/system/"$basename" ]; then
+ 904:       rm -f "$file"
+ 905:       echo "✓ Deleted legacy .serena/memories/$basename (migrated to system/)"
+ 906:     fi
+ 907:   done
+ 908: fi
+ 909: ```
  910: 
- 911: # Validate
- 912: cd tools && uv run ce validate --level 4 && cd ..
- 913: echo "✅ Greenfield installation complete"
- 914: ```
- 915: 
- 916: ---
+ 911: ### Step 5.4: Log Cleanup Summary
+ 912: 
+ 913: ```bash
+ 914: # Log cleanup actions to initialization report
+ 915: cat > tmp/syntropy-initialization/phase5-report.txt << EOF
+ 916: # Phase 5: Legacy Organization Cleanup Report
  917: 
- 918: ### Scenario 2: Mature Project (No CE)
+ 918: ## Deleted Legacy Files
  919: 
- 920: **Use when**: Existing codebase with no CE components
- 921: 
- 922: **Phases**: 1, 2, 3, 4 (skip 5)
+ 920: **PRPs Directory**: $(test ! -d PRPs && echo "Deleted" || echo "Still exists")
+ 921: **Examples Directory**: $(test ! -d examples && echo "Deleted" || echo "Still exists")
+ 922: **Legacy Memories**: $(find .serena/memories -maxdepth 1 -name "*.md" 2>/dev/null | wc -l) remaining at root level
  923: 
- 924: **Duration**: ~45 minutes
+ 924: ## Backup
  925: 
- 926: ---
- 927: 
- 928: ### Scenario 3: CE 1.0 Upgrade
- 929: 
- 930: **Use when**: Existing CE installation, no .ce/ directory (legacy structure)
- 931: 
- 932: **Phases**: 1, 2, 3, 4, 5 (all phases)
+ 926: **Archive Created**: $(ls tmp/syntropy-initialization/legacy-backup/*.tar.gz | head -n 1)
+ 927: **Archive Size**: $(du -h tmp/syntropy-initialization/legacy-backup/*.tar.gz | head -n 1 | cut -f1)
+ 928: 
+ 929: ## Verification
+ 930: 
+ 931: **CE 1.1 Structure Active**: $(test -d .ce/PRPs/system && test -d .ce/examples/system && test -d .serena/memories/system && echo "Yes" || echo "No")
+ 932: **Zero Noise**: $(test ! -d PRPs && test ! -d examples && echo "Yes - Clean project" || echo "No - Legacy files remain")
  933: 
- 934: **Duration**: ~40 minutes
+ 934: EOF
  935: 
- 936: ---
- 937: 
- 938: ### Scenario 4: Partial Install (Completion)
- 939: 
- 940: **Use when**: Project has some CE components but missing others
- 941: 
- 942: **Phases**: 1, 3, 4 (selective)
- 943: 
- 944: **Duration**: ~15 minutes
+ 936: cat tmp/syntropy-initialization/phase5-report.txt
+ 937: ```
+ 938: 
+ 939: ### Step 5.5: Zero Noise Verification
+ 940: 
+ 941: ```bash
+ 942: # Final verification: No legacy noise
+ 943: echo ""
+ 944: echo "=== Zero Noise Verification ==="
  945: 
- 946: ---
- 947: 
- 948: ## Validation Checklist
+ 946: # Check legacy directories deleted
+ 947: ! test -d PRPs && echo "✅ PRPs/ removed" || echo "❌ PRPs/ still exists"
+ 948: ! test -d examples && echo "✅ examples/ removed" || echo "❌ examples/ still exists"
  949: 
- 950: ### Structure Validation
- 951: 
- 952: ```bash
- 953: # Check CE 1.1 directory structure
- 954: test -d .ce/examples/system && echo "✅ .ce/examples/system/"
- 955: test -d .ce/PRPs/system && echo "✅ .ce/PRPs/system/"
- 956: test -d .serena/memories/system && echo "✅ .serena/memories/system/"
- 957: test -d .claude/commands && echo "✅ .claude/commands/"
- 958: test -f CLAUDE.md && echo "✅ CLAUDE.md"
- 959: ```
- 960: 
- 961: ### Component Counts
- 962: 
- 963: ```bash
- 964: # Expected file counts
- 965: echo "System memories: $(ls .serena/memories/system/*.md 2>/dev/null | wc -l) (expected: 23)"
- 966: echo "System examples: $(ls .ce/examples/system/*.md 2>/dev/null | wc -l) (expected: 21)"
- 967: echo "Framework commands: $(ls .claude/commands/*.md 2>/dev/null | wc -l) (expected: 11+)"
- 968: ```
+ 950: # Check no duplicate system memories
+ 951: DUPLICATE_SYSTEM_MEMORIES=$(find .serena/memories/ -maxdepth 1 -name "*.md" -type f | while read f; do
+ 952:   basename=$(basename "$f")
+ 953:   test -f .serena/memories/system/"$basename" && echo "$f"
+ 954: done | wc -l)
+ 955: 
+ 956: test "$DUPLICATE_SYSTEM_MEMORIES" -eq 0 && echo "✅ No duplicate system memories" || echo "❌ $DUPLICATE_SYSTEM_MEMORIES duplicate system memories found"
+ 957: 
+ 958: # Final status
+ 959: if [ ! -d PRPs ] && [ ! -d examples ] && [ "$DUPLICATE_SYSTEM_MEMORIES" -eq 0 ]; then
+ 960:   echo ""
+ 961:   echo "✅ PROJECT IS CLEAN - Zero noise achieved"
+ 962: else
+ 963:   echo ""
+ 964:   echo "⚠ PROJECT HAS LEGACY NOISE - Manual cleanup required"
+ 965: fi
+ 966: ```
+ 967: 
+ 968: **Phase 5 Complete**: Legacy files removed, CE 1.1 structure clean. Installation complete.
  969: 
  970: ---
  971: 
- 972: ## Troubleshooting
+ 972: ## Scenario-Specific Workflows
  973: 
- 974: ### Issue: Repomix command not found
+ 974: ### Scenario 1: Greenfield Project
  975: 
- 976: **Solution**:
+ 976: **Use when**: New project with no existing CE components
  977: 
- 978: ```bash
- 979: # Install repomix globally
- 980: npm install -g repomix
+ 978: **Phases**: 1, 3, 4 (skip 2, 5)
+ 979: 
+ 980: **Duration**: ~10 minutes
  981: 
- 982: # Or use npx
- 983: npx repomix --unpack ce-infrastructure.xml --target ./
- 984: ```
- 985: 
- 986: ### Issue: Bootstrap script fails
- 987: 
- 988: **Solution**:
- 989: 
- 990: ```bash
- 991: cd tools
- 992: 
- 993: # Install UV manually
- 994: curl -LsSf https://astral.sh/uv/install.sh | sh
- 995: 
- 996: # Retry bootstrap
- 997: ./bootstrap.sh
- 998: 
- 999: # Or install dependencies directly
-1000: uv sync
-1001: ```
+ 982: #### Quick Steps
+ 983: 
+ 984: ```bash
+ 985: # Phase 1: Bucket Collection (will be empty)
+ 986: mkdir -p tmp/syntropy-initialization/{serena,examples,prps,claude-md,claude-dir}
+ 987: echo "✓ Buckets created (empty for greenfield)"
+ 988: 
+ 989: # Phase 2: SKIP (no user files)
+ 990: echo "⏭ Skipping Phase 2 (no user files)"
+ 991: 
+ 992: # Phase 3: Repomix Package Handling
+ 993: repomix --unpack ce-infrastructure.xml --target ./
+ 994: cd .ce/tools && ./bootstrap.sh && cd ../..
+ 995: echo "✓ Framework installed"
+ 996: 
+ 997: # Phase 4: CLAUDE.md Blending (framework only)
+ 998: grep -q "## Communication" CLAUDE.md && echo "✓ Framework CLAUDE.md installed"
+ 999: 
+1000: # Phase 5: SKIP (no legacy files)
+1001: echo "⏭ Skipping Phase 5 (no legacy files)"
 1002: 
-1003: ---
-1004: 
-1005: ## Success Criteria
-1006: 
-1007: Your installation is complete when:
-1008: 
-1009: - ✅ All CE 1.1 directories created (`.ce/`, `.serena/`, `.claude/`)
-1010: - ✅ System files installed (23 memories, 21 examples, 11 commands)
-1011: - ✅ CLAUDE.md present with framework sections
-1012: - ✅ Settings JSON valid and merged
-1013: - ✅ CE tools installed (`ce --version` works)
-1014: - ✅ Validation level 4 passes
-1015: - ✅ Context drift <5%
-1016: - ✅ Zero noise (no legacy directories for CE 1.0 upgrades)
-1017: - ✅ Serena memories loaded
-1018: - ✅ Linear configured (if using)
-1019: - ✅ First PRP created successfully
-1020: 
-1021: ---
-1022: 
-1023: ## Related Documentation
-1024: 
-1025: - **Framework Rules**: `.ce/RULES.md`
-1026: - **Tool Usage Guide**: `.ce/examples/system/TOOL-USAGE-GUIDE.md`
-1027: - **PRP-0 Template**: `.ce/examples/system/templates/PRP-0-CONTEXT-ENGINEERING.md`
-1028: - **Validation Levels**: `.serena/memories/system/validation-levels.md`
-1029: - **Testing Standards**: `.serena/memories/system/testing-standards.md`
-1030: 
-1031: ---
-1032: 
-1033: **Installation Guide Version**: 1.1
-1034: **Last Updated**: 2025-11-04
-1035: **Framework Version**: CE 1.1
+1003: # Validate
+1004: cd .ce/tools && uv run ce validate --level 4 && cd ../..
+1005: echo "✅ Greenfield installation complete"
+1006: ```
+1007: 
+1008: ---
+1009: 
+1010: ### Scenario 2: Mature Project (No CE)
+1011: 
+1012: **Use when**: Existing codebase with no CE components
+1013: 
+1014: **Phases**: 1, 2, 3, 4 (skip 5)
+1015: 
+1016: **Duration**: ~45 minutes
+1017: 
+1018: ---
+1019: 
+1020: ### Scenario 3: CE 1.0 Upgrade
+1021: 
+1022: **Use when**: Existing CE installation, no .ce/ directory (legacy structure)
+1023: 
+1024: **Phases**: 1, 2, 3, 4, 5 (all phases)
+1025: 
+1026: **Duration**: ~40 minutes
+1027: 
+1028: ---
+1029: 
+1030: ### Scenario 4: Partial Install (Completion)
+1031: 
+1032: **Use when**: Project has some CE components but missing others
+1033: 
+1034: **Phases**: 1, 3, 4 (selective)
+1035: 
+1036: **Duration**: ~15 minutes
+1037: 
+1038: ---
+1039: 
+1040: ## Validation Checklist
+1041: 
+1042: ### Structure Validation
+1043: 
+1044: ```bash
+1045: # Check CE 1.1 directory structure
+1046: test -d .ce/examples/system && echo "✅ .ce/examples/system/"
+1047: test -d .ce/PRPs/system && echo "✅ .ce/PRPs/system/"
+1048: test -d .serena/memories/system && echo "✅ .serena/memories/system/"
+1049: test -d .claude/commands && echo "✅ .claude/commands/"
+1050: test -f CLAUDE.md && echo "✅ CLAUDE.md"
+1051: ```
+1052: 
+1053: ### Component Counts
+1054: 
+1055: ```bash
+1056: # Expected file counts
+1057: echo "System memories: $(ls .serena/memories/system/*.md 2>/dev/null | wc -l) (expected: 23)"
+1058: echo "System examples: $(ls .ce/examples/system/*.md 2>/dev/null | wc -l) (expected: 21)"
+1059: echo "Framework commands: $(ls .claude/commands/*.md 2>/dev/null | wc -l) (expected: 11+)"
+1060: ```
+1061: 
+1062: ---
+1063: 
+1064: ## Troubleshooting
+1065: 
+1066: ### Automated Installation Issues
+1067: 
+1068: #### Issue: `syntropy-mcp command not found`
+1069: 
+1070: **Solution**:
+1071: 
+1072: ```bash
+1073: # Install syntropy-mcp globally
+1074: npm install -g syntropy-mcp
+1075: 
+1076: # Verify installation
+1077: npx syntropy-mcp --version
+1078: ```
+1079: 
+1080: #### Issue: `repomix_unpack.py not found` after init
+1081: 
+1082: **Cause**: Infrastructure package may not include unpacker tool
+1083: 
+1084: **Solution**:
+1085: 
+1086: ```bash
+1087: # Verify infrastructure package includes unpacker
+1088: grep "repomix_unpack.py" ce-infrastructure.xml
+1089: 
+1090: # If missing, rebuild infrastructure package (ctx-eng-plus repo):
+1091: cd ctx-eng-plus
+1092: .ce/build-and-distribute.sh
+1093: ```
+1094: 
+1095: #### Issue: Settings not blended correctly
+1096: 
+1097: **Cause**: Settings blending logic may have failed
+1098: 
+1099: **Solution**:
+1100: 
+1101: ```bash
+1102: # Check if backup exists
+1103: ls .claude/settings.local.json.backup
+1104: 
+1105: # If backup exists, manually verify blending:
+1106: cat .claude/settings.local.json | jq '.permissions.allow' | grep "mcp__syntropy__"
+1107: cat .claude/settings.local.json | jq '.permissions.deny' | grep "mcp__syntropy__filesystem"
+1108: 
+1109: # If incorrect, restore backup and re-run init
+1110: cp .claude/settings.local.json.backup .claude/settings.local.json
+1111: npx syntropy-mcp init ce-framework
+1112: ```
+1113: 
+1114: ---
+1115: 
+1116: ### Manual Installation Issues
+1117: 
+1118: #### Issue: Repomix command not found
+1119: 
+1120: **Solution**:
+1121: 
+1122: ```bash
+1123: # Install repomix globally
+1124: npm install -g repomix
+1125: 
+1126: # Or use npx
+1127: npx repomix --unpack ce-infrastructure.xml --target ./
+1128: ```
+1129: 
+1130: ### Issue: Bootstrap script fails
+1131: 
+1132: **Solution**:
+1133: 
+1134: ```bash
+1135: cd .ce/tools
+1136: 
+1137: # Install UV manually
+1138: curl -LsSf https://astral.sh/uv/install.sh | sh
+1139: 
+1140: # Retry bootstrap
+1141: ./bootstrap.sh
+1142: 
+1143: # Or install dependencies directly
+1144: uv sync
+1145: ```
+1146: 
+1147: ---
+1148: 
+1149: ## Success Criteria
+1150: 
+1151: Your installation is complete when:
+1152: 
+1153: - ✅ All CE 1.1 directories created (`.ce/`, `.serena/`, `.claude/`)
+1154: - ✅ System files installed (23 memories, 21 examples, 11 commands)
+1155: - ✅ CLAUDE.md present with framework sections
+1156: - ✅ Settings JSON valid and merged
+1157: - ✅ CE tools installed (`ce --version` works)
+1158: - ✅ Validation level 4 passes
+1159: - ✅ Context drift <5%
+1160: - ✅ Zero noise (no legacy directories for CE 1.0 upgrades)
+1161: - ✅ Serena memories loaded
+1162: - ✅ Linear configured (if using)
+1163: - ✅ First PRP created successfully
+1164: 
+1165: ---
+1166: 
+1167: ## Related Documentation
+1168: 
+1169: - **Framework Rules**: `.ce/RULES.md`
+1170: - **Tool Usage Guide**: `.ce/examples/system/TOOL-USAGE-GUIDE.md`
+1171: - **PRP-0 Template**: `.ce/examples/system/templates/PRP-0-CONTEXT-ENGINEERING.md`
+1172: - **Validation Levels**: `.serena/memories/system/validation-levels.md`
+1173: - **Testing Standards**: `.serena/memories/system/testing-standards.md`
+1174: 
+1175: ---
+1176: 
+1177: **Installation Guide Version**: 1.1
+1178: **Last Updated**: 2025-11-04
+1179: **Framework Version**: CE 1.1
 </file>
 
 <file path="CLAUDE.md">
@@ -6563,807 +6714,823 @@ This section contains the contents of the repository's files.
  62: 
  63: ## Framework Initialization
  64: 
- 65: **First-time setup**: See [examples/INITIALIZATION.md](examples/INITIALIZATION.md) for complete CE 1.1 initialization guide.
- 66: 
- 67: **Key Steps** (5-phase workflow):
- 68: 1. **Bucket Collection**: Extract existing Serena memories, examples, PRPs, CLAUDE.md, .claude directory
- 69: 2. **User Files Migration**: Copy validated user files with `type: user` YAML headers
- 70: 3. **Repomix Package Handling**: Extract ce-infrastructure.xml to /system/ subfolders
- 71: 4. **Blending**: Merge framework + user files (CLAUDE.md sections, settings.local.json, commands)
- 72: 5. **Cleanup**: Remove initialization artifacts, verify structure
- 73: 
- 74: **Repomix Usage** (manual context loading):
- 75: 
- 76: ```bash
- 77: # Load workflow docs (commands, validation, PRP patterns)
- 78: # Reference package - stored in .ce/, not extracted during initialization
- 79: cat .ce/ce-workflow-docs.xml
- 80: 
- 81: # Load infrastructure docs (memories, rules, system architecture)
- 82: # Extracted to /system/ subfolders during Phase 3 of initialization
- 83: npx repomix --unpack .ce/ce-infrastructure.xml --target tmp/extraction/
- 84: ```
- 85: 
- 86: **Repomix Package Structure** (CE 1.1):
- 87: - **ce-workflow-docs.xml**: <60KB (reference package, not extracted)
- 88: - **ce-infrastructure.xml**: <150KB (all framework files with /system/ organization)
- 89: - **Combined**: <210KB total
- 90: 
- 91: **Migration Scenarios**:
- 92: 
- 93: All scenarios documented in [INITIALIZATION.md](examples/INITIALIZATION.md) with scenario-specific variations within each phase:
- 94: - **Greenfield**: New project setup (10 min)
- 95: - **Mature Project**: Add CE to existing codebase (45 min)
- 96: - **CE 1.0 Upgrade**: Upgrade CE 1.0 → CE 1.1 (40 min)
- 97: - **Partial Install**: Complete partial CE installation (15 min)
- 98: 
- 99: **Memory Type System** (CE 1.1):
-100: 
-101: Framework memories (23 files) use `type: regular` by default:
-102: ```yaml
-103: ---
-104: type: regular
-105: category: documentation
-106: tags: [tag1, tag2, tag3]
-107: created: "2025-11-04T17:30:00Z"
-108: updated: "2025-11-04T17:30:00Z"
-109: ---
-110: ```
+ 65: **Quick Start** (Automated - RECOMMENDED):
+ 66: ```bash
+ 67: npx syntropy-mcp init ce-framework
+ 68: ```
+ 69: Time: <5 minutes | Automatically extracts 50 files, reorganizes tools, blends settings
+ 70: 
+ 71: **Manual Setup**: See [examples/INITIALIZATION.md](examples/INITIALIZATION.md) for complete CE 1.1 initialization guide.
+ 72: 
+ 73: **Manual Key Steps** (5-phase workflow):
+ 74: 1. **Bucket Collection**: Extract existing Serena memories, examples, PRPs, CLAUDE.md, .claude directory
+ 75: 2. **User Files Migration**: Copy validated user files with `type: user` YAML headers
+ 76: 3. **Repomix Package Handling**: Extract ce-infrastructure.xml to /system/ subfolders
+ 77: 4. **Blending**: Merge framework + user files (CLAUDE.md sections, settings.local.json, commands)
+ 78: 5. **Cleanup**: Remove initialization artifacts, verify structure
+ 79: 
+ 80: **Repomix Usage** (manual context loading):
+ 81: 
+ 82: ```bash
+ 83: # Load workflow docs (commands, validation, PRP patterns)
+ 84: # Reference package - stored in .ce/, not extracted during initialization
+ 85: cat .ce/ce-workflow-docs.xml
+ 86: 
+ 87: # Load infrastructure docs (memories, rules, system architecture)
+ 88: # Extracted to /system/ subfolders during Phase 3 of initialization
+ 89: npx repomix --unpack .ce/ce-infrastructure.xml --target tmp/extraction/
+ 90: ```
+ 91: 
+ 92: **Repomix Package Structure** (CE 1.1):
+ 93: - **ce-workflow-docs.xml**: 85KB (reference package, not extracted)
+ 94: - **ce-infrastructure.xml**: 206KB (all framework files with /system/ organization)
+ 95: - **Combined**: 291KB total
+ 96: 
+ 97: **Build and Distribution**:
+ 98: ```bash
+ 99: # Regenerate packages and distribute to syntropy-mcp
+100: .ce/build-and-distribute.sh
+101: ```
+102: This script regenerates both packages and copies them to `syntropy-mcp/boilerplate/ce-framework/` for automated init.
+103: 
+104: **Migration Scenarios**:
+105: 
+106: All scenarios documented in [INITIALIZATION.md](examples/INITIALIZATION.md) with scenario-specific variations within each phase:
+107: - **Greenfield**: New project setup (10 min)
+108: - **Mature Project**: Add CE to existing codebase (45 min)
+109: - **CE 1.0 Upgrade**: Upgrade CE 1.0 → CE 1.1 (40 min)
+110: - **Partial Install**: Complete partial CE installation (15 min)
 111: 
-112: **Critical Memory Candidates** (upgrade during initialization):
-113: - code-style-conventions.md
-114: - suggested-commands.md
-115: - task-completion-checklist.md
-116: - testing-standards.md
-117: - tool-usage-syntropy.md
-118: - use-syntropy-tools-not-bash.md
-119: 
-120: **User File Headers** (added during Phase 2 of initialization):
-121: 
-122: User memories:
-123: ```yaml
-124: ---
-125: type: user
-126: source: target-project
-127: created: "2025-11-04T00:00:00Z"
-128: updated: "2025-11-04T00:00:00Z"
-129: ---
-130: ```
-131: 
-132: User PRPs:
-133: ```yaml
-134: ---
-135: prp_id: USER-001
-136: title: User Feature Implementation
-137: status: completed
-138: created: "2025-11-04"
+112: **Memory Type System** (CE 1.1):
+113: 
+114: Framework memories (23 files) use `type: regular` by default:
+115: ```yaml
+116: ---
+117: type: regular
+118: category: documentation
+119: tags: [tag1, tag2, tag3]
+120: created: "2025-11-04T17:30:00Z"
+121: updated: "2025-11-04T17:30:00Z"
+122: ---
+123: ```
+124: 
+125: **Critical Memory Candidates** (upgrade during initialization):
+126: - code-style-conventions.md
+127: - suggested-commands.md
+128: - task-completion-checklist.md
+129: - testing-standards.md
+130: - tool-usage-syntropy.md
+131: - use-syntropy-tools-not-bash.md
+132: 
+133: **User File Headers** (added during Phase 2 of initialization):
+134: 
+135: User memories:
+136: ```yaml
+137: ---
+138: type: user
 139: source: target-project
-140: type: user
-141: ---
-142: ```
-143: 
-144: **See Also**:
-145: - [examples/INITIALIZATION.md](examples/INITIALIZATION.md) - Complete initialization guide
-146: - [.serena/memories/README.md](.serena/memories/README.md) - Memory type system documentation
-147: - [examples/templates/PRP-0-CONTEXT-ENGINEERING.md](examples/templates/PRP-0-CONTEXT-ENGINEERING.md) - Document framework installation
-148: 
-149: ## Working Directory
-150: 
-151: **Default**: `/Users/bprzybysz/nc-src/ctx-eng-plus`
-152: 
-153: **For tools/ commands**: Use `cd tools &&` or `uv run -C tools`
-154: 
-155: ## Hooks
+140: created: "2025-11-04T00:00:00Z"
+141: updated: "2025-11-04T00:00:00Z"
+142: ---
+143: ```
+144: 
+145: User PRPs:
+146: ```yaml
+147: ---
+148: prp_id: USER-001
+149: title: User Feature Implementation
+150: status: completed
+151: created: "2025-11-04"
+152: source: target-project
+153: type: user
+154: ---
+155: ```
 156: 
-157: **Pre-Commit**: Runs `ce validate --level 4` before commit (skip: `--no-verify`)
-158: 
-159: **Session Start**: Auto drift score check
-160: 
-161: **Shell Functions** (optional): Source `.ce/shell-functions.sh` for `cet` alias
-162: 
-163: ## Tool Naming Convention
-164: 
-165: Format: `mcp__syntropy__<server>_<tool>`
-166: - `mcp__` - MCP prefix (double underscore)
-167: - `syntropy__` - Syntropy server (double underscore)
-168: - `<server>_` - Server name + single underscore
-169: - `<tool>` - Tool name
-170: 
-171: Example: `mcp__syntropy__serena_find_symbol`
-172: 
-173: ## Allowed Tools Summary
-174: 
-175: **Post-Lockdown State** (after PRP-A & PRP-D):
-176: - **Before**: 87 MCP tools (via Syntropy aggregator)
-177: - **After**: 32 MCP tools (55 denied for native tool preference)
-178: - **Token reduction**: ~44k tokens (96% reduction from 46k→2k)
+157: **See Also**:
+158: - [examples/INITIALIZATION.md](examples/INITIALIZATION.md) - Complete initialization guide
+159: - [.serena/memories/README.md](.serena/memories/README.md) - Memory type system documentation
+160: - [examples/templates/PRP-0-CONTEXT-ENGINEERING.md](examples/templates/PRP-0-CONTEXT-ENGINEERING.md) - Document framework installation
+161: 
+162: ## Working Directory
+163: 
+164: **Default**: `/Users/bprzybysz/nc-src/ctx-eng-plus`
+165: 
+166: **For tools/ commands**: Use `cd tools &&` or `uv run -C tools`
+167: 
+168: **Note**: In THIS repo (ctx-eng-plus development), tools are at `tools/`. In TARGET projects that extract the infrastructure package, tools are installed to `.ce/tools/`.
+169: 
+170: ## Hooks
+171: 
+172: **Pre-Commit**: Runs `ce validate --level 4` before commit (skip: `--no-verify`)
+173: 
+174: **Session Start**: Auto drift score check
+175: 
+176: **Shell Functions** (optional): Source `.ce/shell-functions.sh` for `cet` alias
+177: 
+178: ## Tool Naming Convention
 179: 
-180: ### Kept Tools by Category
-181: 
-182: **Serena** (11 tools): Code symbol navigation
-183: - find_symbol, get_symbols_overview, search_for_pattern
-184: - find_referencing_symbols, write_memory, read_memory, list_memories
-185: - create_text_file, read_file, list_dir, delete_memory
-186: 
-187: **Linear** (9 tools): Project management integration
-188: - create_issue, get_issue, list_issues, update_issue
-189: - list_projects, list_teams, list_users, get_team, create_project
-190: 
-191: **Context7** (2 tools): Library documentation
-192: - resolve_library_id, get_library_docs
-193: 
-194: **Thinking** (1 tool): Complex reasoning
-195: - sequentialthinking
+180: Format: `mcp__syntropy__<server>_<tool>`
+181: - `mcp__` - MCP prefix (double underscore)
+182: - `syntropy__` - Syntropy server (double underscore)
+183: - `<server>_` - Server name + single underscore
+184: - `<tool>` - Tool name
+185: 
+186: Example: `mcp__syntropy__serena_find_symbol`
+187: 
+188: ## Allowed Tools Summary
+189: 
+190: **Post-Lockdown State** (after PRP-A & PRP-D):
+191: - **Before**: 87 MCP tools (via Syntropy aggregator)
+192: - **After**: 28 MCP tools (59 denied for native tool preference)
+193: - **Token reduction**: ~44k tokens (96% reduction from 46k→2k)
+194: 
+195: ### Kept Tools by Category
 196: 
-197: **Syntropy System** (2 tools): System utilities
-198: - healthcheck (MCP diagnostics)
-199: - knowledge_search (semantic search across PRPs, memories)
-200: 
-201: **Bash Commands** (~50 patterns): See "Command Permissions" section below
-202: **Native Tools**: Read, Write, Edit, Glob, Grep, WebSearch, WebFetch
-203: 
-204: ### Denied Tools (55 total)
+197: **Serena** (13 tools): Code symbol navigation
+198: - activate_project, find_symbol, get_symbols_overview, search_for_pattern
+199: - find_referencing_symbols, replace_symbol_body, write_memory, read_memory
+200: - list_memories, create_text_file, read_file, list_dir, delete_memory
+201: 
+202: **Linear** (9 tools): Project management integration
+203: - create_issue, get_issue, list_issues, update_issue
+204: - list_projects, list_teams, list_users, get_team, create_project
 205: 
-206: **Rationale**: Native Claude Code tools provide equivalent or better functionality
-207: 
-208: **Categories**:
-209: - Filesystem (8): Use Read, Write, Edit, Glob instead
-210: - Git (5): Use Bash(git:*) instead
-211: - GitHub (26): Use Bash(gh:*) instead
-212: - Repomix (4): Use incremental Glob/Grep/Read instead
-213: - Playwright (6): Use WebFetch or Bash(playwright CLI) instead
-214: - Perplexity (1): Use WebSearch instead
-215: - Syntropy (5): Use Read for docs, rare-use tools
+206: **Context7** (2 tools): Library documentation
+207: - resolve_library_id, get_library_docs
+208: 
+209: **Thinking** (1 tool): Complex reasoning
+210: - sequentialthinking
+211: 
+212: **Syntropy System** (3 tools): System utilities
+213: - healthcheck (MCP diagnostics)
+214: - enable_tools (dynamic tool management)
+215: - list_all_tools (list all available tools with states)
 216: 
-217: **Full details**: See [TOOL-USAGE-GUIDE.md](TOOL-USAGE-GUIDE.md)
-218: 
-219: ## Command Permissions
-220: 
-221: **Permission Model**: Auto-allow safe commands, ask-first for potentially destructive operations.
-222: 
-223: ### Auto-Allow Patterns (~35 bash patterns)
-224: 
-225: Commands that never prompt:
-226: 
-227: **File Inspection**:
-228: - `ls`, `cat`, `head`, `tail`, `less`, `more`, `file`, `stat`
-229: 
-230: **Navigation**:
-231: - `cd`, `pwd`, `which`, `whereis`
+217: **Bash Commands** (~50 patterns): See "Command Permissions" section below
+218: **Native Tools**: Read, Write, Edit, Glob, Grep, WebSearch, WebFetch
+219: 
+220: ### Denied Tools (55 total)
+221: 
+222: **Rationale**: Native Claude Code tools provide equivalent or better functionality
+223: 
+224: **Categories**:
+225: - Filesystem (8): Use Read, Write, Edit, Glob instead
+226: - Git (5): Use Bash(git:*) instead
+227: - GitHub (26): Use Bash(gh:*) instead
+228: - Repomix (4): Use incremental Glob/Grep/Read instead
+229: - Playwright (6): Use WebFetch or Bash(playwright CLI) instead
+230: - Perplexity (1): Use WebSearch instead
+231: - Syntropy (5): Use Read for docs, rare-use tools
 232: 
-233: **Search**:
-234: - `find`, `grep`, `rg`, `tree`
-235: 
-236: **Text Processing**:
-237: - `sed`, `awk`, `sort`, `uniq`, `cut`, `diff`, `comm`, `wc`
+233: **Full details**: See [TOOL-USAGE-GUIDE.md](TOOL-USAGE-GUIDE.md)
+234: 
+235: ## Command Permissions
+236: 
+237: **Permission Model**: Auto-allow safe commands, ask-first for potentially destructive operations.
 238: 
-239: **Environment**:
-240: - `env`, `ps`, `echo`
-241: 
-242: **Development**:
-243: - `git` (all operations), `gh` (GitHub CLI)
-244: - `uv`, `uvx`, `pytest`
-245: - `python`, `python3`
-246: 
-247: **Special Cases**:
-248: - `rm -rf ~/.mcp-auth` (MCP troubleshooting)
-249: 
-250: **Full list**: See `.claude/settings.local.json` "allow" array
+239: ### Auto-Allow Patterns (~35 bash patterns)
+240: 
+241: Commands that never prompt:
+242: 
+243: **File Inspection**:
+244: - `ls`, `cat`, `head`, `tail`, `less`, `more`, `file`, `stat`
+245: 
+246: **Navigation**:
+247: - `cd`, `pwd`, `which`, `whereis`
+248: 
+249: **Search**:
+250: - `find`, `grep`, `rg`, `tree`
 251: 
-252: ### Ask-First Patterns (15 patterns)
-253: 
-254: Commands that require confirmation:
-255: 
-256: **File Operations** (potentially destructive):
-257: - `rm`, `mv`, `cp`
-258: 
-259: **Network Operations**:
-260: - `curl`, `wget`, `nc`, `telnet`, `ssh`, `scp`, `rsync`
-261: 
-262: **Package Management**:
-263: - `brew install`, `npm install`, `pip install`, `gem install`
-264: 
-265: **System Operations**:
-266: - `sudo` (any sudo command)
+252: **Text Processing**:
+253: - `sed`, `awk`, `sort`, `uniq`, `cut`, `diff`, `comm`, `wc`
+254: 
+255: **Environment**:
+256: - `env`, `ps`, `echo`
+257: 
+258: **Development**:
+259: - `git` (all operations), `gh` (GitHub CLI)
+260: - `uv`, `uvx`, `pytest`
+261: - `python`, `python3`
+262: 
+263: **Special Cases**:
+264: - `rm -rf ~/.mcp-auth` (MCP troubleshooting)
+265: 
+266: **Full list**: See `.claude/settings.local.json` "allow" array
 267: 
-268: **Rationale**: Safety gate for operations that modify files, access network, or require elevated privileges.
+268: ### Ask-First Patterns (15 patterns)
 269: 
-270: **Full list**: See `.claude/settings.local.json` "ask" array
+270: Commands that require confirmation:
 271: 
-272: ### Permission Behavior
-273: 
-274: **Unlisted commands**: Prompt by default (ask before execution)
-275: **Workaround**: Add to allow list in `.claude/settings.local.json` if frequently used
-276: 
-277: ## Quick Tool Selection
-278: 
-279: **🔗 Comprehensive Guide**: See [examples/TOOL-USAGE-GUIDE.md](examples/TOOL-USAGE-GUIDE.md) for:
-280: - Decision tree (flowchart for tool selection)
-281: - Common tasks with right/wrong examples
-282: - Anti-patterns to avoid
-283: - Migration table (55 denied tools → alternatives)
-284: 
-285: **Quick Reference**:
-286: 
-287: **Analyze code**:
-288: - Know symbol → `serena_find_symbol`
-289: - Explore file → `serena_get_symbols_overview`
-290: - Search patterns → `Grep` (native, not serena_search_for_pattern)
-291: - Find usages → `serena_find_referencing_symbols`
+272: **File Operations** (potentially destructive):
+273: - `rm`, `mv`, `cp`
+274: 
+275: **Network Operations**:
+276: - `curl`, `wget`, `nc`, `telnet`, `ssh`, `scp`, `rsync`
+277: 
+278: **Package Management**:
+279: - `brew install`, `npm install`, `pip install`, `gem install`
+280: 
+281: **System Operations**:
+282: - `sudo` (any sudo command)
+283: 
+284: **Rationale**: Safety gate for operations that modify files, access network, or require elevated privileges.
+285: 
+286: **Full list**: See `.claude/settings.local.json` "ask" array
+287: 
+288: ### Permission Behavior
+289: 
+290: **Unlisted commands**: Prompt by default (ask before execution)
+291: **Workaround**: Add to allow list in `.claude/settings.local.json` if frequently used
 292: 
-293: **Modify files**:
-294: - New → `Write` (native)
-295: - Existing (surgical) → `Edit` (native)
-296: - Config/text → `Read` (native)
-297: 
-298: **Version control**:
-299: - Use `Bash(git:*)` (native git commands)
-300: - NOT `mcp__syntropy__git_git_status` (denied)
-301: 
-302: **GitHub operations**:
-303: - Use `Bash(gh:*)` (native gh CLI)
-304: - NOT `mcp__syntropy__github_*` (denied)
-305: 
-306: **External knowledge**:
-307: - Documentation → `context7_get_library_docs`
-308: - Web search → `WebSearch` (native)
-309: - Web content → `WebFetch` (native)
-310: 
-311: **Complex reasoning**: `sequentialthinking`
-312: 
-313: **Project management**: Linear tools (all 9 kept)
-314: 
-315: **System health**: `healthcheck` (detailed diagnostics with `detailed=true`)
-316: 
-317: ## Project Structure
-318: 
-319: ```
-320: tools/
-321: ├── ce/                 # Source code
-322: │   ├── core.py         # File, git, shell ops
-323: │   ├── validate.py     # 3-level validation
-324: │   └── context.py      # Context management
-325: ├── tests/              # Test suite
-326: ├── pyproject.toml      # UV config (don't edit!)
-327: └── bootstrap.sh        # Setup script
-328: ```
-329: 
-330: ## Testing Standards
-331: 
-332: **TDD**: Test first → fail → implement → refactor
-333: 
-334: **Real functionality**: No fake results, no mocks in tests
-335: 
-336: **Test before critical changes** (tool naming, API changes, refactoring)
-337: 
-338: ## Code Quality
-339: 
-340: - Functions: 50 lines (single responsibility)
-341: - Files: 300-500 lines (logical modules)
-342: - Classes: 100 lines (single concept)
-343: - Mark mocks with FIXME in production code
-344: 
-345: ## Context Commands
-346: 
-347: ```bash
-348: # Sync all PRPs with codebase
-349: cd tools && uv run ce update-context
-350: 
-351: # Sync specific PRP
-352: cd tools && uv run ce update-context --prp PRPs/executed/PRP-6.md
+293: ## Quick Tool Selection
+294: 
+295: **🔗 Comprehensive Guide**: See [examples/TOOL-USAGE-GUIDE.md](examples/TOOL-USAGE-GUIDE.md) for:
+296: - Decision tree (flowchart for tool selection)
+297: - Common tasks with right/wrong examples
+298: - Anti-patterns to avoid
+299: - Migration table (55 denied tools → alternatives)
+300: 
+301: **Quick Reference**:
+302: 
+303: **Analyze code**:
+304: - Know symbol → `serena_find_symbol`
+305: - Explore file → `serena_get_symbols_overview`
+306: - Search patterns → `Grep` (native, not serena_search_for_pattern)
+307: - Find usages → `serena_find_referencing_symbols`
+308: 
+309: **Modify files**:
+310: - New → `Write` (native)
+311: - Existing (surgical) → `Edit` (native)
+312: - Config/text → `Read` (native)
+313: 
+314: **Version control**:
+315: - Use `Bash(git:*)` (native git commands)
+316: - NOT `mcp__syntropy__git_git_status` (denied)
+317: 
+318: **GitHub operations**:
+319: - Use `Bash(gh:*)` (native gh CLI)
+320: - NOT `mcp__syntropy__github_*` (denied)
+321: 
+322: **External knowledge**:
+323: - Documentation → `context7_get_library_docs`
+324: - Web search → `WebSearch` (native)
+325: - Web content → `WebFetch` (native)
+326: 
+327: **Complex reasoning**: `sequentialthinking`
+328: 
+329: **Project management**: Linear tools (all 9 kept)
+330: 
+331: **System health**: `healthcheck` (detailed diagnostics with `detailed=true`)
+332: 
+333: ## Project Structure
+334: 
+335: ```
+336: tools/
+337: ├── ce/                 # Source code
+338: │   ├── core.py         # File, git, shell ops
+339: │   ├── validate.py     # 3-level validation
+340: │   └── context.py      # Context management
+341: ├── tests/              # Test suite
+342: ├── pyproject.toml      # UV config (don't edit!)
+343: └── bootstrap.sh        # Setup script
+344: ```
+345: 
+346: ## Testing Standards
+347: 
+348: **TDD**: Test first → fail → implement → refactor
+349: 
+350: **Real functionality**: No fake results, no mocks in tests
+351: 
+352: **Test before critical changes** (tool naming, API changes, refactoring)
 353: 
-354: # Fast drift check (2-3s vs 10-15s)
-355: cd tools && uv run ce analyze-context
-356: 
-357: # Force re-analysis
-358: cd tools && uv run ce analyze-context --force
-359: ```
+354: ## Code Quality
+355: 
+356: - Functions: 50 lines (single responsibility)
+357: - Files: 300-500 lines (logical modules)
+358: - Classes: 100 lines (single concept)
+359: - Mark mocks with FIXME in production code
 360: 
-361: **Drift Exit Codes**:
-362: - 0: <5% (healthy)
-363: - 1: 5-15% (warning)
-364: - 2: ≥15% (critical)
-365: 
-366: ## Syntropy MCP Tool Sync
-367: 
-368: **Dynamic tool management** - Enable/disable tools at runtime without restart
+361: ## Context Commands
+362: 
+363: ```bash
+364: # Sync all PRPs with codebase
+365: cd tools && uv run ce update-context
+366: 
+367: # Sync specific PRP
+368: cd tools && uv run ce update-context --prp PRPs/executed/PRP-6.md
 369: 
-370: ```bash
-371: # Sync settings with Syntropy MCP tool state
-372: /sync-with-syntropy
-373: 
-374: # Workflow example:
-375: # 1. Enable/disable tools via Syntropy
-376: mcp__syntropy__enable_tools(
-377:   enable=["serena_find_symbol", "context7_get_library_docs"],
-378:   disable=["filesystem_read_file", "git_git_status"]
-379: )
-380: 
-381: # 2. Sync settings to .claude/settings.local.json
-382: /sync-with-syntropy
+370: # Fast drift check (2-3s vs 10-15s)
+371: cd tools && uv run ce analyze-context
+372: 
+373: # Force re-analysis
+374: cd tools && uv run ce analyze-context --force
+375: ```
+376: 
+377: **Drift Exit Codes**:
+378: - 0: <5% (healthy)
+379: - 1: 5-15% (warning)
+380: - 2: ≥15% (critical)
+381: 
+382: ## Syntropy MCP Tool Sync
 383: 
-384: # 3. Verify changes
-385: cat .claude/settings.local.json
-386: ```
-387: 
-388: **How it works**:
-389: 1. Call `mcp__syntropy__list_all_tools` to get current tool states
-390: 2. Update `.claude/settings.local.json` to match
-391: 3. Backup original settings to `.claude/settings.local.json.backup`
-392: 4. Output clear summary of changes made
-393: 
-394: **Benefits**:
-395: - Real-time tool control (no MCP restart needed)
-396: - Persistent state across sessions (`~/.syntropy/tool-state.json`)
-397: - Context-aware tool sets (enable 10 tools for quick tasks, all 87 for deep analysis)
-398: 
-399: ## Linear Integration
-400: 
-401: **Config**: `.ce/linear-defaults.yml`
-402: - Project: "Context Engineering"
-403: - Assignee: "blazej.przybyszewski@gmail.com"
-404: - Team: "Blaise78"
-405: 
-406: **Auto-create issues**: `/generate-prp` uses defaults
-407: 
-408: **Join existing issue**: `/generate-prp --join-prp 12`
+384: **Dynamic tool management** - Enable/disable tools at runtime without restart
+385: 
+386: ```bash
+387: # Sync settings with Syntropy MCP tool state
+388: /sync-with-syntropy
+389: 
+390: # Workflow example:
+391: # 1. Enable/disable tools via Syntropy
+392: mcp__syntropy__enable_tools(
+393:   enable=["serena_find_symbol", "context7_get_library_docs"],
+394:   disable=["filesystem_read_file", "git_git_status"]
+395: )
+396: 
+397: # 2. Sync settings to .claude/settings.local.json
+398: /sync-with-syntropy
+399: 
+400: # 3. Verify changes
+401: cat .claude/settings.local.json
+402: ```
+403: 
+404: **How it works**:
+405: 1. Call `mcp__syntropy__list_all_tools` to get current tool states
+406: 2. Update `.claude/settings.local.json` to match
+407: 3. Backup original settings to `.claude/settings.local.json.backup`
+408: 4. Output clear summary of changes made
 409: 
-410: **Troubleshooting**: `rm -rf ~/.mcp-auth` (pre-approved)
-411: 
-412: ## Batch PRP Generation
-413: 
-414: **Decompose large plans into staged, parallelizable PRPs with automatic dependency analysis**
-415: 
-416: ```bash
-417: # Create plan document
-418: vim FEATURE-PLAN.md
-419: 
-420: # Generate all PRPs with parallel subagents
-421: /batch-gen-prp FEATURE-PLAN.md
-422: 
-423: # Output: Multiple PRPs with format PRP-X.Y.Z
-424: #   X = Batch ID (next free number)
-425: #   Y = Stage number
-426: #   Z = Order within stage
-427: ```
-428: 
-429: **Plan Format**:
-430: ```markdown
-431: # Plan Title
-432: 
-433: ## Phases
-434: 
-435: ### Phase 1: Name
-436: 
-437: **Goal**: One-sentence objective
-438: **Estimated Hours**: 0.5
-439: **Complexity**: low
-440: **Files Modified**: path/to/file
-441: **Dependencies**: None
-442: **Implementation Steps**: [steps]
-443: **Validation Gates**: [gates]
-444: ```
-445: 
-446: **What It Does**:
-447: 1. Parses plan document → Extracts phases
-448: 2. Builds dependency graph → Analyzes deps + file conflicts
-449: 3. Assigns stages → Groups independent PRPs for parallel execution
-450: 4. Spawns Sonnet subagents → Parallel generation per stage
-451: 5. Monitors via heartbeat files → 30s polling, kills after 2 failed polls
-452: 6. Creates Linear issues → One per PRP
-453: 7. Outputs summary → All generated PRPs grouped by stage
-454: 
-455: **Example Output**:
-456: ```
-457: Batch 43:
-458:   Stage 1: PRP-43.1.1
-459:   Stage 2: PRP-43.2.1, PRP-43.2.2, PRP-43.2.3 (parallel)
-460:   Stage 3: PRP-43.3.1
-461: ```
-462: 
-463: **Integration with Execution**:
-464: ```bash
-465: # Generate PRPs from plan
-466: /batch-gen-prp BIG-FEATURE-PLAN.md
-467: 
-468: # Execute entire batch
-469: /batch-exe-prp --batch 43
+410: **Benefits**:
+411: - Real-time tool control (no MCP restart needed)
+412: - Persistent state across sessions (`~/.syntropy/tool-state.json`)
+413: - Context-aware tool sets (enable 10 tools for quick tasks, all 87 for deep analysis)
+414: 
+415: ## Linear Integration
+416: 
+417: **Config**: `.ce/linear-defaults.yml`
+418: - Project: "Context Engineering"
+419: - Assignee: "blazej.przybyszewski@gmail.com"
+420: - Team: "Blaise78"
+421: 
+422: **Auto-create issues**: `/generate-prp` uses defaults
+423: 
+424: **Join existing issue**: `/generate-prp --join-prp 12`
+425: 
+426: **Troubleshooting**: `rm -rf ~/.mcp-auth` (pre-approved)
+427: 
+428: ## Batch PRP Generation
+429: 
+430: **Decompose large plans into staged, parallelizable PRPs with automatic dependency analysis**
+431: 
+432: ```bash
+433: # Create plan document
+434: vim FEATURE-PLAN.md
+435: 
+436: # Generate all PRPs with parallel subagents
+437: /batch-gen-prp FEATURE-PLAN.md
+438: 
+439: # Output: Multiple PRPs with format PRP-X.Y.Z
+440: #   X = Batch ID (next free number)
+441: #   Y = Stage number
+442: #   Z = Order within stage
+443: ```
+444: 
+445: **Plan Format**:
+446: ```markdown
+447: # Plan Title
+448: 
+449: ## Phases
+450: 
+451: ### Phase 1: Name
+452: 
+453: **Goal**: One-sentence objective
+454: **Estimated Hours**: 0.5
+455: **Complexity**: low
+456: **Files Modified**: path/to/file
+457: **Dependencies**: None
+458: **Implementation Steps**: [steps]
+459: **Validation Gates**: [gates]
+460: ```
+461: 
+462: **What It Does**:
+463: 1. Parses plan document → Extracts phases
+464: 2. Builds dependency graph → Analyzes deps + file conflicts
+465: 3. Assigns stages → Groups independent PRPs for parallel execution
+466: 4. Spawns Sonnet subagents → Parallel generation per stage
+467: 5. Monitors via heartbeat files → 30s polling, kills after 2 failed polls
+468: 6. Creates Linear issues → One per PRP
+469: 7. Outputs summary → All generated PRPs grouped by stage
 470: 
-471: # Or stage-by-stage
-472: /batch-exe-prp --batch 43 --stage 1
-473: /batch-exe-prp --batch 43 --stage 2
-474: ```
-475: 
-476: **Time Savings**: 8 PRPs sequential (30 min) → parallel (10-12 min) = **60% faster**
-477: 
-478: **See**: `.claude/commands/batch-gen-prp.md` for complete documentation
-479: 
-480: ## PRP Sizing
-481: 
-482: ```bash
-483: cd tools && uv run ce prp analyze <path-to-prp.md>
-484: ```
-485: 
-486: **Size Categories**:
-487: - GREEN: ≤700 lines, ≤8h, LOW-MEDIUM risk
-488: - YELLOW: 700-1000 lines, 8-12h, MEDIUM risk
-489: - RED: >1000 lines, >12h, HIGH risk
-490: 
-491: **Exit Codes**: 0 (GREEN), 1 (YELLOW), 2 (RED)
-492: 
-493: ## Testing Patterns
-494: 
-495: **Strategy pattern** for composable testing:
-496: - **Unit**: Test single strategy in isolation
-497: - **Integration**: Test subgraph with real + mock
-498: - **E2E**: Full pipeline, all external deps mocked
-499: 
-500: **Mock Strategies**: MockSerenaStrategy, MockContext7Strategy, MockLLMStrategy
+471: **Example Output**:
+472: ```
+473: Batch 43:
+474:   Stage 1: PRP-43.1.1
+475:   Stage 2: PRP-43.2.1, PRP-43.2.2, PRP-43.2.3 (parallel)
+476:   Stage 3: PRP-43.3.1
+477: ```
+478: 
+479: **Integration with Execution**:
+480: ```bash
+481: # Generate PRPs from plan
+482: /batch-gen-prp BIG-FEATURE-PLAN.md
+483: 
+484: # Execute entire batch
+485: /batch-exe-prp --batch 43
+486: 
+487: # Or stage-by-stage
+488: /batch-exe-prp --batch 43 --stage 1
+489: /batch-exe-prp --batch 43 --stage 2
+490: ```
+491: 
+492: **Time Savings**: 8 PRPs sequential (30 min) → parallel (10-12 min) = **60% faster**
+493: 
+494: **See**: `.claude/commands/batch-gen-prp.md` for complete documentation
+495: 
+496: ## PRP Sizing
+497: 
+498: ```bash
+499: cd tools && uv run ce prp analyze <path-to-prp.md>
+500: ```
 501: 
-502: **Real Strategies**: RealParserStrategy, RealCommandStrategy
-503: 
-504: ## Documentation Standards
-505: 
-506: **Mermaid Diagrams**: Always specify text color
-507: - Light backgrounds → `color:#000`
-508: - Dark backgrounds → `color:#fff`
-509: - Format: `style X fill:#bgcolor,color:#textcolor`
+502: **Size Categories**:
+503: - GREEN: ≤700 lines, ≤8h, LOW-MEDIUM risk
+504: - YELLOW: 700-1000 lines, 8-12h, MEDIUM risk
+505: - RED: >1000 lines, >12h, HIGH risk
+506: 
+507: **Exit Codes**: 0 (GREEN), 1 (YELLOW), 2 (RED)
+508: 
+509: ## Testing Patterns
 510: 
-511: ## Efficient Doc Review
-512: 
-513: **Grep-first validation** (90% token reduction):
-514: 1. Structural validation (Grep patterns, 1-2k tokens)
-515: 2. Code quality checks (Grep anti-patterns, 500 tokens)
-516: 3. Targeted reads (2-3 files only, 3-5k tokens)
+511: **Strategy pattern** for composable testing:
+512: - **Unit**: Test single strategy in isolation
+513: - **Integration**: Test subgraph with real + mock
+514: - **E2E**: Full pipeline, all external deps mocked
+515: 
+516: **Mock Strategies**: MockSerenaStrategy, MockContext7Strategy, MockLLMStrategy
 517: 
-518: **Total**: ~5-7k tokens vs 200k+ for read-all
+518: **Real Strategies**: RealParserStrategy, RealCommandStrategy
 519: 
-520: ## Resources
+520: ## Documentation Standards
 521: 
-522: - `.ce/` - System boilerplate (don't modify)
-523: - `.ce/RULES.md` - Framework rules
-524: - `PRPs/[executed,feature-requests]` - Feature requests
-525: - `examples/` - Framework patterns and user code
+522: **Mermaid Diagrams**: Always specify text color
+523: - Light backgrounds → `color:#000`
+524: - Dark backgrounds → `color:#fff`
+525: - Format: `style X fill:#bgcolor,color:#textcolor`
 526: 
-527: ## Keyboard Shortcuts
+527: ## Efficient Doc Review
 528: 
-529: ### Image Pasting (macOS)
-530: 
-531: **cmd+v**: Paste screenshot images into Claude Code
-532: - Requires Karabiner-Elements (configured via PRP-30)
-533: - Remaps cmd+v → ctrl+v in terminals only
-534: - Config: `~/.config/karabiner/assets/complex_modifications/claude-code-cmd-v.json`
-535: - Toggle: Karabiner-Elements → Complex Modifications
-536: 
-537: **Setup** (one-time):
-538: ```bash
-539: brew install --cask karabiner-elements
-540: # Enable rule in Karabiner-Elements UI → Complex Modifications
-541: ```
+529: **Grep-first validation** (90% token reduction):
+530: 1. Structural validation (Grep patterns, 1-2k tokens)
+531: 2. Code quality checks (Grep anti-patterns, 500 tokens)
+532: 3. Targeted reads (2-3 files only, 3-5k tokens)
+533: 
+534: **Total**: ~5-7k tokens vs 200k+ for read-all
+535: 
+536: ## Resources
+537: 
+538: - `.ce/` - System boilerplate (don't modify)
+539: - `.ce/RULES.md` - Framework rules
+540: - `PRPs/[executed,feature-requests]` - Feature requests
+541: - `examples/` - Framework patterns and user code
 542: 
-543: ## Git Worktree - Parallel PRP Development
+543: ## Keyboard Shortcuts
 544: 
-545: **Native git solution for working on multiple PRPs simultaneously**
+545: ### Image Pasting (macOS)
 546: 
-547: ### Quick Start
-548: 
-549: ```bash
-550: # Create worktree for PRP-A (creates ../ctx-eng-plus-prp-a)
-551: git worktree add ../ctx-eng-plus-prp-a -b prp-a-feature
+547: **cmd+v**: Paste screenshot images into Claude Code
+548: - Requires Karabiner-Elements (configured via PRP-30)
+549: - Remaps cmd+v → ctrl+v in terminals only
+550: - Config: `~/.config/karabiner/assets/complex_modifications/claude-code-cmd-v.json`
+551: - Toggle: Karabiner-Elements → Complex Modifications
 552: 
-553: # Work in worktree
-554: cd ../ctx-eng-plus-prp-a
-555: # Make changes...
-556: git add .
-557: git commit -m "Implement feature"
+553: **Setup** (one-time):
+554: ```bash
+555: brew install --cask karabiner-elements
+556: # Enable rule in Karabiner-Elements UI → Complex Modifications
+557: ```
 558: 
-559: # List all worktrees
-560: git worktree list
-561: 
-562: # Remove worktree after merging
-563: git worktree remove ../ctx-eng-plus-prp-a
-564: ```
-565: 
-566: ### Commands
-567: 
-568: **Create**:
-569: ```bash
-570: git worktree add <path> -b <branch-name>
-571: # Example: git worktree add ../ctx-eng-plus-prp-12 -b prp-12-validation
-572: ```
-573: 
-574: **List**:
-575: ```bash
+559: ## Git Worktree - Parallel PRP Development
+560: 
+561: **Native git solution for working on multiple PRPs simultaneously**
+562: 
+563: ### Quick Start
+564: 
+565: ```bash
+566: # Create worktree for PRP-A (creates ../ctx-eng-plus-prp-a)
+567: git worktree add ../ctx-eng-plus-prp-a -b prp-a-feature
+568: 
+569: # Work in worktree
+570: cd ../ctx-eng-plus-prp-a
+571: # Make changes...
+572: git add .
+573: git commit -m "Implement feature"
+574: 
+575: # List all worktrees
 576: git worktree list
-577: # Shows: path, commit hash, branch name
-578: ```
-579: 
-580: **Remove**:
-581: ```bash
-582: git worktree remove <path>
-583: # or: git worktree remove --force <path>  # if uncommitted changes
-584: ```
-585: 
-586: **Prune** (clean stale references):
-587: ```bash
-588: git worktree prune
-589: ```
-590: 
-591: ### Workflow for Parallel PRPs
-592: 
-593: **Stage 1: Create Worktrees**
-594: ```bash
-595: # From main repo: /Users/bprzybysz/nc-src/ctx-eng-plus
-596: git worktree add ../ctx-eng-plus-prp-a -b prp-a-tool-deny
-597: git worktree add ../ctx-eng-plus-prp-b -b prp-b-usage-guide
-598: git worktree add ../ctx-eng-plus-prp-c -b prp-c-worktree-docs
-599: ```
-600: 
-601: **Stage 2: Execute in Parallel**
-602: ```bash
-603: # Terminal 1
-604: cd ../ctx-eng-plus-prp-a
-605: # Edit .claude/settings.local.json
-606: git add .
-607: git commit -m "PRP-A: Add tools to deny list"
+577: 
+578: # Remove worktree after merging
+579: git worktree remove ../ctx-eng-plus-prp-a
+580: ```
+581: 
+582: ### Commands
+583: 
+584: **Create**:
+585: ```bash
+586: git worktree add <path> -b <branch-name>
+587: # Example: git worktree add ../ctx-eng-plus-prp-12 -b prp-12-validation
+588: ```
+589: 
+590: **List**:
+591: ```bash
+592: git worktree list
+593: # Shows: path, commit hash, branch name
+594: ```
+595: 
+596: **Remove**:
+597: ```bash
+598: git worktree remove <path>
+599: # or: git worktree remove --force <path>  # if uncommitted changes
+600: ```
+601: 
+602: **Prune** (clean stale references):
+603: ```bash
+604: git worktree prune
+605: ```
+606: 
+607: ### Workflow for Parallel PRPs
 608: 
-609: # Terminal 2
-610: cd ../ctx-eng-plus-prp-b
-611: # Create TOOL-USAGE-GUIDE.md
-612: git add .
-613: git commit -m "PRP-B: Create tool usage guide"
-614: 
-615: # Terminal 3
-616: cd ../ctx-eng-plus-prp-c
-617: # Update CLAUDE.md
-618: git add .
-619: git commit -m "PRP-C: Migrate to worktree docs"
-620: ```
-621: 
-622: **Stage 3: Merge in Order**
-623: ```bash
-624: cd /Users/bprzybysz/nc-src/ctx-eng-plus
-625: git checkout main
-626: 
-627: # Merge PRP-A first
-628: git merge prp-a-tool-deny --no-ff
-629: git push origin main
+609: **Stage 1: Create Worktrees**
+610: ```bash
+611: # From main repo: /Users/bprzybysz/nc-src/ctx-eng-plus
+612: git worktree add ../ctx-eng-plus-prp-a -b prp-a-tool-deny
+613: git worktree add ../ctx-eng-plus-prp-b -b prp-b-usage-guide
+614: git worktree add ../ctx-eng-plus-prp-c -b prp-c-worktree-docs
+615: ```
+616: 
+617: **Stage 2: Execute in Parallel**
+618: ```bash
+619: # Terminal 1
+620: cd ../ctx-eng-plus-prp-a
+621: # Edit .claude/settings.local.json
+622: git add .
+623: git commit -m "PRP-A: Add tools to deny list"
+624: 
+625: # Terminal 2
+626: cd ../ctx-eng-plus-prp-b
+627: # Create TOOL-USAGE-GUIDE.md
+628: git add .
+629: git commit -m "PRP-B: Create tool usage guide"
 630: 
-631: # Merge PRP-B
-632: git merge prp-b-usage-guide --no-ff
-633: git push origin main
-634: 
-635: # Merge PRP-C (may conflict with PRP-A on settings.local.json)
-636: git merge prp-c-worktree-docs --no-ff
-637: # If conflicts, resolve manually (see Conflict Resolution below)
-638: git push origin main
-639: ```
-640: 
-641: **Stage 4: Cleanup**
-642: ```bash
-643: git worktree remove ../ctx-eng-plus-prp-a
-644: git worktree remove ../ctx-eng-plus-prp-b
-645: git worktree remove ../ctx-eng-plus-prp-c
-646: git worktree prune
-647: ```
-648: 
-649: ### Critical Constraints
+631: # Terminal 3
+632: cd ../ctx-eng-plus-prp-c
+633: # Update CLAUDE.md
+634: git add .
+635: git commit -m "PRP-C: Migrate to worktree docs"
+636: ```
+637: 
+638: **Stage 3: Merge in Order**
+639: ```bash
+640: cd /Users/bprzybysz/nc-src/ctx-eng-plus
+641: git checkout main
+642: 
+643: # Merge PRP-A first
+644: git merge prp-a-tool-deny --no-ff
+645: git push origin main
+646: 
+647: # Merge PRP-B
+648: git merge prp-b-usage-guide --no-ff
+649: git push origin main
 650: 
-651: **⚠️ Same Branch Limitation**
-652: 
-653: **CANNOT** check out the same branch in multiple worktrees simultaneously.
-654: 
-655: **Example of ERROR**:
-656: ```bash
-657: # Main repo on `main` branch
-658: cd /Users/bprzybysz/nc-src/ctx-eng-plus
-659: git branch
-660: # * main
-661: 
-662: # Try to create worktree on `main`
-663: git worktree add ../ctx-eng-plus-test -b main
-664: # ERROR: fatal: 'main' is already checked out at '/Users/bprzybysz/nc-src/ctx-eng-plus'
-665: ```
+651: # Merge PRP-C (may conflict with PRP-A on settings.local.json)
+652: git merge prp-c-worktree-docs --no-ff
+653: # If conflicts, resolve manually (see Conflict Resolution below)
+654: git push origin main
+655: ```
+656: 
+657: **Stage 4: Cleanup**
+658: ```bash
+659: git worktree remove ../ctx-eng-plus-prp-a
+660: git worktree remove ../ctx-eng-plus-prp-b
+661: git worktree remove ../ctx-eng-plus-prp-c
+662: git worktree prune
+663: ```
+664: 
+665: ### Critical Constraints
 666: 
-667: **Solution**: Each worktree must use a **unique branch**.
+667: **⚠️ Same Branch Limitation**
 668: 
-669: ```bash
-670: # Main repo stays on gitbutler/workspace or main
-671: # Each PRP worktree uses dedicated branch
-672: git worktree add ../ctx-eng-plus-prp-a -b prp-a-unique  # ✓
-673: git worktree add ../ctx-eng-plus-prp-b -b prp-b-unique  # ✓
-674: ```
-675: 
-676: ### Conflict Resolution
+669: **CANNOT** check out the same branch in multiple worktrees simultaneously.
+670: 
+671: **Example of ERROR**:
+672: ```bash
+673: # Main repo on `main` branch
+674: cd /Users/bprzybysz/nc-src/ctx-eng-plus
+675: git branch
+676: # * main
 677: 
-678: When merging parallel PRPs, conflicts may occur if they modify the same file sections.
-679: 
-680: **Scenario 1: No Conflicts** (PRP-A + PRP-B)
-681: ```bash
-682: git merge prp-a-tool-deny --no-ff  # ✓ Success
-683: git merge prp-b-usage-guide --no-ff  # ✓ Success (different files)
-684: ```
-685: 
-686: **Scenario 2: Merge Conflict** (PRP-A + PRP-D both edit settings.local.json)
-687: 
-688: **Step 1: Attempt Merge**
-689: ```bash
-690: git merge prp-d-command-perms --no-ff
-691: # Auto-merging .claude/settings.local.json
-692: # CONFLICT (content): Merge conflict in .claude/settings.local.json
-693: # Automatic merge failed; fix conflicts and then commit the result.
-694: ```
+678: # Try to create worktree on `main`
+679: git worktree add ../ctx-eng-plus-test -b main
+680: # ERROR: fatal: 'main' is already checked out at '/Users/bprzybysz/nc-src/ctx-eng-plus'
+681: ```
+682: 
+683: **Solution**: Each worktree must use a **unique branch**.
+684: 
+685: ```bash
+686: # Main repo stays on gitbutler/workspace or main
+687: # Each PRP worktree uses dedicated branch
+688: git worktree add ../ctx-eng-plus-prp-a -b prp-a-unique  # ✓
+689: git worktree add ../ctx-eng-plus-prp-b -b prp-b-unique  # ✓
+690: ```
+691: 
+692: ### Conflict Resolution
+693: 
+694: When merging parallel PRPs, conflicts may occur if they modify the same file sections.
 695: 
-696: **Step 2: Check Conflict Markers**
+696: **Scenario 1: No Conflicts** (PRP-A + PRP-B)
 697: ```bash
-698: git status
-699: # Unmerged paths:
-700: #   both modified:   .claude/settings.local.json
-701: ```
-702: 
-703: **Step 3: Read File to See Conflicts**
-704: ```python
-705: Read(file_path="/Users/bprzybysz/nc-src/ctx-eng-plus/.claude/settings.local.json")
-706: # Look for:
-707: # <<<<<<< HEAD
-708: # ... current branch content ...
-709: # =======
-710: # ... incoming branch content ...
-711: # >>>>>>> prp-d-command-perms
-712: ```
-713: 
-714: **Step 4: Resolve with Edit Tool**
-715: ```python
-716: # Remove conflict markers, keep desired changes from both branches
-717: Edit(
-718:   file_path="/Users/bprzybysz/nc-src/ctx-eng-plus/.claude/settings.local.json",
-719:   old_string="""<<<<<<< HEAD
-720:   "deny": [existing tools...]
-721: =======
-722:   "deny": [incoming tools...]
-723: >>>>>>> prp-d-command-perms""",
-724:   new_string="""  "deny": [merged tools from both branches...]"""
-725: )
-726: ```
-727: 
-728: **Step 5: Stage and Commit**
-729: ```bash
-730: git add .claude/settings.local.json
-731: git commit -m "Merge prp-d-command-perms: Resolve settings conflict"
-732: ```
-733: 
-734: **Scenario 3: Conflicting Logic** (PRP-A denies tool, PRP-D allows same tool)
-735: 
-736: **Resolution**: Apply **last-merged wins** or **manual decision**.
-737: 
-738: ```json
-739: // PRP-A (merged first): Denies "mcp__syntropy__git_git_status"
-740: "deny": ["mcp__syntropy__git_git_status"]
-741: 
-742: // PRP-D (merging now): Allows "git" commands implicitly
-743: "allow": ["Bash(git:*)"]
-744: 
-745: // Decision: Keep Bash(git:*) in allow, keep git_git_status in deny
-746: // Rationale: Native bash git preferred over MCP wrapper
-747: ```
-748: 
-749: ### Comparison: GitButler vs Worktree
-750: 
-751: | Feature | GitButler | Git Worktree |
-752: |---------|-----------|--------------|
-753: | **Parallel Development** | ✓ Virtual branches | ✓ Physical worktrees |
-754: | **Branch Switching** | ✗ Not needed | ✗ Not needed |
-755: | **Conflict Detection** | ✓ Real-time 🔒 icon | ⚠️ At merge time |
-756: | **Native Git** | ✗ Proprietary layer | ✓ Built-in since Git 2.5 |
-757: | **Learning Curve** | Medium (new concepts) | Low (standard git) |
-758: | **Merge Strategy** | UI-based | CLI-based (standard) |
-759: | **Same Branch Limit** | ✓ Can work on same "virtual" branch | ✗ Must use unique branches |
-760: | **Tool Requirement** | Requires GitButler app + CLI | ✓ Native git (no install) |
-761: | **Workspace Branch** | Auto-merges to `gitbutler/workspace` | Manual merge to `main` |
-762: 
-763: ### Benefits of Worktree Approach
+698: git merge prp-a-tool-deny --no-ff  # ✓ Success
+699: git merge prp-b-usage-guide --no-ff  # ✓ Success (different files)
+700: ```
+701: 
+702: **Scenario 2: Merge Conflict** (PRP-A + PRP-D both edit settings.local.json)
+703: 
+704: **Step 1: Attempt Merge**
+705: ```bash
+706: git merge prp-d-command-perms --no-ff
+707: # Auto-merging .claude/settings.local.json
+708: # CONFLICT (content): Merge conflict in .claude/settings.local.json
+709: # Automatic merge failed; fix conflicts and then commit the result.
+710: ```
+711: 
+712: **Step 2: Check Conflict Markers**
+713: ```bash
+714: git status
+715: # Unmerged paths:
+716: #   both modified:   .claude/settings.local.json
+717: ```
+718: 
+719: **Step 3: Read File to See Conflicts**
+720: ```python
+721: Read(file_path="/Users/bprzybysz/nc-src/ctx-eng-plus/.claude/settings.local.json")
+722: # Look for:
+723: # <<<<<<< HEAD
+724: # ... current branch content ...
+725: # =======
+726: # ... incoming branch content ...
+727: # >>>>>>> prp-d-command-perms
+728: ```
+729: 
+730: **Step 4: Resolve with Edit Tool**
+731: ```python
+732: # Remove conflict markers, keep desired changes from both branches
+733: Edit(
+734:   file_path="/Users/bprzybysz/nc-src/ctx-eng-plus/.claude/settings.local.json",
+735:   old_string="""<<<<<<< HEAD
+736:   "deny": [existing tools...]
+737: =======
+738:   "deny": [incoming tools...]
+739: >>>>>>> prp-d-command-perms""",
+740:   new_string="""  "deny": [merged tools from both branches...]"""
+741: )
+742: ```
+743: 
+744: **Step 5: Stage and Commit**
+745: ```bash
+746: git add .claude/settings.local.json
+747: git commit -m "Merge prp-d-command-perms: Resolve settings conflict"
+748: ```
+749: 
+750: **Scenario 3: Conflicting Logic** (PRP-A denies tool, PRP-D allows same tool)
+751: 
+752: **Resolution**: Apply **last-merged wins** or **manual decision**.
+753: 
+754: ```json
+755: // PRP-A (merged first): Denies "mcp__syntropy__git_git_status"
+756: "deny": ["mcp__syntropy__git_git_status"]
+757: 
+758: // PRP-D (merging now): Allows "git" commands implicitly
+759: "allow": ["Bash(git:*)"]
+760: 
+761: // Decision: Keep Bash(git:*) in allow, keep git_git_status in deny
+762: // Rationale: Native bash git preferred over MCP wrapper
+763: ```
 764: 
-765: 1. **Native Git**: No external dependencies, works everywhere
-766: 2. **Explicit Branches**: Clear separation, standard git workflow
-767: 3. **Merge Control**: Full control over merge order and conflict resolution
-768: 4. **Universal**: Works on any git version ≥2.5 (2015)
-769: 5. **Simple Cleanup**: `git worktree remove` + `git worktree prune`
-770: 
-771: ### Example: 3-PRP Parallel Execution
-772: 
-773: ```bash
-774: # Stage 1: Create worktrees (30 seconds)
-775: git worktree add ../ctx-eng-plus-prp-a -b prp-a-tool-deny
-776: git worktree add ../ctx-eng-plus-prp-b -b prp-b-usage-guide
-777: git worktree add ../ctx-eng-plus-prp-c -b prp-c-worktree-docs
+765: ### Comparison: GitButler vs Worktree
+766: 
+767: | Feature | GitButler | Git Worktree |
+768: |---------|-----------|--------------|
+769: | **Parallel Development** | ✓ Virtual branches | ✓ Physical worktrees |
+770: | **Branch Switching** | ✗ Not needed | ✗ Not needed |
+771: | **Conflict Detection** | ✓ Real-time 🔒 icon | ⚠️ At merge time |
+772: | **Native Git** | ✗ Proprietary layer | ✓ Built-in since Git 2.5 |
+773: | **Learning Curve** | Medium (new concepts) | Low (standard git) |
+774: | **Merge Strategy** | UI-based | CLI-based (standard) |
+775: | **Same Branch Limit** | ✓ Can work on same "virtual" branch | ✗ Must use unique branches |
+776: | **Tool Requirement** | Requires GitButler app + CLI | ✓ Native git (no install) |
+777: | **Workspace Branch** | Auto-merges to `gitbutler/workspace` | Manual merge to `main` |
 778: 
-779: # Stage 2: Execute in parallel (15 minutes total, vs 45 sequential)
-780: # Each PRP executes independently in its worktree
-781: 
-782: # Stage 3: Merge in dependency order (5 minutes)
-783: git merge prp-a-tool-deny --no-ff     # Merge order: 1
-784: git merge prp-b-usage-guide --no-ff   # Merge order: 2
-785: git merge prp-c-worktree-docs --no-ff # Merge order: 3
+779: ### Benefits of Worktree Approach
+780: 
+781: 1. **Native Git**: No external dependencies, works everywhere
+782: 2. **Explicit Branches**: Clear separation, standard git workflow
+783: 3. **Merge Control**: Full control over merge order and conflict resolution
+784: 4. **Universal**: Works on any git version ≥2.5 (2015)
+785: 5. **Simple Cleanup**: `git worktree remove` + `git worktree prune`
 786: 
-787: # Stage 4: Cleanup (30 seconds)
-788: git worktree remove ../ctx-eng-plus-prp-a
-789: git worktree remove ../ctx-eng-plus-prp-b
-790: git worktree remove ../ctx-eng-plus-prp-c
-791: git worktree prune
-792: ```
-793: 
-794: **Time Savings**: 45 min sequential → 20 min parallel (55% reduction)
-795: 
-796: ---
+787: ### Example: 3-PRP Parallel Execution
+788: 
+789: ```bash
+790: # Stage 1: Create worktrees (30 seconds)
+791: git worktree add ../ctx-eng-plus-prp-a -b prp-a-tool-deny
+792: git worktree add ../ctx-eng-plus-prp-b -b prp-b-usage-guide
+793: git worktree add ../ctx-eng-plus-prp-c -b prp-c-worktree-docs
+794: 
+795: # Stage 2: Execute in parallel (15 minutes total, vs 45 sequential)
+796: # Each PRP executes independently in its worktree
 797: 
-798: ## Troubleshooting
-799: 
-800: ```bash
-801: # Tool not found
-802: cd tools && uv pip install -e .
-803: 
-804: # Tests failing
-805: uv sync
-806: uv run pytest tests/ -v
-807: 
-808: # Linear "Not connected"
-809: rm -rf ~/.mcp-auth
-810: 
-811: # Check PRP's Linear issue ID
-812: grep "^issue:" PRPs/executed/PRP-12-feature.md
-813: ```
-814: 
-815: **New Issues** (added after lockdown):
-816: 
-817: ### Issue: "Permission prompt for safe command"
-818: 
-819: **Symptom**: Commands like `ls` or `cat` prompt for permission
-820: 
-821: **Cause**: Command not in auto-allow list
-822: 
-823: **Solution**:
-824: 1. Check if command matches pattern: `grep 'Bash(ls' .claude/settings.local.json`
-825: 2. If missing, add pattern to allow list
-826: 3. Or approve once (permission remembered for session)
-827: 
-828: ### Issue: "Command denied" or "tool not found"
-829: 
-830: **Symptom**: MCP tool like `mcp__syntropy__filesystem_read_file` fails
-831: 
-832: **Cause**: Tool in deny list (post-lockdown)
-833: 
-834: **Solution**:
-835: 1. Check TOOL-USAGE-GUIDE.md for alternative
-836: 2. Example: `filesystem_read_file` → Use `Read` (native) instead
-837: 3. If tool should be allowed, remove from deny list (rare)
+798: # Stage 3: Merge in dependency order (5 minutes)
+799: git merge prp-a-tool-deny --no-ff     # Merge order: 1
+800: git merge prp-b-usage-guide --no-ff   # Merge order: 2
+801: git merge prp-c-worktree-docs --no-ff # Merge order: 3
+802: 
+803: # Stage 4: Cleanup (30 seconds)
+804: git worktree remove ../ctx-eng-plus-prp-a
+805: git worktree remove ../ctx-eng-plus-prp-b
+806: git worktree remove ../ctx-eng-plus-prp-c
+807: git worktree prune
+808: ```
+809: 
+810: **Time Savings**: 45 min sequential → 20 min parallel (55% reduction)
+811: 
+812: ---
+813: 
+814: ## Troubleshooting
+815: 
+816: ```bash
+817: # Tool not found
+818: cd tools && uv pip install -e .
+819: 
+820: # Tests failing
+821: uv sync
+822: uv run pytest tests/ -v
+823: 
+824: # Linear "Not connected"
+825: rm -rf ~/.mcp-auth
+826: 
+827: # Check PRP's Linear issue ID
+828: grep "^issue:" PRPs/executed/PRP-12-feature.md
+829: ```
+830: 
+831: **New Issues** (added after lockdown):
+832: 
+833: ### Issue: "Permission prompt for safe command"
+834: 
+835: **Symptom**: Commands like `ls` or `cat` prompt for permission
+836: 
+837: **Cause**: Command not in auto-allow list
 838: 
-839: ### Issue: "MCP tools context too large"
-840: 
-841: **Symptom**: Token usage warning for MCP tools
-842: 
-843: **Cause**: Deny list not applied (MCP not reconnected)
-844: 
-845: **Solution**:
-846: ```bash
-847: # Reconnect MCP servers
-848: /mcp
+839: **Solution**:
+840: 1. Check if command matches pattern: `grep 'Bash(ls' .claude/settings.local.json`
+841: 2. If missing, add pattern to allow list
+842: 3. Or approve once (permission remembered for session)
+843: 
+844: ### Issue: "Command denied" or "tool not found"
+845: 
+846: **Symptom**: MCP tool like `mcp__syntropy__filesystem_read_file` fails
+847: 
+848: **Cause**: Tool in deny list (post-lockdown)
 849: 
-850: # Verify token reduction
-851: # Expected: ~2k tokens for MCP tools (was ~46k)
-852: ```
-853: 
-854: ## Permissions
-855: 
-856: **❌ NEVER** replace all permissions with one entry in `.claude/settings.local.json`
-857: 
-858: **✅ ALLOWED**: Surgical edits to individual permissions
-859: 
-860: ## Special Notes
-861: 
-862: - Linear MCP context: "linear( mcp)" = linear-server mcp
-863: - Compact conversation: Use claude-3-haiku-20240307
-864: - Activate Serena: Use project's root full path
-865: - Ad-hoc code strict: 3 LOC max, no exceptions
+850: **Solution**:
+851: 1. Check TOOL-USAGE-GUIDE.md for alternative
+852: 2. Example: `filesystem_read_file` → Use `Read` (native) instead
+853: 3. If tool should be allowed, remove from deny list (rare)
+854: 
+855: ### Issue: "MCP tools context too large"
+856: 
+857: **Symptom**: Token usage warning for MCP tools
+858: 
+859: **Cause**: Deny list not applied (MCP not reconnected)
+860: 
+861: **Solution**:
+862: ```bash
+863: # Reconnect MCP servers
+864: /mcp
+865: 
+866: # Verify token reduction
+867: # Expected: ~2k tokens for MCP tools (was ~46k)
+868: ```
+869: 
+870: ## Permissions
+871: 
+872: **❌ NEVER** replace all permissions with one entry in `.claude/settings.local.json`
+873: 
+874: **✅ ALLOWED**: Surgical edits to individual permissions
+875: 
+876: ## Special Notes
+877: 
+878: - Linear MCP context: "linear( mcp)" = linear-server mcp
+879: - Compact conversation: Use claude-3-haiku-20240307
+880: - Activate Serena: Use project's root full path
+881: - Ad-hoc code strict: 3 LOC max, no exceptions
 </file>
 
 </files>
