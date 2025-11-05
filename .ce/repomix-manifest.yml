@@ -70,6 +70,7 @@ packages:
         filter: "IsWorkflow=Yes from examples/INDEX.md"
         files:
           - "examples/INITIALIZATION.md (unified CE 1.1 guide)"
+          - "examples/templates/PRP-0-CONTEXT-ENGINEERING.md (PRP-0 template)"
           - "examples/patterns/*.md (2 files: dedrifting-lessons, mocks-marking)"
           - "examples/TOOL-USAGE-GUIDE.md"
           - "examples/prp-decomposition-patterns.md"
@@ -80,13 +81,6 @@ packages:
           - "examples/model/SystemModel.md"
           - "examples/INDEX.md"
           - "examples/README.md"
-
-      - type: "templates"
-        count: 1
-        destination: ".ce/PRPs/executed/system/ (after extraction)"
-        filter: "Framework PRP templates"
-        files:
-          - "examples/templates/PRP-0-CONTEXT-ENGINEERING.md → .ce/PRPs/executed/system/PRP-0-CONTEXT-ENGINEERING.md"
 
       - type: "memories"
         count: 23

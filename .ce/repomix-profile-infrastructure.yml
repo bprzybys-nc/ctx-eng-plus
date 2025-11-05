@@ -29,9 +29,6 @@ include:
   - "examples/INDEX.md"
   - "examples/README.md"
 
-  # Framework Templates -> .ce/PRPs/executed/system/
-  - "examples/templates/PRP-0-CONTEXT-ENGINEERING.md"
-
   # Framework Memories (23 files + README) -> .serena/memories/system/
   - ".serena/memories/README.md"
   # Universal memories (6 critical)
