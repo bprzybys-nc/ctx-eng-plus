@@ -28,6 +28,7 @@ from .executors.github_actions import GitHubActionsExecutor
 from .executors.mock import MockExecutor
 from .metrics import MetricsCollector
 from .update_context import sync_context
+from .blend import run_blend as blend_run_blend
 
 
 def format_output(data: Dict[str, Any], as_json: bool = False) -> str:
@@ -951,3 +952,10 @@ def cmd_vacuum(args):
         import traceback
         traceback.print_exc()
         return 2
+
+
+# === BLEND COMMAND ===
+
+def cmd_blend(args) -> int:
+    """Execute blend command."""
+    return blend_run_blend(args)

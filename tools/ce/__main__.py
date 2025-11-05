@@ -24,6 +24,7 @@ from .cli_handlers import (
     cmd_analyze_context,
     cmd_update_context,
     cmd_vacuum,
+    cmd_blend,
 )
 
 
@@ -445,6 +446,32 @@ Examples:
         help="Skip specific strategy (can be used multiple times)"
     )
 
+    # === BLEND COMMAND ===
+    blend_parser = subparsers.add_parser(
+        "blend",
+        help="CE Framework Blending Tool - Migrate and blend framework files"
+    )
+    # Operation modes
+    mode_group = blend_parser.add_mutually_exclusive_group(required=True)
+    mode_group.add_argument('--all', action='store_true', help='Run all 4 phases')
+    mode_group.add_argument('--phase', choices=['detect', 'classify', 'blend', 'cleanup'], help='Run specific phase')
+    mode_group.add_argument('--cleanup-only', action='store_true', help='Run cleanup only')
+    mode_group.add_argument('--rollback', action='store_true', help='Restore backups')
+    # Domain selection (optional)
+    blend_parser.add_argument('--domain', help='Blend specific domain only (settings, claude_md, memories, examples, prps, commands)')
+    # Behavior flags
+    blend_parser.add_argument('--dry-run', action='store_true', help='Show what would be done without executing')
+    blend_parser.add_argument('--interactive', action='store_true', help='Ask before each phase')
+    blend_parser.add_argument('--skip-cleanup', action='store_true', help='Skip Phase D (keep legacy dirs)')
+    blend_parser.add_argument('--fast', action='store_true', help='Fast mode (Haiku only, skip expensive ops)')
+    blend_parser.add_argument('--quality', action='store_true', help='Quality mode (Sonnet for all LLM calls)')
+    blend_parser.add_argument('--scan', action='store_true', help='Scan mode (detect + classify only, no blending)')
+    # Configuration
+    blend_parser.add_argument('--config', default='.ce/blend-config.yml', help='Path to blend config (default: .ce/blend-config.yml)')
+    blend_parser.add_argument('--target-dir', default='.', help='Target project directory (default: current)')
+    # Debugging
+    blend_parser.add_argument('-v', '--verbose', action='store_true', help='Verbose output')
+
     # Parse arguments
     args = parser.parse_args()
 
@@ -485,6 +512,8 @@ Examples:
         return cmd_update_context(args)
     elif args.command == "vacuum":
         return cmd_vacuum(args)
+    elif args.command == "blend":
+        return cmd_blend(args)
     else:
         print(f"Unknown command: {args.command}", file=sys.stderr)
         return 1

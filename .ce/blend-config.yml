@@ -1,0 +1,82 @@
+# CE Framework Blending Configuration
+# Defines blending rules for each domain (settings, CLAUDE.md, memories, etc.)
+
+domains:
+  settings:
+    strategy: rule-based
+    source: .claude/settings.local.json
+    backup: true
+    rules:
+      - ce_deny_wins           # CE deny list takes precedence
+      - merge_lists            # Merge CE entries to target lists
+      - single_membership      # Each tool in ONE list only
+    description: "Settings JSON structural merge (3 rules)"
+
+  claude_md:
+    strategy: nl-blend
+    source: CLAUDE.md
+    framework_rules: .ce/RULES.md
+    backup: true
+    llm_model: claude-sonnet-4-5-20250929
+    max_tokens: 8192
+    description: "CLAUDE.md NL-blend with RULES.md awareness (Sonnet)"
+
+  memories:
+    strategy: nl-blend
+    source: .serena/memories/
+    backup: true
+    llm_model_similarity: claude-3-5-haiku-20241022    # Fast similarity checks
+    llm_model_merge: claude-sonnet-4-5-20250929        # Quality merges
+    conflict_resolution: ask-user
+    similarity_threshold: 0.9
+    description: "Serena memories NL-blend (Haiku similarity → Sonnet merge)"
+
+  examples:
+    strategy: dedupe-copy
+    source: examples/
+    destination: .ce/examples/
+    backup: false
+    dedup_method: nl-similarity
+    llm_model: claude-3-5-haiku-20241022               # Fast deduplication
+    similarity_threshold: 0.9
+    description: "Examples NL-dedupe (Haiku semantic comparison)"
+
+  prps:
+    strategy: move-all
+    source: PRPs/
+    legacy_sources:
+      - PRPs/
+      - context-engineering/PRPs/
+    destination: .ce/PRPs/
+    backup: false
+    dedup_method: content-hash                          # Only skip if exact file exists
+    add_user_header: true
+    note: "Move all user PRPs (no ID-based deduplication - different projects can have same IDs)"
+    description: "PRPs move-all (hash dedupe only, no ID dedupe)"
+
+  commands:
+    strategy: overwrite
+    source: .claude/commands/
+    backup: true
+    backup_location: .claude/commands.backup/
+    description: "Commands overwrite (framework canonical)"
+
+# LLM Configuration
+llm:
+  api_key_env: ANTHROPIC_API_KEY
+  timeout: 60
+  max_retries: 3
+
+# Global settings
+global:
+  verify_before_cleanup: true
+  backup_prefix: ".backup"
+  legacy_directories:
+    - PRPs/
+    - examples/
+    - context-engineering/
+  standard_locations:
+    - .claude/
+    - .serena/
+    - CLAUDE.md
+    - .ce/
