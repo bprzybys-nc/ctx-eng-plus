@@ -1,0 +1,40 @@
+we need accurate detection of existing examples PRPs
+
+these supposed to be ikmplemejntyed during PRP 32.x family
+but if werent
+
+most of projects will have PRP[s]{0,1}/ examples/ folders
+in root
+or in [.]*ce/
+or in context-engineering/
+
+b ut there can be also garbage we don't want in new structured
+as for prp and examples they gonna have characteristics described in https://github.com/coleam00/context-engineering-intro as all of them where generated bu less or more enhanced version of it 
+
+
+as for claude related files they are always in .claude/ folderm and CLAUDE.md in root (or their symbiotic links)
+
+
+
+=============
+
+also think how to incorporate Claude 4.5 Haiku to lower costs and speed up process
+
+=======
+
+
+
+  ad Summary
+
+  Token Usage: ~230K tokens per init
+  - CLAUDE.md: ~18K
+  - Memories (23 files): ~115K
+  - Examples (13 files): ~97.5K
+
+  Context: Claude Code typical conversation = 50-100K tokens
+  Impact: Equivalent to 2-4 Claude Code conversations
+  Value: Automates 45+ minutes of error-prone manual work))
+
+
+  try to optimize more for efficiency while preservoing accuracy and quality
+

@@ -1,0 +1,31 @@
+refresh ur context
+
+
+cresate me initial for prp-34
+
+- we need to generalize blending tool as we need it for:
+   - existing CLAUDE.md blending (with RULES.md)
+   - existing serena memories blending with existing serena memories
+   - existing settings.local.json blending with existing settings.local.json
+
+let the blending it be like this:
+
+
+1. copy our version
+2. import target version in scope not contradicting with our version - if sth important contradicting with our version, ask for clarification
+3. deduplicate & denoise to compact readable structured version (with lists tables mermaid diagrams where needed) and no vital information lost!
+(u can also check web for proven patterns for such blending)
+
+
+
+i think for that we need sth NL based so we need also Claude sdk using same claude code tokens
+
+sth like
+
+tools/ce/blending_tool.py <params if needed>
+
+
+id like u to think through other symmetries we could find to make our codebase more compact and readable
+
+
+think. plan efficiently and accurately
