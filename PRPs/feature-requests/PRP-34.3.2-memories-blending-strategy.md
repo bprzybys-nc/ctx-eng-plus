@@ -14,7 +14,9 @@ context_memories:
   - "code-style-conventions.md"
   - "testing-standards.md"
 meeting_evidence: []
-context_sync: true
+context_sync:
+  ce_updated: false
+  serena_updated: false
 version: "1.0"
 created_date: "2025-11-05"
 last_updated: "2025-11-05"
