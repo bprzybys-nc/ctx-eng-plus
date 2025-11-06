@@ -860,6 +860,92 @@ def cmd_analyze_context(args) -> int:
 
 # === UPDATE-CONTEXT COMMAND ===
 
+def _should_rebuild_packages() -> bool:
+    """
+    Check if repomix packages should be rebuilt.
+
+    Checks:
+    - .serena/memories/ modified (git status)
+    - examples/ modified (git status)
+
+    Returns:
+        True if rebuild needed, False otherwise
+    """
+    import subprocess
+    from pathlib import Path
+
+    try:
+        # Check if in git repo
+        result = subprocess.run(
+            ["git", "rev-parse", "--is-inside-work-tree"],
+            capture_output=True,
+            text=True,
+            timeout=5
+        )
+        if result.returncode != 0:
+            return False
+
+        # Check for modifications in framework directories
+        result = subprocess.run(
+            ["git", "status", "--porcelain", ".serena/memories/", "examples/"],
+            capture_output=True,
+            text=True,
+            timeout=5
+        )
+
+        # If any modifications detected, rebuild
+        return bool(result.stdout.strip())
+
+    except Exception:
+        # If check fails, don't rebuild (non-fatal)
+        return False
+
+
+def _rebuild_repomix_packages() -> bool:
+    """
+    Rebuild repomix packages by running build-and-distribute.sh.
+
+    Returns:
+        True if rebuild successful, False otherwise
+    """
+    import subprocess
+    from pathlib import Path
+    import shutil
+
+    try:
+        project_root = Path.cwd()
+        build_script = project_root / ".ce" / "build-and-distribute.sh"
+
+        if not build_script.exists():
+            return False
+
+        # Run build script
+        result = subprocess.run(
+            [str(build_script)],
+            cwd=project_root,
+            capture_output=True,
+            text=True,
+            timeout=60
+        )
+
+        if result.returncode != 0:
+            return False
+
+        # Copy packages from ce-32/builds/ to .ce/
+        builds_dir = project_root / "ce-32" / "builds"
+        ce_dir = project_root / ".ce"
+
+        if builds_dir.exists():
+            for xml_file in builds_dir.glob("*.xml"):
+                shutil.copy2(xml_file, ce_dir / xml_file.name)
+
+        return True
+
+    except Exception as e:
+        print(f"   Rebuild error: {str(e)}")
+        return False
+
+
 def cmd_update_context(args) -> int:
     """Execute update-context command.
 
@@ -888,6 +974,15 @@ def cmd_update_context(args) -> int:
                 print(f"\n⚠️  Errors encountered:")
                 for error in result['errors']:
                     print(f"   - {error}")
+
+        # Step 1.5: Auto-rebuild repomix packages if framework files updated
+        if not args.json and _should_rebuild_packages():
+            print("\n📦 Framework files updated - rebuilding packages...")
+            rebuild_success = _rebuild_repomix_packages()
+            if rebuild_success:
+                print("✅ Packages rebuilt successfully")
+            else:
+                print("⚠️  Package rebuild failed (non-fatal)")
 
         # Step 2: ALWAYS run drift remediation workflow after sync
         from .update_context import remediate_drift_workflow
@@ -1057,7 +1152,7 @@ def cmd_init_project(args) -> int:
         results = initializer.run(phase=phase)
 
         # Output results
-        if args.json:
+        if getattr(args, 'json', False):
             print(format_output(results, True))
         else:
             for phase_name, result in results.items():
