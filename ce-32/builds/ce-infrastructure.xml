@@ -14219,525 +14219,6 @@ This section contains the contents of the repository's files.
 138:         return 1
 </file>
 
-<file path="tools/ce/init_project.py">
-  1: #!/usr/bin/env python3
-  2: """
-  3: CE Framework Project Initializer - Core Module
-  4: 
-  5: Implements the 4-phase pipeline for installing CE framework on target projects:
-  6: 1. Extract: Unpack ce-infrastructure.xml to target project
-  7: 2. Blend: Merge framework + user files (CLAUDE.md, settings, commands)
-  8: 3. Initialize: Run uv sync to install dependencies
-  9: 4. Verify: Validate installation and report status
- 10: """
- 11: 
- 12: import json
- 13: import shutil
- 14: import subprocess
- 15: import sys
- 16: from pathlib import Path
- 17: from typing import Dict, List, Optional
- 18: 
- 19: 
- 20: class ProjectInitializer:
- 21:     """
- 22:     Core initializer for CE Framework installation on target projects.
- 23: 
- 24:     Handles 4-phase pipeline:
- 25:     - extract: Unpack repomix package to .ce/
- 26:     - blend: Merge framework + user files
- 27:     - initialize: Install Python dependencies
- 28:     - verify: Validate installation
- 29:     """
- 30: 
- 31:     def __init__(self, target_project: Path, dry_run: bool = False):
- 32:         """
- 33:         Initialize ProjectInitializer.
- 34: 
- 35:         Args:
- 36:             target_project: Path to target project root
- 37:             dry_run: If True, show actions without executing
- 38:         """
- 39:         self.target_project = Path(target_project).resolve()
- 40:         self.dry_run = dry_run
- 41:         self.ce_dir = self.target_project / ".ce"
- 42:         self.tools_dir = self.ce_dir / "tools"
- 43: 
- 44:         # Paths to framework packages (in ctx-eng-plus repo)
- 45:         self.ctx_eng_root = Path(__file__).parent.parent.parent.resolve()
- 46:         self.infrastructure_xml = self.ctx_eng_root / ".ce" / "ce-infrastructure.xml"
- 47:         self.workflow_xml = self.ctx_eng_root / ".ce" / "ce-workflow-docs.xml"
- 48: 
- 49:     def run(self, phase: str = "all") -> Dict:
- 50:         """
- 51:         Run initialization pipeline.
- 52: 
- 53:         Args:
- 54:             phase: Which phase(s) to run - "all", "extract", "blend", "initialize", "verify"
- 55: 
- 56:         Returns:
- 57:             Dict with status info for each phase executed
- 58: 
- 59:         Raises:
- 60:             ValueError: If invalid phase specified
- 61:         """
- 62:         valid_phases = ["all", "extract", "blend", "initialize", "verify"]
- 63:         if phase not in valid_phases:
- 64:             raise ValueError(f"Invalid phase '{phase}'. Must be one of: {valid_phases}")
- 65: 
- 66:         results = {}
- 67: 
- 68:         if phase == "all":
- 69:             results["extract"] = self.extract()
- 70:             results["blend"] = self.blend()
- 71:             results["initialize"] = self.initialize()
- 72:             results["verify"] = self.verify()
- 73:         else:
- 74:             # Run single phase
- 75:             method = getattr(self, phase)
- 76:             results[phase] = method()
- 77: 
- 78:         return results
- 79: 
- 80:     def extract(self) -> Dict:
- 81:         """
- 82:         Extract ce-infrastructure.xml to target project.
- 83: 
- 84:         Steps:
- 85:         1. Check if ce-infrastructure.xml exists
- 86:         2. Extract to .ce/ directory
- 87:         3. Reorganize tools/ to .ce/tools/
- 88:         4. Copy ce-workflow-docs.xml to .ce/
- 89: 
- 90:         Returns:
- 91:             Dict with extraction status and file counts
- 92:         """
- 93:         status = {"success": False, "files_extracted": 0, "message": ""}
- 94: 
- 95:         # Check for infrastructure package
- 96:         if not self.infrastructure_xml.exists():
- 97:             status["message"] = (
- 98:                 f"❌ ce-infrastructure.xml not found at {self.infrastructure_xml}\n"
- 99:                 f"🔧 Ensure you're running from ctx-eng-plus repo root"
-100:             )
-101:             return status
-102: 
-103:         if self.dry_run:
-104:             status["success"] = True
-105:             status["message"] = f"[DRY-RUN] Would extract to {self.ce_dir}"
-106:             return status
-107: 
-108:         # Check for existing .ce/ directory
-109:         if self.ce_dir.exists():
-110:             status["message"] = (
-111:                 f"⚠️  Warning: .ce/ directory already exists at {self.ce_dir}\n"
-112:                 f"🔧 Backup and remove existing directory, or use --force flag"
-113:             )
-114:             return status
-115: 
-116:         try:
-117:             # Import repomix_unpack module
-118:             from ce.repomix_unpack import extract_files
-119: 
-120:             # Extract to temporary location first
-121:             temp_extract = self.target_project / "tmp" / "ce-extraction"
-122:             temp_extract.mkdir(parents=True, exist_ok=True)
-123: 
-124:             # Extract files
-125:             files_extracted = extract_files(
-126:                 xml_path=self.infrastructure_xml,
-127:                 target_dir=temp_extract,
-128:                 verbose=False
-129:             )
-130: 
-131:             if files_extracted == 0:
-132:                 status["message"] = "❌ No files extracted from package"
-133:                 return status
-134: 
-135:             # Reorganize: Move system/ to .ce/, tools/ to .ce/tools/
-136:             self.ce_dir.mkdir(parents=True, exist_ok=True)
-137: 
-138:             # Move system/ contents to .ce/
-139:             system_dir = temp_extract / "system"
-140:             if system_dir.exists():
-141:                 for item in system_dir.iterdir():
-142:                     shutil.move(str(item), str(self.ce_dir / item.name))
-143: 
-144:             # Move tools/ to .ce/tools/
-145:             tools_source = temp_extract / "tools"
-146:             if tools_source.exists():
-147:                 shutil.move(str(tools_source), str(self.tools_dir))
-148: 
-149:             # Copy ce-workflow-docs.xml (reference package)
-150:             if self.workflow_xml.exists():
-151:                 shutil.copy2(self.workflow_xml, self.ce_dir / "ce-workflow-docs.xml")
-152: 
-153:             # Cleanup temp directory
-154:             shutil.rmtree(temp_extract.parent)
-155: 
-156:             status["success"] = True
-157:             status["files_extracted"] = files_extracted
-158:             status["message"] = f"✅ Extracted {files_extracted} files to {self.ce_dir}"
-159: 
-160:         except Exception as e:
-161:             status["message"] = f"❌ Extraction failed: {str(e)}\n🔧 Check error details above"
-162: 
-163:         return status
-164: 
-165:     def blend(self) -> Dict:
-166:         """
-167:         Blend framework + user files.
-168: 
-169:         Delegates to: uv run ce blend --all --target-dir <target>
-170: 
-171:         Returns:
-172:             Dict with blend status and stdout/stderr
-173:         """
-174:         status = {"success": False, "stdout": "", "stderr": ""}
-175: 
-176:         if self.dry_run:
-177:             status["success"] = True
-178:             status["stdout"] = f"[DRY-RUN] Would run: uv run ce blend --all --target-dir {self.target_project}"
-179:             return status
-180: 
-181:         try:
-182:             # Run blend command
-183:             result = subprocess.run(
-184:                 ["uv", "run", "ce", "blend", "--all", "--target-dir", str(self.target_project)],
-185:                 cwd=self.ctx_eng_root / "tools",
-186:                 capture_output=True,
-187:                 text=True,
-188:                 timeout=120
-189:             )
-190: 
-191:             status["stdout"] = result.stdout
-192:             status["stderr"] = result.stderr
-193:             status["success"] = result.returncode == 0
-194: 
-195:             if not status["success"]:
-196:                 status["message"] = (
-197:                     f"❌ Blend phase failed (exit code {result.returncode})\n"
-198:                     f"🔧 Check blend tool output:\n{result.stderr}"
-199:                 )
-200:             else:
-201:                 status["message"] = "✅ Blend phase completed"
-202: 
-203:         except subprocess.TimeoutExpired:
-204:             status["message"] = "❌ Blend phase timed out (120s limit)\n🔧 Check for hanging processes"
-205:         except FileNotFoundError:
-206:             status["message"] = (
-207:                 "❌ uv not found in PATH\n"
-208:                 "🔧 Install UV: curl -LsSf https://astral.sh/uv/install.sh | sh"
-209:             )
-210:         except Exception as e:
-211:             status["message"] = f"❌ Blend phase failed: {str(e)}"
-212: 
-213:         return status
-214: 
-215:     def initialize(self) -> Dict:
-216:         """
-217:         Initialize Python environment.
-218: 
-219:         Runs: uv sync in .ce/tools/ directory
-220: 
-221:         Returns:
-222:             Dict with initialization status and command output
-223:         """
-224:         status = {"success": False, "stdout": "", "stderr": ""}
-225: 
-226:         if not self.tools_dir.exists():
-227:             status["message"] = (
-228:                 f"❌ Tools directory not found: {self.tools_dir}\n"
-229:                 f"🔧 Run extract phase first"
-230:             )
-231:             return status
-232: 
-233:         if self.dry_run:
-234:             status["success"] = True
-235:             status["stdout"] = f"[DRY-RUN] Would run: uv sync in {self.tools_dir}"
-236:             return status
-237: 
-238:         try:
-239:             # Run uv sync
-240:             result = subprocess.run(
-241:                 ["uv", "sync"],
-242:                 cwd=self.tools_dir,
-243:                 capture_output=True,
-244:                 text=True,
-245:                 timeout=300  # 5 minutes for dependency installation
-246:             )
-247: 
-248:             status["stdout"] = result.stdout
-249:             status["stderr"] = result.stderr
-250:             status["success"] = result.returncode == 0
-251: 
-252:             if not status["success"]:
-253:                 status["message"] = (
-254:                     f"❌ UV sync failed (exit code {result.returncode})\n"
-255:                     f"🔧 Check pyproject.toml and dependency versions:\n{result.stderr}"
-256:                 )
-257:             else:
-258:                 status["message"] = "✅ Python environment initialized"
-259: 
-260:         except subprocess.TimeoutExpired:
-261:             status["message"] = "❌ UV sync timed out (300s limit)\n🔧 Check network connection or package mirrors"
-262:         except FileNotFoundError:
-263:             status["message"] = (
-264:                 "❌ uv not found in PATH\n"
-265:                 "🔧 Install UV: curl -LsSf https://astral.sh/uv/install.sh | sh"
-266:             )
-267:         except Exception as e:
-268:             status["message"] = f"❌ Initialize phase failed: {str(e)}"
-269: 
-270:         return status
-271: 
-272:     def verify(self) -> Dict:
-273:         """
-274:         Verify installation.
-275: 
-276:         Checks:
-277:         1. Critical files exist (.ce/tools/, .claude/, .serena/)
-278:         2. settings.local.json is valid JSON
-279:         3. pyproject.toml exists
-280:         4. Reports summary
-281: 
-282:         Returns:
-283:             Dict with verification results and warnings
-284:         """
-285:         status = {"success": True, "warnings": [], "checks": []}
-286: 
-287:         # Critical files to check
-288:         critical_files = [
-289:             self.ce_dir / "tools" / "pyproject.toml",
-290:             self.target_project / ".claude" / "settings.local.json",
-291:             self.target_project / ".serena" / "memories",
-292:             self.ce_dir / "RULES.md"
-293:         ]
-294: 
-295:         for file_path in critical_files:
-296:             if file_path.exists():
-297:                 status["checks"].append(f"✅ {file_path.relative_to(self.target_project)}")
-298:             else:
-299:                 status["warnings"].append(f"⚠️  Missing: {file_path.relative_to(self.target_project)}")
-300:                 status["success"] = False
-301: 
-302:         # Validate settings.local.json
-303:         settings_file = self.target_project / ".claude" / "settings.local.json"
-304:         if settings_file.exists():
-305:             try:
-306:                 with open(settings_file) as f:
-307:                     json.load(f)
-308:                 status["checks"].append("✅ settings.local.json is valid JSON")
-309:             except json.JSONDecodeError as e:
-310:                 status["warnings"].append(f"⚠️  Invalid JSON in settings.local.json: {str(e)}")
-311:                 status["success"] = False
-312:         else:
-313:             status["warnings"].append("⚠️  settings.local.json not found")
-314: 
-315:         # Check Python installation
-316:         venv_dir = self.tools_dir / ".venv"
-317:         if venv_dir.exists():
-318:             status["checks"].append("✅ Python virtual environment created")
-319:         else:
-320:             status["warnings"].append("⚠️  Virtual environment not found (run initialize phase)")
-321: 
-322:         # Summary message
-323:         if status["success"]:
-324:             status["message"] = f"✅ Installation verified ({len(status['checks'])} checks passed)"
-325:         else:
-326:             status["message"] = (
-327:                 f"⚠️  Installation incomplete ({len(status['warnings'])} warnings)\n"
-328:                 f"🔧 Review warnings above and re-run failed phases"
-329:             )
-330: 
-331:         return status
-332: 
-333: 
-334: def main():
-335:     """CLI entry point for testing."""
-336:     if len(sys.argv) < 2:
-337:         print("Usage: python init_project.py <target-project-path> [--dry-run]")
-338:         sys.exit(1)
-339: 
-340:     target = Path(sys.argv[1])
-341:     dry_run = "--dry-run" in sys.argv
-342: 
-343:     initializer = ProjectInitializer(target, dry_run=dry_run)
-344:     results = initializer.run(phase="all")
-345: 
-346:     # Print results
-347:     for phase, result in results.items():
-348:         print(f"\n=== Phase: {phase} ===")
-349:         print(result.get("message", "No message"))
-350:         if not result.get("success", True):
-351:             sys.exit(1)
-352: 
-353:     print("\n✅ Initialization complete!")
-354: 
-355: 
-356: if __name__ == "__main__":
-357:     main()
-</file>
-
-<file path="tools/ce/repomix_unpack.py">
-  1: #!/usr/bin/env python3
-  2: """
-  3: Repomix XML unpacker - extracts files from repomix-generated XML packages.
-  4: 
-  5: Since repomix CLI doesn't yet support --unpack, this utility extracts files
-  6: from XML packages generated by repomix.
-  7: """
-  8: 
-  9: import argparse
- 10: import re
- 11: import sys
- 12: from pathlib import Path
- 13: from typing import List, Tuple
- 14: 
- 15: 
- 16: def parse_repomix_xml(xml_content: str) -> List[Tuple[str, str]]:
- 17:     """
- 18:     Parse repomix XML and extract (file_path, content) tuples.
- 19: 
- 20:     Args:
- 21:         xml_content: Raw XML content from repomix package
- 22: 
- 23:     Returns:
- 24:         List of (file_path, file_content) tuples
- 25:     """
- 26:     files = []
- 27: 
- 28:     # Pattern to match <file path="...">content</file>
- 29:     # Using non-greedy match and DOTALL to handle multiline content
- 30:     pattern = r'<file path="([^"]+)">\n(.*?)\n</file>'
- 31: 
- 32:     matches = re.finditer(pattern, xml_content, re.DOTALL)
- 33: 
- 34:     for match in matches:
- 35:         file_path = match.group(1)
- 36:         content = match.group(2)
- 37: 
- 38:         # Remove line number prefix (format: "   123→")
- 39:         # Each line in repomix XML has line numbers
- 40:         lines = content.split('\n')
- 41:         cleaned_lines = []
- 42:         for line in lines:
- 43:             # Match line number format: spaces + number + →
- 44:             cleaned = re.sub(r'^\s*\d+→', '', line)
- 45:             cleaned_lines.append(cleaned)
- 46: 
- 47:         cleaned_content = '\n'.join(cleaned_lines)
- 48:         files.append((file_path, cleaned_content))
- 49: 
- 50:     return files
- 51: 
- 52: 
- 53: def extract_files(xml_path: Path, target_dir: Path, verbose: bool = False) -> int:
- 54:     """
- 55:     Extract all files from repomix XML to target directory.
- 56: 
- 57:     Args:
- 58:         xml_path: Path to repomix XML file
- 59:         target_dir: Directory to extract files to
- 60:         verbose: Print extraction progress
- 61: 
- 62:     Returns:
- 63:         Number of files extracted
- 64:     """
- 65:     if not xml_path.exists():
- 66:         print(f"❌ Error: XML file not found: {xml_path}", file=sys.stderr)
- 67:         return 0
- 68: 
- 69:     # Read XML content
- 70:     if verbose:
- 71:         print(f"📦 Reading package: {xml_path}")
- 72: 
- 73:     xml_content = xml_path.read_text()
- 74: 
- 75:     # Parse files
- 76:     files = parse_repomix_xml(xml_content)
- 77: 
- 78:     if not files:
- 79:         print(f"⚠️  Warning: No files found in package", file=sys.stderr)
- 80:         return 0
- 81: 
- 82:     if verbose:
- 83:         print(f"📋 Found {len(files)} files to extract")
- 84: 
- 85:     # Extract each file
- 86:     extracted = 0
- 87:     for file_path, content in files:
- 88:         # Construct full path
- 89:         full_path = target_dir / file_path
- 90: 
- 91:         # Create parent directories
- 92:         full_path.parent.mkdir(parents=True, exist_ok=True)
- 93: 
- 94:         # Write file
- 95:         full_path.write_text(content)
- 96: 
- 97:         if verbose:
- 98:             print(f"   ✓ {file_path}")
- 99: 
-100:         extracted += 1
-101: 
-102:     return extracted
-103: 
-104: 
-105: def main():
-106:     """Main entry point for CLI."""
-107:     parser = argparse.ArgumentParser(
-108:         description="Extract files from repomix XML package",
-109:         formatter_class=argparse.RawDescriptionHelpFormatter,
-110:         epilog="""
-111: Examples:
-112:   # Extract to current directory
-113:   python repomix_unpack.py ce-infrastructure.xml
-114: 
-115:   # Extract to specific directory
-116:   python repomix_unpack.py ce-infrastructure.xml --target /path/to/project
-117: 
-118:   # Verbose output
-119:   python repomix_unpack.py ce-infrastructure.xml -v
-120:         """
-121:     )
-122: 
-123:     parser.add_argument(
-124:         "xml_file",
-125:         type=Path,
-126:         help="Path to repomix XML file"
-127:     )
-128: 
-129:     parser.add_argument(
-130:         "--target",
-131:         type=Path,
-132:         default=Path.cwd(),
-133:         help="Target directory for extraction (default: current directory)"
-134:     )
-135: 
-136:     parser.add_argument(
-137:         "-v", "--verbose",
-138:         action="store_true",
-139:         help="Verbose output"
-140:     )
-141: 
-142:     args = parser.parse_args()
-143: 
-144:     # Extract files
-145:     count = extract_files(args.xml_file, args.target, args.verbose)
-146: 
-147:     if count > 0:
-148:         print(f"\n✅ Extracted {count} files to {args.target}")
-149:         return 0
-150:     else:
-151:         print(f"\n❌ Extraction failed", file=sys.stderr)
-152:         return 1
-153: 
-154: 
-155: if __name__ == "__main__":
-156:     sys.exit(main())
-</file>
-
 <file path="tools/pyproject.toml">
  1: [project]
  2: name = "ce-tools"
@@ -16277,6 +15758,546 @@ This section contains the contents of the repository's files.
 516: - `ce prp restore <prp-id> [phase]` - Rollback to checkpoint (PRP-2)
 517: - `ce context post-sync <prp-id>` - Manual post-execution sync (PRP-5)
 518: - `ce validate --level 4 <prp-path>` - Run L4 pattern conformance (PRP-1)
+</file>
+
+<file path="tools/ce/init_project.py">
+  1: #!/usr/bin/env python3
+  2: """
+  3: CE Framework Project Initializer - Core Module
+  4: 
+  5: Implements the 4-phase pipeline for installing CE framework on target projects:
+  6: 1. Extract: Unpack ce-infrastructure.xml to target project
+  7: 2. Blend: Merge framework + user files (CLAUDE.md, settings, commands)
+  8: 3. Initialize: Run uv sync to install dependencies
+  9: 4. Verify: Validate installation and report status
+ 10: """
+ 11: 
+ 12: import json
+ 13: import shutil
+ 14: import subprocess
+ 15: import sys
+ 16: from pathlib import Path
+ 17: from typing import Dict, List, Optional
+ 18: 
+ 19: 
+ 20: class ProjectInitializer:
+ 21:     """
+ 22:     Core initializer for CE Framework installation on target projects.
+ 23: 
+ 24:     Handles 4-phase pipeline:
+ 25:     - extract: Unpack repomix package to .ce/
+ 26:     - blend: Merge framework + user files
+ 27:     - initialize: Install Python dependencies
+ 28:     - verify: Validate installation
+ 29:     """
+ 30: 
+ 31:     def __init__(self, target_project: Path, dry_run: bool = False):
+ 32:         """
+ 33:         Initialize ProjectInitializer.
+ 34: 
+ 35:         Args:
+ 36:             target_project: Path to target project root
+ 37:             dry_run: If True, show actions without executing
+ 38:         """
+ 39:         self.target_project = Path(target_project).resolve()
+ 40:         self.dry_run = dry_run
+ 41:         self.ce_dir = self.target_project / ".ce"
+ 42:         self.tools_dir = self.ce_dir / "tools"
+ 43: 
+ 44:         # Paths to framework packages (in ctx-eng-plus repo)
+ 45:         self.ctx_eng_root = Path(__file__).parent.parent.parent.resolve()
+ 46:         self.infrastructure_xml = self.ctx_eng_root / ".ce" / "ce-infrastructure.xml"
+ 47:         self.workflow_xml = self.ctx_eng_root / ".ce" / "ce-workflow-docs.xml"
+ 48: 
+ 49:     def run(self, phase: str = "all") -> Dict:
+ 50:         """
+ 51:         Run initialization pipeline.
+ 52: 
+ 53:         Args:
+ 54:             phase: Which phase(s) to run - "all", "extract", "blend", "initialize", "verify"
+ 55: 
+ 56:         Returns:
+ 57:             Dict with status info for each phase executed
+ 58: 
+ 59:         Raises:
+ 60:             ValueError: If invalid phase specified
+ 61:         """
+ 62:         valid_phases = ["all", "extract", "blend", "initialize", "verify"]
+ 63:         if phase not in valid_phases:
+ 64:             raise ValueError(f"Invalid phase '{phase}'. Must be one of: {valid_phases}")
+ 65: 
+ 66:         results = {}
+ 67: 
+ 68:         if phase == "all":
+ 69:             results["extract"] = self.extract()
+ 70:             results["blend"] = self.blend()
+ 71:             results["initialize"] = self.initialize()
+ 72:             results["verify"] = self.verify()
+ 73:         else:
+ 74:             # Run single phase
+ 75:             method = getattr(self, phase)
+ 76:             results[phase] = method()
+ 77: 
+ 78:         return results
+ 79: 
+ 80:     def extract(self) -> Dict:
+ 81:         """
+ 82:         Extract ce-infrastructure.xml to target project.
+ 83: 
+ 84:         Steps:
+ 85:         1. Check if ce-infrastructure.xml exists
+ 86:         2. Extract to .ce/ directory
+ 87:         3. Reorganize tools/ to .ce/tools/
+ 88:         4. Copy ce-workflow-docs.xml to .ce/
+ 89: 
+ 90:         Returns:
+ 91:             Dict with extraction status and file counts
+ 92:         """
+ 93:         status = {"success": False, "files_extracted": 0, "message": ""}
+ 94: 
+ 95:         # Check for infrastructure package
+ 96:         if not self.infrastructure_xml.exists():
+ 97:             status["message"] = (
+ 98:                 f"❌ ce-infrastructure.xml not found at {self.infrastructure_xml}\n"
+ 99:                 f"🔧 Ensure you're running from ctx-eng-plus repo root"
+100:             )
+101:             return status
+102: 
+103:         if self.dry_run:
+104:             status["success"] = True
+105:             status["message"] = f"[DRY-RUN] Would extract to {self.ce_dir}"
+106:             return status
+107: 
+108:         # Check for existing .ce/ directory - rename to .ce.old
+109:         ce_old_dir = self.target_project / ".ce.old"
+110:         renamed_existing = False
+111:         if self.ce_dir.exists():
+112:             # Remove old .ce.old if it exists
+113:             if ce_old_dir.exists():
+114:                 shutil.rmtree(ce_old_dir)
+115: 
+116:             # Rename .ce to .ce.old
+117:             shutil.move(str(self.ce_dir), str(ce_old_dir))
+118:             renamed_existing = True
+119: 
+120:         try:
+121:             # Import repomix_unpack module
+122:             from ce.repomix_unpack import extract_files
+123: 
+124:             # Extract to temporary location first
+125:             temp_extract = self.target_project / "tmp" / "ce-extraction"
+126:             temp_extract.mkdir(parents=True, exist_ok=True)
+127: 
+128:             # Extract files
+129:             files_extracted = extract_files(
+130:                 xml_path=self.infrastructure_xml,
+131:                 target_dir=temp_extract,
+132:                 verbose=False
+133:             )
+134: 
+135:             if files_extracted == 0:
+136:                 status["message"] = "❌ No files extracted from package"
+137:                 return status
+138: 
+139:             # Reorganize: Move system/ to .ce/, tools/ to .ce/tools/
+140:             self.ce_dir.mkdir(parents=True, exist_ok=True)
+141: 
+142:             # Move system/ contents to .ce/
+143:             system_dir = temp_extract / "system"
+144:             if system_dir.exists():
+145:                 for item in system_dir.iterdir():
+146:                     shutil.move(str(item), str(self.ce_dir / item.name))
+147: 
+148:             # Move tools/ to .ce/tools/
+149:             tools_source = temp_extract / "tools"
+150:             if tools_source.exists():
+151:                 shutil.move(str(tools_source), str(self.tools_dir))
+152: 
+153:             # Copy ce-workflow-docs.xml (reference package)
+154:             if self.workflow_xml.exists():
+155:                 shutil.copy2(self.workflow_xml, self.ce_dir / "ce-workflow-docs.xml")
+156: 
+157:             # Cleanup temp directory
+158:             shutil.rmtree(temp_extract.parent)
+159: 
+160:             status["success"] = True
+161:             status["files_extracted"] = files_extracted
+162: 
+163:             # Include rename message if applicable
+164:             if renamed_existing:
+165:                 status["message"] = (
+166:                     f"ℹ️  Renamed existing .ce/ to .ce.old/\n"
+167:                     f"💡 .ce.old/ will be included as additional context source during blend\n"
+168:                     f"✅ Extracted {files_extracted} files to {self.ce_dir}"
+169:                 )
+170:             else:
+171:                 status["message"] = f"✅ Extracted {files_extracted} files to {self.ce_dir}"
+172: 
+173:         except Exception as e:
+174:             status["message"] = f"❌ Extraction failed: {str(e)}\n🔧 Check error details above"
+175: 
+176:         return status
+177: 
+178:     def blend(self) -> Dict:
+179:         """
+180:         Blend framework + user files.
+181: 
+182:         Delegates to: uv run ce blend --all --target-dir <target>
+183: 
+184:         Returns:
+185:             Dict with blend status and stdout/stderr
+186:         """
+187:         status = {"success": False, "stdout": "", "stderr": ""}
+188: 
+189:         if self.dry_run:
+190:             status["success"] = True
+191:             status["stdout"] = f"[DRY-RUN] Would run: uv run ce blend --all --target-dir {self.target_project}"
+192:             return status
+193: 
+194:         try:
+195:             # Run blend command
+196:             result = subprocess.run(
+197:                 ["uv", "run", "ce", "blend", "--all", "--target-dir", str(self.target_project)],
+198:                 cwd=self.ctx_eng_root / "tools",
+199:                 capture_output=True,
+200:                 text=True,
+201:                 timeout=120
+202:             )
+203: 
+204:             status["stdout"] = result.stdout
+205:             status["stderr"] = result.stderr
+206:             status["success"] = result.returncode == 0
+207: 
+208:             if not status["success"]:
+209:                 status["message"] = (
+210:                     f"❌ Blend phase failed (exit code {result.returncode})\n"
+211:                     f"🔧 Check blend tool output:\n{result.stderr}"
+212:                 )
+213:             else:
+214:                 # Check if .ce.old exists to mention it
+215:                 ce_old_dir = self.target_project / ".ce.old"
+216:                 if ce_old_dir.exists():
+217:                     status["message"] = (
+218:                         "✅ Blend phase completed\n"
+219:                         "💡 Note: .ce.old/ detected - blend tool will include it as additional source"
+220:                     )
+221:                 else:
+222:                     status["message"] = "✅ Blend phase completed"
+223: 
+224:         except subprocess.TimeoutExpired:
+225:             status["message"] = "❌ Blend phase timed out (120s limit)\n🔧 Check for hanging processes"
+226:         except FileNotFoundError:
+227:             status["message"] = (
+228:                 "❌ uv not found in PATH\n"
+229:                 "🔧 Install UV: curl -LsSf https://astral.sh/uv/install.sh | sh"
+230:             )
+231:         except Exception as e:
+232:             status["message"] = f"❌ Blend phase failed: {str(e)}"
+233: 
+234:         return status
+235: 
+236:     def initialize(self) -> Dict:
+237:         """
+238:         Initialize Python environment.
+239: 
+240:         Runs: uv sync in .ce/tools/ directory
+241: 
+242:         Returns:
+243:             Dict with initialization status and command output
+244:         """
+245:         status = {"success": False, "stdout": "", "stderr": ""}
+246: 
+247:         if not self.tools_dir.exists():
+248:             status["message"] = (
+249:                 f"❌ Tools directory not found: {self.tools_dir}\n"
+250:                 f"🔧 Run extract phase first"
+251:             )
+252:             return status
+253: 
+254:         if self.dry_run:
+255:             status["success"] = True
+256:             status["stdout"] = f"[DRY-RUN] Would run: uv sync in {self.tools_dir}"
+257:             return status
+258: 
+259:         try:
+260:             # Run uv sync
+261:             result = subprocess.run(
+262:                 ["uv", "sync"],
+263:                 cwd=self.tools_dir,
+264:                 capture_output=True,
+265:                 text=True,
+266:                 timeout=300  # 5 minutes for dependency installation
+267:             )
+268: 
+269:             status["stdout"] = result.stdout
+270:             status["stderr"] = result.stderr
+271:             status["success"] = result.returncode == 0
+272: 
+273:             if not status["success"]:
+274:                 status["message"] = (
+275:                     f"❌ UV sync failed (exit code {result.returncode})\n"
+276:                     f"🔧 Check pyproject.toml and dependency versions:\n{result.stderr}"
+277:                 )
+278:             else:
+279:                 status["message"] = "✅ Python environment initialized"
+280: 
+281:         except subprocess.TimeoutExpired:
+282:             status["message"] = "❌ UV sync timed out (300s limit)\n🔧 Check network connection or package mirrors"
+283:         except FileNotFoundError:
+284:             status["message"] = (
+285:                 "❌ uv not found in PATH\n"
+286:                 "🔧 Install UV: curl -LsSf https://astral.sh/uv/install.sh | sh"
+287:             )
+288:         except Exception as e:
+289:             status["message"] = f"❌ Initialize phase failed: {str(e)}"
+290: 
+291:         return status
+292: 
+293:     def verify(self) -> Dict:
+294:         """
+295:         Verify installation.
+296: 
+297:         Checks:
+298:         1. Critical files exist (.ce/tools/, .claude/, .serena/)
+299:         2. settings.local.json is valid JSON
+300:         3. pyproject.toml exists
+301:         4. Reports summary
+302: 
+303:         Returns:
+304:             Dict with verification results and warnings
+305:         """
+306:         status = {"success": True, "warnings": [], "checks": []}
+307: 
+308:         # Critical files to check
+309:         critical_files = [
+310:             self.ce_dir / "tools" / "pyproject.toml",
+311:             self.target_project / ".claude" / "settings.local.json",
+312:             self.target_project / ".serena" / "memories",
+313:             self.ce_dir / "RULES.md"
+314:         ]
+315: 
+316:         for file_path in critical_files:
+317:             if file_path.exists():
+318:                 status["checks"].append(f"✅ {file_path.relative_to(self.target_project)}")
+319:             else:
+320:                 status["warnings"].append(f"⚠️  Missing: {file_path.relative_to(self.target_project)}")
+321:                 status["success"] = False
+322: 
+323:         # Validate settings.local.json
+324:         settings_file = self.target_project / ".claude" / "settings.local.json"
+325:         if settings_file.exists():
+326:             try:
+327:                 with open(settings_file) as f:
+328:                     json.load(f)
+329:                 status["checks"].append("✅ settings.local.json is valid JSON")
+330:             except json.JSONDecodeError as e:
+331:                 status["warnings"].append(f"⚠️  Invalid JSON in settings.local.json: {str(e)}")
+332:                 status["success"] = False
+333:         else:
+334:             status["warnings"].append("⚠️  settings.local.json not found")
+335: 
+336:         # Check Python installation
+337:         venv_dir = self.tools_dir / ".venv"
+338:         if venv_dir.exists():
+339:             status["checks"].append("✅ Python virtual environment created")
+340:         else:
+341:             status["warnings"].append("⚠️  Virtual environment not found (run initialize phase)")
+342: 
+343:         # Summary message
+344:         if status["success"]:
+345:             status["message"] = f"✅ Installation verified ({len(status['checks'])} checks passed)"
+346:         else:
+347:             status["message"] = (
+348:                 f"⚠️  Installation incomplete ({len(status['warnings'])} warnings)\n"
+349:                 f"🔧 Review warnings above and re-run failed phases"
+350:             )
+351: 
+352:         return status
+353: 
+354: 
+355: def main():
+356:     """CLI entry point for testing."""
+357:     if len(sys.argv) < 2:
+358:         print("Usage: python init_project.py <target-project-path> [--dry-run]")
+359:         sys.exit(1)
+360: 
+361:     target = Path(sys.argv[1])
+362:     dry_run = "--dry-run" in sys.argv
+363: 
+364:     initializer = ProjectInitializer(target, dry_run=dry_run)
+365:     results = initializer.run(phase="all")
+366: 
+367:     # Print results
+368:     for phase, result in results.items():
+369:         print(f"\n=== Phase: {phase} ===")
+370:         print(result.get("message", "No message"))
+371:         if not result.get("success", True):
+372:             sys.exit(1)
+373: 
+374:     print("\n✅ Initialization complete!")
+375: 
+376: 
+377: if __name__ == "__main__":
+378:     main()
+</file>
+
+<file path="tools/ce/repomix_unpack.py">
+  1: #!/usr/bin/env python3
+  2: """
+  3: Repomix XML unpacker - extracts files from repomix-generated XML packages.
+  4: 
+  5: Since repomix CLI doesn't yet support --unpack, this utility extracts files
+  6: from XML packages generated by repomix.
+  7: """
+  8: 
+  9: import argparse
+ 10: import re
+ 11: import sys
+ 12: from pathlib import Path
+ 13: from typing import List, Tuple
+ 14: 
+ 15: 
+ 16: def parse_repomix_xml(xml_content: str) -> List[Tuple[str, str]]:
+ 17:     """
+ 18:     Parse repomix XML and extract (file_path, content) tuples.
+ 19: 
+ 20:     Args:
+ 21:         xml_content: Raw XML content from repomix package
+ 22: 
+ 23:     Returns:
+ 24:         List of (file_path, file_content) tuples
+ 25:     """
+ 26:     files = []
+ 27: 
+ 28:     # Pattern to match <file path="...">content</file>
+ 29:     # Using non-greedy match and DOTALL to handle multiline content
+ 30:     pattern = r'<file path="([^"]+)">\n(.*?)\n</file>'
+ 31: 
+ 32:     matches = re.finditer(pattern, xml_content, re.DOTALL)
+ 33: 
+ 34:     for match in matches:
+ 35:         file_path = match.group(1)
+ 36:         content = match.group(2)
+ 37: 
+ 38:         # Remove line number prefix (format: " 1: " or "   123→")
+ 39:         # Each line in repomix XML has line numbers
+ 40:         lines = content.split('\n')
+ 41:         cleaned_lines = []
+ 42:         for line in lines:
+ 43:             # Match line number format: spaces + number + (→ or : + space)
+ 44:             cleaned = re.sub(r'^\s*\d+[→:]\s*', '', line)
+ 45:             cleaned_lines.append(cleaned)
+ 46: 
+ 47:         cleaned_content = '\n'.join(cleaned_lines)
+ 48:         files.append((file_path, cleaned_content))
+ 49: 
+ 50:     return files
+ 51: 
+ 52: 
+ 53: def extract_files(xml_path: Path, target_dir: Path, verbose: bool = False) -> int:
+ 54:     """
+ 55:     Extract all files from repomix XML to target directory.
+ 56: 
+ 57:     Args:
+ 58:         xml_path: Path to repomix XML file
+ 59:         target_dir: Directory to extract files to
+ 60:         verbose: Print extraction progress
+ 61: 
+ 62:     Returns:
+ 63:         Number of files extracted
+ 64:     """
+ 65:     if not xml_path.exists():
+ 66:         print(f"❌ Error: XML file not found: {xml_path}", file=sys.stderr)
+ 67:         return 0
+ 68: 
+ 69:     # Read XML content
+ 70:     if verbose:
+ 71:         print(f"📦 Reading package: {xml_path}")
+ 72: 
+ 73:     xml_content = xml_path.read_text()
+ 74: 
+ 75:     # Parse files
+ 76:     files = parse_repomix_xml(xml_content)
+ 77: 
+ 78:     if not files:
+ 79:         print(f"⚠️  Warning: No files found in package", file=sys.stderr)
+ 80:         return 0
+ 81: 
+ 82:     if verbose:
+ 83:         print(f"📋 Found {len(files)} files to extract")
+ 84: 
+ 85:     # Extract each file
+ 86:     extracted = 0
+ 87:     for file_path, content in files:
+ 88:         # Construct full path
+ 89:         full_path = target_dir / file_path
+ 90: 
+ 91:         # Create parent directories
+ 92:         full_path.parent.mkdir(parents=True, exist_ok=True)
+ 93: 
+ 94:         # Write file
+ 95:         full_path.write_text(content)
+ 96: 
+ 97:         if verbose:
+ 98:             print(f"   ✓ {file_path}")
+ 99: 
+100:         extracted += 1
+101: 
+102:     return extracted
+103: 
+104: 
+105: def main():
+106:     """Main entry point for CLI."""
+107:     parser = argparse.ArgumentParser(
+108:         description="Extract files from repomix XML package",
+109:         formatter_class=argparse.RawDescriptionHelpFormatter,
+110:         epilog="""
+111: Examples:
+112:   # Extract to current directory
+113:   python repomix_unpack.py ce-infrastructure.xml
+114: 
+115:   # Extract to specific directory
+116:   python repomix_unpack.py ce-infrastructure.xml --target /path/to/project
+117: 
+118:   # Verbose output
+119:   python repomix_unpack.py ce-infrastructure.xml -v
+120:         """
+121:     )
+122: 
+123:     parser.add_argument(
+124:         "xml_file",
+125:         type=Path,
+126:         help="Path to repomix XML file"
+127:     )
+128: 
+129:     parser.add_argument(
+130:         "--target",
+131:         type=Path,
+132:         default=Path.cwd(),
+133:         help="Target directory for extraction (default: current directory)"
+134:     )
+135: 
+136:     parser.add_argument(
+137:         "-v", "--verbose",
+138:         action="store_true",
+139:         help="Verbose output"
+140:     )
+141: 
+142:     args = parser.parse_args()
+143: 
+144:     # Extract files
+145:     count = extract_files(args.xml_file, args.target, args.verbose)
+146: 
+147:     if count > 0:
+148:         print(f"\n✅ Extracted {count} files to {args.target}")
+149:         return 0
+150:     else:
+151:         print(f"\n❌ Extraction failed", file=sys.stderr)
+152:         return 1
+153: 
+154: 
+155: if __name__ == "__main__":
+156:     sys.exit(main())
 </file>
 
 <file path="tools/ce/vacuum.py">
@@ -18987,6 +19008,300 @@ This section contains the contents of the repository's files.
 573:     sys.exit(main())
 </file>
 
+<file path=".claude/commands/generate-prp.md">
+  1: # /generate-prp - Generate PRP from INITIAL.md
+  2: 
+  3: Automates PRP (Product Requirements Prompt) generation from INITIAL.md with comprehensive codebase research, documentation fetching, and context synthesis.
+  4: 
+  5: ## Usage
+  6: 
+  7: ```
+  8: /generate-prp <initial-md-path>                        # Creates new PRP + Linear issue
+  9: /generate-prp <initial-md-path> --join-prp <prp-ref>  # Joins existing PRP's Linear issue
+ 10: ```
+ 11: 
+ 12: **PRP Reference Formats**:
+ 13: - Number: `--join-prp 12` (searches for PRP-12)
+ 14: - ID: `--join-prp PRP-12`
+ 15: - File path: `--join-prp PRPs/executed/PRP-12-feature.md`
+ 16: 
+ 17: ## What It Does
+ 18: 
+ 19: 1. **Parses INITIAL.md structure**:
+ 20:    - Extracts FEATURE, EXAMPLES, DOCUMENTATION, OTHER CONSIDERATIONS sections
+ 21:    - Validates required sections present (FEATURE and EXAMPLES are mandatory)
+ 22: 
+ 23: 2. **Proposes clean code**:
+ 24:    - Follows project code quality standards (50-line functions, 500-line files)
+ 25:    - Applies KISS principle (simple solutions, minimal dependencies)
+ 26:    - Ensures no fishy fallbacks or silent error masking
+ 27:    - All mocks marked with FIXME comments in production code
+ 28:    - Includes actionable error messages with troubleshooting guidance
+ 29: 
+ 30: 3. **Researches codebase** (via Serena MCP):
+ 31:    - Searches for similar patterns using keywords
+ 32:    - Analyzes symbol structure and relationships
+ 33:    - Infers test framework (pytest/unittest/jest)
+ 34:    - Identifies architectural patterns
+ 35: 
+ 36: 3. **Fetches documentation** (via Context7 MCP):
+ 37:    - Resolves library names to Context7 IDs
+ 38:    - Fetches relevant library documentation
+ 39:    - Extracts topics from feature description
+ 40:    - Includes external documentation links
+ 41: 
+ 42: 4. **Generates complete PRP**:
+ 43:    - Synthesizes 6-section PRP structure (TL;DR, Context, Implementation Steps, Validation Gates, Testing Strategy, Rollout Plan)
+ 44:    - Creates YAML header with metadata
+ 45:    - Auto-generates next PRP ID (PRP-N+1)
+ 46:    - Validates completeness (ensures all required sections present)
+ 47: 
+ 48: 5. **Creates/Updates Linear issue**:
+ 49:    - **Without --join-prp**: Creates new Linear issue with project defaults (from `.ce/linear-defaults.yml`)
+ 50:    - **With --join-prp**: Updates existing PRP's Linear issue with new PRP information
+ 51:    - Updates PRP YAML header with `issue: {ISSUE-ID}`
+ 52: 
+ 53: 6. **Outputs to**: `PRPs/feature-requests/PRP-{id}-{feature-slug}.md`
+ 54: 
+ 55: ## INITIAL.md Structure
+ 56: 
+ 57: Your INITIAL.md must follow this structure:
+ 58: 
+ 59: ```markdown
+ 60: # Feature: <Feature Name>
+ 61: 
+ 62: ## FEATURE
+ 63: <What to build - user story, acceptance criteria>
+ 64: 
+ 65: ## EXAMPLES
+ 66: <Similar code patterns from codebase, inline code blocks, or file references>
+ 67: 
+ 68: ## DOCUMENTATION
+ 69: <Library docs, API references, external resources>
+ 70: 
+ 71: ## OTHER CONSIDERATIONS
+ 72: <Gotchas, constraints, security concerns, edge cases>
+ 73: ```
+ 74: 
+ 75: **Required sections**: FEATURE, EXAMPLES
+ 76: **Optional sections**: DOCUMENTATION, OTHER CONSIDERATIONS
+ 77: 
+ 78: ## Example
+ 79: 
+ 80: ```bash
+ 81: # Create INITIAL.md
+ 82: cat > feature-requests/user-auth/INITIAL.md << 'EOF'
+ 83: # Feature: User Authentication System
+ 84: 
+ 85: ## FEATURE
+ 86: Build JWT-based user authentication with:
+ 87: - User registration with email/password
+ 88: - Login with JWT token generation
+ 89: - Token refresh mechanism
+ 90: 
+ 91: **Acceptance Criteria:**
+ 92: 1. Users can register with valid email and password
+ 93: 2. Login returns JWT access token and refresh token
+ 94: 3. Protected endpoints validate JWT tokens
+ 95: 
+ 96: ## EXAMPLES
+ 97: ```python
+ 98: async def authenticate_user(email: str, password: str) -> dict:
+ 99:     user = await db.users.find_one({"email": email})
+100:     if not user or not verify_password(password, user["password_hash"]):
+101:         raise AuthenticationError("Invalid credentials")
+102: 
+103:     access_token = create_jwt(user["id"], expires_in=3600)
+104:     return {"access_token": access_token}
+105: ```
+106: 
+107: See src/oauth.py:42-67 for similar async authentication pattern
+108: 
+109: ## DOCUMENTATION
+110: - [JWT Best Practices](https://jwt.io/introduction)
+111: - [FastAPI Security](https://fastapi.tiangolo.com/tutorial/security/)
+112: - "pytest" for testing
+113: - "bcrypt" for password hashing
+114: 
+115: ## OTHER CONSIDERATIONS
+116: **Security:**
+117: - Hash passwords with bcrypt (cost factor 12)
+118: - Rate limiting on login endpoint (5 attempts per 15 min)
+119: EOF
+120: 
+121: # Generate PRP
+122: cd tools
+123: uv run ce prp generate feature-requests/user-auth/INITIAL.md
+124: 
+125: # Output: PRPs/feature-requests/PRP-6-user-authentication-system.md
+126: ```
+127: 
+128: ## CLI Command
+129: 
+130: ```bash
+131: # Basic usage (creates new PRP + Linear issue)
+132: cd tools
+133: uv run ce prp generate <path-to-initial.md>
+134: 
+135: # Join existing PRP's Linear issue
+136: uv run ce prp generate <path-to-initial.md> --join-prp 12
+137: uv run ce prp generate <path-to-initial.md> --join-prp PRP-12
+138: uv run ce prp generate <path-to-initial.md> --join-prp PRPs/executed/PRP-12-feature.md
+139: 
+140: # Custom output directory
+141: uv run ce prp generate <path-to-initial.md> -o /custom/path
+142: 
+143: # JSON output (for scripting)
+144: uv run ce prp generate <path-to-initial.md> --json
+145: 
+146: # Combined options
+147: uv run ce prp generate <path-to-initial.md> --join-prp 12 --json
+148: ```
+149: 
+150: **Use Cases for --join-prp**:
+151: - **Related features**: Multiple PRPs implementing parts of same initiative
+152: - **Incremental work**: Breaking large PRP into smaller chunks
+153: - **Follow-up work**: Additional PRP for same feature area
+154: 
+155: **Example workflow**:
+156: ```bash
+157: # Create first PRP for auth system
+158: uv run ce prp generate auth-part1.md
+159: # Output: PRP-10 created, Linear issue BLA-25 created
+160: 
+161: # Create second PRP, join same issue
+162: uv run ce prp generate auth-part2.md --join-prp 10
+163: # Output: PRP-11 created, BLA-25 updated with PRP-11 info
+164: ```
+165: 
+166: ## Output Structure
+167: 
+168: The generated PRP will have:
+169: 
+170: ```markdown
+171: ---
+172: prp_id: TBD
+173: feature_name: User Authentication System
+174: status: pending
+175: created: 2025-10-13T00:00:00Z
+176: updated: 2025-10-13T00:00:00Z
+177: complexity: medium
+178: estimated_hours: 3-5
+179: dependencies: JWT Best Practices, FastAPI Security, pytest
+180: ---
+181: 
+182: # User Authentication System
+183: 
+184: ## 1. TL;DR
+185: **Objective**: ...
+186: **What**: ...
+187: **Why**: ...
+188: **Effort**: ...
+189: **Dependencies**: ...
+190: 
+191: ## 2. Context
+192: ### Background
+193: ...
+194: ### Constraints and Considerations
+195: ...
+196: ### Documentation References
+197: ...
+198: 
+199: ## 3. Implementation Steps
+200: ### Phase 1: Setup and Research (30 min)
+201: ...
+202: ### Phase 2: Core Implementation (2-3 hours)
+203: ...
+204: ### Phase 3: Testing and Validation (1-2 hours)
+205: ...
+206: 
+207: ## 4. Validation Gates
+208: ### Gate 1: Unit Tests Pass
+209: **Command**: `uv run pytest tests/unit/ -v`
+210: ...
+211: 
+212: ## 5. Testing Strategy
+213: ### Test Framework
+214: pytest
+215: ### Test Command
+216: ```bash
+217: uv run pytest tests/ -v
+218: ```
+219: ...
+220: 
+221: ## 6. Rollout Plan
+222: ### Phase 1: Development
+223: ...
+224: ### Phase 2: Review
+225: ...
+226: ### Phase 3: Deployment
+227: ...
+228: 
+229: ---
+230: 
+231: ## Research Findings
+232: ### Serena Codebase Analysis
+233: ...
+234: ### Documentation Sources
+235: ...
+236: ```
+237: 
+238: ## Graceful Degradation
+239: 
+240: The tool works even if MCP servers are unavailable:
+241: - **Without Serena**: No codebase research, but PRP still generated with user-provided examples
+242: - **Without Context7**: No library documentation fetched, but external links preserved
+243: - **Without Sequential Thinking**: Heuristic-based topic extraction used
+244: 
+245: ## Code Quality Standards Applied
+246: 
+247: All generated implementations follow:
+248: - **Function limits**: Target 50 lines max per function
+249: - **File limits**: Target 500 lines max per file
+250: - **KISS principle**: Simple solutions first, clear code over clever code
+251: - **Error handling**: Fast failure with actionable troubleshooting messages
+252: - **No silent failures**: Exceptions bubble up, never swallowed
+253: - **Real functionality**: No hardcoded success messages or fake results
+254: - **Naming conventions**: Business-focused (no version numbers or placeholders)
+255: 
+256: ## Tips
+257: 
+258: 1. **Be specific in FEATURE section**: Include clear acceptance criteria
+259: 2. **Provide relevant EXAMPLES**: Reference similar code in your codebase
+260: 3. **Link to DOCUMENTATION**: Include library docs and external resources
+261: 4. **Note OTHER CONSIDERATIONS**: Security concerns, edge cases, constraints
+262: 5. **Code quality alignment**: Generated code will follow project standards - review for consistency
+263: 
+264: ## Haiku-Ready PRP Checklist
+265: 
+266: Before executing a generated PRP, verify it's optimized for Claude 4.5 Haiku execution:
+267: 
+268: - [ ] **Goal**: Exact end state described, not vague improvement
+269: - [ ] **Output**: File paths and line numbers specified
+270: - [ ] **Limits**: Scope boundaries explicit (what's IN/OUT)
+271: - [ ] **Data**: All required context inline in PRP (no external references)
+272: - [ ] **Evaluation**: Validation gates are copy-paste bash commands
+273: - [ ] **Decisions**: All architectural choices made (Haiku executes, doesn't decide)
+274: - [ ] **Code Snippets**: Before/after code provided for major changes
+275: - [ ] **No Vague Language**: Check for "appropriate", "suitable", "handle appropriately"
+276: 
+277: **Reference**: See [PRP-23: Haiku-Optimized PRP Guidelines](../../PRPs/feature-requests/PRP-23-haiku-optimized-prp-guidelines.md) for detailed patterns.
+278: 
+279: ## Next Steps After Generation
+280: 
+281: 1. Review generated PRP for completeness
+282: 2. Fill in TBD fields (prp_id will be auto-assigned on execution)
+283: 3. Adjust estimated hours if needed
+284: 4. **Check Haiku-Ready checklist above**
+285: 5. Execute PRP using `/execute-prp <prp-file>`
+286: 
+287: ## Implementation Details
+288: 
+289: - **Module**: `tools/ce/generate.py`
+290: - **Tests**: `tools/tests/test_generate.py` (24 tests)
+291: - **PRP Reference**: `PRPs/feature-requests/PRP-3-command-automation.md`
+</file>
+
 <file path="tools/ce/cli_handlers.py">
    1: """CLI command handlers with delegation pattern.
    2: 
@@ -19850,528 +20165,329 @@ This section contains the contents of the repository's files.
  860: 
  861: # === UPDATE-CONTEXT COMMAND ===
  862: 
- 863: def cmd_update_context(args) -> int:
- 864:     """Execute update-context command.
- 865: 
- 866:     Workflow:
- 867:         1. Standard context sync (always runs)
- 868:         2. Drift remediation workflow (always runs)
- 869:            - Vanilla mode (no --remediate): asks approval before PRP generation
- 870:            - YOLO mode (--remediate): skips approval, auto-generates PRP
- 871:     """
- 872:     try:
- 873:         # Step 1: ALWAYS run standard context sync first
- 874:         target_prp = args.prp if hasattr(args, 'prp') and args.prp else None
- 875:         result = sync_context(target_prp=target_prp)
+ 863: def _should_rebuild_packages() -> bool:
+ 864:     """
+ 865:     Check if repomix packages should be rebuilt.
+ 866: 
+ 867:     Checks:
+ 868:     - .serena/memories/ modified (git status)
+ 869:     - examples/ modified (git status)
+ 870: 
+ 871:     Returns:
+ 872:         True if rebuild needed, False otherwise
+ 873:     """
+ 874:     import subprocess
+ 875:     from pathlib import Path
  876: 
- 877:         if args.json:
- 878:             print(format_output(result, True))
- 879:         else:
- 880:             print("✅ Context sync completed")
- 881:             print(f"   PRPs scanned: {result['prps_scanned']}")
- 882:             print(f"   PRPs updated: {result['prps_updated']}")
- 883:             print(f"   PRPs moved: {result['prps_moved']}")
- 884:             print(f"   CE updated: {result['ce_updated_count']}")
- 885:             print(f"   Serena updated: {result['serena_updated_count']}")
- 886: 
- 887:             if result['errors']:
- 888:                 print(f"\n⚠️  Errors encountered:")
- 889:                 for error in result['errors']:
- 890:                     print(f"   - {error}")
- 891: 
- 892:         # Step 2: ALWAYS run drift remediation workflow after sync
- 893:         from .update_context import remediate_drift_workflow
- 894: 
- 895:         yolo_mode = hasattr(args, 'remediate') and args.remediate
- 896:         remediate_result = remediate_drift_workflow(yolo_mode=yolo_mode)
- 897: 
- 898:         if args.json:
- 899:             # Combine both results in JSON output
- 900:             combined = {
- 901:                 "sync": result,
- 902:                 "remediation": remediate_result
- 903:             }
- 904:             print(format_output(combined, True))
- 905: 
- 906:         # Combine success status from both workflows
- 907:         success = result['success'] and remediate_result['success']
- 908:         return 0 if success else 1
- 909: 
- 910:     except Exception as e:
- 911:         print(f"❌ Update context failed: {str(e)}", file=sys.stderr)
- 912:         import traceback
- 913:         traceback.print_exc()
- 914:         return 1
- 915: 
- 916: 
- 917: def cmd_vacuum(args):
- 918:     """Handle vacuum command.
- 919: 
- 920:     Args:
- 921:         args: Parsed command-line arguments
- 922: 
- 923:     Returns:
- 924:         Exit code (0 = success, 1 = candidates found, 2 = error)
- 925:     """
- 926:     from pathlib import Path
- 927:     from .vacuum import VacuumCommand
- 928: 
- 929:     try:
- 930:         # Find project root (where .ce/ directory exists)
- 931:         current = Path.cwd()
- 932:         project_root = None
+ 877:     try:
+ 878:         # Check if in git repo
+ 879:         result = subprocess.run(
+ 880:             ["git", "rev-parse", "--is-inside-work-tree"],
+ 881:             capture_output=True,
+ 882:             text=True,
+ 883:             timeout=5
+ 884:         )
+ 885:         if result.returncode != 0:
+ 886:             return False
+ 887: 
+ 888:         # Check for modifications in framework directories
+ 889:         result = subprocess.run(
+ 890:             ["git", "status", "--porcelain", ".serena/memories/", "examples/"],
+ 891:             capture_output=True,
+ 892:             text=True,
+ 893:             timeout=5
+ 894:         )
+ 895: 
+ 896:         # If any modifications detected, rebuild
+ 897:         return bool(result.stdout.strip())
+ 898: 
+ 899:     except Exception:
+ 900:         # If check fails, don't rebuild (non-fatal)
+ 901:         return False
+ 902: 
+ 903: 
+ 904: def _rebuild_repomix_packages() -> bool:
+ 905:     """
+ 906:     Rebuild repomix packages by running build-and-distribute.sh.
+ 907: 
+ 908:     Returns:
+ 909:         True if rebuild successful, False otherwise
+ 910:     """
+ 911:     import subprocess
+ 912:     from pathlib import Path
+ 913:     import shutil
+ 914: 
+ 915:     try:
+ 916:         project_root = Path.cwd()
+ 917:         build_script = project_root / ".ce" / "build-and-distribute.sh"
+ 918: 
+ 919:         if not build_script.exists():
+ 920:             return False
+ 921: 
+ 922:         # Run build script
+ 923:         result = subprocess.run(
+ 924:             [str(build_script)],
+ 925:             cwd=project_root,
+ 926:             capture_output=True,
+ 927:             text=True,
+ 928:             timeout=60
+ 929:         )
+ 930: 
+ 931:         if result.returncode != 0:
+ 932:             return False
  933: 
- 934:         for parent in [current] + list(current.parents):
- 935:             if (parent / ".ce").exists():
- 936:                 project_root = parent
- 937:                 break
- 938: 
- 939:         if not project_root:
- 940:             print("❌ Error: Not in a Context Engineering project (.ce/ not found)", file=sys.stderr)
- 941:             return 2
- 942: 
- 943:         # Run vacuum command
- 944:         vacuum = VacuumCommand(project_root)
- 945:         return vacuum.run(
- 946:             dry_run=not (args.execute or args.force or args.auto or args.nuclear),
- 947:             min_confidence=args.min_confidence,
- 948:             exclude_strategies=args.exclude_strategies or [],
- 949:             execute=args.execute,
- 950:             force=args.force,
- 951:             auto=args.auto,
- 952:             nuclear=args.nuclear,
- 953:         )
- 954: 
- 955:     except KeyboardInterrupt:
- 956:         print("\n❌ Vacuum cancelled by user", file=sys.stderr)
- 957:         return 2
- 958:     except Exception as e:
- 959:         print(f"❌ Vacuum failed: {str(e)}", file=sys.stderr)
- 960:         import traceback
- 961:         traceback.print_exc()
- 962:         return 2
- 963: 
- 964: 
- 965: # === BLEND COMMAND ===
- 966: 
- 967: def cmd_blend(args) -> int:
- 968:     """Execute blend command."""
- 969:     return blend_run_blend(args)
- 970: 
- 971: 
- 972: # === CLEANUP COMMAND ===
- 973: 
- 974: def cmd_cleanup(args) -> int:
- 975:     """Execute cleanup command."""
- 976:     from pathlib import Path
- 977:     from .blending.cleanup import cleanup_legacy_dirs
- 978: 
- 979:     try:
- 980:         # Determine dry_run mode
- 981:         dry_run = not args.execute
- 982: 
- 983:         target_project = Path.cwd()
- 984: 
- 985:         status = cleanup_legacy_dirs(
- 986:             target_project=target_project,
- 987:             dry_run=dry_run
- 988:         )
+ 934:         # Copy packages from ce-32/builds/ to .ce/
+ 935:         builds_dir = project_root / "ce-32" / "builds"
+ 936:         ce_dir = project_root / ".ce"
+ 937: 
+ 938:         if builds_dir.exists():
+ 939:             for xml_file in builds_dir.glob("*.xml"):
+ 940:                 shutil.copy2(xml_file, ce_dir / xml_file.name)
+ 941: 
+ 942:         return True
+ 943: 
+ 944:     except Exception as e:
+ 945:         print(f"   Rebuild error: {str(e)}")
+ 946:         return False
+ 947: 
+ 948: 
+ 949: def cmd_update_context(args) -> int:
+ 950:     """Execute update-context command.
+ 951: 
+ 952:     Workflow:
+ 953:         1. Standard context sync (always runs)
+ 954:         2. Drift remediation workflow (always runs)
+ 955:            - Vanilla mode (no --remediate): asks approval before PRP generation
+ 956:            - YOLO mode (--remediate): skips approval, auto-generates PRP
+ 957:     """
+ 958:     try:
+ 959:         # Step 1: ALWAYS run standard context sync first
+ 960:         target_prp = args.prp if hasattr(args, 'prp') and args.prp else None
+ 961:         result = sync_context(target_prp=target_prp)
+ 962: 
+ 963:         if args.json:
+ 964:             print(format_output(result, True))
+ 965:         else:
+ 966:             print("✅ Context sync completed")
+ 967:             print(f"   PRPs scanned: {result['prps_scanned']}")
+ 968:             print(f"   PRPs updated: {result['prps_updated']}")
+ 969:             print(f"   PRPs moved: {result['prps_moved']}")
+ 970:             print(f"   CE updated: {result['ce_updated_count']}")
+ 971:             print(f"   Serena updated: {result['serena_updated_count']}")
+ 972: 
+ 973:             if result['errors']:
+ 974:                 print(f"\n⚠️  Errors encountered:")
+ 975:                 for error in result['errors']:
+ 976:                     print(f"   - {error}")
+ 977: 
+ 978:         # Step 1.5: Auto-rebuild repomix packages if framework files updated
+ 979:         if not args.json and _should_rebuild_packages():
+ 980:             print("\n📦 Framework files updated - rebuilding packages...")
+ 981:             rebuild_success = _rebuild_repomix_packages()
+ 982:             if rebuild_success:
+ 983:                 print("✅ Packages rebuilt successfully")
+ 984:             else:
+ 985:                 print("⚠️  Package rebuild failed (non-fatal)")
+ 986: 
+ 987:         # Step 2: ALWAYS run drift remediation workflow after sync
+ 988:         from .update_context import remediate_drift_workflow
  989: 
- 990:         # Exit with success if all cleanups succeeded
- 991:         if all(status.values()):
- 992:             return 0
- 993:         else:
- 994:             return 1
- 995: 
- 996:     except ValueError as e:
- 997:         # Migration incomplete
- 998:         print(f"❌ {e}", file=sys.stderr)
- 999:         return 2
-1000:     except Exception as e:
-1001:         print(f"❌ Cleanup failed: {e}", file=sys.stderr)
-1002:         import traceback
-1003:         traceback.print_exc()
-1004:         return 1
-1005: 
-1006: 
-1007: # === INIT-PROJECT COMMAND ===
-1008: 
-1009: def cmd_init_project(args) -> int:
-1010:     """Execute init-project command.
+ 990:         yolo_mode = hasattr(args, 'remediate') and args.remediate
+ 991:         remediate_result = remediate_drift_workflow(yolo_mode=yolo_mode)
+ 992: 
+ 993:         if args.json:
+ 994:             # Combine both results in JSON output
+ 995:             combined = {
+ 996:                 "sync": result,
+ 997:                 "remediation": remediate_result
+ 998:             }
+ 999:             print(format_output(combined, True))
+1000: 
+1001:         # Combine success status from both workflows
+1002:         success = result['success'] and remediate_result['success']
+1003:         return 0 if success else 1
+1004: 
+1005:     except Exception as e:
+1006:         print(f"❌ Update context failed: {str(e)}", file=sys.stderr)
+1007:         import traceback
+1008:         traceback.print_exc()
+1009:         return 1
+1010: 
 1011: 
-1012:     Orchestrates CE framework installation on target projects using ProjectInitializer.
-1013: 
-1014:     Args:
-1015:         args: Parsed command-line arguments with:
-1016:             - target_dir: Path to target project
-1017:             - dry_run: If True, show actions without executing
-1018:             - blend_only: If True, run only blend phase
-1019:             - phase: Which phase to run (extract, blend, initialize, verify, all)
-1020: 
-1021:     Returns:
-1022:         Exit code: 0 (success), 1 (user error), 2 (initialization error)
-1023:     """
-1024:     from pathlib import Path
-1025: 
-1026:     try:
-1027:         # Parse and resolve target directory to absolute path
-1028:         target_dir = Path(args.target_dir).resolve()
-1029: 
-1030:         # Validate target directory exists
-1031:         if not target_dir.exists():
-1032:             print(f"❌ Target directory not found: {target_dir}", file=sys.stderr)
-1033:             print(f"🔧 Troubleshooting: Verify path and ensure directory exists", file=sys.stderr)
-1034:             return 1
-1035: 
-1036:         # Create ProjectInitializer instance
-1037:         dry_run = getattr(args, 'dry_run', False)
-1038:         initializer = ProjectInitializer(target_dir, dry_run=dry_run)
-1039: 
-1040:         # Handle --blend-only flag (takes precedence over --phase)
-1041:         if getattr(args, 'blend_only', False):
-1042:             result = initializer.blend()
-1043: 
-1044:             if args.json:
-1045:                 print(format_output({"blend": result}, True))
-1046:             else:
-1047:                 print(result.get("message", "Blend phase completed"))
-1048:                 if result.get("stdout"):
-1049:                     print(result["stdout"])
-1050:                 if result.get("stderr"):
-1051:                     print(result["stderr"], file=sys.stderr)
-1052: 
-1053:             return 0 if result.get("success", False) else 2
-1054: 
-1055:         # Handle --phase flag or run all phases
-1056:         phase = getattr(args, 'phase', 'all')
-1057:         results = initializer.run(phase=phase)
+1012: def cmd_vacuum(args):
+1013:     """Handle vacuum command.
+1014: 
+1015:     Args:
+1016:         args: Parsed command-line arguments
+1017: 
+1018:     Returns:
+1019:         Exit code (0 = success, 1 = candidates found, 2 = error)
+1020:     """
+1021:     from pathlib import Path
+1022:     from .vacuum import VacuumCommand
+1023: 
+1024:     try:
+1025:         # Find project root (where .ce/ directory exists)
+1026:         current = Path.cwd()
+1027:         project_root = None
+1028: 
+1029:         for parent in [current] + list(current.parents):
+1030:             if (parent / ".ce").exists():
+1031:                 project_root = parent
+1032:                 break
+1033: 
+1034:         if not project_root:
+1035:             print("❌ Error: Not in a Context Engineering project (.ce/ not found)", file=sys.stderr)
+1036:             return 2
+1037: 
+1038:         # Run vacuum command
+1039:         vacuum = VacuumCommand(project_root)
+1040:         return vacuum.run(
+1041:             dry_run=not (args.execute or args.force or args.auto or args.nuclear),
+1042:             min_confidence=args.min_confidence,
+1043:             exclude_strategies=args.exclude_strategies or [],
+1044:             execute=args.execute,
+1045:             force=args.force,
+1046:             auto=args.auto,
+1047:             nuclear=args.nuclear,
+1048:         )
+1049: 
+1050:     except KeyboardInterrupt:
+1051:         print("\n❌ Vacuum cancelled by user", file=sys.stderr)
+1052:         return 2
+1053:     except Exception as e:
+1054:         print(f"❌ Vacuum failed: {str(e)}", file=sys.stderr)
+1055:         import traceback
+1056:         traceback.print_exc()
+1057:         return 2
 1058: 
-1059:         # Output results
-1060:         if getattr(args, 'json', False):
-1061:             print(format_output(results, True))
-1062:         else:
-1063:             for phase_name, result in results.items():
-1064:                 print(f"\n{'='*60}")
-1065:                 print(f"Phase: {phase_name}")
-1066:                 print(f"{'='*60}")
-1067:                 print(result.get("message", "No message"))
+1059: 
+1060: # === BLEND COMMAND ===
+1061: 
+1062: def cmd_blend(args) -> int:
+1063:     """Execute blend command."""
+1064:     return blend_run_blend(args)
+1065: 
+1066: 
+1067: # === CLEANUP COMMAND ===
 1068: 
-1069:                 # Print stdout/stderr if present
-1070:                 if result.get("stdout"):
-1071:                     print(result["stdout"])
-1072:                 if result.get("stderr"):
-1073:                     print(result["stderr"], file=sys.stderr)
-1074: 
-1075:         # Determine exit code based on all phases
-1076:         all_success = all(r.get("success", True) for r in results.values())
-1077:         return 0 if all_success else 2
-1078: 
-1079:     except ValueError as e:
-1080:         # Invalid phase or other user errors
-1081:         print(f"❌ {str(e)}", file=sys.stderr)
-1082:         print(f"🔧 Troubleshooting: Check command arguments and try again", file=sys.stderr)
-1083:         return 1
-1084:     except Exception as e:
-1085:         # Initialization errors from ProjectInitializer
-1086:         print(f"❌ Initialization failed: {str(e)}", file=sys.stderr)
-1087:         print(f"🔧 Troubleshooting: Check error details above and verify framework files exist", file=sys.stderr)
-1088:         import traceback
-1089:         traceback.print_exc()
-1090:         return 2
-</file>
-
-<file path=".claude/commands/generate-prp.md">
-  1: # /generate-prp - Generate PRP from INITIAL.md
-  2: 
-  3: Automates PRP (Product Requirements Prompt) generation from INITIAL.md with comprehensive codebase research, documentation fetching, and context synthesis.
-  4: 
-  5: ## Usage
-  6: 
-  7: ```
-  8: /generate-prp <initial-md-path>                        # Creates new PRP + Linear issue
-  9: /generate-prp <initial-md-path> --join-prp <prp-ref>  # Joins existing PRP's Linear issue
- 10: ```
- 11: 
- 12: **PRP Reference Formats**:
- 13: - Number: `--join-prp 12` (searches for PRP-12)
- 14: - ID: `--join-prp PRP-12`
- 15: - File path: `--join-prp PRPs/executed/PRP-12-feature.md`
- 16: 
- 17: ## What It Does
- 18: 
- 19: 1. **Parses INITIAL.md structure**:
- 20:    - Extracts FEATURE, EXAMPLES, DOCUMENTATION, OTHER CONSIDERATIONS sections
- 21:    - Validates required sections present (FEATURE and EXAMPLES are mandatory)
- 22: 
- 23: 2. **Proposes clean code**:
- 24:    - Follows project code quality standards (50-line functions, 500-line files)
- 25:    - Applies KISS principle (simple solutions, minimal dependencies)
- 26:    - Ensures no fishy fallbacks or silent error masking
- 27:    - All mocks marked with FIXME comments in production code
- 28:    - Includes actionable error messages with troubleshooting guidance
- 29: 
- 30: 3. **Researches codebase** (via Serena MCP):
- 31:    - Searches for similar patterns using keywords
- 32:    - Analyzes symbol structure and relationships
- 33:    - Infers test framework (pytest/unittest/jest)
- 34:    - Identifies architectural patterns
- 35: 
- 36: 3. **Fetches documentation** (via Context7 MCP):
- 37:    - Resolves library names to Context7 IDs
- 38:    - Fetches relevant library documentation
- 39:    - Extracts topics from feature description
- 40:    - Includes external documentation links
- 41: 
- 42: 4. **Generates complete PRP**:
- 43:    - Synthesizes 6-section PRP structure (TL;DR, Context, Implementation Steps, Validation Gates, Testing Strategy, Rollout Plan)
- 44:    - Creates YAML header with metadata
- 45:    - Auto-generates next PRP ID (PRP-N+1)
- 46:    - Validates completeness (ensures all required sections present)
- 47: 
- 48: 5. **Creates/Updates Linear issue**:
- 49:    - **Without --join-prp**: Creates new Linear issue with project defaults (from `.ce/linear-defaults.yml`)
- 50:    - **With --join-prp**: Updates existing PRP's Linear issue with new PRP information
- 51:    - Updates PRP YAML header with `issue: {ISSUE-ID}`
- 52: 
- 53: 6. **Outputs to**: `PRPs/feature-requests/PRP-{id}-{feature-slug}.md`
- 54: 
- 55: ## INITIAL.md Structure
- 56: 
- 57: Your INITIAL.md must follow this structure:
- 58: 
- 59: ```markdown
- 60: # Feature: <Feature Name>
- 61: 
- 62: ## FEATURE
- 63: <What to build - user story, acceptance criteria>
- 64: 
- 65: ## EXAMPLES
- 66: <Similar code patterns from codebase, inline code blocks, or file references>
- 67: 
- 68: ## DOCUMENTATION
- 69: <Library docs, API references, external resources>
- 70: 
- 71: ## OTHER CONSIDERATIONS
- 72: <Gotchas, constraints, security concerns, edge cases>
- 73: ```
- 74: 
- 75: **Required sections**: FEATURE, EXAMPLES
- 76: **Optional sections**: DOCUMENTATION, OTHER CONSIDERATIONS
- 77: 
- 78: ## Example
- 79: 
- 80: ```bash
- 81: # Create INITIAL.md
- 82: cat > feature-requests/user-auth/INITIAL.md << 'EOF'
- 83: # Feature: User Authentication System
- 84: 
- 85: ## FEATURE
- 86: Build JWT-based user authentication with:
- 87: - User registration with email/password
- 88: - Login with JWT token generation
- 89: - Token refresh mechanism
- 90: 
- 91: **Acceptance Criteria:**
- 92: 1. Users can register with valid email and password
- 93: 2. Login returns JWT access token and refresh token
- 94: 3. Protected endpoints validate JWT tokens
- 95: 
- 96: ## EXAMPLES
- 97: ```python
- 98: async def authenticate_user(email: str, password: str) -> dict:
- 99:     user = await db.users.find_one({"email": email})
-100:     if not user or not verify_password(password, user["password_hash"]):
-101:         raise AuthenticationError("Invalid credentials")
-102: 
-103:     access_token = create_jwt(user["id"], expires_in=3600)
-104:     return {"access_token": access_token}
-105: ```
-106: 
-107: See src/oauth.py:42-67 for similar async authentication pattern
-108: 
-109: ## DOCUMENTATION
-110: - [JWT Best Practices](https://jwt.io/introduction)
-111: - [FastAPI Security](https://fastapi.tiangolo.com/tutorial/security/)
-112: - "pytest" for testing
-113: - "bcrypt" for password hashing
-114: 
-115: ## OTHER CONSIDERATIONS
-116: **Security:**
-117: - Hash passwords with bcrypt (cost factor 12)
-118: - Rate limiting on login endpoint (5 attempts per 15 min)
-119: EOF
-120: 
-121: # Generate PRP
-122: cd tools
-123: uv run ce prp generate feature-requests/user-auth/INITIAL.md
-124: 
-125: # Output: PRPs/feature-requests/PRP-6-user-authentication-system.md
-126: ```
-127: 
-128: ## CLI Command
-129: 
-130: ```bash
-131: # Basic usage (creates new PRP + Linear issue)
-132: cd tools
-133: uv run ce prp generate <path-to-initial.md>
-134: 
-135: # Join existing PRP's Linear issue
-136: uv run ce prp generate <path-to-initial.md> --join-prp 12
-137: uv run ce prp generate <path-to-initial.md> --join-prp PRP-12
-138: uv run ce prp generate <path-to-initial.md> --join-prp PRPs/executed/PRP-12-feature.md
-139: 
-140: # Custom output directory
-141: uv run ce prp generate <path-to-initial.md> -o /custom/path
-142: 
-143: # JSON output (for scripting)
-144: uv run ce prp generate <path-to-initial.md> --json
-145: 
-146: # Combined options
-147: uv run ce prp generate <path-to-initial.md> --join-prp 12 --json
-148: ```
-149: 
-150: **Use Cases for --join-prp**:
-151: - **Related features**: Multiple PRPs implementing parts of same initiative
-152: - **Incremental work**: Breaking large PRP into smaller chunks
-153: - **Follow-up work**: Additional PRP for same feature area
-154: 
-155: **Example workflow**:
-156: ```bash
-157: # Create first PRP for auth system
-158: uv run ce prp generate auth-part1.md
-159: # Output: PRP-10 created, Linear issue BLA-25 created
-160: 
-161: # Create second PRP, join same issue
-162: uv run ce prp generate auth-part2.md --join-prp 10
-163: # Output: PRP-11 created, BLA-25 updated with PRP-11 info
-164: ```
-165: 
-166: ## Output Structure
-167: 
-168: The generated PRP will have:
-169: 
-170: ```markdown
-171: ---
-172: prp_id: TBD
-173: feature_name: User Authentication System
-174: status: pending
-175: created: 2025-10-13T00:00:00Z
-176: updated: 2025-10-13T00:00:00Z
-177: complexity: medium
-178: estimated_hours: 3-5
-179: dependencies: JWT Best Practices, FastAPI Security, pytest
-180: ---
-181: 
-182: # User Authentication System
-183: 
-184: ## 1. TL;DR
-185: **Objective**: ...
-186: **What**: ...
-187: **Why**: ...
-188: **Effort**: ...
-189: **Dependencies**: ...
-190: 
-191: ## 2. Context
-192: ### Background
-193: ...
-194: ### Constraints and Considerations
-195: ...
-196: ### Documentation References
-197: ...
-198: 
-199: ## 3. Implementation Steps
-200: ### Phase 1: Setup and Research (30 min)
-201: ...
-202: ### Phase 2: Core Implementation (2-3 hours)
-203: ...
-204: ### Phase 3: Testing and Validation (1-2 hours)
-205: ...
-206: 
-207: ## 4. Validation Gates
-208: ### Gate 1: Unit Tests Pass
-209: **Command**: `uv run pytest tests/unit/ -v`
-210: ...
-211: 
-212: ## 5. Testing Strategy
-213: ### Test Framework
-214: pytest
-215: ### Test Command
-216: ```bash
-217: uv run pytest tests/ -v
-218: ```
-219: ...
-220: 
-221: ## 6. Rollout Plan
-222: ### Phase 1: Development
-223: ...
-224: ### Phase 2: Review
-225: ...
-226: ### Phase 3: Deployment
-227: ...
-228: 
-229: ---
-230: 
-231: ## Research Findings
-232: ### Serena Codebase Analysis
-233: ...
-234: ### Documentation Sources
-235: ...
-236: ```
-237: 
-238: ## Graceful Degradation
-239: 
-240: The tool works even if MCP servers are unavailable:
-241: - **Without Serena**: No codebase research, but PRP still generated with user-provided examples
-242: - **Without Context7**: No library documentation fetched, but external links preserved
-243: - **Without Sequential Thinking**: Heuristic-based topic extraction used
-244: 
-245: ## Code Quality Standards Applied
-246: 
-247: All generated implementations follow:
-248: - **Function limits**: Target 50 lines max per function
-249: - **File limits**: Target 500 lines max per file
-250: - **KISS principle**: Simple solutions first, clear code over clever code
-251: - **Error handling**: Fast failure with actionable troubleshooting messages
-252: - **No silent failures**: Exceptions bubble up, never swallowed
-253: - **Real functionality**: No hardcoded success messages or fake results
-254: - **Naming conventions**: Business-focused (no version numbers or placeholders)
-255: 
-256: ## Tips
-257: 
-258: 1. **Be specific in FEATURE section**: Include clear acceptance criteria
-259: 2. **Provide relevant EXAMPLES**: Reference similar code in your codebase
-260: 3. **Link to DOCUMENTATION**: Include library docs and external resources
-261: 4. **Note OTHER CONSIDERATIONS**: Security concerns, edge cases, constraints
-262: 5. **Code quality alignment**: Generated code will follow project standards - review for consistency
-263: 
-264: ## Haiku-Ready PRP Checklist
-265: 
-266: Before executing a generated PRP, verify it's optimized for Claude 4.5 Haiku execution:
-267: 
-268: - [ ] **Goal**: Exact end state described, not vague improvement
-269: - [ ] **Output**: File paths and line numbers specified
-270: - [ ] **Limits**: Scope boundaries explicit (what's IN/OUT)
-271: - [ ] **Data**: All required context inline in PRP (no external references)
-272: - [ ] **Evaluation**: Validation gates are copy-paste bash commands
-273: - [ ] **Decisions**: All architectural choices made (Haiku executes, doesn't decide)
-274: - [ ] **Code Snippets**: Before/after code provided for major changes
-275: - [ ] **No Vague Language**: Check for "appropriate", "suitable", "handle appropriately"
-276: 
-277: **Reference**: See [PRP-23: Haiku-Optimized PRP Guidelines](../../PRPs/feature-requests/PRP-23-haiku-optimized-prp-guidelines.md) for detailed patterns.
-278: 
-279: ## Next Steps After Generation
-280: 
-281: 1. Review generated PRP for completeness
-282: 2. Fill in TBD fields (prp_id will be auto-assigned on execution)
-283: 3. Adjust estimated hours if needed
-284: 4. **Check Haiku-Ready checklist above**
-285: 5. Execute PRP using `/execute-prp <prp-file>`
-286: 
-287: ## Implementation Details
-288: 
-289: - **Module**: `tools/ce/generate.py`
-290: - **Tests**: `tools/tests/test_generate.py` (24 tests)
-291: - **PRP Reference**: `PRPs/feature-requests/PRP-3-command-automation.md`
+1069: def cmd_cleanup(args) -> int:
+1070:     """Execute cleanup command."""
+1071:     from pathlib import Path
+1072:     from .blending.cleanup import cleanup_legacy_dirs
+1073: 
+1074:     try:
+1075:         # Determine dry_run mode
+1076:         dry_run = not args.execute
+1077: 
+1078:         target_project = Path.cwd()
+1079: 
+1080:         status = cleanup_legacy_dirs(
+1081:             target_project=target_project,
+1082:             dry_run=dry_run
+1083:         )
+1084: 
+1085:         # Exit with success if all cleanups succeeded
+1086:         if all(status.values()):
+1087:             return 0
+1088:         else:
+1089:             return 1
+1090: 
+1091:     except ValueError as e:
+1092:         # Migration incomplete
+1093:         print(f"❌ {e}", file=sys.stderr)
+1094:         return 2
+1095:     except Exception as e:
+1096:         print(f"❌ Cleanup failed: {e}", file=sys.stderr)
+1097:         import traceback
+1098:         traceback.print_exc()
+1099:         return 1
+1100: 
+1101: 
+1102: # === INIT-PROJECT COMMAND ===
+1103: 
+1104: def cmd_init_project(args) -> int:
+1105:     """Execute init-project command.
+1106: 
+1107:     Orchestrates CE framework installation on target projects using ProjectInitializer.
+1108: 
+1109:     Args:
+1110:         args: Parsed command-line arguments with:
+1111:             - target_dir: Path to target project
+1112:             - dry_run: If True, show actions without executing
+1113:             - blend_only: If True, run only blend phase
+1114:             - phase: Which phase to run (extract, blend, initialize, verify, all)
+1115: 
+1116:     Returns:
+1117:         Exit code: 0 (success), 1 (user error), 2 (initialization error)
+1118:     """
+1119:     from pathlib import Path
+1120: 
+1121:     try:
+1122:         # Parse and resolve target directory to absolute path
+1123:         target_dir = Path(args.target_dir).resolve()
+1124: 
+1125:         # Validate target directory exists
+1126:         if not target_dir.exists():
+1127:             print(f"❌ Target directory not found: {target_dir}", file=sys.stderr)
+1128:             print(f"🔧 Troubleshooting: Verify path and ensure directory exists", file=sys.stderr)
+1129:             return 1
+1130: 
+1131:         # Create ProjectInitializer instance
+1132:         dry_run = getattr(args, 'dry_run', False)
+1133:         initializer = ProjectInitializer(target_dir, dry_run=dry_run)
+1134: 
+1135:         # Handle --blend-only flag (takes precedence over --phase)
+1136:         if getattr(args, 'blend_only', False):
+1137:             result = initializer.blend()
+1138: 
+1139:             if args.json:
+1140:                 print(format_output({"blend": result}, True))
+1141:             else:
+1142:                 print(result.get("message", "Blend phase completed"))
+1143:                 if result.get("stdout"):
+1144:                     print(result["stdout"])
+1145:                 if result.get("stderr"):
+1146:                     print(result["stderr"], file=sys.stderr)
+1147: 
+1148:             return 0 if result.get("success", False) else 2
+1149: 
+1150:         # Handle --phase flag or run all phases
+1151:         phase = getattr(args, 'phase', 'all')
+1152:         results = initializer.run(phase=phase)
+1153: 
+1154:         # Output results
+1155:         if getattr(args, 'json', False):
+1156:             print(format_output(results, True))
+1157:         else:
+1158:             for phase_name, result in results.items():
+1159:                 print(f"\n{'='*60}")
+1160:                 print(f"Phase: {phase_name}")
+1161:                 print(f"{'='*60}")
+1162:                 print(result.get("message", "No message"))
+1163: 
+1164:                 # Print stdout/stderr if present
+1165:                 if result.get("stdout"):
+1166:                     print(result["stdout"])
+1167:                 if result.get("stderr"):
+1168:                     print(result["stderr"], file=sys.stderr)
+1169: 
+1170:         # Determine exit code based on all phases
+1171:         all_success = all(r.get("success", True) for r in results.values())
+1172:         return 0 if all_success else 2
+1173: 
+1174:     except ValueError as e:
+1175:         # Invalid phase or other user errors
+1176:         print(f"❌ {str(e)}", file=sys.stderr)
+1177:         print(f"🔧 Troubleshooting: Check command arguments and try again", file=sys.stderr)
+1178:         return 1
+1179:     except Exception as e:
+1180:         # Initialization errors from ProjectInitializer
+1181:         print(f"❌ Initialization failed: {str(e)}", file=sys.stderr)
+1182:         print(f"🔧 Troubleshooting: Check error details above and verify framework files exist", file=sys.stderr)
+1183:         import traceback
+1184:         traceback.print_exc()
+1185:         return 2
 </file>
 
 <file path=".claude/settings.local.json">

@@ -4854,7 +4854,7 @@ This section contains the contents of the repository's files.
 <file path="examples/TOOL-USAGE-GUIDE.md">
   1: # Tool Usage Guide - Claude Code Native-First Philosophy
   2: 
-  3: **Last Updated**: 2025-10-29
+  3: **Last Updated**: 2025-11-06
   4: **Status**: Authoritative reference for tool selection
   5: **Replaces**: Obsolete MCP tool documentation
   6: 
@@ -5403,68 +5403,217 @@ This section contains the contents of the repository's files.
 549: 
 550: ---
 551: 
-552: ## Troubleshooting
+552: ## CE Framework Commands
 553: 
-554: ### Issue: "Tool not found" error
+554: The Context Engineering framework provides specialized commands for framework management. These are project-specific tools, not generic utilities.
 555: 
-556: **Cause**: Tool is in deny list or MCP server disconnected.
+556: ### When to Use CE Commands
 557: 
-558: **Fix**:
-559: 
-560: 1. Check `.claude/settings.local.json` permissions.deny
-561: 2. Run `mcp__syntropy__healthcheck(detailed=True)`
-562: 3. Reconnect MCP: `/mcp` (in main repo, not worktrees)
-563: 
-564: ### Issue: "Permission denied" for Bash command
-565: 
-566: **Cause**: Command not in allow list.
-567: 
-568: **Fix**:
+558: Use CE commands for:
+559: - **Framework installation**: `ce init-project`
+560: - **Content merging**: `ce blend`
+561: - **Context updates**: `ce update-context`
+562: - **Validation**: `ce validate`
+563: - **Cleanup**: `ce vacuum`
+564: 
+565: **Do NOT** use CE commands for:
+566: - Generic file operations (use native tools)
+567: - General git operations (use Bash(git:*))
+568: - External web requests (use WebFetch/WebSearch)
 569: 
-570: 1. Check if command matches allow pattern: `Bash(git:*)`, `Bash(uv run:*)`, etc.
-571: 2. If needed frequently, add to allow list in settings
-572: 3. Temporary: User can approve via prompt
+570: ---
+571: 
+572: ### ce init-project
 573: 
-574: ### Issue: MCP tool slow or timing out
+574: **Purpose**: Initialize CE Framework in target project
 575: 
-576: **Cause**: Server connectivity issue or large operation.
-577: 
-578: **Fix**:
-579: 
-580: 1. Check server health: `mcp__syntropy__healthcheck()`
-581: 2. Increase timeout if supported
-582: 3. Consider native alternative (e.g., Grep instead of repomix)
-583: 
-584: ### Issue: Serena "symbol not found"
-585: 
-586: **Cause**: Incorrect name_path format or file not indexed.
-587: 
-588: **Fix**:
-589: 
-590: 1. Use `serena_get_symbols_overview` to list all symbols in file
-591: 2. Ensure format: `ClassName.method_name` or `function_name`
-592: 3. Check relative_path is correct from project root
+576: **Usage**:
+577: ```bash
+578: cd tools
+579: uv run ce init-project ~/projects/target-app
+580: 
+581: # With flags
+582: uv run ce init-project ~/projects/app --dry-run
+583: uv run ce init-project ~/projects/app --phase extract
+584: uv run ce init-project ~/projects/app --blend-only
+585: ```
+586: 
+587: **When to use**:
+588: - Setting up CE framework in new project
+589: - Upgrading existing CE installation
+590: - Re-initializing after major changes
+591: 
+592: **Output**: 4-phase pipeline (extract → blend → initialize → verify)
 593: 
-594: ---
+594: **See**: [ce-init-project-usage.md](ce-init-project-usage.md) for comprehensive guide
 595: 
-596: ## See Also
+596: ---
 597: 
-598: **Code Examples**:
+598: ### ce blend
 599: 
-600: - `tools/ce/examples/syntropy/` - MCP tool usage patterns in Python
-601: - `.serena/memories/` - Serena memory management examples and patterns
-602: 
-603: **Related Documentation**:
-604: 
-605: - `CLAUDE.md` - Project guide and quick commands
-606: - `TOOL-PERMISSION-LOCKDOWN-PLAN.md` - Detailed rationale for tool deny list
-607: - `PRPs/executed/PRP-B-tool-usage-guide.md` - PRP that created this guide
-608: 
-609: ---
-610: 
-611: **End of Guide**
-612: 
-613: For questions or suggestions, update this guide via PR following Context Engineering framework.
+600: **Purpose**: Merge CE framework files with target project customizations
+601: 
+602: **Usage**:
+603: ```bash
+604: cd tools
+605: uv run ce blend --all
+606: uv run ce blend --claude-md --memories
+607: uv run ce blend --all --target-dir ~/projects/app
+608: ```
+609: 
+610: **When to use**:
+611: - After updating framework files (memories, examples)
+612: - Re-merging user customizations
+613: - Upgrading framework content
+614: 
+615: **Domains**: CLAUDE.md, memories, examples, settings, commands, PRPs
+616: 
+617: **See**: [ce-blend-usage.md](ce-blend-usage.md) for comprehensive guide
+618: 
+619: ---
+620: 
+621: ### ce update-context
+622: 
+623: **Purpose**: Sync PRPs with codebase implementation state
+624: 
+625: **Usage**:
+626: ```bash
+627: cd tools
+628: uv run ce update-context
+629: uv run ce update-context --prp PRPs/executed/PRP-34.1.1-core-blending-framework.md
+630: ```
+631: 
+632: **When to use**:
+633: - After completing PRP implementation
+634: - Weekly system hygiene
+635: - Detecting pattern drift
+636: 
+637: **Auto-features**:
+638: - Rebuilds repomix packages if framework files changed
+639: - Detects drift violations
+640: - Updates YAML headers
+641: 
+642: **See**: `.claude/commands/update-context.md`
+643: 
+644: ---
+645: 
+646: ### ce validate
+647: 
+648: **Purpose**: Validate project structure and framework files
+649: 
+650: **Usage**:
+651: ```bash
+652: cd tools
+653: uv run ce validate --level all
+654: uv run ce validate --level 4  # Pattern conformance
+655: ```
+656: 
+657: **Levels**:
+658: - L1: File structure
+659: - L2: YAML headers
+660: - L3: Content validation
+661: - L4: Pattern conformance
+662: 
+663: **See**: `.serena/memories/l4-validation-usage.md`
+664: 
+665: ---
+666: 
+667: ### ce vacuum
+668: 
+669: **Purpose**: Clean up temporary files and obsolete artifacts
+670: 
+671: **Usage**:
+672: ```bash
+673: cd tools
+674: uv run ce vacuum                  # Dry-run (report only)
+675: uv run ce vacuum --execute        # Delete temp files
+676: uv run ce vacuum --auto           # Delete temp + obsolete
+677: ```
+678: 
+679: **See**: `.claude/commands/vacuum.md`
+680: 
+681: ---
+682: 
+683: ### CE Command Patterns
+684: 
+685: **✅ CORRECT**:
+686: ```python
+687: # Use ce commands for framework operations
+688: Bash(command="cd tools && uv run ce blend --all")
+689: Bash(command="cd tools && uv run ce init-project ~/projects/app")
+690: ```
+691: 
+692: **❌ WRONG**:
+693: ```python
+694: # Don't use ce commands for generic operations
+695: Bash(command="ce blend somefile.txt")  # Blend is not for arbitrary files
+696: Bash(command="ce init-project .")      # Must run from tools/ directory
+697: ```
+698: 
+699: ---
+700: 
+701: ## Troubleshooting
+702: 
+703: ### Issue: "Tool not found" error
+704: 
+705: **Cause**: Tool is in deny list or MCP server disconnected.
+706: 
+707: **Fix**:
+708: 
+709: 1. Check `.claude/settings.local.json` permissions.deny
+710: 2. Run `mcp__syntropy__healthcheck(detailed=True)`
+711: 3. Reconnect MCP: `/mcp` (in main repo, not worktrees)
+712: 
+713: ### Issue: "Permission denied" for Bash command
+714: 
+715: **Cause**: Command not in allow list.
+716: 
+717: **Fix**:
+718: 
+719: 1. Check if command matches allow pattern: `Bash(git:*)`, `Bash(uv run:*)`, etc.
+720: 2. If needed frequently, add to allow list in settings
+721: 3. Temporary: User can approve via prompt
+722: 
+723: ### Issue: MCP tool slow or timing out
+724: 
+725: **Cause**: Server connectivity issue or large operation.
+726: 
+727: **Fix**:
+728: 
+729: 1. Check server health: `mcp__syntropy__healthcheck()`
+730: 2. Increase timeout if supported
+731: 3. Consider native alternative (e.g., Grep instead of repomix)
+732: 
+733: ### Issue: Serena "symbol not found"
+734: 
+735: **Cause**: Incorrect name_path format or file not indexed.
+736: 
+737: **Fix**:
+738: 
+739: 1. Use `serena_get_symbols_overview` to list all symbols in file
+740: 2. Ensure format: `ClassName.method_name` or `function_name`
+741: 3. Check relative_path is correct from project root
+742: 
+743: ---
+744: 
+745: ## See Also
+746: 
+747: **Code Examples**:
+748: 
+749: - `tools/ce/examples/syntropy/` - MCP tool usage patterns in Python
+750: - `.serena/memories/` - Serena memory management examples and patterns
+751: 
+752: **Related Documentation**:
+753: 
+754: - `CLAUDE.md` - Project guide and quick commands
+755: - `TOOL-PERMISSION-LOCKDOWN-PLAN.md` - Detailed rationale for tool deny list
+756: - `PRPs/executed/PRP-B-tool-usage-guide.md` - PRP that created this guide
+757: 
+758: ---
+759: 
+760: **End of Guide**
+761: 
+762: For questions or suggestions, update this guide via PR following Context Engineering framework.
 </file>
 
 <file path="examples/INITIALIZATION.md">
