@@ -1,6 +1,6 @@
 # Tool Usage Guide - Claude Code Native-First Philosophy
 
-**Last Updated**: 2025-10-29
+**Last Updated**: 2025-11-06
 **Status**: Authoritative reference for tool selection
 **Replaces**: Obsolete MCP tool documentation
 
@@ -546,6 +546,155 @@ Use MCP tools when you need external service integration (Linear, Context7) not 
 ### 6. Validate with Healthcheck
 
 Periodically run `mcp__syntropy__healthcheck(detailed=True)` to ensure all servers are connected.
+
+---
+
+## CE Framework Commands
+
+The Context Engineering framework provides specialized commands for framework management. These are project-specific tools, not generic utilities.
+
+### When to Use CE Commands
+
+Use CE commands for:
+- **Framework installation**: `ce init-project`
+- **Content merging**: `ce blend`
+- **Context updates**: `ce update-context`
+- **Validation**: `ce validate`
+- **Cleanup**: `ce vacuum`
+
+**Do NOT** use CE commands for:
+- Generic file operations (use native tools)
+- General git operations (use Bash(git:*))
+- External web requests (use WebFetch/WebSearch)
+
+---
+
+### ce init-project
+
+**Purpose**: Initialize CE Framework in target project
+
+**Usage**:
+```bash
+cd tools
+uv run ce init-project ~/projects/target-app
+
+# With flags
+uv run ce init-project ~/projects/app --dry-run
+uv run ce init-project ~/projects/app --phase extract
+uv run ce init-project ~/projects/app --blend-only
+```
+
+**When to use**:
+- Setting up CE framework in new project
+- Upgrading existing CE installation
+- Re-initializing after major changes
+
+**Output**: 4-phase pipeline (extract → blend → initialize → verify)
+
+**See**: [ce-init-project-usage.md](ce-init-project-usage.md) for comprehensive guide
+
+---
+
+### ce blend
+
+**Purpose**: Merge CE framework files with target project customizations
+
+**Usage**:
+```bash
+cd tools
+uv run ce blend --all
+uv run ce blend --claude-md --memories
+uv run ce blend --all --target-dir ~/projects/app
+```
+
+**When to use**:
+- After updating framework files (memories, examples)
+- Re-merging user customizations
+- Upgrading framework content
+
+**Domains**: CLAUDE.md, memories, examples, settings, commands, PRPs
+
+**See**: [ce-blend-usage.md](ce-blend-usage.md) for comprehensive guide
+
+---
+
+### ce update-context
+
+**Purpose**: Sync PRPs with codebase implementation state
+
+**Usage**:
+```bash
+cd tools
+uv run ce update-context
+uv run ce update-context --prp PRPs/executed/PRP-34.1.1-core-blending-framework.md
+```
+
+**When to use**:
+- After completing PRP implementation
+- Weekly system hygiene
+- Detecting pattern drift
+
+**Auto-features**:
+- Rebuilds repomix packages if framework files changed
+- Detects drift violations
+- Updates YAML headers
+
+**See**: `.claude/commands/update-context.md`
+
+---
+
+### ce validate
+
+**Purpose**: Validate project structure and framework files
+
+**Usage**:
+```bash
+cd tools
+uv run ce validate --level all
+uv run ce validate --level 4  # Pattern conformance
+```
+
+**Levels**:
+- L1: File structure
+- L2: YAML headers
+- L3: Content validation
+- L4: Pattern conformance
+
+**See**: `.serena/memories/l4-validation-usage.md`
+
+---
+
+### ce vacuum
+
+**Purpose**: Clean up temporary files and obsolete artifacts
+
+**Usage**:
+```bash
+cd tools
+uv run ce vacuum                  # Dry-run (report only)
+uv run ce vacuum --execute        # Delete temp files
+uv run ce vacuum --auto           # Delete temp + obsolete
+```
+
+**See**: `.claude/commands/vacuum.md`
+
+---
+
+### CE Command Patterns
+
+**✅ CORRECT**:
+```python
+# Use ce commands for framework operations
+Bash(command="cd tools && uv run ce blend --all")
+Bash(command="cd tools && uv run ce init-project ~/projects/app")
+```
+
+**❌ WRONG**:
+```python
+# Don't use ce commands for generic operations
+Bash(command="ce blend somefile.txt")  # Blend is not for arbitrary files
+Bash(command="ce init-project .")      # Must run from tools/ directory
+```
 
 ---
 
