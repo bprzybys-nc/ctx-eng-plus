@@ -1,16 +1,21 @@
 ---
-prp_id: 36.1.1
-feature_name: CE Framework Project Initializer - Core Module
-status: pending
-created: 2025-11-06T11:18:47.779859
-updated: 2025-11-06T11:18:47.779859
 complexity: medium
-estimated_hours: 2-3
+context_sync:
+  ce_updated: true
+  last_sync: '2025-11-06T10:53:07.198803+00:00'
+  serena_updated: false
+created: 2025-11-06 11:18:47.779859
 dependencies: repomix_unpack.py, blend tool (PRP-34), uv
-stage: 1
+estimated_hours: 2-3
 execution_order: 1
-merge_order: 1
+feature_name: CE Framework Project Initializer - Core Module
 issue: TBD
+merge_order: 1
+prp_id: 36.1.1
+stage: 1
+status: pending
+updated: '2025-11-06T10:53:07.198973+00:00'
+updated_by: update-context-command
 ---
 
 # CE Framework Project Initializer - Core Module
