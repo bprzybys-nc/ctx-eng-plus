@@ -70,10 +70,10 @@ def test_blending_orchestrator_registers_strategies():
     orchestrator = BlendingOrchestrator(config, dry_run=True)
 
     strategy = MockBlendStrategy()
-    orchestrator.register_strategy(strategy)
+    orchestrator.register_strategy("mock", strategy)
 
-    assert len(orchestrator.strategies) == 1
-    assert orchestrator.strategies[0] == strategy
+    assert len(orchestrator.strategies) >= 1  # Default strategies + mock
+    assert orchestrator.strategies["mock"] == strategy
 
 
 def test_blending_orchestrator_run_phase_validates_phase():
@@ -86,12 +86,12 @@ def test_blending_orchestrator_run_phase_validates_phase():
 
 
 def test_blending_orchestrator_phase_stubs():
-    """Test phase methods exist (stubs for subsequent PRPs)."""
+    """Test phase methods are fully implemented."""
     config = {"domains": {}}
     orchestrator = BlendingOrchestrator(config, dry_run=True)
 
-    # All phase stubs should return dict
+    # All phases should return dict with phase info
     result = orchestrator.run_phase("detect", Path("."))
     assert isinstance(result, dict)
     assert result["phase"] == "detect"
-    assert result["implemented"] == False
+    assert result["implemented"] == True  # Detection phase is fully implemented
