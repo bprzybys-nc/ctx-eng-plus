@@ -35,13 +35,13 @@ def parse_repomix_xml(xml_content: str) -> List[Tuple[str, str]]:
         file_path = match.group(1)
         content = match.group(2)
 
-        # Remove line number prefix (format: "   123→")
+        # Remove line number prefix (format: " 1: " or "   123→")
         # Each line in repomix XML has line numbers
         lines = content.split('\n')
         cleaned_lines = []
         for line in lines:
-            # Match line number format: spaces + number + →
-            cleaned = re.sub(r'^\s*\d+→', '', line)
+            # Match line number format: spaces + number + (→ or : + space)
+            cleaned = re.sub(r'^\s*\d+[→:]\s*', '', line)
             cleaned_lines.append(cleaned)
 
         cleaned_content = '\n'.join(cleaned_lines)

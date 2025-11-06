@@ -105,13 +105,17 @@ class ProjectInitializer:
             status["message"] = f"[DRY-RUN] Would extract to {self.ce_dir}"
             return status
 
-        # Check for existing .ce/ directory
+        # Check for existing .ce/ directory - rename to .ce.old
+        ce_old_dir = self.target_project / ".ce.old"
+        renamed_existing = False
         if self.ce_dir.exists():
-            status["message"] = (
-                f"⚠️  Warning: .ce/ directory already exists at {self.ce_dir}\n"
-                f"🔧 Backup and remove existing directory, or use --force flag"
-            )
-            return status
+            # Remove old .ce.old if it exists
+            if ce_old_dir.exists():
+                shutil.rmtree(ce_old_dir)
+
+            # Rename .ce to .ce.old
+            shutil.move(str(self.ce_dir), str(ce_old_dir))
+            renamed_existing = True
 
         try:
             # Import repomix_unpack module
@@ -155,7 +159,16 @@ class ProjectInitializer:
 
             status["success"] = True
             status["files_extracted"] = files_extracted
-            status["message"] = f"✅ Extracted {files_extracted} files to {self.ce_dir}"
+
+            # Include rename message if applicable
+            if renamed_existing:
+                status["message"] = (
+                    f"ℹ️  Renamed existing .ce/ to .ce.old/\n"
+                    f"💡 .ce.old/ will be included as additional context source during blend\n"
+                    f"✅ Extracted {files_extracted} files to {self.ce_dir}"
+                )
+            else:
+                status["message"] = f"✅ Extracted {files_extracted} files to {self.ce_dir}"
 
         except Exception as e:
             status["message"] = f"❌ Extraction failed: {str(e)}\n🔧 Check error details above"
@@ -198,7 +211,15 @@ class ProjectInitializer:
                     f"🔧 Check blend tool output:\n{result.stderr}"
                 )
             else:
-                status["message"] = "✅ Blend phase completed"
+                # Check if .ce.old exists to mention it
+                ce_old_dir = self.target_project / ".ce.old"
+                if ce_old_dir.exists():
+                    status["message"] = (
+                        "✅ Blend phase completed\n"
+                        "💡 Note: .ce.old/ detected - blend tool will include it as additional source"
+                    )
+                else:
+                    status["message"] = "✅ Blend phase completed"
 
         except subprocess.TimeoutExpired:
             status["message"] = "❌ Blend phase timed out (120s limit)\n🔧 Check for hanging processes"
