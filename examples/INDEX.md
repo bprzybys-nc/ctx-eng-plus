@@ -36,8 +36,10 @@ Comprehensive catalog of all Context Engineering framework examples, organized b
 | Git Message Rules | Pattern | Git | No | Git commit message formatting and convention rules (ctx-eng-plus specific) | [patterns/git-message-rules.md](patterns/git-message-rules.md) |
 | Mock Marking Pattern | Pattern | Testing | Yes | Mark mocks with FIXME comments for tracking temporary test code | [patterns/mocks-marking.md](patterns/mocks-marking.md) |
 | **GUIDES** | | | | | |
-| Tool Usage Guide | Guide | Tools | Yes | Complete tool selection guide with native-first philosophy, decision trees and examples | [TOOL-USAGE-GUIDE.md](TOOL-USAGE-GUIDE.md) |
+| Tool Usage Guide | Guide | Tools | Yes | Complete tool selection guide with native-first philosophy, decision trees and examples. Updated 2025-11-06 with CE Framework Commands section | [TOOL-USAGE-GUIDE.md](TOOL-USAGE-GUIDE.md) |
 | PRP Decomposition Patterns | Guide | PRP | Yes | Patterns for breaking down large features into manageable PRPs | [prp-decomposition-patterns.md](prp-decomposition-patterns.md) |
+| CE Blend Command Usage | Guide | Commands | Yes | Complete guide for ce blend command (PRP-34): 4-phase pipeline, 6 domain strategies, 9 scenarios, troubleshooting | [ce-blend-usage.md](ce-blend-usage.md) |
+| CE Init-Project Command Usage | Guide | Commands | Yes | Complete guide for ce init-project command (PRP-36): 4-phase pipeline, 4 scenarios, error handling for 5 known issues, performance metrics | [ce-init-project-usage.md](ce-init-project-usage.md) |
 | **REFERENCE** | | | | | |
 | L4 Validation Example | Reference | Validation | No | Level 4 pattern conformance validation example (ctx-eng-plus specific) | [l4-validation-example.md](l4-validation-example.md) |
 | Linear Integration Example | Reference | MCP | Yes | Linear MCP integration example with configuration defaults | [linear-integration-example.md](linear-integration-example.md) |
@@ -52,12 +54,12 @@ Comprehensive catalog of all Context Engineering framework examples, organized b
 
 ### Examples & Documentation
 
-- **Total Examples**: 23 files
+- **Total Examples**: 25 files (+2 new command guides)
 - **Framework Initialization**: 6 (Main guide + 4 migration workflows + integration summary)
 - **Templates**: 1 (PRP-0-CONTEXT-ENGINEERING.md)
 - **Slash Commands**: 5 (Reference - actual commands in `.claude/commands/`)
 - **Patterns**: 4 (Git, testing, context, PRP)
-- **Guides**: 2 (Tools, PRP decomposition)
+- **Guides**: 4 (Tools, PRP decomposition, **ce blend**, **ce init-project**) - NEW
 - **Reference**: 6 (Validation, diagrams, standards, Syntropy overview)
 - **Model**: 1 (System architecture)
 
