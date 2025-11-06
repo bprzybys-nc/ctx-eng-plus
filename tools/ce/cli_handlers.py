@@ -31,6 +31,13 @@ from .update_context import sync_context
 from .blend import run_blend as blend_run_blend
 from .blending.cleanup import cleanup_legacy_dirs
 
+# Conditional import for init_project (implemented in PRP-36.2.2)
+try:
+    from .init_project import ProjectInitializer
+    _HAS_INIT_PROJECT = True
+except ImportError:
+    _HAS_INIT_PROJECT = False
+
 
 def format_output(data: Dict[str, Any], as_json: bool = False) -> str:
     """Format output for display.
@@ -995,3 +1002,89 @@ def cmd_cleanup(args) -> int:
         import traceback
         traceback.print_exc()
         return 1
+
+
+# === INIT-PROJECT COMMAND ===
+
+def cmd_init_project(args) -> int:
+    """Execute init-project command.
+
+    Orchestrates CE framework installation on target projects using ProjectInitializer.
+
+    Args:
+        args: Parsed command-line arguments with:
+            - target_dir: Path to target project
+            - dry_run: If True, show actions without executing
+            - blend_only: If True, run only blend phase
+            - phase: Which phase to run (extract, blend, initialize, verify, all)
+
+    Returns:
+        Exit code: 0 (success), 1 (user error), 2 (initialization error)
+    """
+    from pathlib import Path
+
+    try:
+        # Parse and resolve target directory to absolute path
+        target_dir = Path(args.target_dir).resolve()
+
+        # Validate target directory exists
+        if not target_dir.exists():
+            print(f"❌ Target directory not found: {target_dir}", file=sys.stderr)
+            print(f"🔧 Troubleshooting: Verify path and ensure directory exists", file=sys.stderr)
+            return 1
+
+        # Create ProjectInitializer instance
+        dry_run = getattr(args, 'dry_run', False)
+        initializer = ProjectInitializer(target_dir, dry_run=dry_run)
+
+        # Handle --blend-only flag (takes precedence over --phase)
+        if getattr(args, 'blend_only', False):
+            result = initializer.blend()
+
+            if args.json:
+                print(format_output({"blend": result}, True))
+            else:
+                print(result.get("message", "Blend phase completed"))
+                if result.get("stdout"):
+                    print(result["stdout"])
+                if result.get("stderr"):
+                    print(result["stderr"], file=sys.stderr)
+
+            return 0 if result.get("success", False) else 2
+
+        # Handle --phase flag or run all phases
+        phase = getattr(args, 'phase', 'all')
+        results = initializer.run(phase=phase)
+
+        # Output results
+        if args.json:
+            print(format_output(results, True))
+        else:
+            for phase_name, result in results.items():
+                print(f"\n{'='*60}")
+                print(f"Phase: {phase_name}")
+                print(f"{'='*60}")
+                print(result.get("message", "No message"))
+
+                # Print stdout/stderr if present
+                if result.get("stdout"):
+                    print(result["stdout"])
+                if result.get("stderr"):
+                    print(result["stderr"], file=sys.stderr)
+
+        # Determine exit code based on all phases
+        all_success = all(r.get("success", True) for r in results.values())
+        return 0 if all_success else 2
+
+    except ValueError as e:
+        # Invalid phase or other user errors
+        print(f"❌ {str(e)}", file=sys.stderr)
+        print(f"🔧 Troubleshooting: Check command arguments and try again", file=sys.stderr)
+        return 1
+    except Exception as e:
+        # Initialization errors from ProjectInitializer
+        print(f"❌ Initialization failed: {str(e)}", file=sys.stderr)
+        print(f"🔧 Troubleshooting: Check error details above and verify framework files exist", file=sys.stderr)
+        import traceback
+        traceback.print_exc()
+        return 2

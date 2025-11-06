@@ -26,6 +26,7 @@ from .cli_handlers import (
     cmd_vacuum,
     cmd_blend,
     cmd_cleanup,
+    cmd_init_project,
 )
 
 
@@ -491,6 +492,32 @@ Examples:
     # Debugging
     blend_parser.add_argument('-v', '--verbose', action='store_true', help='Verbose output')
 
+    # === INIT-PROJECT COMMAND ===
+    init_project_parser = subparsers.add_parser(
+        "init-project",
+        help="Initialize CE Framework in a target project"
+    )
+    init_project_parser.add_argument(
+        "target_dir",
+        help="Target directory for CE Framework initialization"
+    )
+    init_project_parser.add_argument(
+        "--dry-run",
+        action="store_true",
+        help="Show what would be done without executing"
+    )
+    init_project_parser.add_argument(
+        "--phase",
+        choices=["extract", "blend", "initialize", "verify", "all"],
+        default="all",
+        help="Run specific initialization phase (default: all)"
+    )
+    init_project_parser.add_argument(
+        "--blend-only",
+        action="store_true",
+        help="Skip extraction phase (for re-initialization)"
+    )
+
     # Parse arguments
     args = parser.parse_args()
 
@@ -535,6 +562,8 @@ Examples:
         return cmd_cleanup(args)
     elif args.command == "blend":
         return cmd_blend(args)
+    elif args.command == "init-project":
+        return cmd_init_project(args)
     else:
         print(f"Unknown command: {args.command}", file=sys.stderr)
         return 1
