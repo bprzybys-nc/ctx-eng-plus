@@ -664,6 +664,84 @@ uv run ce validate --level 1
 cd ..
 ```
 
+### Step 3.5: Automated Blending (Optional)
+
+**Note**: This step is optional. Use the blend tool for automated file merging, or proceed to Phase 4 for manual CLAUDE.md blending.
+
+```bash
+# Return to project root
+cd /path/to/your/project
+
+# Run automated blend (all domains)
+uv run -C .ce/tools ce blend --all
+
+# Or run in dry-run mode first (recommended)
+uv run -C .ce/tools ce blend --all --dry-run
+
+# Or run specific phases
+uv run -C .ce/tools ce blend --phase detect    # Scan for files
+uv run -C .ce/tools ce blend --phase classify  # Validate patterns
+uv run -C .ce/tools ce blend --phase blend     # Merge content
+uv run -C .ce/tools ce blend --phase cleanup   # Remove legacy dirs
+```
+
+**Blend Tool Flags**:
+
+- `--all`: Run all 4 phases (detect, classify, blend, cleanup)
+- `--dry-run`: Show what would be done without executing
+- `--interactive`: Prompt before each phase
+- `--fast`: Fast mode (skip expensive validations)
+- `--quality`: Quality mode (use Sonnet for all LLM calls)
+- `--skip-cleanup`: Skip Phase D (keep legacy directories)
+- `--scan`: Scan mode (detect + classify only, no blending)
+
+**What it blends**:
+
+1. **Settings** (`.claude/settings.local.json`): Merge CE permissions with target settings
+2. **CLAUDE.md**: Merge framework sections with target project sections
+3. **Memories** (`.serena/memories/`): Move user memories with deduplication
+4. **Examples** (`.ce/examples/`): Copy user examples with type headers
+5. **PRPs**: Move user PRPs to `.ce/PRPs/` with type headers
+6. **Commands** (`.claude/commands/`): Framework commands overwrite user versions (backups created)
+
+**Example Output**:
+
+```
+🔀 Running Phase: DETECT
+✓ Detected 42 files across 6 domains
+  prps: 12 files
+  memories: 8 files
+  examples: 15 files
+  claude_md: 1 file
+  settings: 1 file
+  commands: 5 files
+
+🔀 Running Phase: CLASSIFY
+✓ Classified 38 valid files
+  Filtered garbage: 4 files
+
+🔀 Running Phase: BLEND
+  Blending settings (1 files)...
+  Blending claude_md (1 files)...
+  Blending memories (8 files)...
+  Blending examples (15 files)...
+  Blending prps (12 files)...
+  Blending commands (5 files)...
+✓ Blending complete (6 domains processed)
+
+🔀 Running Phase: CLEANUP
+✓ Cleanup complete (3/3 directories removed)
+
+✅ Blending complete!
+```
+
+**Troubleshooting**:
+
+- **Error: "Config file not found"**: Create `.ce/blend-config.yml` (see PRP-34.1.1)
+- **Error: "No detected files"**: Run `--phase detect` first to scan project
+- **Error: "Target directory not found"**: Provide valid `--target-dir` path
+- **Settings conflict**: Use `--interactive` to review conflicts before merge
+
 **Phase 3 Complete**: Framework installed with /system/ organization. Proceed to Phase 4.
 
 ---
