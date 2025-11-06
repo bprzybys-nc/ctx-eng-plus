@@ -694,6 +694,92 @@ flowchart TD
 }
 ```
 
+#### Alternative: Automated Blending via CE Blend Tool
+
+**Note**: Instead of implementing settings blending logic in Syntropy MCP, you can use the CE blend tool for all file blending (settings, CLAUDE.md, memories, etc.).
+
+**Implementation**:
+
+```typescript
+async function blendWithCETool(targetDir: string): Promise<void> {
+  const blendCmd = 'uv run -C .ce/tools ce blend --all --fast';
+
+  try {
+    execSync(blendCmd, {
+      cwd: targetDir,
+      stdio: 'inherit'
+    });
+    console.log('✓ Files blended with CE blend tool');
+  } catch (error) {
+    throw new Error(
+      `Blend tool failed: ${error.message}\n` +
+      `🔧 Fallback: Use manual settings blending (see Step 7 algorithm)`
+    );
+  }
+}
+```
+
+**What it does**:
+
+```bash
+# In target project root (after extraction)
+cd /path/to/target-project
+uv run -C .ce/tools ce blend --all --fast
+
+# Blends all 6 domains:
+#   1. Settings (.claude/settings.local.json)
+#   2. CLAUDE.md (framework + target sections)
+#   3. Memories (.serena/memories/)
+#   4. Examples (.ce/examples/)
+#   5. PRPs (.ce/PRPs/)
+#   6. Commands (.claude/commands/)
+```
+
+**Comparison: Manual Blending vs Blend Tool**:
+
+| Approach | Settings | CLAUDE.md | Memories | Examples | PRPs | Commands | Complexity |
+|----------|----------|-----------|----------|----------|------|----------|------------|
+| **Manual** (Step 7) | ✓ 3 rules | ✗ Skip | ✗ Skip | ✗ Skip | ✗ Skip | ✗ Skip | Medium |
+| **Blend Tool** (Alternative) | ✓ 3 rules | ✓ Sonnet merge | ✓ Dedupe | ✓ Copy | ✓ Move | ✓ Overwrite | Simple API |
+
+**Recommendation**: Use blend tool if CE tools are installed. Fallback to manual settings blending if blend tool fails.
+
+**Workflow Integration**:
+
+```typescript
+async function step7Alternative(targetDir: string, backupPath: string | null): Promise<void> {
+  // Try CE blend tool first (automated, handles all domains)
+  try {
+    await blendWithCETool(targetDir);
+
+    // Cleanup backup (blend tool handles it)
+    if (backupPath && fs.existsSync(backupPath)) {
+      await fs.unlink(backupPath);
+    }
+
+    return;
+  } catch (error) {
+    console.warn('⚠️ Blend tool failed, using manual settings blending...');
+  }
+
+  // Fallback: Manual settings blending (original Step 7 algorithm)
+  await blendSettings(targetDir, backupPath);
+}
+```
+
+**Benefits**:
+
+- **Single tool**: Blends all domains, not just settings
+- **Tested logic**: Uses CE framework's battle-tested blending strategies
+- **Less code**: Syntropy MCP delegates to CE blend tool
+- **Consistent behavior**: Same blending logic as manual CE initialization
+
+**Trade-offs**:
+
+- **Dependency**: Requires CE tools installed (already true after Step 5)
+- **Error handling**: Need fallback to manual blending if tool fails
+- **Transparency**: Less visibility into blending steps (tool handles it)
+
 ---
 
 ### Step 8: Verify Installation
