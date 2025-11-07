@@ -51,12 +51,22 @@ def cleanup_legacy_dirs(
         print("⚠️  DRY-RUN MODE: No files will be deleted")
         print()
 
+    # Check if .ce.old/ exists (re-initialization scenario)
+    ce_old_exists = (target_project / ".ce.old").exists()
+
     for legacy_dir in legacy_dirs:
         legacy_path = target_project / legacy_dir
 
         # Skip if directory doesn't exist
         if not legacy_path.exists():
             print(f"⏭️  {legacy_dir}/ - Not found (skipping)")
+            status[legacy_dir] = True
+            continue
+
+        # Skip root examples/ in re-initialization scenario
+        # (examples are blended from .ce.old/examples/, not root examples/)
+        if legacy_dir == "examples" and ce_old_exists:
+            print(f"⏭️  {legacy_dir}/ - Skipping (re-initialization, .ce.old/ exists)")
             status[legacy_dir] = True
             continue
 
