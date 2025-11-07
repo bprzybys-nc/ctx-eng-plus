@@ -90,6 +90,8 @@ def run_blend(args) -> int:
             )
 
         # Run phases
+        blend_result = None  # Track blend phase result
+
         if args.all:
             # Run all 4 phases
             phases = ['detect', 'classify', 'blend']
@@ -98,6 +100,18 @@ def run_blend(args) -> int:
 
             for phase in phases:
                 result = orchestrator.run_phase(phase, target_dir)
+
+                # Track blend phase result for exit code
+                if phase == 'blend':
+                    blend_result = result
+
+                # Check for failures in critical phases
+                if phase == 'blend' and not result.get("success", True):
+                    failed = result.get("failed_domains", [])
+                    logger.error(f"❌ Blend failed for domains: {', '.join(failed)}")
+                    logger.info(result.get("message", "See error details above"))
+                    return 1
+
                 logger.info(f"✓ Phase {phase} complete")
 
                 # Interactive mode - ask before next phase
@@ -110,6 +124,16 @@ def run_blend(args) -> int:
         elif args.phase:
             # Run specific phase
             result = orchestrator.run_phase(args.phase, target_dir)
+
+            # Check blend phase result
+            if args.phase == 'blend':
+                blend_result = result
+                if not result.get("success", True):
+                    failed = result.get("failed_domains", [])
+                    logger.error(f"❌ Blend failed for domains: {', '.join(failed)}")
+                    logger.info(result.get("message", "See error details above"))
+                    return 1
+
             logger.info(f"✓ Phase {args.phase} complete")
 
         elif args.cleanup_only:
