@@ -80,8 +80,8 @@ class PRPMoveStrategy:
         skipped = 0
         errors = []
 
-        # Find all markdown files in source
-        for prp_file in source_dir.glob("*.md"):
+        # Find all markdown files in source (recursively)
+        for prp_file in source_dir.glob("**/*.md"):
             try:
                 # Read content
                 content = prp_file.read_text(encoding="utf-8")
@@ -93,8 +93,21 @@ class PRPMoveStrategy:
                 # Determine status (executed vs feature-requests)
                 status = self._parse_prp_status(content)
 
-                # Destination path
-                dest = target_dir / status / prp_file.name
+                # Preserve subdirectory structure
+                # Source: PRPs/executed/PRP-1.md → Target: .ce/PRPs/executed/PRP-1.md
+                relative_path = prp_file.relative_to(source_dir)
+
+                # Determine target subdirectory
+                # If already in executed/ or feature-requests/, preserve structure
+                # Otherwise, use status from content
+                if relative_path.parent.name in ["executed", "feature-requests", "system"]:
+                    dest = target_dir / relative_path
+                else:
+                    # Root-level or other subdirectories: classify by content
+                    dest = target_dir / status / prp_file.name
+
+                # Ensure parent directory exists
+                dest.parent.mkdir(parents=True, exist_ok=True)
 
                 # Hash-based deduplication
                 if dest.exists():
