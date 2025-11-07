@@ -879,3 +879,4 @@ grep "^issue:" PRPs/executed/PRP-12-feature.md
 - Compact conversation: Use claude-3-haiku-20240307
 - Activate Serena: Use project's root full path
 - Ad-hoc code strict: 3 LOC max, no exceptions
+- reset target branch = means reset --hard /Users/bprzybyszi/nc-src/ctx-eng-plus-test-target to main HEAD; create 'prp36test' branch

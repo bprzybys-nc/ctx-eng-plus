@@ -33,7 +33,7 @@ The content is organized as follows:
 <notes>
 - Some files may have been excluded based on .gitignore rules and Repomix's configuration
 - Binary files are not included in this packed representation. Please refer to the Repository Structure section for a complete list of file paths, including binary files
-- Only files matching these patterns are included: .ce/PRPs/executed/system/PRP-0-CONTEXT-ENGINEERING.md, .serena/memories/README.md, .serena/memories/code-style-conventions.md, .serena/memories/suggested-commands.md, .serena/memories/task-completion-checklist.md, .serena/memories/testing-standards.md, .serena/memories/tool-usage-syntropy.md, .serena/memories/use-syntropy-tools-not-bash.md, .serena/memories/codebase-structure.md, .serena/memories/cwe78-prp22-newline-escape-issue.md, .serena/memories/l4-validation-usage.md, .serena/memories/linear-issue-creation-pattern.md, .serena/memories/linear-issue-tracking-integration.md, .serena/memories/linear-mcp-integration-example.md, .serena/memories/linear-mcp-integration.md, .serena/memories/project-overview.md, .serena/memories/PRP-15-remediation-workflow-implementation.md, .serena/memories/prp-2-implementation-patterns.md, .serena/memories/prp-backlog-system.md, .serena/memories/prp-structure-initialized.md, .serena/memories/serena-implementation-verification-pattern.md, .serena/memories/serena-mcp-tool-restrictions.md, .serena/memories/syntropy-status-hook-pattern.md, .serena/memories/system-model-specification.md, .serena/memories/tool-config-optimization-completed.md, .claude/commands/batch-exe-prp.md, .claude/commands/batch-gen-prp.md, .claude/commands/denoise.md, .claude/commands/execute-prp.md, .claude/commands/generate-prp.md, .claude/commands/peer-review.md, .claude/commands/sync-with-syntropy.md, .claude/commands/syntropy-health.md, .claude/commands/tools-misuse-scan.md, .claude/commands/update-context.md, .claude/commands/vacuum.md, tools/ce/*.py, tools/pyproject.toml, tools/bootstrap.sh, .claude/settings.local.json, CLAUDE.md
+- Only files matching these patterns are included: .ce/PRPs/executed/system/PRP-0-CONTEXT-ENGINEERING.md, .serena/memories/README.md, .serena/memories/code-style-conventions.md, .serena/memories/suggested-commands.md, .serena/memories/task-completion-checklist.md, .serena/memories/testing-standards.md, .serena/memories/tool-usage-syntropy.md, .serena/memories/use-syntropy-tools-not-bash.md, .serena/memories/codebase-structure.md, .serena/memories/cwe78-prp22-newline-escape-issue.md, .serena/memories/l4-validation-usage.md, .serena/memories/linear-issue-creation-pattern.md, .serena/memories/linear-issue-tracking-integration.md, .serena/memories/linear-mcp-integration-example.md, .serena/memories/linear-mcp-integration.md, .serena/memories/project-overview.md, .serena/memories/PRP-15-remediation-workflow-implementation.md, .serena/memories/prp-2-implementation-patterns.md, .serena/memories/prp-backlog-system.md, .serena/memories/prp-structure-initialized.md, .serena/memories/serena-implementation-verification-pattern.md, .serena/memories/serena-mcp-tool-restrictions.md, .serena/memories/syntropy-status-hook-pattern.md, .serena/memories/system-model-specification.md, .serena/memories/tool-config-optimization-completed.md, .claude/commands/batch-exe-prp.md, .claude/commands/batch-gen-prp.md, .claude/commands/denoise.md, .claude/commands/execute-prp.md, .claude/commands/generate-prp.md, .claude/commands/peer-review.md, .claude/commands/sync-with-syntropy.md, .claude/commands/syntropy-health.md, .claude/commands/tools-misuse-scan.md, .claude/commands/update-context.md, .claude/commands/vacuum.md, tools/ce/*.py, tools/pyproject.toml, tools/bootstrap.sh, .claude/settings.local.json, CLAUDE.md, .ce/blend-config.yml, tools/README.md
 - Files matching these patterns are excluded: examples/patterns/example-simple-feature.md, examples/patterns/git-message-rules.md, examples/l4-validation-example.md, examples/syntropy-status-hook-system.md, tools/tests/**, .git/**, .tmp/**, __pycache__/**, *.pyc
 - Files matching patterns in .gitignore are excluded
 - Files matching default ignore patterns are excluded
@@ -49,6 +49,7 @@ The content is organized as follows:
     executed/
       system/
         PRP-0-CONTEXT-ENGINEERING.md
+  blend-config.yml
 .claude/
   commands/
     batch-exe-prp.md
@@ -103,6 +104,7 @@ tools/
     validation_loop.py
   bootstrap.sh
   pyproject.toml
+  README.md
 CLAUDE.md
 </directory_structure>
 
@@ -13159,6 +13161,467 @@ This section contains the contents of the repository's files.
 67: echo ""
 </file>
 
+<file path="tools/README.md">
+  1: # Context Engineering CLI Tools
+  2: 
+  3: Minimal, efficient tooling for Context Engineering framework operations.
+  4: 
+  5: ## Features
+  6: 
+  7: ✅ **PRP Generation**: Automated PRP creation from INITIAL.md
+  8: ✅ **File Operations**: Read/write with security validation
+  9: ✅ **Git Integration**: Status, diff, checkpoints
+ 10: ✅ **3-Level Validation**: Syntax, unit tests, integration tests
+ 11: ✅ **Context Management**: Sync and health checks
+ 12: ✅ **Zero Dependencies**: Pure stdlib implementation
+ 13: ✅ **JSON Output**: Scriptable for CI/CD pipelines
+ 14: 
+ 15: ## Installation
+ 16: 
+ 17: ### Quick Install
+ 18: ```bash
+ 19: cd tools
+ 20: ./bootstrap.sh
+ 21: ```
+ 22: 
+ 23: ### Manual Install
+ 24: ```bash
+ 25: cd tools
+ 26: uv venv
+ 27: uv pip install -e .
+ 28: ```
+ 29: 
+ 30: ## Commands Reference
+ 31: 
+ 32: ### PRP Generation
+ 33: 
+ 34: **Generate PRP from INITIAL.md**
+ 35: ```bash
+ 36: ce prp generate <initial-md-path> [-o OUTPUT_DIR] [--json]
+ 37: 
+ 38: # Example
+ 39: ce prp generate ../feature-requests/user-auth/INITIAL.md
+ 40: # Output: ../PRPs/feature-requests/PRP-6-user-authentication-system.md
+ 41: 
+ 42: # Custom output directory
+ 43: ce prp generate feature.md -o /tmp/prps
+ 44: 
+ 45: # JSON output for scripting
+ 46: ce prp generate feature.md --json
+ 47: ```
+ 48: 
+ 49: **What it does**:
+ 50: 1. Parses INITIAL.md (FEATURE, EXAMPLES, DOCUMENTATION, OTHER CONSIDERATIONS)
+ 51: 2. Researches codebase using Serena MCP (pattern search, symbol analysis)
+ 52: 3. Fetches documentation using Context7 MCP (library docs, external links)
+ 53: 4. Generates complete 6-section PRP with YAML header
+ 54: 5. Auto-assigns next PRP ID (PRP-N+1)
+ 55: 6. Validates completeness (all required sections present)
+ 56: 
+ 57: **INITIAL.md structure** (see `.claude/commands/generate-prp.md` for details):
+ 58: ```markdown
+ 59: # Feature: <Feature Name>
+ 60: 
+ 61: ## FEATURE
+ 62: <What to build - user story, acceptance criteria>
+ 63: 
+ 64: ## EXAMPLES
+ 65: <Code examples, file references>
+ 66: 
+ 67: ## DOCUMENTATION
+ 68: <Library docs, external resources>
+ 69: 
+ 70: ## OTHER CONSIDERATIONS
+ 71: <Security, constraints, edge cases>
+ 72: ```
+ 73: 
+ 74: **Graceful degradation**: Works without MCP servers (reduced functionality)
+ 75: 
+ 76: See also: `/generate-prp` slash command
+ 77: 
+ 78: ---
+ 79: 
+ 80: ### Validation Gates
+ 81: 
+ 82: **Level 1: Syntax & Style**
+ 83: ```bash
+ 84: ce validate --level 1
+ 85: # Runs: npm run lint && npm run type-check
+ 86: ```
+ 87: 
+ 88: **Level 2: Unit Tests**
+ 89: ```bash
+ 90: ce validate --level 2
+ 91: # Runs: npm test
+ 92: ```
+ 93: 
+ 94: **Level 3: Integration Tests**
+ 95: ```bash
+ 96: ce validate --level 3
+ 97: # Runs: npm run test:integration
+ 98: ```
+ 99: 
+100: **All Levels**
+101: ```bash
+102: ce validate --level all
+103: # Runs all validation levels sequentially
+104: ```
+105: 
+106: ---
+107: 
+108: ### Markdown & Mermaid Linting
+109: 
+110: **Markdown Linting** (integrated in Level 1 validation)
+111: ```bash
+112: # Lint markdown files
+113: npm run lint:md
+114: 
+115: # Auto-fix markdown issues
+116: npm run lint:md:fix
+117: ```
+118: 
+119: **What it does**:
+120: - Validates markdown syntax using markdownlint-cli2
+121: - Checks for common issues: trailing spaces, missing blank lines, inconsistent headings
+122: - Auto-fixes formatting issues automatically
+123: - Integrated into Level 1 validation gate
+124: 
+125: **Configuration**: `.markdownlint.json` in project root
+126: ```json
+127: {
+128:   "default": true,
+129:   "MD013": false,  // Line length disabled (allow long code examples)
+130:   "MD033": {       // Inline HTML allowed for badges
+131:     "allowed_elements": ["img", "br", "sub", "sup", "User"]
+132:   },
+133:   "MD046": {       // Fenced code blocks required
+134:     "style": "fenced"
+135:   }
+136: }
+137: ```
+138: 
+139: **Mermaid Diagram Validation** (integrated in Level 1 validation)
+140: 
+141: The mermaid validator automatically checks and fixes diagram syntax issues:
+142: 
+143: **Features**:
+144: - ✅ Validates node text for unquoted special characters
+145: - ✅ Checks style statements have color specified (theme compatibility)
+146: - ✅ Auto-fixes common issues (renaming nodes, adding colors)
+147: - ✅ HTML tag support (`<br/>`, `<sub/>`, `<sup/>`)
+148: - ✅ Smart detection of problematic characters only
+149: 
+150: **Safe Characters** (no quoting needed):
+151: - Colons `:` - "Level 0: CLAUDE.md" ✅
+152: - Question marks `?` - "Why? Because!" ✅
+153: - Exclamation marks `!` - "Important!" ✅
+154: - Slashes `/` `\` - "path/to/file" ✅
+155: - HTML tags - "Line 1<br/>Line 2" ✅
+156: 
+157: **Problematic Characters** (require quoting or node renaming):
+158: - Brackets `[]` `{}` - used for node shape syntax
+159: - Parentheses `()` - used for node shape syntax
+160: - Pipes `|` - used for subgraph syntax
+161: - Unbalanced quotes `"` `'` - break parsing
+162: 
+163: **Example Issues Detected**:
+164: ```mermaid
+165: graph TD
+166:     N1[Text with (parentheses)]    # ❌ Will be flagged
+167:     style B fill:#ff0000,color:#fff           # ❌ Missing color specification
+168: ```
+169: 
+170: **Auto-Fixed Output**:
+171: ```mermaid
+172: graph TD
+173:     N1[Text with parentheses renamed]
+174:     style B fill:#ff0000,color:#fff  # ✅ Color added
+175: ```
+176: 
+177: **Standalone Usage** (if needed):
+178: ```bash
+179: # Validate all markdown/mermaid in docs/
+180: cd tools
+181: python ce/mermaid_validator.py ../docs
+182: 
+183: # Auto-fix issues
+184: python ce/mermaid_validator.py --fix ../docs
+185: ```
+186: 
+187: **Results**:
+188: - Files checked: 14
+189: - Diagrams checked: 73
+190: - Issues auto-fixed: varies based on file state
+191: 
+192: **Style Color Determination**:
+193: 
+194: The validator automatically determines appropriate text color based on background luminance:
+195: - Light backgrounds (luminance > 0.5) → black text `#000`
+196: - Dark backgrounds (luminance ≤ 0.5) → white text `#fff`
+197: 
+198: Uses W3C WCAG 2.0 relative luminance formula for accurate color contrast.
+199: 
+200: ---
+201: 
+202: ### Git Operations
+203: 
+204: **Check Status**
+205: ```bash
+206: ce git status [--json]
+207: # Shows: staged, unstaged, untracked files
+208: ```
+209: 
+210: **Create Checkpoint**
+211: ```bash
+212: ce git checkpoint "Phase 1 complete"
+213: # Creates annotated git tag: checkpoint-<timestamp>
+214: ```
+215: 
+216: **View Changes**
+217: ```bash
+218: ce git diff [--since HEAD~5] [--json]
+219: # Shows changed files since specified ref
+220: ```
+221: 
+222: ### Context Management
+223: 
+224: **Fast Drift Analysis** (NEW - PRP-17)
+225: ```bash
+226: ce analyze-context [--json] [--force] [--cache-ttl N]
+227: # Fast drift check without metadata updates (2-3s vs 10-15s)
+228: # Exit codes: 0 (ok), 1 (warning), 2 (critical)
+229: # Uses smart caching (5-min TTL by default)
+230: 
+231: # Examples:
+232: ce analyze-context                        # Quick check with cache
+233: ce analyze-context --force                # Force re-analysis
+234: ce analyze-context --json                 # CI/CD integration
+235: ce analyze-context --cache-ttl 10         # Custom TTL (minutes)
+236: ce analyse-context                        # UK spelling alias
+237: ```
+238: 
+239: **What it does**:
+240: - Detects pattern drift (code violations + missing examples)
+241: - Generates/updates `.ce/drift-report.md` with violations
+242: - Returns CI/CD-friendly exit codes (0/1/2)
+243: - Reuses cache if fresh (avoids redundant analysis)
+244: - No PRP metadata updates (faster than update-context)
+245: 
+246: **When to use**:
+247: - Quick drift checks in CI/CD pipelines
+248: - Pre-commit validation
+249: - Before running update-context (shares cache)
+250: 
+251: **Sync Context**
+252: ```bash
+253: ce context sync [--json]
+254: # Detects git diff, reports files needing reindex
+255: # Returns: reindexed_count, files, drift_score, drift_level
+256: ```
+257: 
+258: **Health Check**
+259: ```bash
+260: ce context health [--json]
+261: # Comprehensive health report:
+262: # - Compilation status (Level 1)
+263: # - Git cleanliness
+264: # - Tests passing (Level 2)
+265: # - Context drift score
+266: # - Actionable recommendations
+267: ```
+268: 
+269: **Prune Memories** (placeholder)
+270: ```bash
+271: ce context prune [--age 7] [--dry-run]
+272: # Requires Serena MCP integration
+273: ```
+274: 
+275: ### Drift History Tracking
+276: 
+277: **View Drift History**
+278: ```bash
+279: ce drift history [--last N] [--prp-id ID] [--action-filter TYPE] [--json]
+280: # Shows drift decisions from all PRPs sorted by timestamp
+281: 
+282: # Examples:
+283: ce drift history --last 5
+284: ce drift history --prp-id PRP-001
+285: ce drift history --action-filter accepted
+286: ```
+287: 
+288: **Show Drift Decision**
+289: ```bash
+290: ce drift show <prp-id> [--json]
+291: # Detailed view of drift decision for specific PRP
+292: 
+293: # Example:
+294: ce drift show PRP-001
+295: ```
+296: 
+297: **Drift Summary**
+298: ```bash
+299: ce drift summary [--json]
+300: # Aggregate statistics across all drift decisions
+301: # Shows: total PRPs, average score, distribution, category breakdown
+302: ```
+303: 
+304: **Compare Drift Decisions**
+305: ```bash
+306: ce drift compare <prp-id-1> <prp-id-2> [--json]
+307: # Compare drift decisions between two PRPs
+308: # Shows: score difference, common/divergent categories
+309: 
+310: # Example:
+311: ce drift compare PRP-001 PRP-002
+312: ```
+313: 
+314: **What it tracks**:
+315: - Drift score (0-100%)
+316: - Action taken (accepted, rejected, examples_updated)
+317: - Justification for decisions
+318: - Category breakdown (code_structure, error_handling, etc.)
+319: - Reviewer (human, auto_accept, auto_fix)
+320: - Historical patterns and trends
+321: 
+322: **Integration**: Drift history is displayed during Level 4 validation escalation to provide context for high-drift decisions.
+323: 
+324: ## JSON Output
+325: 
+326: All commands support `--json` flag for programmatic use:
+327: 
+328: ```bash
+329: ce validate --level all --json > validation-report.json
+330: ce git status --json | jq '.clean'
+331: ce context health --json | jq '.drift_score'
+332: ```
+333: 
+334: ## Exit Codes
+335: 
+336: **Standard Commands**:
+337: - **0**: Success
+338: - **1**: Failure
+339: 
+340: **analyze-context** (drift-aware):
+341: - **0**: OK - drift score < 5%
+342: - **1**: WARNING - drift score 5-15%
+343: - **2**: CRITICAL - drift score >= 15%
+344: 
+345: Use in scripts:
+346: ```bash
+347: # Standard validation
+348: if ce validate --level 1; then
+349:     echo "Validation passed"
+350: else
+351:     echo "Validation failed"
+352:     exit 1
+353: fi
+354: 
+355: # Drift analysis for CI/CD
+356: ce analyze-context --json
+357: EXIT_CODE=$?
+358: if [ $EXIT_CODE -eq 2 ]; then
+359:     echo "CRITICAL drift - blocking merge"
+360:     exit 1
+361: elif [ $EXIT_CODE -eq 1 ]; then
+362:     echo "WARNING drift - review recommended"
+363: fi
+364: ```
+365: 
+366: ## Architecture
+367: 
+368: ```
+369: ce/
+370: ├── __init__.py       # Package metadata
+371: ├── __main__.py       # CLI entry point
+372: ├── core.py           # File, git, shell operations
+373: ├── validate.py       # 3-level validation gates
+374: ├── context.py        # Context management
+375: ├── generate.py       # PRP generation from INITIAL.md
+376: └── prp.py            # PRP state management
+377: ```
+378: 
+379: **Design Principles**:
+380: - **KISS**: Single responsibility per function
+381: - **SOLID**: Clear interfaces, dependency injection
+382: - **DRY**: Shared utilities
+383: - **No Fishy Fallbacks**: Exceptions thrown, not caught silently
+384: - **Real Testing**: Actual functionality, no mocks
+385: 
+386: ## Development
+387: 
+388: ### Run Tests
+389: ```bash
+390: uv run pytest tests/ -v
+391: 
+392: # With coverage
+393: uv run pytest tests/ --cov=ce --cov-report=term-missing
+394: ```
+395: 
+396: ### Add Dependencies
+397: ```bash
+398: # Never edit pyproject.toml directly!
+399: uv add package-name              # Production
+400: uv add --dev package-name        # Development
+401: ```
+402: 
+403: ### Test Locally
+404: ```bash
+405: # Install in editable mode
+406: uv pip install -e .
+407: 
+408: # Use anywhere
+409: ce --help
+410: ```
+411: 
+412: ## Integration with Context Engineering Framework
+413: 
+414: This CLI complements the Context Engineering framework documented in `/docs/`:
+415: 
+416: - **Validation Gates**: Implements 3-level validation from `08-validation-testing.md`
+417: - **Context Sync**: Implements drift detection from `04-self-healing-framework.md`
+418: - **Git Operations**: Supports checkpoint pattern from `06-workflow-patterns.md`
+419: 
+420: ## Troubleshooting
+421: 
+422: **Command not found: ce**
+423: ```bash
+424: # Ensure you're in tools directory
+425: cd tools
+426: 
+427: # Reinstall
+428: uv pip install -e .
+429: 
+430: # Or use directly
+431: uv run python -m ce --help
+432: ```
+433: 
+434: **Tests failing**
+435: ```bash
+436: # Install dev dependencies
+437: uv sync
+438: 
+439: # Run specific test
+440: uv run pytest tests/test_core.py::test_run_cmd_success -v
+441: ```
+442: 
+443: **npm commands not available**
+444: ```bash
+445: # Some tests/commands require npm scripts
+446: # Ensure package.json has required scripts:
+447: npm run lint
+448: npm run type-check
+449: npm test
+450: ```
+451: 
+452: ## License
+453: 
+454: Part of the Context Engineering Framework.
+455: 
+456: ## Version
+457: 
+458: Current: 0.1.0
+</file>
+
 <file path=".ce/PRPs/executed/system/PRP-0-CONTEXT-ENGINEERING.md">
   1: ---
   2: prp_id: PRP-0
@@ -13435,6 +13898,91 @@ This section contains the contents of the repository's files.
 273: **Installation Completed**: {TIMESTAMP}
 274: **Installed By**: {INSTALLER_NAME}
 275: **CE Version**: {CE_VERSION}
+</file>
+
+<file path=".ce/blend-config.yml">
+ 1: # CE Framework Blending Configuration
+ 2: # Defines blending rules for each domain (settings, CLAUDE.md, memories, etc.)
+ 3: 
+ 4: domains:
+ 5:   settings:
+ 6:     strategy: rule-based
+ 7:     source: .claude/settings.local.json
+ 8:     backup: true
+ 9:     rules:
+10:       - ce_deny_wins           # CE deny list takes precedence
+11:       - merge_lists            # Merge CE entries to target lists
+12:       - single_membership      # Each tool in ONE list only
+13:     description: "Settings JSON structural merge (3 rules)"
+14: 
+15:   claude_md:
+16:     strategy: nl-blend
+17:     source: CLAUDE.md
+18:     framework_rules: .ce/RULES.md
+19:     backup: true
+20:     llm_model: claude-sonnet-4-5-20250929
+21:     max_tokens: 8192
+22:     description: "CLAUDE.md NL-blend with RULES.md awareness (Sonnet)"
+23: 
+24:   memories:
+25:     strategy: nl-blend
+26:     source: .serena/memories/
+27:     backup: true
+28:     llm_model_similarity: claude-3-5-haiku-20241022    # Fast similarity checks
+29:     llm_model_merge: claude-sonnet-4-5-20250929        # Quality merges
+30:     conflict_resolution: ask-user
+31:     similarity_threshold: 0.9
+32:     description: "Serena memories NL-blend (Haiku similarity → Sonnet merge)"
+33: 
+34:   examples:
+35:     strategy: dedupe-copy
+36:     source: examples/
+37:     destination: .ce/examples/
+38:     backup: false
+39:     dedup_method: nl-similarity
+40:     llm_model: claude-3-5-haiku-20241022               # Fast deduplication
+41:     similarity_threshold: 0.9
+42:     description: "Examples NL-dedupe (Haiku semantic comparison)"
+43: 
+44:   prps:
+45:     strategy: move-all
+46:     source: PRPs/
+47:     legacy_sources:
+48:       - PRPs/
+49:       - context-engineering/PRPs/
+50:     destination: .ce/PRPs/
+51:     backup: false
+52:     dedup_method: content-hash                          # Only skip if exact file exists
+53:     add_user_header: true
+54:     note: "Move all user PRPs (no ID-based deduplication - different projects can have same IDs)"
+55:     description: "PRPs move-all (hash dedupe only, no ID dedupe)"
+56: 
+57:   commands:
+58:     strategy: overwrite
+59:     source: .claude/commands/
+60:     backup: true
+61:     backup_location: .claude/commands.backup/
+62:     description: "Commands overwrite (framework canonical)"
+63: 
+64: # LLM Configuration
+65: llm:
+66:   api_key_env: ANTHROPIC_API_KEY
+67:   timeout: 60
+68:   max_retries: 3
+69: 
+70: # Global settings
+71: global:
+72:   verify_before_cleanup: true
+73:   backup_prefix: ".backup"
+74:   legacy_directories:
+75:     - PRPs/
+76:     - examples/
+77:     - context-engineering/
+78:   standard_locations:
+79:     - .claude/
+80:     - .serena/
+81:     - CLAUDE.md
+82:     - .ce/
 </file>
 
 <file path=".claude/commands/denoise.md">
@@ -22002,6 +22550,7 @@ This section contains the contents of the repository's files.
 879: - Compact conversation: Use claude-3-haiku-20240307
 880: - Activate Serena: Use project's root full path
 881: - Ad-hoc code strict: 3 LOC max, no exceptions
+882: - reset target branch = means reset --hard /Users/bprzybyszi/nc-src/ctx-eng-plus-test-target to main HEAD; create 'prp36test' branch
 </file>
 
 </files>

@@ -66,6 +66,12 @@ include:
   # CLAUDE.md Framework Sections -> CLAUDE.md
   - "CLAUDE.md"
 
+  # Blending Configuration -> .ce/
+  - ".ce/blend-config.yml"
+
+  # Tool Documentation -> tools/ (extracted to .ce/tools/ in target project)
+  - "tools/README.md"
+
 exclude:
   # Project-specific examples (IsWorkflow=No)
   - "examples/patterns/example-simple-feature.md"
