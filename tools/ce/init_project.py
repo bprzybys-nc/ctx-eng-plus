@@ -232,6 +232,16 @@ class ProjectInitializer:
                     f"🔧 Check blend tool output:\n{result.stderr}"
                 )
             else:
+                # Cleanup: Remove framework .claude/ and CLAUDE.md from .ce/ after blending
+                # These should only exist at root, not in .ce/
+                ce_claude = self.ce_dir / ".claude"
+                ce_claude_md = self.ce_dir / "CLAUDE.md"
+
+                if ce_claude.exists():
+                    shutil.rmtree(ce_claude)
+                if ce_claude_md.exists():
+                    ce_claude_md.unlink()
+
                 # Check if .ce.old exists to mention it
                 ce_old_dir = self.target_project / ".ce.old"
                 if ce_old_dir.exists():
