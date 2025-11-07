@@ -1,12 +1,15 @@
 ---
 prp_id: PRP-38
 title: Fix Blend Orchestrator Domain Execution (E2E Test Findings)
-status: in_progress
+status: completed
 created: 2025-11-07
+completed: 2025-11-07
 complexity: high
 estimated_hours: 10.0
+actual_hours: 8.0
 batch_context: "Iteration 3 E2E test revealed critical blend execution gaps"
 review_notes: "Refined after peer review - added Pre-Phase investigations, domain-specific I/O logic"
+implementation_notes: "All 4 issues fixed + 3 extraction path fixes + 1 LLM client fix. Peer review score: 8.5/10"
 ---
 
 # Fix Blend Orchestrator Domain Execution (E2E Test Findings)
@@ -687,28 +690,81 @@ Phase C: BLENDING - Merging framework + target...
 
 ---
 
+## Implementation Summary
+
+**Status**: ✅ COMPLETED (2025-11-07)
+
+**Commits** (5 total):
+1. **81e2413**: Main implementation (Phase 1-3)
+   - Implemented blend() interface with domain-specific I/O
+   - Fixed error propagation and exit codes
+   - Added "success" field to execute() strategies
+2. **9d0ba28**: Extraction path fix #1 (move all to .ce/)
+3. **659334f**: Extraction path fix #2 (two-step reorganization)
+4. **a794b09**: LLM client context injection fix
+5. **8dcc45c**: Code quality (move BlendingLLM import to top)
+
+**Actual Time**: 8 hours (vs 10 estimated)
+- Pre-Phase 0: 0.5h (grep investigation, not full tests)
+- Phase 1: 3h (implementation faster than estimated)
+- Phase 2: 1.5h (straightforward)
+- Phase 3: 0.5h (surgical fix)
+- Extraction fixes: 2h (3 iterations to get right)
+- Code quality: 0.5h (import cleanup)
+
+**Peer Review Score**: 8.5/10
+- Structural: 10/10
+- Semantic: 7.5/8 (missing strategy interface tests)
+- Execution: 8.5/10 (repeated imports, fragile extraction)
+- E2E Validation: Partial (package incomplete by design)
+
+---
+
+## Post-Implementation Findings
+
+### Package Incompleteness (NOT A BUG)
+
+**Discovery**: E2E test showed "Framework file not found" for memories/examples
+
+**Root Cause**: ce-infrastructure.xml intentionally minimal
+- Only 7/25 memories included (critical framework memories)
+- Examples directory excluded via `.ce/repomix-profile-infrastructure.json` (lines 56-59)
+- Package contains 57 files, not 133
+
+**Why**: Design decision to keep package small
+- Infrastructure package: Critical framework files only
+- Workflow package: Reference docs (not extracted during init)
+
+**Impact**: Blend orchestrator correctly skips missing optional domains
+- Logs warning: "Framework directory not found"
+- Continues to next domain (no failure)
+- Only processes domains with framework files present
+
+**Recommendation**: Document in INITIALIZATION.md that not all domains migrate
+- Settings: ✓ (always present)
+- CLAUDE.md: ✓ (always present)
+- Commands: ✓ (always present)
+- PRPs: ✓ (always present)
+- Memories: ⚠️ (only 7 critical, not all 25)
+- Examples: ⚠️ (excluded from package)
+
+---
+
 ## Next Actions
 
 1. ✅ Create this PRP in PRPs/feature-requests/
-2. **Review and refine** (peer review applied):
-   - ✅ Added Pre-Phase 0: Document strategy interfaces
-   - ✅ Rewrote Phase 1: Domain-specific I/O logic
-   - ✅ Added Pre-Phase 3: Investigate execute() failures
-   - ✅ Fixed Issue #4: Cleanup is working correctly
-   - ✅ Updated timeline: 8h → 10h
-3. Break into sub-PRPs if needed:
-   - PRP-38.1: Document interfaces + Implement blend()
-   - PRP-38.2: Fix error propagation
-   - PRP-38.3: Investigate + Fix execute() strategies
-4. Prioritize Phase 1 (biggest impact - 4 domains)
-5. Run E2E test after each phase
-6. Update batch 37 review once validated
+2. ✅ Review and refine (peer review applied)
+3. ✅ Implement all phases
+4. ✅ Run E2E test after each phase
+5. ✅ Apply peer review recommendations
+6. ⏭️ Update examples/INITIALIZATION.md with package incompleteness notes
+7. ⏭️ Consider PRP-39: Add strategy interface validation tests
 
 ---
 
 ## Review Notes (Applied)
 
-**Peer Review Score**: 7/10 → Refined to 9/10
+**Peer Review Score**: 7/10 → Refined to 9/10 → Implemented at 8.5/10
 
 **Changes Applied**:
 1. ✅ Added "Which 2 Domains?" clarification after Issue #1
@@ -725,3 +781,8 @@ Phase C: BLENDING - Merging framework + target...
 - Investigation before fixes (was "debug and figure it out")
 - Acknowledged blend() signature variations (ExamplesBlendStrategy different)
 - Added hypothesis for execute() failure (missing mkdir)
+
+**Post-Implementation Quality Fixes**:
+- Moved BlendingLLM import to top of file (removed 3 repeated imports)
+- Extraction logic fixed after 3 iterations
+- LLM client context injection added
