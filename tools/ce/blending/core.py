@@ -343,10 +343,11 @@ class BlendingOrchestrator:
                                 target_content = json.load(f)
 
                         # Call strategy
+                        from ce.blending.llm import BlendingLLM
                         blended = strategy.blend(
                             framework_content=framework_content,
                             target_content=target_content,
-                            context={"target_dir": target_dir}
+                            context={"target_dir": target_dir, "llm_client": BlendingLLM()}
                         )
 
                         # Write result
@@ -372,11 +373,12 @@ class BlendingOrchestrator:
                         framework_content = framework_file.read_text()
                         target_content = target_file.read_text() if target_file.exists() else None
 
-                        # Call strategy
+                        # Call strategy (needs LLM client)
+                        from ce.blending.llm import BlendingLLM
                         blended = strategy.blend(
                             framework_content=framework_content,
                             target_content=target_content,
-                            context={"target_dir": target_dir}
+                            context={"target_dir": target_dir, "llm_client": BlendingLLM()}
                         )
 
                         # Write result
@@ -402,12 +404,13 @@ class BlendingOrchestrator:
                             logger.warning(f"  {domain}: Framework directory not found: {framework_dir}")
                             continue
 
-                        # Call strategy with paths (memories expects output_path in context)
+                        # Call strategy with paths (memories expects output_path in context + LLM client)
                         if domain == "memories":
+                            from ce.blending.llm import BlendingLLM
                             result = strategy.blend(
                                 framework_content=framework_dir,
                                 target_content=target_domain_dir if target_domain_dir.exists() else None,
-                                context={"output_path": target_domain_dir, "target_dir": target_dir}
+                                context={"output_path": target_domain_dir, "target_dir": target_dir, "llm_client": BlendingLLM()}
                             )
                         else:  # examples
                             result = strategy.blend(
