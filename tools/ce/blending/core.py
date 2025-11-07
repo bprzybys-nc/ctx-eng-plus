@@ -400,9 +400,13 @@ class BlendingOrchestrator:
                         else:
                             target_domain_dir = target_dir / domain
 
+                        # Check framework dir exists (but allow examples to proceed for migration mode)
                         if not framework_dir.exists():
-                            logger.warning(f"  {domain}: Framework directory not found: {framework_dir}")
-                            continue
+                            if domain == "memories":
+                                logger.warning(f"  {domain}: Framework directory not found: {framework_dir}")
+                                continue
+                            else:  # examples - allow migration mode
+                                logger.info(f"  {domain}: Framework directory not found: {framework_dir}")
 
                         # Call strategy with paths (memories expects output_path in context + LLM client)
                         if domain == "memories":

@@ -201,16 +201,25 @@ def test_token_usage_returned(mock_llm, framework_examples, tmp_path):
     assert result["token_usage"]["output_tokens"] == 50
 
 
-def test_invalid_framework_dir_raises_error(mock_llm, tmp_path):
-    """Test ValueError raised if framework_dir doesn't exist."""
+def test_invalid_framework_dir_switches_to_migration(mock_llm, tmp_path):
+    """Test migration mode activates when framework_dir doesn't exist."""
     strategy = ExamplesBlendStrategy(mock_llm)
 
     invalid_dir = tmp_path / "nonexistent"
+    source_dir = tmp_path / "source"
+    source_dir.mkdir()
+    (source_dir / "example.md").write_text("# Example")
+
     target_dir = tmp_path / "target"
     target_dir.mkdir()
 
-    with pytest.raises(ValueError, match="Framework examples dir not found"):
-        strategy.blend(invalid_dir, target_dir)
+    context = {"target_dir": target_dir}
+
+    # Should switch to migration mode, not raise error
+    result = strategy.blend(invalid_dir, source_dir, context)
+
+    assert result["success"] is True
+    assert result["migrated"] == 1
 
 
 def test_target_dir_created_if_not_exists(mock_llm, framework_examples, tmp_path):
@@ -288,3 +297,154 @@ def test_non_md_files_ignored(mock_llm, tmp_path):
     # Only .md file should be processed
     assert len(result["copied"]) == 1
     assert "example.md" in result["copied"]
+
+
+# Migration mode tests
+
+def test_migration_mode_when_framework_missing(mock_llm, tmp_path):
+    """Test migration mode activates when framework dir missing."""
+    # Source directory (user examples)
+    source_dir = tmp_path / "source_examples"
+    source_dir.mkdir()
+    (source_dir / "user-example.md").write_text("# User Example")
+    (source_dir / "user-guide.md").write_text("# User Guide")
+
+    # Target directory (will have .ce created)
+    target_dir = tmp_path / "target"
+    target_dir.mkdir()
+
+    # Framework dir doesn't exist
+    framework_dir = tmp_path / "nonexistent_framework"
+
+    strategy = ExamplesBlendStrategy(mock_llm)
+    context = {"target_dir": target_dir}
+
+    result = strategy.blend(framework_dir, source_dir, context)
+
+    # Migration mode results
+    assert result["success"] is True
+    assert result["migrated"] == 2
+    assert result["skipped"] == 0
+
+    # Files migrated to .ce/examples/user/
+    user_dir = target_dir / ".ce" / "examples" / "user"
+    assert (user_dir / "user-example.md").exists()
+    assert (user_dir / "user-guide.md").exists()
+
+
+def test_migration_preserves_subdirectories(mock_llm, tmp_path):
+    """Test migration preserves subdirectory structure."""
+    source_dir = tmp_path / "source_examples"
+    source_dir.mkdir()
+
+    # Create subdirectory structure
+    patterns_dir = source_dir / "patterns"
+    patterns_dir.mkdir()
+    (patterns_dir / "pattern1.md").write_text("# Pattern 1")
+    (patterns_dir / "pattern2.py").write_text("# Pattern code")
+
+    target_dir = tmp_path / "target"
+    target_dir.mkdir()
+
+    framework_dir = tmp_path / "nonexistent"
+
+    strategy = ExamplesBlendStrategy(mock_llm)
+    context = {"target_dir": target_dir}
+
+    result = strategy.blend(framework_dir, source_dir, context)
+
+    # Check subdirectory preserved
+    user_patterns = target_dir / ".ce" / "examples" / "user" / "patterns"
+    assert user_patterns.exists()
+    assert (user_patterns / "pattern1.md").exists()
+    assert (user_patterns / "pattern2.py").exists()
+    assert result["migrated"] == 2
+
+
+def test_migration_hash_deduplication(mock_llm, tmp_path):
+    """Test migration skips files with identical hashes."""
+    source_dir = tmp_path / "source"
+    source_dir.mkdir()
+    (source_dir / "example.md").write_text("# Example content")
+
+    target_dir = tmp_path / "target"
+    user_dir = target_dir / ".ce" / "examples" / "user"
+    user_dir.mkdir(parents=True)
+
+    # Pre-existing file with same content
+    (user_dir / "example.md").write_text("# Example content")
+
+    framework_dir = tmp_path / "nonexistent"
+
+    strategy = ExamplesBlendStrategy(mock_llm)
+    context = {"target_dir": target_dir}
+
+    result = strategy.blend(framework_dir, source_dir, context)
+
+    # Should skip duplicate
+    assert result["migrated"] == 0
+    assert result["skipped"] == 1
+
+
+def test_migration_all_file_types(mock_llm, tmp_path):
+    """Test migration handles all file types, not just .md."""
+    source_dir = tmp_path / "source"
+    source_dir.mkdir()
+    (source_dir / "example.md").write_text("# MD file")
+    (source_dir / "script.py").write_text("# Python file")
+    (source_dir / "config.json").write_text("{}")
+    (source_dir / "data.txt").write_text("Text")
+
+    target_dir = tmp_path / "target"
+    target_dir.mkdir()
+
+    framework_dir = tmp_path / "nonexistent"
+
+    strategy = ExamplesBlendStrategy(mock_llm)
+    context = {"target_dir": target_dir}
+
+    result = strategy.blend(framework_dir, source_dir, context)
+
+    # All file types migrated
+    assert result["migrated"] == 4
+    user_dir = target_dir / ".ce" / "examples" / "user"
+    assert (user_dir / "example.md").exists()
+    assert (user_dir / "script.py").exists()
+    assert (user_dir / "config.json").exists()
+    assert (user_dir / "data.txt").exists()
+
+
+def test_migration_empty_source_directory(mock_llm, tmp_path):
+    """Test migration handles empty source directory gracefully."""
+    source_dir = tmp_path / "empty_source"
+    source_dir.mkdir()
+
+    target_dir = tmp_path / "target"
+    target_dir.mkdir()
+
+    framework_dir = tmp_path / "nonexistent"
+
+    strategy = ExamplesBlendStrategy(mock_llm)
+    context = {"target_dir": target_dir}
+
+    result = strategy.blend(framework_dir, source_dir, context)
+
+    # No files to migrate
+    assert result["success"] is True
+    assert result["migrated"] == 0
+    assert result["skipped"] == 0
+
+
+def test_migration_requires_target_dir_in_context(mock_llm, tmp_path):
+    """Test migration raises error if context missing target_dir."""
+    source_dir = tmp_path / "source"
+    source_dir.mkdir()
+    (source_dir / "example.md").write_text("# Example")
+
+    framework_dir = tmp_path / "nonexistent"
+
+    strategy = ExamplesBlendStrategy(mock_llm)
+    context = {}  # Missing target_dir
+
+    with pytest.raises(ValueError, match="target_dir"):
+        strategy.blend(framework_dir, source_dir, context)

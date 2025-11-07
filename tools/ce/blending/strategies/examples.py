@@ -45,26 +45,25 @@ class ExamplesBlendStrategy:
         context: Optional[Dict[str, Any]] = None
     ) -> Dict[str, Any]:
         """
-        Blend framework and target examples.
+        Blend or migrate examples based on framework availability.
+
+        Dual-Mode Operation:
+        - Blend Mode: Framework exists → semantic dedup + copy framework→target
+        - Migration Mode: Framework missing → migrate target→.ce/examples/user/
 
         Args:
             framework_dir: Framework examples directory (.ce/examples/)
             target_dir: Target examples directory (examples/)
-            context: Optional context dict (backup_dir, dry_run, etc.)
+            context: Optional context dict (backup_dir, dry_run, target_dir, etc.)
 
         Returns:
-            Dict with:
-                - copied: List of copied example files
-                - skipped_hash: List of examples skipped (exact duplicate)
-                - skipped_similar: List of examples skipped (>threshold similar)
-                - errors: List of error messages
-                - token_usage: Dict with total input/output tokens
-
-        Raises:
-            ValueError: If framework_dir or target_dir invalid
+            Dict with blend mode keys (copied, skipped_hash, skipped_similar) OR
+            migration mode keys (migrated, skipped, errors, success)
         """
-        if not framework_dir.is_dir():
-            raise ValueError(f"Framework examples dir not found: {framework_dir}")
+        # Check if framework examples exist
+        if not framework_dir.exists() or not framework_dir.is_dir():
+            logger.info(f"Framework examples not found - switching to migration mode")
+            return self._migrate_user_examples(target_dir, context)
 
         # Create target dir if not exists
         target_dir.mkdir(parents=True, exist_ok=True)
@@ -137,6 +136,99 @@ class ExamplesBlendStrategy:
             "skipped_similar": skipped_similar,
             "errors": errors,
             "token_usage": token_usage
+        }
+
+    def _migrate_user_examples(
+        self,
+        source_dir: Path,
+        context: Optional[Dict[str, Any]] = None
+    ) -> Dict[str, Any]:
+        """
+        Migrate user examples from source to .ce/examples/user/.
+
+        Similar to PRPMoveStrategy but for examples.
+        Supports recursive file discovery and all file types.
+
+        Args:
+            source_dir: Source examples directory (examples/)
+            context: Context dict with target_dir, dry_run, etc.
+
+        Returns:
+            Dict with:
+                - migrated: Count of migrated files
+                - skipped: Count of skipped files (hash duplicate)
+                - errors: List of error messages
+                - success: True if no errors
+                - files_processed: Count for compatibility
+        """
+        if not source_dir.exists():
+            logger.info(f"Source examples directory not found: {source_dir}")
+            return {
+                "migrated": 0,
+                "skipped": 0,
+                "errors": [],
+                "success": True,
+                "files_processed": 0
+            }
+
+        # Get target base directory from context
+        if not context or "target_dir" not in context:
+            raise ValueError("context['target_dir'] required for migration mode")
+
+        target_base = context["target_dir"] / ".ce" / "examples" / "user"
+        target_base.mkdir(parents=True, exist_ok=True)
+
+        migrated = 0
+        skipped = 0
+        errors = []
+
+        # Find all example files recursively (all file types)
+        example_files = list(source_dir.rglob("*"))
+        example_files = [f for f in example_files if f.is_file()]
+
+        logger.info(f"Migrating {len(example_files)} example files from {source_dir}")
+
+        for source_file in example_files:
+            try:
+                # Preserve subdirectory structure
+                relative_path = source_file.relative_to(source_dir)
+                target_file = target_base / relative_path
+
+                # Create parent directories
+                target_file.parent.mkdir(parents=True, exist_ok=True)
+
+                # Hash-based deduplication
+                if target_file.exists():
+                    source_hash = self._hash_file(source_file)
+                    target_hash = self._hash_file(target_file)
+                    if source_hash == target_hash:
+                        logger.debug(f"Skip {source_file.name} (hash duplicate)")
+                        skipped += 1
+                        continue
+
+                # Copy to target
+                if context and context.get("dry_run"):
+                    logger.info(f"[DRY RUN] Would migrate {relative_path}")
+                else:
+                    target_file.write_bytes(source_file.read_bytes())
+                    logger.debug(f"✓ Migrated {relative_path}")
+                migrated += 1
+
+            except Exception as e:
+                error_msg = f"Error processing {source_file.name}: {e}"
+                logger.warning(error_msg)
+                errors.append(error_msg)
+
+        logger.info(
+            f"Examples migration complete: {migrated} migrated, {skipped} skipped"
+        )
+
+        return {
+            "migrated": migrated,
+            "skipped": skipped,
+            "errors": errors,
+            "success": len(errors) == 0,
+            "files_processed": migrated
         }
 
     def _get_examples(self, examples_dir: Path) -> List[Path]:
