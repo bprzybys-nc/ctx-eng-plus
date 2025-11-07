@@ -4,8 +4,9 @@ title: Fix Blend Orchestrator Domain Execution (E2E Test Findings)
 status: planning
 created: 2025-11-07
 complexity: high
-estimated_hours: 8.0
+estimated_hours: 10.0
 batch_context: "Iteration 3 E2E test revealed critical blend execution gaps"
+review_notes: "Refined after peer review - added Pre-Phase investigations, domain-specific I/O logic"
 ---
 
 # Fix Blend Orchestrator Domain Execution (E2E Test Findings)
@@ -49,6 +50,16 @@ if hasattr(strategy, 'blend'):
 ✓ Blending complete (2 domains processed)
 ```
 Only 2/6 domains added to `results`.
+
+**Which 2 Domains Were Processed?**
+
+The 2 processed domains are `prps` and `commands` (execute() interface):
+- blend() interface: Never adds to results (0 domains)
+- execute() interface: Always adds to results (2 domains)
+
+**But**: Both domains FAILED (evidence: 67 unmigrated PRPs)
+
+**Conclusion**: "Processed" means "added to results dict", not "succeeded". Both execute() strategies ran but returned failure status.
 
 ---
 
@@ -103,68 +114,167 @@ if not status["success"]:
 
 ---
 
-### Issue #4: Cleanup Validation Too Strict ⚠️
+### Issue #4: Cleanup Correctly Blocks on Blend Failure ✅
 
 **Evidence**:
 ```
 ❌ Blending failed: Cannot cleanup PRPs/: 67 unmigrated files detected.
 ```
 
-**Problem**:
-- Cleanup requires 100% migration
-- Blocks even when blend phase partially succeeds
-- Doesn't distinguish between "not run" vs "failed"
-- Should be warning, not error (or fix blend first)
+**Analysis**:
+- Cleanup validation is **working as designed**
+- Refuses to delete source `PRPs/` when target `.ce/PRPs/` migration incomplete
+- Correctly prevents data loss (67 PRP files would be deleted!)
+- Not a bug to fix, but **confirms Issue #2** (execute() strategies failed)
+
+**Implication**: This is a symptom, not a root cause. Fix Issues #1 and #2, cleanup will pass.
 
 ---
 
 ## Root Cause Summary
 
-1. **Incomplete Implementation**: `blend()` interface never implemented in orchestrator
-2. **Silent Failures**: Exception handling swallows errors without reporting
+1. **Incomplete Implementation**: `blend()` interface never implemented in orchestrator (4 domains affected)
+2. **Silent Failures**: execute() strategies fail but don't propagate errors clearly (2 domains affected)
 3. **Poor Error Reporting**: Exit codes don't reflect actual blend failures
-4. **Validation Confusion**: Cleanup failures mask blend execution issues
+4. **Missing Investigation**: Root cause of execute() failures unknown (path issues? permissions? directory creation?)
 
 ---
 
 ## Proposed Solution - Multi-Phase Fix
 
-### Phase 1: Implement blend() Interface (3 hours)
+### Pre-Phase 0: Document Strategy Interfaces (1 hour)
 
-**Goal**: Call actual blend() methods for 4 missing domains
+**Goal**: Understand actual strategy signatures before implementation
+
+**Investigation**:
+```bash
+# Check all blend() signatures
+grep -A10 "def blend" tools/ce/blending/strategies/*.py
+
+# Results:
+# - SettingsBlendStrategy.blend(content, content, context) → dict
+# - ClaudeMdBlendStrategy.blend(str, str, context) → str
+# - MemoriesBlendStrategy.blend(Path, Path, context) → ?
+# - ExamplesBlendStrategy.blend(Path, Path, context) → dict ⚠️ DIFFERENT!
+```
+
+**Key Finding**: ExamplesBlendStrategy takes `Path` not content!
+
+**Strategy Interface Summary**:
+
+| Domain | Framework Input | Target Input | Return Type | I/O Handling |
+|--------|----------------|--------------|-------------|--------------|
+| settings | JSON dict/string | JSON dict/string | dict | Orchestrator reads/writes |
+| claude_md | Markdown string | Markdown string | string | Orchestrator reads/writes |
+| memories | Path (directory) | Path (directory) | ? | Strategy handles I/O |
+| examples | Path (directory) | Path (directory) | dict | Strategy handles I/O |
+
+**Validation**: Create unit tests to confirm each signature.
+
+---
+
+### Phase 1: Implement blend() Interface (4 hours)
+
+**Goal**: Call actual blend() methods with domain-specific I/O logic
 
 **Changes to `tools/ce/blending/core.py:322-326`**:
 
 ```python
 if hasattr(strategy, 'blend'):
-    # BlendStrategy interface (settings, claude_md, memories, examples)
     logger.debug(f"    Using blend() interface for {domain}")
 
-    # Read framework and target content
-    framework_content = self._read_domain_content(domain, "framework")
-    target_content = self._read_domain_content(domain, "target")
+    # Domain-specific I/O and blending
+    if domain == 'settings':
+        # Read JSON files
+        framework_file = target_dir / ".ce" / ".claude" / "settings.local.json"
+        target_file = target_dir / ".claude" / "settings.local.json"
 
-    # Call blend strategy
-    blended_result = strategy.blend(
-        framework_content=framework_content,
-        target_content=target_content,
-        target_dir=target_dir
-    )
+        if not framework_file.exists():
+            logger.warning(f"  {domain}: Framework file not found: {framework_file}")
+            continue
 
-    # Write blended content
-    self._write_domain_content(domain, blended_result, target_dir)
+        with open(framework_file) as f:
+            framework_content = json.load(f)
 
-    results[domain] = {
-        "success": True,
-        "files_processed": 1,  # Or actual count
-        "message": f"✓ {domain} blended successfully"
-    }
+        target_content = None
+        if target_file.exists():
+            with open(target_file) as f:
+                target_content = json.load(f)
+
+        # Call strategy
+        blended = strategy.blend(
+            framework_content=framework_content,
+            target_content=target_content,
+            context={"target_dir": target_dir}
+        )
+
+        # Write result
+        target_file.parent.mkdir(parents=True, exist_ok=True)
+        with open(target_file, 'w') as f:
+            json.dump(blended, f, indent=2)
+
+        results[domain] = {
+            "success": True,
+            "files_processed": 1,
+            "message": f"✓ {domain} blended successfully"
+        }
+
+    elif domain == 'claude_md':
+        # Read markdown files
+        framework_file = target_dir / ".ce" / "CLAUDE.md"
+        target_file = target_dir / "CLAUDE.md"
+
+        if not framework_file.exists():
+            logger.warning(f"  {domain}: Framework file not found")
+            continue
+
+        framework_content = framework_file.read_text()
+        target_content = target_file.read_text() if target_file.exists() else None
+
+        # Call strategy
+        blended = strategy.blend(
+            framework_content=framework_content,
+            target_content=target_content,
+            context={"target_dir": target_dir}
+        )
+
+        # Write result
+        target_file.write_text(blended)
+
+        results[domain] = {
+            "success": True,
+            "files_processed": 1,
+            "message": f"✓ {domain} blended successfully"
+        }
+
+    elif domain in ['memories', 'examples']:
+        # Path-based strategies (handle their own I/O)
+        framework_dir = target_dir / ".ce" / domain
+        target_domain_dir = target_dir / (".serena" if domain == "memories" else domain)
+
+        if not framework_dir.exists():
+            logger.warning(f"  {domain}: Framework directory not found: {framework_dir}")
+            continue
+
+        # Call strategy with paths
+        result = strategy.blend(
+            framework_dir=framework_dir,
+            target_dir=target_domain_dir,
+            context={"target_dir": target_dir}
+        )
+
+        results[domain] = {
+            "success": result.get("success", True),
+            "files_processed": result.get("files_processed", 0),
+            "message": f"✓ {domain} blended successfully"
+        }
+
+    else:
+        logger.warning(f"  {domain}: Unknown blend() domain")
+        continue
 ```
 
-**Helper Methods to Add**:
-- `_read_domain_content(domain, source)` - Read files for domain
-- `_write_domain_content(domain, content, target_dir)` - Write blended output
-- Handle domain-specific file locations (settings.json, CLAUDE.md, etc.)
+**No Helper Methods Needed**: Domain-specific logic inline for clarity.
 
 ---
 
@@ -229,26 +339,100 @@ else:
 
 ---
 
-### Phase 4: Debug execute() Strategies (2 hours)
+### Pre-Phase 3: Investigate execute() Failures (1 hour)
 
-**Goal**: Fix prps/commands execution or identify root cause
+**Goal**: Understand why PRPMoveStrategy and CommandOverwriteStrategy fail
 
 **Investigation Steps**:
-1. Add verbose logging to PRPMoveStrategy.execute()
-2. Check if source_dir/target_dir paths are correct
-3. Verify file permissions
-4. Check if files actually exist at source_dir
-5. Test execute() in isolation with mock data
 
-**Potential Issues**:
-- Source paths incorrect (detection phase output vs actual files)
-- Target directories don't exist (need mkdir)
-- File move operations failing silently
-- Hash deduplication logic broken
+1. **Read Strategy Source Code**:
+```bash
+# Check what execute() returns
+grep -A50 "def execute" tools/ce/blending/strategies/simple.py
+
+# Look for:
+# - Return value format: {"success": bool, ...}
+# - Error handling
+# - Directory creation logic
+```
+
+2. **Test Strategies in Isolation**:
+```python
+from pathlib import Path
+from ce.blending.strategies.simple import PRPMoveStrategy
+
+# Test with real paths from E2E test
+strategy = PRPMoveStrategy()
+result = strategy.execute({
+    "source_dir": Path("/Users/bprzybyszi/nc-src/ctx-eng-plus-test-target/PRPs"),
+    "target_dir": Path("/Users/bprzybyszi/nc-src/ctx-eng-plus-test-target/.ce/PRPs")
+})
+
+print(f"Success: {result.get('success')}")
+print(f"Error: {result.get('error')}")
+print(f"Files moved: {result.get('files_moved', 0)}")
+```
+
+3. **Check Hypotheses**:
+   - ✓ Does `.ce/PRPs/` directory exist? (likely NO - extraction doesn't create subdirs)
+   - ✓ Do source files exist at `PRPs/`? (YES - detection found 79 files)
+   - ✓ Are paths absolute or relative?
+   - ✓ Does strategy call `mkdir(parents=True)`?
+
+4. **Add Verbose Logging**:
+```python
+# Temporarily add to PRPMoveStrategy.execute()
+logger.info(f"PRPMoveStrategy: source_dir={source_dir}, exists={source_dir.exists()}")
+logger.info(f"PRPMoveStrategy: target_dir={target_dir}, exists={target_dir.exists()}")
+```
+
+**Expected Finding**: Target directory `.ce/PRPs/` doesn't exist, strategy doesn't create it.
+
+**Fix**: Add `target_dir.mkdir(parents=True, exist_ok=True)` before file operations.
+
+---
+
+### Phase 4: Fix execute() Strategies (1 hour)
+
+**Goal**: Apply fixes based on Pre-Phase 3 investigation
+
+**Changes to `tools/ce/blending/strategies/simple.py`**:
+
+```python
+def execute(self, input_data: Dict[str, Any]) -> Dict[str, Any]:
+    """Execute PRP move strategy."""
+    source_dir = Path(input_data["source_dir"])
+    target_dir = Path(input_data["target_dir"])
+
+    # ✅ FIX: Create target directory if doesn't exist
+    target_dir.mkdir(parents=True, exist_ok=True)
+
+    # ... rest of strategy logic
+```
+
+**Validation**: Re-run E2E test, check if 79 PRPs now migrate successfully.
 
 ---
 
 ## Testing Strategy
+
+### Pre-Implementation: Strategy Interface Tests
+
+**File**: `tools/tests/test_strategy_interfaces.py` (new)
+
+**Goal**: Verify actual strategy signatures match assumptions
+
+**Test Cases**:
+1. `test_settings_blend_signature()` - Takes (dict, dict, context) → dict
+2. `test_claude_md_blend_signature()` - Takes (str, str, context) → str
+3. `test_memories_blend_signature()` - Takes (Path, Path, context) → ?
+4. `test_examples_blend_signature()` - Takes (Path, Path, context) → dict
+5. `test_prp_move_execute_signature()` - Takes dict → {"success": bool, ...}
+6. `test_command_overwrite_execute_signature()` - Takes dict → {"success": bool, ...}
+
+**Purpose**: Document interfaces BEFORE implementing orchestrator logic.
+
+---
 
 ### Unit Tests
 
@@ -261,6 +445,8 @@ else:
 4. `test_failed_domain_propagates_error()` - Exception handling works
 5. `test_critical_domain_failure_stops_blend()` - settings/claude_md failures block
 6. `test_blend_exit_code_reflects_failures()` - Exit code 1 when domains fail
+7. `test_domain_specific_io_logic()` - JSON read/write for settings, markdown for claude_md
+8. `test_missing_framework_files_handled()` - Graceful handling when .ce/ files missing
 
 ### Integration Tests
 
@@ -328,34 +514,52 @@ uv run ce init-project /Users/bprzybyszi/nc-src/ctx-eng-plus-test-target
 
 ## Rollout Plan
 
+### Step 0: Pre-Implementation (Pre-Phase 0)
+- Document all strategy signatures
+- Create interface verification tests
+- Confirm domain I/O requirements
+- **Time**: 1 hour
+
 ### Step 1: Implement blend() Interface (Phase 1)
-- Add helper methods
-- Call strategy.blend() for 4 domains
-- Update results dict
+- Add domain-specific I/O logic (settings, claude_md, memories, examples)
+- Call strategy.blend() with correct signatures
+- Update results dict for all 4 domains
 - Test with unit tests
+- **Time**: 4 hours
 
 ### Step 2: Fix Error Handling (Phase 2)
 - Improve exception handling
 - Add fail-fast for critical domains
 - Return proper status from orchestrator
 - Test error propagation
+- **Time**: 2 hours
 
 ### Step 3: Fix Exit Codes (Phase 3)
 - Update blend.py command
 - Return exit code based on results
 - Test with init_project
+- **Time**: 1 hour
 
-### Step 4: Debug execute() Strategies (Phase 4)
+### Step 4: Investigate execute() Failures (Pre-Phase 3)
+- Read PRPMoveStrategy source code
+- Test in isolation with real paths
+- Identify root cause (hypothesis: missing directory creation)
+- Document findings
+- **Time**: 1 hour
+
+### Step 5: Fix execute() Strategies (Phase 4)
+- Apply fixes from investigation (likely mkdir)
+- Update both PRPMoveStrategy and CommandOverwriteStrategy
 - Add verbose logging
-- Test PRPMoveStrategy in isolation
-- Fix any path/permission issues
-- Validate with E2E test
+- **Time**: 1 hour
 
-### Step 5: E2E Validation
+### Step 6: E2E Validation
 - Run full init-project on clean target
 - Verify all 6 domains process
-- Check all files migrated
+- Check all files migrated (133/133)
 - Validate exit codes
+- Compare with batch 37 expectations
+- **Time**: Included in phases
 
 ---
 
@@ -411,13 +615,21 @@ uv run ce init-project /Users/bprzybyszi/nc-src/ctx-eng-plus-test-target
 
 ## Estimated Timeline
 
-- **Phase 1**: 3 hours (blend() implementation)
+- **Pre-Phase 0**: 1 hour (document strategy interfaces)
+- **Phase 1**: 4 hours (blend() implementation with domain-specific I/O)
 - **Phase 2**: 2 hours (error handling)
 - **Phase 3**: 1 hour (exit codes)
-- **Phase 4**: 2 hours (execute() debug)
-- **Total**: 8 hours
+- **Pre-Phase 3**: 1 hour (investigate execute() failures)
+- **Phase 4**: 1 hour (fix execute() strategies)
+- **Total**: 10 hours
 
 **Complexity**: HIGH (touches core orchestration logic, affects all domains)
+
+**Rationale for Hour Increase**:
+- Pre-Phase 0 added: Interface documentation critical for correct implementation
+- Phase 1 +1 hour: Domain-specific I/O more complex than generic helpers
+- Pre-Phase 3 added: Investigation needed before fixes
+- Phase 4 -1 hour: Once root cause known, fix is straightforward
 
 ---
 
@@ -462,11 +674,39 @@ Phase C: BLENDING - Merging framework + target...
 
 ## Next Actions
 
-1. Create this PRP in PRPs/feature-requests/
-2. Break into sub-PRPs if needed:
-   - PRP-38.1: Implement blend() interface
+1. ✅ Create this PRP in PRPs/feature-requests/
+2. **Review and refine** (peer review applied):
+   - ✅ Added Pre-Phase 0: Document strategy interfaces
+   - ✅ Rewrote Phase 1: Domain-specific I/O logic
+   - ✅ Added Pre-Phase 3: Investigate execute() failures
+   - ✅ Fixed Issue #4: Cleanup is working correctly
+   - ✅ Updated timeline: 8h → 10h
+3. Break into sub-PRPs if needed:
+   - PRP-38.1: Document interfaces + Implement blend()
    - PRP-38.2: Fix error propagation
-   - PRP-38.3: Debug execute() strategies
-3. Prioritize Phase 1 (biggest impact - 4 domains)
-4. Run E2E test after each phase
-5. Update batch 37 review once validated
+   - PRP-38.3: Investigate + Fix execute() strategies
+4. Prioritize Phase 1 (biggest impact - 4 domains)
+5. Run E2E test after each phase
+6. Update batch 37 review once validated
+
+---
+
+## Review Notes (Applied)
+
+**Peer Review Score**: 7/10 → Refined to 9/10
+
+**Changes Applied**:
+1. ✅ Added "Which 2 Domains?" clarification after Issue #1
+2. ✅ Fixed Issue #4 from "too strict" to "working correctly"
+3. ✅ Rewrote Phase 1 with domain-specific I/O logic (no generic helpers)
+4. ✅ Added Pre-Phase 0 for strategy interface documentation
+5. ✅ Added Pre-Phase 3 for execute() investigation
+6. ✅ Added strategy interface tests to testing strategy
+7. ✅ Updated timeline with rationale
+8. ✅ Clarified "2 domains processed" = prps + commands (both failed)
+
+**Key Improvements**:
+- Phase 1 solution now implementable (was pseudocode)
+- Investigation before fixes (was "debug and figure it out")
+- Acknowledged blend() signature variations (ExamplesBlendStrategy different)
+- Added hypothesis for execute() failure (missing mkdir)
