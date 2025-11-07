@@ -480,3 +480,89 @@ The repomix package (`ce-32/builds/ce-infrastructure.xml`) already contains prop
 - Implementation: 2 hours
 - Testing: 1 hour
 - **Total**: 3 hours
+
+---
+
+## Completion Report
+
+**Status**: ✅ **COMPLETE**
+**Date**: 2025-11-07
+**Validation**: All gates passed on both test target and real-world project
+
+### Implementation Changes
+
+**1. Removed Reorganization Logic** (`tools/ce/init_project.py` lines 171-182)
+- ✅ Framework structure preserved at `.ce/.serena/memories/`
+- ✅ No reorganization to `.ce/memories/`
+
+**2. Updated Framework Path** (`tools/ce/blending/core.py` line 403-405)
+- ✅ Orchestrator reads from `.ce/.serena/memories/`
+
+**3. Added Pre-Blend Workflow** (`tools/ce/blending/core.py` lines 409-438)
+- ✅ Renames `.serena/` → `.serena.old/` before blending
+- ✅ Framework verification before blending
+- ✅ Target domain dir points to `.serena.old/memories/`
+
+**4. Updated Output Path** (`tools/ce/blending/core.py` line 467)
+- ✅ Output to `.serena/memories/` (canonical location)
+
+**5. Added .serena.old/ to Cleanup** (`tools/ce/blending/cleanup.py` line 40)
+- ✅ `.serena.old/` added to legacy_dirs
+
+**6. Added Path Mapping** (`tools/ce/blending/cleanup.py` lines 168-177)
+- ✅ Maps `.serena.old/memories/*` → `.serena/memories/*`
+- ✅ Skips non-memory files
+
+**7. Simplified Cleanup Validation** (`tools/ce/blending/cleanup.py` lines 12-16, 107-118)
+- ✅ Removed complex SKIP_PATTERNS, SKIP_DIRS, EXCLUDED_FROM_PACKAGE
+- ✅ Only skips system files (.DS_Store, .gitignore, Thumbs.db)
+- ✅ ALL user content must migrate (examples, PRPs, README, documentation)
+
+### Validation Results
+
+**Test Target 1: ctx-eng-plus-test-target**
+- ✅ Scenario: Existing `.serena/` with 24 framework copies
+- ✅ All 5 validation gates passed
+- ✅ Cleanup complete (4/4 directories removed)
+- ✅ Memory count: 24 framework files at canonical location
+
+**Test Target 2: mlx-trading-pipeline-context-engineering**
+- ✅ Scenario: Fresh install (no existing `.serena/`)
+- ✅ Framework memories at `.ce/.serena/memories/`
+- ✅ No unnecessary `.serena/` created
+- ✅ 5/6 domains blended (memories domain not detected - correct behavior)
+
+### Architectural Verification
+
+**Before PRP-41** (Broken):
+```
+.ce/memories/           ❌ Reorganized (violates package structure)
+.serena/memories/       ⚠️  Old copy remains (incomplete cleanup)
+```
+
+**After PRP-41** (Fixed):
+```
+.ce/.serena/memories/   ✅ Framework source (preserved structure)
+.serena/memories/       ✅ Canonical location (blended output)
+```
+
+### Key Principles Established
+
+1. **ONE TRUE LOCATION**: `.serena/` is the canonical location for Serena memories
+2. **Framework Preservation**: `.ce/.serena/` structure matches repomix package
+3. **Clean Separation**: `.ce/` for framework, `.serena/` for canonical state
+4. **Complete Migration**: ALL user content migrates, only system files ignored
+5. **Zero Noise**: Root legacy directories completely removed after validation
+
+### Documentation Updates
+
+- ✅ Updated `.ce/examples/INITIALIZATION.md` with cleanup validation logic
+- ✅ PRP-41 completion report (this section)
+
+### Related Artifacts
+
+- Success report: `tmp/prp41-iteration-SUCCESS.md`
+- Real-world test: `tmp/prp41-mlx-iteration-SUCCESS.md`
+- Execution logs: `tmp/prp41-iteration-final.log`, `tmp/prp41-mlx-iteration.log`
+
+**Confidence Score**: 10/10 (validated on 2 scenarios, all gates passed)

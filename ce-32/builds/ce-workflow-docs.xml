@@ -1379,6 +1379,139 @@ This section contains the contents of the repository's files.
 65: - **Practical**: Real-world usage
 </file>
 
+<file path="examples/tmp-directory-convention.md">
+  1: # tmp/ Directory Convention
+  2: 
+  3: ## Rule: Keep Working Directory Clean
+  4: 
+  5: **Only final deliverables in tracked directories. All work-in-progress goes to tmp/**
+  6: 
+  7: ## Directory Structure
+  8: 
+  9: ```
+ 10: ctx-eng-plus/
+ 11: ├── PRPs/                    # ONLY final PRP documents
+ 12: │   ├── executed/
+ 13: │   └── feature-requests/
+ 14: ├── tmp/                     # ALL work-in-progress (gitignored)
+ 15: │   ├── batch-gen/          # Batch generation heartbeat files
+ 16: │   ├── feature-requests/   # INITIAL.md and PLAN.md files
+ 17: │   └── scratch/            # Any other temporary work
+ 18: └── examples/               # Documentation and examples
+ 19: ```
+ 20: 
+ 21: ## Rules
+ 22: 
+ 23: ### 1. INITIAL.md and PLAN.md
+ 24: 
+ 25: **Location**: `tmp/feature-requests/<feature-name>/`
+ 26: 
+ 27: **Example**:
+ 28: ```bash
+ 29: # ✅ CORRECT
+ 30: tmp/feature-requests/syntropy-tool-management/INITIAL.md
+ 31: tmp/feature-requests/syntropy-tool-management/PLAN.md
+ 32: 
+ 33: # ❌ WRONG
+ 34: feature-requests/syntropy-tool-management/INITIAL.md
+ 35: feature-requests/syntropy-tool-management/PLAN.md
+ 36: ```
+ 37: 
+ 38: ### 2. Batch Generation Heartbeat Files
+ 39: 
+ 40: **Location**: `tmp/batch-gen/`
+ 41: 
+ 42: **Example**:
+ 43: ```bash
+ 44: # ✅ CORRECT
+ 45: tmp/batch-gen/PRP-30.1.1.status
+ 46: tmp/batch-gen/PRP-30.2.1.status
+ 47: 
+ 48: # ❌ WRONG
+ 49: .tmp/batch-gen/PRP-30.1.1.status  # No leading dot
+ 50: ```
+ 51: 
+ 52: ### 3. PRPs (Final Deliverables)
+ 53: 
+ 54: **Location**: `PRPs/feature-requests/` or `PRPs/executed/`
+ 55: 
+ 56: **Example**:
+ 57: ```bash
+ 58: # ✅ CORRECT
+ 59: PRPs/feature-requests/PRP-30.1.1-syntropy-mcp-tool-management.md
+ 60: PRPs/executed/PRP-29-haiku-optimized-prp-guidelines.md
+ 61: 
+ 62: # ❌ WRONG
+ 63: tmp/PRPs/PRP-30.1.1-syntropy-mcp-tool-management.md
+ 64: ```
+ 65: 
+ 66: ## Workflow Example
+ 67: 
+ 68: ### Generate PRP from INITIAL.md
+ 69: 
+ 70: ```bash
+ 71: # Step 1: Create INITIAL.md in tmp/
+ 72: mkdir -p tmp/feature-requests/my-feature
+ 73: vim tmp/feature-requests/my-feature/INITIAL.md
+ 74: 
+ 75: # Step 2: Generate PRP (output goes to PRPs/)
+ 76: /generate-prp tmp/feature-requests/my-feature/INITIAL.md
+ 77: # Output: PRPs/feature-requests/PRP-X-my-feature.md
+ 78: 
+ 79: # Step 3: Clean up (optional)
+ 80: rm -rf tmp/feature-requests/my-feature
+ 81: ```
+ 82: 
+ 83: ### Batch Generation from PLAN.md
+ 84: 
+ 85: ```bash
+ 86: # Step 1: Create PLAN.md in tmp/
+ 87: mkdir -p tmp/feature-requests/big-feature
+ 88: vim tmp/feature-requests/big-feature/PLAN.md
+ 89: 
+ 90: # Step 2: Generate batch PRPs
+ 91: /batch-gen-prp tmp/feature-requests/big-feature/PLAN.md
+ 92: # Heartbeat files: tmp/batch-gen/PRP-X.Y.Z.status
+ 93: # Output PRPs: PRPs/feature-requests/PRP-X.Y.Z-*.md
+ 94: 
+ 95: # Step 3: Clean up (automatic)
+ 96: # Heartbeat files cleaned up after generation completes
+ 97: ```
+ 98: 
+ 99: ## Git Configuration
+100: 
+101: **Ensure tmp/ is gitignored**:
+102: 
+103: ```gitignore
+104: # .gitignore
+105: tmp/
+106: .tmp/
+107: *.tmp
+108: ```
+109: 
+110: ## Benefits
+111: 
+112: 1. **Clean working directory**: Only final deliverables tracked in git
+113: 2. **Easy cleanup**: Delete `tmp/` anytime without losing work
+114: 3. **Clear separation**: Work-in-progress vs. deliverables
+115: 4. **No git noise**: No accidental commits of INITIAL.md or heartbeat files
+116: 
+117: ## Migration
+118: 
+119: If you have existing files in wrong locations:
+120: 
+121: ```bash
+122: # Move INITIAL.md files
+123: mkdir -p tmp/feature-requests/
+124: mv feature-requests/* tmp/feature-requests/
+125: 
+126: # Move batch-gen files (if any)
+127: mkdir -p tmp/batch-gen/
+128: mv .tmp/batch-gen/* tmp/batch-gen/ 2>/dev/null || true
+129: rmdir .tmp/batch-gen .tmp 2>/dev/null || true
+130: ```
+</file>
+
 <file path="examples/model/SystemModel.md">
    1: # Context Engineering Management System
    2: 
@@ -4361,139 +4494,6 @@ This section contains the contents of the repository's files.
 2979: - Update with real-world metrics
 2980: - Incorporate lessons learned
 2981: - Maintain version history
-</file>
-
-<file path="examples/tmp-directory-convention.md">
-  1: # tmp/ Directory Convention
-  2: 
-  3: ## Rule: Keep Working Directory Clean
-  4: 
-  5: **Only final deliverables in tracked directories. All work-in-progress goes to tmp/**
-  6: 
-  7: ## Directory Structure
-  8: 
-  9: ```
- 10: ctx-eng-plus/
- 11: ├── PRPs/                    # ONLY final PRP documents
- 12: │   ├── executed/
- 13: │   └── feature-requests/
- 14: ├── tmp/                     # ALL work-in-progress (gitignored)
- 15: │   ├── batch-gen/          # Batch generation heartbeat files
- 16: │   ├── feature-requests/   # INITIAL.md and PLAN.md files
- 17: │   └── scratch/            # Any other temporary work
- 18: └── examples/               # Documentation and examples
- 19: ```
- 20: 
- 21: ## Rules
- 22: 
- 23: ### 1. INITIAL.md and PLAN.md
- 24: 
- 25: **Location**: `tmp/feature-requests/<feature-name>/`
- 26: 
- 27: **Example**:
- 28: ```bash
- 29: # ✅ CORRECT
- 30: tmp/feature-requests/syntropy-tool-management/INITIAL.md
- 31: tmp/feature-requests/syntropy-tool-management/PLAN.md
- 32: 
- 33: # ❌ WRONG
- 34: feature-requests/syntropy-tool-management/INITIAL.md
- 35: feature-requests/syntropy-tool-management/PLAN.md
- 36: ```
- 37: 
- 38: ### 2. Batch Generation Heartbeat Files
- 39: 
- 40: **Location**: `tmp/batch-gen/`
- 41: 
- 42: **Example**:
- 43: ```bash
- 44: # ✅ CORRECT
- 45: tmp/batch-gen/PRP-30.1.1.status
- 46: tmp/batch-gen/PRP-30.2.1.status
- 47: 
- 48: # ❌ WRONG
- 49: .tmp/batch-gen/PRP-30.1.1.status  # No leading dot
- 50: ```
- 51: 
- 52: ### 3. PRPs (Final Deliverables)
- 53: 
- 54: **Location**: `PRPs/feature-requests/` or `PRPs/executed/`
- 55: 
- 56: **Example**:
- 57: ```bash
- 58: # ✅ CORRECT
- 59: PRPs/feature-requests/PRP-30.1.1-syntropy-mcp-tool-management.md
- 60: PRPs/executed/PRP-29-haiku-optimized-prp-guidelines.md
- 61: 
- 62: # ❌ WRONG
- 63: tmp/PRPs/PRP-30.1.1-syntropy-mcp-tool-management.md
- 64: ```
- 65: 
- 66: ## Workflow Example
- 67: 
- 68: ### Generate PRP from INITIAL.md
- 69: 
- 70: ```bash
- 71: # Step 1: Create INITIAL.md in tmp/
- 72: mkdir -p tmp/feature-requests/my-feature
- 73: vim tmp/feature-requests/my-feature/INITIAL.md
- 74: 
- 75: # Step 2: Generate PRP (output goes to PRPs/)
- 76: /generate-prp tmp/feature-requests/my-feature/INITIAL.md
- 77: # Output: PRPs/feature-requests/PRP-X-my-feature.md
- 78: 
- 79: # Step 3: Clean up (optional)
- 80: rm -rf tmp/feature-requests/my-feature
- 81: ```
- 82: 
- 83: ### Batch Generation from PLAN.md
- 84: 
- 85: ```bash
- 86: # Step 1: Create PLAN.md in tmp/
- 87: mkdir -p tmp/feature-requests/big-feature
- 88: vim tmp/feature-requests/big-feature/PLAN.md
- 89: 
- 90: # Step 2: Generate batch PRPs
- 91: /batch-gen-prp tmp/feature-requests/big-feature/PLAN.md
- 92: # Heartbeat files: tmp/batch-gen/PRP-X.Y.Z.status
- 93: # Output PRPs: PRPs/feature-requests/PRP-X.Y.Z-*.md
- 94: 
- 95: # Step 3: Clean up (automatic)
- 96: # Heartbeat files cleaned up after generation completes
- 97: ```
- 98: 
- 99: ## Git Configuration
-100: 
-101: **Ensure tmp/ is gitignored**:
-102: 
-103: ```gitignore
-104: # .gitignore
-105: tmp/
-106: .tmp/
-107: *.tmp
-108: ```
-109: 
-110: ## Benefits
-111: 
-112: 1. **Clean working directory**: Only final deliverables tracked in git
-113: 2. **Easy cleanup**: Delete `tmp/` anytime without losing work
-114: 3. **Clear separation**: Work-in-progress vs. deliverables
-115: 4. **No git noise**: No accidental commits of INITIAL.md or heartbeat files
-116: 
-117: ## Migration
-118: 
-119: If you have existing files in wrong locations:
-120: 
-121: ```bash
-122: # Move INITIAL.md files
-123: mkdir -p tmp/feature-requests/
-124: mv feature-requests/* tmp/feature-requests/
-125: 
-126: # Move batch-gen files (if any)
-127: mkdir -p tmp/batch-gen/
-128: mv .tmp/batch-gen/* tmp/batch-gen/ 2>/dev/null || true
-129: rmdir .tmp/batch-gen .tmp 2>/dev/null || true
-130: ```
 </file>
 
 <file path="examples/INDEX.md">
