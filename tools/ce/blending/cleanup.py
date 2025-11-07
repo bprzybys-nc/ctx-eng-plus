@@ -7,6 +7,15 @@ from typing import Dict, List, Tuple
 
 logger = logging.getLogger(__name__)
 
+# Patterns for files that should NOT be migrated
+SKIP_PATTERNS = [
+    "REPORT", "INITIAL", "summary", "analysis",
+    "PLAN", ".backup", "~", ".tmp", ".log"
+]
+
+# Directories that should NOT be migrated
+SKIP_DIRS = ["templates"]
+
 
 def cleanup_legacy_dirs(
     target_project: Path,
@@ -95,12 +104,38 @@ def cleanup_legacy_dirs(
     return status
 
 
+def _should_skip_file(file_path: Path) -> bool:
+    """
+    Check if file should be skipped (not expected to migrate).
+
+    Args:
+        file_path: File path to check
+
+    Returns:
+        True if file should be skipped (templates, garbage patterns)
+    """
+    # Check if in skip directory (e.g., templates/)
+    for part in file_path.parts:
+        if part in SKIP_DIRS:
+            return True
+
+    # Check if filename matches skip patterns
+    filename = file_path.name
+    for pattern in SKIP_PATTERNS:
+        if pattern.lower() in filename.lower():
+            return True
+
+    return False
+
+
 def verify_migration_complete(
     legacy_dir: Path,
     target_project: Path
 ) -> Tuple[bool, List[str]]:
     """
     Verify all files in legacy_dir have been migrated.
+
+    Skips files that should NOT be migrated (templates, garbage patterns).
 
     Args:
         legacy_dir: Legacy directory path (e.g., PRPs/)
@@ -120,6 +155,11 @@ def verify_migration_complete(
 
     for legacy_file in legacy_files:
         relative_path = legacy_file.relative_to(target_project)
+
+        # Skip files that should NOT be migrated
+        if _should_skip_file(relative_path):
+            logger.debug(f"  Skipping expected unmigrated file: {relative_path}")
+            continue
 
         # Check if migrated to .ce/
         # PRPs/executed/PRP-1.md → .ce/PRPs/executed/PRP-1.md
