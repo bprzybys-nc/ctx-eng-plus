@@ -1,7 +1,7 @@
 ---
-prp_id: PRP-38-INITIAL
+prp_id: PRP-38
 title: Fix Blend Orchestrator Domain Execution (E2E Test Findings)
-status: planning
+status: in_progress
 created: 2025-11-07
 complexity: high
 estimated_hours: 10.0
