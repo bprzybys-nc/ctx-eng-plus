@@ -1,0 +1,12 @@
+
+=== Phase: extract ===
+ℹ️  Renamed existing .ce/ to .ce.old/
+💡 .ce.old/ will be included as additional context source during blend
+✅ Extracted 55 files to /Users/bprzybyszi/nc-src/ctx-eng-plus-test-target/.ce
+
+=== Phase: blend ===
+❌ Blend phase failed (exit code 1)
+🔧 Check blend tool output:
+❌ Blending failed: Config file not found: /Users/bprzybyszi/nc-src/ctx-eng-plus-test-target/.ce/blend-config.yml
+🔧 Create .ce/blend-config.yml (see PRP-34.1.1)
+
