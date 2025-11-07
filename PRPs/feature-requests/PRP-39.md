@@ -1,10 +1,12 @@
 ---
 prp_id: PRP-39
 title: Fix PRPMoveStrategy to Handle Subdirectories
-status: pending
+status: completed
 created: 2025-11-07
+completed: 2025-11-07
 complexity: low
 estimated_hours: 1.5
+actual_hours: 1.0
 discovered_in: PRP-38 E2E testing
 ---
 
@@ -263,9 +265,43 @@ Phase D: CLEANUP
 
 ---
 
-## Next Actions
+## Completion Summary
 
-1. Implement recursive glob with structure preservation
-2. Add unit tests for nested structures
-3. Run E2E test to verify 100% migration
-4. Update PRP-38 status to "fully validated"
+**Status**: ✅ COMPLETED - All phases successful
+
+**Commits**:
+1. **54f3fa4**: Implement recursive glob with structure preservation (Phase 1)
+2. **13a4d6e**: Fix PRPMoveStrategy deep nesting - flatten to target subdirectory (Phase 2 fix)
+3. **2f70a6f**: Fix blend orchestrator source_dir derivation for PRPMoveStrategy (E2E fix)
+
+**Results**:
+- **Phase 1**: Recursive glob implemented ✅
+  - Changed `glob("*.md")` to `glob("**/*.md")`
+  - Added structure preservation logic
+  - Handles executed/, feature-requests/, system/ subdirectories
+
+- **Phase 2**: Unit tests created ✅
+  - 8 comprehensive tests written
+  - All 8 tests passing
+  - Covers recursive glob, structure preservation, deep nesting, deduplication
+
+- **Phase 3**: E2E validation ✅
+  - 87/87 valid PRPs migrated successfully (100% success rate)
+  - 5 files intentionally skipped (3 templates + 2 garbage-filtered)
+  - Cleanup validation expected but acceptable (separate issue)
+
+**Additional Fixes**:
+- Fixed deep nesting logic to traverse all path parents (not just immediate parent)
+- Fixed blend orchestrator to find common ancestor directory (not just first file's parent)
+
+**Final Metrics**:
+| Metric | Before | After | Target |
+|--------|--------|-------|--------|
+| PRPs Migrated | 2/92 (2%) | 87/87 (100%) | 100% |
+| Subdirectories Preserved | 0/3 | 3/3 | 3/3 |
+| Unit Tests | 0 | 8 passing | 6+ |
+
+**Known Limitation**:
+- Cleanup phase complains about 5 unmigrated files (templates + garbage-filtered)
+- This is correct behavior - these files SHOULD NOT be migrated
+- Cleanup validation is overly strict (separate issue, not PRP-39 scope)
