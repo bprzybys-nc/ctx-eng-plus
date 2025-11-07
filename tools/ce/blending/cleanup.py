@@ -51,9 +51,6 @@ def cleanup_legacy_dirs(
         print("⚠️  DRY-RUN MODE: No files will be deleted")
         print()
 
-    # Check if .ce.old/ exists (re-initialization scenario)
-    ce_old_exists = (target_project / ".ce.old").exists()
-
     for legacy_dir in legacy_dirs:
         legacy_path = target_project / legacy_dir
 
@@ -63,10 +60,11 @@ def cleanup_legacy_dirs(
             status[legacy_dir] = True
             continue
 
-        # Skip root examples/ in re-initialization scenario
-        # (examples are blended from .ce.old/examples/, not root examples/)
-        if legacy_dir == "examples" and ce_old_exists:
-            print(f"⏭️  {legacy_dir}/ - Skipping (re-initialization, .ce.old/ exists)")
+        # Skip root examples/ directory (user code, not CE framework files)
+        # Examples domain only migrates framework examples from .ce.old/examples/
+        # Root examples/ are considered user code outside CE structure
+        if legacy_dir == "examples":
+            print(f"⏭️  {legacy_dir}/ - Skipping (user code, not CE framework)")
             status[legacy_dir] = True
             continue
 
