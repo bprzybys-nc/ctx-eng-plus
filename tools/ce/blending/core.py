@@ -7,7 +7,7 @@ from pathlib import Path
 from typing import Generator, Dict, List, Any, Optional
 from contextlib import contextmanager
 
-from ce.blending.llm import BlendingLLM
+from ce.blending.llm_client import BlendingLLM
 
 logger = logging.getLogger(__name__)
 
