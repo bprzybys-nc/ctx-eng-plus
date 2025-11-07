@@ -168,6 +168,19 @@ class ProjectInitializer:
                         dest.unlink()
                 shutil.move(str(item), str(dest))
 
+            # Reorganize .serena/memories/ → .ce/memories/ for orchestrator
+            # Orchestrator expects framework memories at .ce/memories/, not .ce/.serena/memories/
+            serena_memories = self.ce_dir / ".serena" / "memories"
+            if serena_memories.exists():
+                memories_dest = self.ce_dir / "memories"
+                if memories_dest.exists():
+                    shutil.rmtree(memories_dest)
+                shutil.move(str(serena_memories), str(memories_dest))
+                # Remove empty .serena directory
+                serena_dir = self.ce_dir / ".serena"
+                if serena_dir.exists() and not any(serena_dir.iterdir()):
+                    serena_dir.rmdir()
+
             # Copy ce-workflow-docs.xml (reference package)
             if self.workflow_xml.exists():
                 shutil.copy2(self.workflow_xml, self.ce_dir / "ce-workflow-docs.xml")

@@ -432,11 +432,21 @@ class BlendingOrchestrator:
                                 context={"target_dir": target_dir}
                             )
 
-                        results[domain] = {
-                            "success": result.get("success", True),
-                            "files_processed": result.get("files_processed", 0),
-                            "message": f"✓ {domain} blended successfully"
-                        }
+                        # Handle BlendResult object (memories) vs dict (examples)
+                        if hasattr(result, 'success'):
+                            # BlendResult object from memories strategy
+                            results[domain] = {
+                                "success": result.success,
+                                "files_processed": result.files_processed,
+                                "message": f"✓ {domain} blended successfully"
+                            }
+                        else:
+                            # Dict from examples strategy
+                            results[domain] = {
+                                "success": result.get("success", True),
+                                "files_processed": result.get("files_processed", 0),
+                                "message": f"✓ {domain} blended successfully"
+                            }
 
                     else:
                         logger.warning(f"  {domain}: Unknown blend() domain")
