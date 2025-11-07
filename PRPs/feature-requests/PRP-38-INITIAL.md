@@ -180,6 +180,10 @@ grep -A10 "def blend" tools/ce/blending/strategies/*.py
 **Changes to `tools/ce/blending/core.py:322-326`**:
 
 ```python
+# Required imports (add to top of core.py if not present):
+# import json
+# from pathlib import Path
+
 if hasattr(strategy, 'blend'):
     logger.debug(f"    Using blend() interface for {domain}")
 
@@ -250,7 +254,12 @@ if hasattr(strategy, 'blend'):
     elif domain in ['memories', 'examples']:
         # Path-based strategies (handle their own I/O)
         framework_dir = target_dir / ".ce" / domain
-        target_domain_dir = target_dir / (".serena" if domain == "memories" else domain)
+
+        # Construct target directory path
+        if domain == "memories":
+            target_domain_dir = target_dir / ".serena" / "memories"
+        else:
+            target_domain_dir = target_dir / domain
 
         if not framework_dir.exists():
             logger.warning(f"  {domain}: Framework directory not found: {framework_dir}")
@@ -275,6 +284,12 @@ if hasattr(strategy, 'blend'):
 ```
 
 **No Helper Methods Needed**: Domain-specific logic inline for clarity.
+
+**Exception Handling**: All domain-specific I/O above is wrapped by Phase 2's exception handling:
+- `FileNotFoundError`: Framework file missing (logged, continues to next domain)
+- `json.JSONDecodeError`: Invalid JSON syntax (propagated as ValueError)
+- `PermissionError`: Cannot read/write files (propagated with troubleshooting)
+- `UnicodeDecodeError`: Non-UTF-8 file encoding (propagated as ValueError)
 
 ---
 
