@@ -694,7 +694,7 @@ Phase C: BLENDING - Merging framework + target...
 
 **Status**: ✅ COMPLETED (2025-11-07)
 
-**Commits** (5 total):
+**Commits** (7 total):
 1. **81e2413**: Main implementation (Phase 1-3)
    - Implemented blend() interface with domain-specific I/O
    - Fixed error propagation and exit codes
@@ -702,7 +702,9 @@ Phase C: BLENDING - Merging framework + target...
 2. **9d0ba28**: Extraction path fix #1 (move all to .ce/)
 3. **659334f**: Extraction path fix #2 (two-step reorganization)
 4. **a794b09**: LLM client context injection fix
-5. **8dcc45c**: Code quality (move BlendingLLM import to top)
+5. **8dcc45c**: Code quality (move BlendingLLM import to top) ❌ BROKE BLEND
+6. **2c2c9e3**: PRP-38 completion documentation
+7. **b9f4a3c**: CRITICAL FIX - Correct import path (llm → llm_client)
 
 **Actual Time**: 8 hours (vs 10 estimated)
 - Pre-Phase 0: 0.5h (grep investigation, not full tests)
@@ -786,3 +788,23 @@ Phase C: BLENDING - Merging framework + target...
 - Moved BlendingLLM import to top of file (removed 3 repeated imports)
 - Extraction logic fixed after 3 iterations
 - LLM client context injection added
+
+**Critical Bug Introduced & Fixed**:
+- Commit 8dcc45c introduced import bug: `from ce.blending.llm import BlendingLLM`
+- Module is actually `llm_client.py`, not `llm.py`
+- Broke ALL blend operations (ModuleNotFoundError)
+- Fixed in commit b9f4a3c (1 line change)
+
+**E2E Test Results** (Iteration 4 - 2025-11-07):
+- ✅ claude_md: 5 sections blended with Sonnet
+- ✅ settings: Blended successfully
+- ✅ commands: 13 files processed
+- ⚠️ prps: 28/92 migrated (31%) - PRPMoveStrategy doesn't handle subdirectories
+- ⚠️ examples: Skipped (not in package - expected)
+- ⚠️ memories: Skipped (not in package - expected)
+
+**New Issue Discovered**: PRPMoveStrategy incomplete
+- Only processes `*.md` in source_dir root
+- Doesn't recurse into subdirectories (executed/, feature-requests/, system/, templates/)
+- **Impact**: 90 PRPs remain unmigrated
+- **Follow-up**: Filed as PRP-39
