@@ -8,7 +8,8 @@ from typing import Dict, List, Tuple
 logger = logging.getLogger(__name__)
 
 # System files that should be ignored during cleanup validation
-# These are not migrated and should not cause cleanup to fail
+# All legacy domain locations (PRPs/, examples/, context-engineering/, .serena/)
+# and their .old variants are removed after migration validation
 SYSTEM_FILES = [
     ".DS_Store",    # Mac system files
     ".gitignore",   # Git ignore files
