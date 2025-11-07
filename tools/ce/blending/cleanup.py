@@ -16,6 +16,15 @@ SKIP_PATTERNS = [
 # Directories that should NOT be migrated
 SKIP_DIRS = ["templates"]
 
+# Files explicitly excluded from framework package (project-specific examples)
+# These are expected to remain in root examples/ directory
+EXCLUDED_FROM_PACKAGE = [
+    "examples/l4-validation-example.md",
+    "examples/syntropy-status-hook-system.md",
+    "examples/patterns/example-simple-feature.md",
+    "examples/patterns/git-message-rules.md"
+]
+
 
 def cleanup_legacy_dirs(
     target_project: Path,
@@ -112,8 +121,16 @@ def _should_skip_file(file_path: Path) -> bool:
         file_path: File path to check
 
     Returns:
-        True if file should be skipped (templates, garbage patterns)
+        True if file should be skipped (templates, garbage patterns, excluded files)
     """
+    # Convert to string for comparison
+    file_str = str(file_path)
+
+    # Check if explicitly excluded from package
+    for excluded in EXCLUDED_FROM_PACKAGE:
+        if file_str.endswith(excluded) or excluded in file_str:
+            return True
+
     # Check if in skip directory (e.g., templates/)
     for part in file_path.parts:
         if part in SKIP_DIRS:
