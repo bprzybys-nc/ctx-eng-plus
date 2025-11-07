@@ -10,7 +10,8 @@ logger = logging.getLogger(__name__)
 # Patterns for files that should NOT be migrated
 SKIP_PATTERNS = [
     "REPORT", "INITIAL", "summary", "analysis",
-    "PLAN", ".backup", "~", ".tmp", ".log"
+    "PLAN", ".backup", "~", ".tmp", ".log",
+    ".DS_Store", "README.md", "README"  # System files and documentation
 ]
 
 # Directories that should NOT be migrated
