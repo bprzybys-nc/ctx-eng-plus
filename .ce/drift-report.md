@@ -1,16 +1,17 @@
 ## Context Drift Report - Examples/ Patterns
 
-**Drift Score**: 6.2% (⚠️  WARNING)
-**Generated**: 2025-11-06T12:06:20.207049+00:00
-**Violations Found**: 9
+**Drift Score**: 6.8% (⚠️  WARNING)
+**Generated**: 2025-11-07T16:19:25.468790+00:00
+**Violations Found**: 10
 **Missing Examples**: 0
 
 ### Part 1: Code Violating Documented Patterns
 
-#### KISS Violations (2 violations)
+#### KISS Violations (3 violations)
 
-1. File tools/ce/blend.py has deep_nesting (violates pattern): Reduce nesting depth (max 4 levels)
-2. File tools/ce/update_context.py has deep_nesting (violates pattern): Reduce nesting depth (max 4 levels)
+1. File tools/ce/init_project.py has deep_nesting (violates pattern): Reduce nesting depth (max 4 levels)
+2. File tools/ce/blend.py has deep_nesting (violates pattern): Reduce nesting depth (max 4 levels)
+3. File tools/ce/update_context.py has deep_nesting (violates pattern): Reduce nesting depth (max 4 levels)
 
 ### Part 2: Missing Pattern Documentation
 
@@ -22,9 +23,9 @@ All critical PRPs have corresponding examples/ documentation.
 
 1. **Code Violations** (manual review):
    - Review and fix: File tools/ce/init_project.py has missing_troubleshooting (violates examples/patterns/error-handling.py): Add 🔧 Troubleshooting guidance
+   - Review and fix: File tools/ce/init_project.py has deep_nesting (violates pattern): Reduce nesting depth (max 4 levels)
    - Review and fix: File tools/ce/validation_loop.py has missing_troubleshooting (violates examples/patterns/error-handling.py): Add 🔧 Troubleshooting guidance
-   - Review and fix: File tools/ce/blend.py has missing_troubleshooting (violates examples/patterns/error-handling.py): Add 🔧 Troubleshooting guidance
-   - Review 6 other files listed in Part 1
+   - Review 7 other files listed in Part 1
 
 2. **Missing Examples** (documentation needed):
    - No missing examples

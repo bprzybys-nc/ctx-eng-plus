@@ -307,7 +307,15 @@ class BlendingOrchestrator:
         results = {}
 
         for domain, files in self.classified_files.items():
-            if not files:
+            # Special case: examples domain should run even if no legacy examples detected
+            # (framework examples in .ce/examples/ need to be processed)
+            if domain == "examples":
+                framework_examples_dir = target_dir / ".ce" / "examples"
+                if framework_examples_dir.exists() and not files:
+                    logger.info(f"  {domain}: No legacy files, but framework examples exist - processing...")
+                    files = []  # Empty list signals blend mode (not migration mode)
+
+            if not files and domain != "examples":
                 logger.debug(f"  {domain}: No files to blend")
                 continue
 
@@ -397,8 +405,10 @@ class BlendingOrchestrator:
                         # Construct target directory path
                         if domain == "memories":
                             target_domain_dir = target_dir / ".serena" / "memories"
-                        else:
-                            target_domain_dir = target_dir / domain
+                        else:  # examples
+                            # Framework examples go to .ce/examples/ (not root examples/)
+                            # This keeps them separate from user examples in .ce/examples/user/
+                            target_domain_dir = target_dir / ".ce" / "examples"
 
                         # Check framework dir exists (but allow examples to proceed for migration mode)
                         if not framework_dir.exists():
