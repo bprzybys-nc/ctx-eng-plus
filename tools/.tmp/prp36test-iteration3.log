@@ -297,3 +297,139 @@ Phase: verify
 ============================================================
 ⚠️  Installation incomplete (1 warnings)
 🔧 Review warnings above and re-run failed phases
+🔀 Running Phase: DETECT
+Phase A: DETECTION - Scanning legacy locations...
+✓ Detected 139 files across 6 domains
+✓ Phase detect complete
+🔀 Running Phase: CLASSIFY
+Phase B: CLASSIFICATION - Validating CE patterns...
+✓ Classified 133 valid files
+✓ Phase classify complete
+🔀 Running Phase: BLEND
+Phase C: BLENDING - Merging framework + target...
+  Blending prps (79 files)...
+  Blending examples (17 files)...
+  Blending claude_md (1 files)...
+  Blending settings (1 files)...
+  Blending commands (11 files)...
+  Blending memories (24 files)...
+✓ Blending complete (2 domains processed)
+✓ Phase blend complete
+🔀 Running Phase: CLEANUP
+Phase D: CLEANUP - Removing legacy directories...
+❌ Blending failed: Cannot cleanup PRPs/: 67 unmigrated files detected. Run migration again or manually verify.
+
+warning: `VIRTUAL_ENV=/Users/bprzybyszi/nc-src/ctx-eng-plus/tools/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead
+Using CPython 3.14.0 interpreter at: /opt/homebrew/opt/python@3.14/bin/python3.14
+Creating virtual environment at: .venv
+Resolved 49 packages in 23ms
+   Building ce-tools @ file:///Users/bprzybyszi/nc-src/ctx-eng-plus-test-target/.ce/tools
+      Built ce-tools @ file:///Users/bprzybyszi/nc-src/ctx-eng-plus-test-target/.ce/tools
+Prepared 1 package in 296ms
+Installed 47 packages in 96ms
+ + annotated-types==0.7.0
+ + anthropic==0.72.0
+ + anyio==4.11.0
+ + attrs==25.4.0
+ + ce-tools==0.1.0 (from file:///Users/bprzybyszi/nc-src/ctx-eng-plus-test-target/.ce/tools)
+ + certifi==2025.10.5
+ + cfgv==3.4.0
+ + coverage==7.11.0
+ + deepdiff==8.6.1
+ + diagrams==0.24.4
+ + distlib==0.4.0
+ + distro==1.9.0
+ + docstring-parser==0.17.0
+ + filelock==3.20.0
+ + graphviz==0.20.3
+ + h11==0.16.0
+ + httpcore==1.0.9
+ + httpx==0.28.1
+ + identify==2.6.15
+ + idna==3.11
+ + iniconfig==2.3.0
+ + jinja2==3.1.6
+ + jiter==0.11.1
+ + jsonschema==4.25.1
+ + jsonschema-specifications==2025.9.1
+ + markupsafe==3.0.3
+ + nodeenv==1.9.1
+ + orderly-set==5.5.0
+ + packaging==25.0
+ + platformdirs==4.5.0
+ + pluggy==1.6.0
+ + pre-commit==4.3.0
+ + pydantic==2.12.4
+ + pydantic-core==2.41.5
+ + pygments==2.19.2
+ + pytest==8.4.2
+ + pytest-cov==7.0.0
+ + python-frontmatter==1.1.0
+ + pyyaml==6.0.3
+ + referencing==0.37.0
+ + rpds-py==0.28.0
+ + sniffio==1.3.1
+ + tomli==2.3.0
+ + tomli-w==1.2.0
+ + typing-extensions==4.15.0
+ + typing-inspection==0.4.2
+ + virtualenv==20.35.4
+
+
+============================================================
+Phase: extract
+============================================================
+✅ Extracted 55 files to /Users/bprzybyszi/nc-src/ctx-eng-plus-test-target/.ce
+
+============================================================
+Phase: blend
+============================================================
+❌ Blend phase failed (exit code 1)
+🔧 Check blend tool output:
+🔀 Running Phase: DETECT
+Phase A: DETECTION - Scanning legacy locations...
+✓ Detected 139 files across 6 domains
+✓ Phase detect complete
+🔀 Running Phase: CLASSIFY
+Phase B: CLASSIFICATION - Validating CE patterns...
+✓ Classified 133 valid files
+✓ Phase classify complete
+🔀 Running Phase: BLEND
+Phase C: BLENDING - Merging framework + target...
+  Blending prps (79 files)...
+  Blending examples (17 files)...
+  Blending claude_md (1 files)...
+  Blending settings (1 files)...
+  Blending commands (11 files)...
+  Blending memories (24 files)...
+✓ Blending complete (2 domains processed)
+✓ Phase blend complete
+🔀 Running Phase: CLEANUP
+Phase D: CLEANUP - Removing legacy directories...
+❌ Blending failed: Cannot cleanup PRPs/: 67 unmigrated files detected. Run migration again or manually verify.
+
+
+============================================================
+🧹 Legacy Directory Cleanup
+============================================================
+🔍 Verifying PRPs/ migration...
+❌ PRPs/ - Migration incomplete!
+   Unmigrated files: 67
+     - PRPs/BIG-INITIAL.md
+     - PRPs/GRAND-PLAN.md
+     - PRPs/feature-requests/PRP-34.2.5-simple-operations-blending.md
+     - PRPs/feature-requests/PRP-34-INITIAL.md
+     - PRPs/feature-requests/PRP-34.2.4-settings-blending-strategy.md
+     ... and 62 more
+
+
+============================================================
+Phase: initialize
+============================================================
+✅ Python environment initialized
+
+============================================================
+Phase: verify
+============================================================
+⚠️  Installation incomplete (1 warnings)
+🔧 Review warnings above and re-run failed phases
