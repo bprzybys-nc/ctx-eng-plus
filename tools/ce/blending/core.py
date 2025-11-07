@@ -325,11 +325,35 @@ class BlendingOrchestrator:
                     logger.debug(f"    Using blend() interface for {domain}")
                 elif hasattr(strategy, 'execute'):
                     # Simple strategy interface (prps, commands)
-                    result = strategy.execute({
-                        "source_files": files,
-                        "target_dir": target_dir,
-                        "dry_run": self.dry_run
-                    })
+                    # Derive source_dir from classified files
+                    if not files:
+                        logger.debug(f"  {domain}: No files to blend")
+                        continue
+
+                    source_dir = files[0].parent
+
+                    # Domain-specific parameters
+                    if domain == 'prps':
+                        params = {
+                            "source_dir": source_dir,
+                            "target_dir": target_dir / ".ce" / "PRPs"
+                        }
+                    elif domain == 'commands':
+                        params = {
+                            "source_dir": source_dir,
+                            "target_dir": target_dir / ".claude" / "commands",
+                            "backup_dir": target_dir / ".claude" / "commands.backup"
+                        }
+                    else:
+                        # Fallback for unknown strategies
+                        params = {
+                            "source_files": files,
+                            "target_dir": target_dir,
+                            "dry_run": self.dry_run
+                        }
+
+                    logger.debug(f"    Executing {domain} with params: {params}")
+                    result = strategy.execute(params)
                     results[domain] = result
                 else:
                     logger.warning(f"    Strategy {domain} has no blend() or execute() method")
