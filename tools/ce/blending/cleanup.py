@@ -46,7 +46,8 @@ def cleanup_legacy_dirs(
     legacy_dirs = [
         "PRPs",
         "examples",
-        "context-engineering"
+        "context-engineering",
+        ".serena.old"  # NEW: Cleanup after memories blending
     ]
 
     status: Dict[str, bool] = {}
@@ -191,6 +192,17 @@ def verify_migration_complete(
         # For context-engineering: .ce/ itself
         elif relative_path.parts[0] == "context-engineering":
             ce_path = ce_dir / "/".join(relative_path.parts[1:])
+        # For .serena.old/: Check if migrated to .serena/
+        elif relative_path.parts[0] == ".serena.old":
+            # Only check files in memories/ subdirectory
+            # Skip root-level files (.gitignore, project.yml, etc.)
+            if len(relative_path.parts) >= 3 and relative_path.parts[1] == "memories":
+                # .serena.old/memories/file.md → .serena/memories/file.md
+                ce_path = target_project / ".serena" / "/".join(relative_path.parts[1:])
+            else:
+                # Skip non-memory files in .serena.old/ (e.g., .gitignore, project.yml)
+                logger.debug(f"  Skipping .serena.old/ non-memory file: {relative_path}")
+                continue
         else:
             # Unknown legacy structure
             ce_path = ce_dir / relative_path
