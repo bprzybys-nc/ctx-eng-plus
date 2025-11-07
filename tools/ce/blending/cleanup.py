@@ -153,12 +153,23 @@ def verify_migration_complete(
             continue
 
         # Check if migrated to .ce/
-        # PRPs/executed/PRP-1.md → .ce/PRPs/executed/PRP-1.md
+        # PRPs get reorganized during migration (classified into executed/ or feature-requests/)
+        # So we search by filename, not path
         # examples/pattern.py → .ce/examples/pattern.py (direct mapping)
 
-        # For PRPs: direct mapping
+        # For PRPs: search by filename (files get reorganized during migration)
         if relative_path.parts[0] == "PRPs":
-            ce_path = ce_dir / relative_path
+            # Search in all PRP subdirectories for this filename
+            filename = legacy_file.name
+            ce_path = None
+            for subdir in ["executed", "feature-requests", "system"]:
+                candidate = ce_dir / "PRPs" / subdir / filename
+                if candidate.exists():
+                    ce_path = candidate
+                    break
+            # If not found in subdirs, check if it exists with direct mapping
+            if not ce_path:
+                ce_path = ce_dir / relative_path
         # For examples: direct mapping (framework examples extracted directly to .ce/examples/)
         elif relative_path.parts[0] == "examples":
             ce_path = ce_dir / relative_path
