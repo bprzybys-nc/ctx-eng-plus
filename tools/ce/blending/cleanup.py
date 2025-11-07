@@ -180,14 +180,14 @@ def verify_migration_complete(
 
         # Check if migrated to .ce/
         # PRPs/executed/PRP-1.md → .ce/PRPs/executed/PRP-1.md
-        # examples/pattern.py → .ce/examples/user/pattern.py
+        # examples/pattern.py → .ce/examples/pattern.py (direct mapping)
 
         # For PRPs: direct mapping
         if relative_path.parts[0] == "PRPs":
             ce_path = ce_dir / relative_path
-        # For examples: user subdirectory
+        # For examples: direct mapping (framework examples extracted directly to .ce/examples/)
         elif relative_path.parts[0] == "examples":
-            ce_path = ce_dir / "examples" / "user" / "/".join(relative_path.parts[1:])
+            ce_path = ce_dir / relative_path
         # For context-engineering: .ce/ itself
         elif relative_path.parts[0] == "context-engineering":
             ce_path = ce_dir / "/".join(relative_path.parts[1:])
