@@ -33,7 +33,7 @@ The content is organized as follows:
 <notes>
 - Some files may have been excluded based on .gitignore rules and Repomix's configuration
 - Binary files are not included in this packed representation. Please refer to the Repository Structure section for a complete list of file paths, including binary files
-- Only files matching these patterns are included: .ce/PRPs/executed/system/PRP-0-CONTEXT-ENGINEERING.md, .serena/memories/README.md, .serena/memories/code-style-conventions.md, .serena/memories/suggested-commands.md, .serena/memories/task-completion-checklist.md, .serena/memories/testing-standards.md, .serena/memories/tool-usage-syntropy.md, .serena/memories/use-syntropy-tools-not-bash.md, .serena/memories/codebase-structure.md, .serena/memories/cwe78-prp22-newline-escape-issue.md, .serena/memories/l4-validation-usage.md, .serena/memories/linear-issue-creation-pattern.md, .serena/memories/linear-issue-tracking-integration.md, .serena/memories/linear-mcp-integration-example.md, .serena/memories/linear-mcp-integration.md, .serena/memories/project-overview.md, .serena/memories/PRP-15-remediation-workflow-implementation.md, .serena/memories/prp-2-implementation-patterns.md, .serena/memories/prp-backlog-system.md, .serena/memories/prp-structure-initialized.md, .serena/memories/serena-implementation-verification-pattern.md, .serena/memories/serena-mcp-tool-restrictions.md, .serena/memories/syntropy-status-hook-pattern.md, .serena/memories/system-model-specification.md, .serena/memories/tool-config-optimization-completed.md, .claude/commands/batch-exe-prp.md, .claude/commands/batch-gen-prp.md, .claude/commands/denoise.md, .claude/commands/execute-prp.md, .claude/commands/generate-prp.md, .claude/commands/peer-review.md, .claude/commands/sync-with-syntropy.md, .claude/commands/syntropy-health.md, .claude/commands/tools-misuse-scan.md, .claude/commands/update-context.md, .claude/commands/vacuum.md, tools/ce/*.py, tools/pyproject.toml, tools/bootstrap.sh, .claude/settings.local.json, CLAUDE.md
+- Only files matching these patterns are included: .ce/PRPs/executed/system/PRP-0-CONTEXT-ENGINEERING.md, .serena/memories/README.md, .serena/memories/code-style-conventions.md, .serena/memories/suggested-commands.md, .serena/memories/task-completion-checklist.md, .serena/memories/testing-standards.md, .serena/memories/tool-usage-syntropy.md, .serena/memories/use-syntropy-tools-not-bash.md, .serena/memories/codebase-structure.md, .serena/memories/cwe78-prp22-newline-escape-issue.md, .serena/memories/l4-validation-usage.md, .serena/memories/linear-issue-creation-pattern.md, .serena/memories/linear-issue-tracking-integration.md, .serena/memories/linear-mcp-integration-example.md, .serena/memories/linear-mcp-integration.md, .serena/memories/project-overview.md, .serena/memories/PRP-15-remediation-workflow-implementation.md, .serena/memories/prp-2-implementation-patterns.md, .serena/memories/prp-backlog-system.md, .serena/memories/prp-structure-initialized.md, .serena/memories/serena-implementation-verification-pattern.md, .serena/memories/serena-mcp-tool-restrictions.md, .serena/memories/syntropy-status-hook-pattern.md, .serena/memories/system-model-specification.md, .serena/memories/tool-config-optimization-completed.md, .claude/commands/batch-exe-prp.md, .claude/commands/batch-gen-prp.md, .claude/commands/denoise.md, .claude/commands/execute-prp.md, .claude/commands/generate-prp.md, .claude/commands/peer-review.md, .claude/commands/sync-with-syntropy.md, .claude/commands/syntropy-health.md, .claude/commands/tools-misuse-scan.md, .claude/commands/update-context.md, .claude/commands/vacuum.md, tools/ce/*.py, tools/pyproject.toml, tools/bootstrap.sh, .claude/settings.local.json, CLAUDE.md, .ce/blend-config.yml, tools/README.md
 - Files matching these patterns are excluded: examples/patterns/example-simple-feature.md, examples/patterns/git-message-rules.md, examples/l4-validation-example.md, examples/syntropy-status-hook-system.md, tools/tests/**, .git/**, .tmp/**, __pycache__/**, *.pyc
 - Files matching patterns in .gitignore are excluded
 - Files matching default ignore patterns are excluded
@@ -49,6 +49,7 @@ The content is organized as follows:
     executed/
       system/
         PRP-0-CONTEXT-ENGINEERING.md
+  blend-config.yml
 .claude/
   commands/
     batch-exe-prp.md
@@ -96,6 +97,7 @@ tools/
     repomix_unpack.py
     resilience.py
     shell_utils.py
+    toml_merger.py
     update_context.py
     vacuum.py
     validate_permissions.py
@@ -103,11 +105,332 @@ tools/
     validation_loop.py
   bootstrap.sh
   pyproject.toml
+  README.md
 CLAUDE.md
 </directory_structure>
 
 <files>
 This section contains the contents of the repository's files.
+
+<file path=".claude/commands/denoise.md">
+  1: # /denoise - Boil Out Document Noise
+  2: 
+  3: Boil out noise from documents—remove verbosity while strictly guaranteeing complete retention of all essential information.
+  4: 
+  5: ## Usage
+  6: 
+  7: ```bash
+  8: # Denoise single document
+  9: /denoise path/to/document.md
+ 10: 
+ 11: # Denoise with custom compression target (default: 60-75% reduction)
+ 12: /denoise path/to/document.md --target 70
+ 13: 
+ 14: # Preview changes without writing (dry-run)
+ 15: /denoise path/to/document.md --dry-run
+ 16: 
+ 17: # Denoise multiple documents
+ 18: /denoise docs/*.md
+ 19: 
+ 20: # Denoise and show statistics
+ 21: /denoise path/to/document.md --verbose
+ 22: ```
+ 23: 
+ 24: ## What It Does
+ 25: 
+ 26: **Removes**:
+ 27: - Verbose explanations (keeps essential meaning)
+ 28: - Redundant examples (keeps one representative)
+ 29: - Long code blocks (keeps signature + key logic)
+ 30: - Repetitive sections
+ 31: - Wordy transitions
+ 32: - Multiple ways of saying same thing
+ 33: 
+ 34: **Preserves**:
+ 35: - All essential information
+ 36: - Technical accuracy
+ 37: - Commands and references
+ 38: - Critical warnings and errors
+ 39: - Quick reference data
+ 40: - Structure and organization
+ 41: 
+ 42: **Guaranteed**: Zero information loss, only noise removal
+ 43: 
+ 44: ## Algorithm
+ 45: 
+ 46: ### Phase 1: Structural Analysis
+ 47: - Parse markdown sections
+ 48: - Identify redundant patterns
+ 49: - Detect verbose vs concise sections
+ 50: - Map cross-references
+ 51: 
+ 52: ### Phase 2: Content Classification
+ 53: - **Keep**: Commands, references, warnings, key facts
+ 54: - **Compress**: Long explanations → bullet points
+ 55: - **Deduplicate**: Multiple examples → single best
+ 56: - **Condense**: Multi-paragraph → 2-3 lines
+ 57: 
+ 58: ### Phase 3: Optimization
+ 59: - Convert verbose text to scannable format
+ 60: - Preserve all unique information
+ 61: - Maintain readability
+ 62: - Keep structure intact
+ 63: 
+ 64: ### Phase 4: Validation
+ 65: - Verify no information loss
+ 66: - Check all references intact
+ 67: - Ensure commands preserved
+ 68: - Validate structure
+ 69: 
+ 70: ## Output
+ 71: 
+ 72: ```
+ 73: 📄 Denoising: CLAUDE.md
+ 74: 
+ 75: Before: 1040 lines
+ 76: After:  259 lines
+ 77: Reduction: 75% (781 lines)
+ 78: 
+ 79: ✅ Preserved:
+ 80:   - All 5 core principles
+ 81:   - 48 allowed tools summary
+ 82:   - 15 quick commands
+ 83:   - 12 troubleshooting entries
+ 84:   - All resource paths
+ 85: 
+ 86: ❌ Removed:
+ 87:   - 6 verbose sections (150+ lines)
+ 88:   - 12 redundant code examples
+ 89:   - 8 long explanations
+ 90:   - 4 duplicate references
+ 91: 
+ 92: Validation: PASS ✅
+ 93: All essential information preserved.
+ 94: 
+ 95: Written to: CLAUDE.md
+ 96: ```
+ 97: 
+ 98: ## Examples
+ 99: 
+100: ### Before (Verbose)
+101: ```markdown
+102: ## Working Directory
+103: 
+104: **Default Context:** Project root (`/Users/bprzybysz/nc-src/ctx-eng-plus`)
+105: 
+106: **For tools/ commands:** Always prefix with `cd tools &&` or use full paths from root.
+107: 
+108: **Note:** Claude Code doesn't have a persistent working directory setting per project.
+109: Always specify context explicitly:
+110: 
+111: ```bash
+112: # Correct patterns
+113: cd tools && uv run ce --help
+114: cd tools && uv run pytest tests/ -v
+115: uv run -C tools ce validate --level all  # Using uv -C flag
+116: 
+117: # Avoid (relative paths from wrong location)
+118: uv run ce --help  # Will fail if not in tools/
+119: ```
+120: ```
+121: 
+122: ### After (Denoised)
+123: ```markdown
+124: ## Working Directory
+125: 
+126: **Default**: `/Users/bprzybysz/nc-src/ctx-eng-plus`
+127: 
+128: **For tools/ commands**: Use `cd tools &&` or `uv run -C tools`
+129: ```
+130: 
+131: ## Configuration
+132: 
+133: **Location**: `.ce/denoise-config.yml` (optional)
+134: 
+135: ```yaml
+136: denoise:
+137:   # Target compression ratio (default: 60-75%)
+138:   target_reduction: 70
+139: 
+140:   # Preserve these sections verbatim
+141:   preserve_sections:
+142:     - "Quick Commands"
+143:     - "Troubleshooting"
+144: 
+145:   # Maximum examples to keep per section
+146:   max_examples: 1
+147: 
+148:   # Condense code blocks longer than N lines
+149:   condense_code_threshold: 20
+150: ```
+151: 
+152: ## Rules
+153: 
+154: ### MUST Preserve
+155: - Commands and CLI references
+156: - Configuration examples
+157: - Error messages and troubleshooting
+158: - Technical specifications
+159: - Quick reference tables
+160: - Resource paths
+161: 
+162: ### MAY Compress
+163: - Long explanations (→ bullet points)
+164: - Multiple examples (→ best one)
+165: - Verbose prose (→ concise)
+166: - Repetitive sections (→ single instance)
+167: 
+168: ### MUST NOT Change
+169: - Technical accuracy
+170: - Command syntax
+171: - File paths
+172: - URLs and references
+173: - Code logic (only formatting/length)
+174: 
+175: ## When to Use
+176: 
+177: **Good for**:
+178: - Documentation that grew organically
+179: - Multiple authors with varying styles
+180: - Copy-paste accumulation
+181: - Tutorial-style docs needing quick reference format
+182: - Token-heavy files
+183: 
+184: **Not for**:
+185: - Tutorial content (intentional verbosity)
+186: - Step-by-step guides with explanations
+187: - API documentation with full examples
+188: - Already concise documents
+189: 
+190: ## Implementation
+191: 
+192: This command uses:
+193: 1. **LLM-based analysis** (via Syntropy thinking tool)
+194:    - Semantic understanding of content
+195:    - Intelligent redundancy detection
+196:    - Context-aware compression
+197: 
+198: 2. **Rule-based optimization**
+199:    - Markdown structure preservation
+200:    - Code block condensing
+201:    - Bullet point conversion
+202: 
+203: 3. **Validation layer**
+204:    - Information extraction (before/after)
+205:    - Completeness check
+206:    - Cross-reference validation
+207: 
+208: ## Integration
+209: 
+210: **Pre-commit hook** (optional):
+211: ```yaml
+212: # .claude/settings.local.json
+213: {
+214:   "hooks": {
+215:     "preCommit": {
+216:       "command": "/denoise docs/*.md --dry-run --verbose",
+217:       "description": "Check for document bloat before commit"
+218:     }
+219:   }
+220: }
+221: ```
+222: 
+223: **Weekly maintenance**:
+224: ```bash
+225: # Add to crontab or CI/CD
+226: /denoise CLAUDE.md syntropy-mcp/CLAUDE.md --verbose
+227: ```
+228: 
+229: ## Related
+230: 
+231: - `/peer-review` - Review document quality
+232: - `/update-context` - Sync context with codebase
+233: - `ce validate --level 1` - Markdown linting
+</file>
+
+<file path=".claude/commands/syntropy-health.md">
+ 1: # /syntropy-health - Syntropy MCP Health Check
+ 2: 
+ 3: Check health status of Syntropy MCP server and all underlying servers.
+ 4: 
+ 5: ## Usage
+ 6: 
+ 7: ```bash
+ 8: # Quick check (default - fast, essential servers only)
+ 9: /syntropy-health
+10: 
+11: # Full diagnostic check (all servers, detailed info)
+12: /syntropy-health full
+13: ```
+14: 
+15: ## What It Checks
+16: 
+17: **Quick Mode** (default):
+18: - Essential servers: Serena, Filesystem, Git, Linear, Thinking
+19: - Response times for each server
+20: - Connection status
+21: - Tool call counts (if available)
+22: 
+23: **Full Mode**:
+24: - All 9 MCP servers (including lazy-loaded: Context7, Repomix, GitHub, Perplexity)
+25: - Detailed diagnostics
+26: - Last errors (if any)
+27: - Call statistics
+28: 
+29: ## Output Format
+30: 
+31: ```
+32: 🏥 Syntropy MCP Health Check
+33: 
+34: ✅ serena: 124ms (15 calls)
+35: ✅ filesystem: 45ms (8 calls)
+36: ✅ git: 67ms (3 calls)
+37: ⚠️  linear: 1205ms (2 calls) - SLOW
+38: ❌ github: Not connected
+39: 
+40: Overall: 4/5 servers healthy
+41: ```
+42: 
+43: ## Troubleshooting
+44: 
+45: ### "Not connected" errors
+46: 
+47: Clear MCP auth cache and restart:
+48: ```bash
+49: rm -rf ~/.mcp-auth
+50: ```
+51: 
+52: ### Slow response times (>1s)
+53: 
+54: Server may be starting up or overloaded. Wait 30s and retry.
+55: 
+56: ### All servers failing
+57: 
+58: Check if MCP servers are running:
+59: ```bash
+60: ps aux | grep mcp
+61: ```
+62: 
+63: ## When to Use
+64: 
+65: **Recommended on session start** to verify MCP infrastructure:
+66: - After Claude Code restart
+67: - When seeing unexpected tool failures
+68: - Before starting major work (PRPs, refactoring)
+69: - After clearing auth cache
+70: 
+71: ## Implementation
+72: 
+73: This command calls the `healthcheck` tool with appropriate parameters:
+74: - Default: `{"detailed": false, "timeout_ms": 2000}`
+75: - Full: `{"detailed": true, "timeout_ms": 5000}`
+76: 
+77: ## Related
+78: 
+79: - `/update-context` - Updates project context (requires healthy Serena)
+80: - `/generate-prp` - Requires healthy Serena + Filesystem
+81: - `/execute-prp` - Requires multiple healthy servers
+</file>
 
 <file path=".claude/commands/update-context.md">
   1: # Update Context
@@ -13159,6 +13482,467 @@ This section contains the contents of the repository's files.
 67: echo ""
 </file>
 
+<file path="tools/README.md">
+  1: # Context Engineering CLI Tools
+  2: 
+  3: Minimal, efficient tooling for Context Engineering framework operations.
+  4: 
+  5: ## Features
+  6: 
+  7: ✅ **PRP Generation**: Automated PRP creation from INITIAL.md
+  8: ✅ **File Operations**: Read/write with security validation
+  9: ✅ **Git Integration**: Status, diff, checkpoints
+ 10: ✅ **3-Level Validation**: Syntax, unit tests, integration tests
+ 11: ✅ **Context Management**: Sync and health checks
+ 12: ✅ **Zero Dependencies**: Pure stdlib implementation
+ 13: ✅ **JSON Output**: Scriptable for CI/CD pipelines
+ 14: 
+ 15: ## Installation
+ 16: 
+ 17: ### Quick Install
+ 18: ```bash
+ 19: cd tools
+ 20: ./bootstrap.sh
+ 21: ```
+ 22: 
+ 23: ### Manual Install
+ 24: ```bash
+ 25: cd tools
+ 26: uv venv
+ 27: uv pip install -e .
+ 28: ```
+ 29: 
+ 30: ## Commands Reference
+ 31: 
+ 32: ### PRP Generation
+ 33: 
+ 34: **Generate PRP from INITIAL.md**
+ 35: ```bash
+ 36: ce prp generate <initial-md-path> [-o OUTPUT_DIR] [--json]
+ 37: 
+ 38: # Example
+ 39: ce prp generate ../feature-requests/user-auth/INITIAL.md
+ 40: # Output: ../PRPs/feature-requests/PRP-6-user-authentication-system.md
+ 41: 
+ 42: # Custom output directory
+ 43: ce prp generate feature.md -o /tmp/prps
+ 44: 
+ 45: # JSON output for scripting
+ 46: ce prp generate feature.md --json
+ 47: ```
+ 48: 
+ 49: **What it does**:
+ 50: 1. Parses INITIAL.md (FEATURE, EXAMPLES, DOCUMENTATION, OTHER CONSIDERATIONS)
+ 51: 2. Researches codebase using Serena MCP (pattern search, symbol analysis)
+ 52: 3. Fetches documentation using Context7 MCP (library docs, external links)
+ 53: 4. Generates complete 6-section PRP with YAML header
+ 54: 5. Auto-assigns next PRP ID (PRP-N+1)
+ 55: 6. Validates completeness (all required sections present)
+ 56: 
+ 57: **INITIAL.md structure** (see `.claude/commands/generate-prp.md` for details):
+ 58: ```markdown
+ 59: # Feature: <Feature Name>
+ 60: 
+ 61: ## FEATURE
+ 62: <What to build - user story, acceptance criteria>
+ 63: 
+ 64: ## EXAMPLES
+ 65: <Code examples, file references>
+ 66: 
+ 67: ## DOCUMENTATION
+ 68: <Library docs, external resources>
+ 69: 
+ 70: ## OTHER CONSIDERATIONS
+ 71: <Security, constraints, edge cases>
+ 72: ```
+ 73: 
+ 74: **Graceful degradation**: Works without MCP servers (reduced functionality)
+ 75: 
+ 76: See also: `/generate-prp` slash command
+ 77: 
+ 78: ---
+ 79: 
+ 80: ### Validation Gates
+ 81: 
+ 82: **Level 1: Syntax & Style**
+ 83: ```bash
+ 84: ce validate --level 1
+ 85: # Runs: npm run lint && npm run type-check
+ 86: ```
+ 87: 
+ 88: **Level 2: Unit Tests**
+ 89: ```bash
+ 90: ce validate --level 2
+ 91: # Runs: npm test
+ 92: ```
+ 93: 
+ 94: **Level 3: Integration Tests**
+ 95: ```bash
+ 96: ce validate --level 3
+ 97: # Runs: npm run test:integration
+ 98: ```
+ 99: 
+100: **All Levels**
+101: ```bash
+102: ce validate --level all
+103: # Runs all validation levels sequentially
+104: ```
+105: 
+106: ---
+107: 
+108: ### Markdown & Mermaid Linting
+109: 
+110: **Markdown Linting** (integrated in Level 1 validation)
+111: ```bash
+112: # Lint markdown files
+113: npm run lint:md
+114: 
+115: # Auto-fix markdown issues
+116: npm run lint:md:fix
+117: ```
+118: 
+119: **What it does**:
+120: - Validates markdown syntax using markdownlint-cli2
+121: - Checks for common issues: trailing spaces, missing blank lines, inconsistent headings
+122: - Auto-fixes formatting issues automatically
+123: - Integrated into Level 1 validation gate
+124: 
+125: **Configuration**: `.markdownlint.json` in project root
+126: ```json
+127: {
+128:   "default": true,
+129:   "MD013": false,  // Line length disabled (allow long code examples)
+130:   "MD033": {       // Inline HTML allowed for badges
+131:     "allowed_elements": ["img", "br", "sub", "sup", "User"]
+132:   },
+133:   "MD046": {       // Fenced code blocks required
+134:     "style": "fenced"
+135:   }
+136: }
+137: ```
+138: 
+139: **Mermaid Diagram Validation** (integrated in Level 1 validation)
+140: 
+141: The mermaid validator automatically checks and fixes diagram syntax issues:
+142: 
+143: **Features**:
+144: - ✅ Validates node text for unquoted special characters
+145: - ✅ Checks style statements have color specified (theme compatibility)
+146: - ✅ Auto-fixes common issues (renaming nodes, adding colors)
+147: - ✅ HTML tag support (`<br/>`, `<sub/>`, `<sup/>`)
+148: - ✅ Smart detection of problematic characters only
+149: 
+150: **Safe Characters** (no quoting needed):
+151: - Colons `:` - "Level 0: CLAUDE.md" ✅
+152: - Question marks `?` - "Why? Because!" ✅
+153: - Exclamation marks `!` - "Important!" ✅
+154: - Slashes `/` `\` - "path/to/file" ✅
+155: - HTML tags - "Line 1<br/>Line 2" ✅
+156: 
+157: **Problematic Characters** (require quoting or node renaming):
+158: - Brackets `[]` `{}` - used for node shape syntax
+159: - Parentheses `()` - used for node shape syntax
+160: - Pipes `|` - used for subgraph syntax
+161: - Unbalanced quotes `"` `'` - break parsing
+162: 
+163: **Example Issues Detected**:
+164: ```mermaid
+165: graph TD
+166:     N1[Text with (parentheses)]    # ❌ Will be flagged
+167:     style B fill:#ff0000,color:#fff           # ❌ Missing color specification
+168: ```
+169: 
+170: **Auto-Fixed Output**:
+171: ```mermaid
+172: graph TD
+173:     N1[Text with parentheses renamed]
+174:     style B fill:#ff0000,color:#fff  # ✅ Color added
+175: ```
+176: 
+177: **Standalone Usage** (if needed):
+178: ```bash
+179: # Validate all markdown/mermaid in docs/
+180: cd tools
+181: python ce/mermaid_validator.py ../docs
+182: 
+183: # Auto-fix issues
+184: python ce/mermaid_validator.py --fix ../docs
+185: ```
+186: 
+187: **Results**:
+188: - Files checked: 14
+189: - Diagrams checked: 73
+190: - Issues auto-fixed: varies based on file state
+191: 
+192: **Style Color Determination**:
+193: 
+194: The validator automatically determines appropriate text color based on background luminance:
+195: - Light backgrounds (luminance > 0.5) → black text `#000`
+196: - Dark backgrounds (luminance ≤ 0.5) → white text `#fff`
+197: 
+198: Uses W3C WCAG 2.0 relative luminance formula for accurate color contrast.
+199: 
+200: ---
+201: 
+202: ### Git Operations
+203: 
+204: **Check Status**
+205: ```bash
+206: ce git status [--json]
+207: # Shows: staged, unstaged, untracked files
+208: ```
+209: 
+210: **Create Checkpoint**
+211: ```bash
+212: ce git checkpoint "Phase 1 complete"
+213: # Creates annotated git tag: checkpoint-<timestamp>
+214: ```
+215: 
+216: **View Changes**
+217: ```bash
+218: ce git diff [--since HEAD~5] [--json]
+219: # Shows changed files since specified ref
+220: ```
+221: 
+222: ### Context Management
+223: 
+224: **Fast Drift Analysis** (NEW - PRP-17)
+225: ```bash
+226: ce analyze-context [--json] [--force] [--cache-ttl N]
+227: # Fast drift check without metadata updates (2-3s vs 10-15s)
+228: # Exit codes: 0 (ok), 1 (warning), 2 (critical)
+229: # Uses smart caching (5-min TTL by default)
+230: 
+231: # Examples:
+232: ce analyze-context                        # Quick check with cache
+233: ce analyze-context --force                # Force re-analysis
+234: ce analyze-context --json                 # CI/CD integration
+235: ce analyze-context --cache-ttl 10         # Custom TTL (minutes)
+236: ce analyse-context                        # UK spelling alias
+237: ```
+238: 
+239: **What it does**:
+240: - Detects pattern drift (code violations + missing examples)
+241: - Generates/updates `.ce/drift-report.md` with violations
+242: - Returns CI/CD-friendly exit codes (0/1/2)
+243: - Reuses cache if fresh (avoids redundant analysis)
+244: - No PRP metadata updates (faster than update-context)
+245: 
+246: **When to use**:
+247: - Quick drift checks in CI/CD pipelines
+248: - Pre-commit validation
+249: - Before running update-context (shares cache)
+250: 
+251: **Sync Context**
+252: ```bash
+253: ce context sync [--json]
+254: # Detects git diff, reports files needing reindex
+255: # Returns: reindexed_count, files, drift_score, drift_level
+256: ```
+257: 
+258: **Health Check**
+259: ```bash
+260: ce context health [--json]
+261: # Comprehensive health report:
+262: # - Compilation status (Level 1)
+263: # - Git cleanliness
+264: # - Tests passing (Level 2)
+265: # - Context drift score
+266: # - Actionable recommendations
+267: ```
+268: 
+269: **Prune Memories** (placeholder)
+270: ```bash
+271: ce context prune [--age 7] [--dry-run]
+272: # Requires Serena MCP integration
+273: ```
+274: 
+275: ### Drift History Tracking
+276: 
+277: **View Drift History**
+278: ```bash
+279: ce drift history [--last N] [--prp-id ID] [--action-filter TYPE] [--json]
+280: # Shows drift decisions from all PRPs sorted by timestamp
+281: 
+282: # Examples:
+283: ce drift history --last 5
+284: ce drift history --prp-id PRP-001
+285: ce drift history --action-filter accepted
+286: ```
+287: 
+288: **Show Drift Decision**
+289: ```bash
+290: ce drift show <prp-id> [--json]
+291: # Detailed view of drift decision for specific PRP
+292: 
+293: # Example:
+294: ce drift show PRP-001
+295: ```
+296: 
+297: **Drift Summary**
+298: ```bash
+299: ce drift summary [--json]
+300: # Aggregate statistics across all drift decisions
+301: # Shows: total PRPs, average score, distribution, category breakdown
+302: ```
+303: 
+304: **Compare Drift Decisions**
+305: ```bash
+306: ce drift compare <prp-id-1> <prp-id-2> [--json]
+307: # Compare drift decisions between two PRPs
+308: # Shows: score difference, common/divergent categories
+309: 
+310: # Example:
+311: ce drift compare PRP-001 PRP-002
+312: ```
+313: 
+314: **What it tracks**:
+315: - Drift score (0-100%)
+316: - Action taken (accepted, rejected, examples_updated)
+317: - Justification for decisions
+318: - Category breakdown (code_structure, error_handling, etc.)
+319: - Reviewer (human, auto_accept, auto_fix)
+320: - Historical patterns and trends
+321: 
+322: **Integration**: Drift history is displayed during Level 4 validation escalation to provide context for high-drift decisions.
+323: 
+324: ## JSON Output
+325: 
+326: All commands support `--json` flag for programmatic use:
+327: 
+328: ```bash
+329: ce validate --level all --json > validation-report.json
+330: ce git status --json | jq '.clean'
+331: ce context health --json | jq '.drift_score'
+332: ```
+333: 
+334: ## Exit Codes
+335: 
+336: **Standard Commands**:
+337: - **0**: Success
+338: - **1**: Failure
+339: 
+340: **analyze-context** (drift-aware):
+341: - **0**: OK - drift score < 5%
+342: - **1**: WARNING - drift score 5-15%
+343: - **2**: CRITICAL - drift score >= 15%
+344: 
+345: Use in scripts:
+346: ```bash
+347: # Standard validation
+348: if ce validate --level 1; then
+349:     echo "Validation passed"
+350: else
+351:     echo "Validation failed"
+352:     exit 1
+353: fi
+354: 
+355: # Drift analysis for CI/CD
+356: ce analyze-context --json
+357: EXIT_CODE=$?
+358: if [ $EXIT_CODE -eq 2 ]; then
+359:     echo "CRITICAL drift - blocking merge"
+360:     exit 1
+361: elif [ $EXIT_CODE -eq 1 ]; then
+362:     echo "WARNING drift - review recommended"
+363: fi
+364: ```
+365: 
+366: ## Architecture
+367: 
+368: ```
+369: ce/
+370: ├── __init__.py       # Package metadata
+371: ├── __main__.py       # CLI entry point
+372: ├── core.py           # File, git, shell operations
+373: ├── validate.py       # 3-level validation gates
+374: ├── context.py        # Context management
+375: ├── generate.py       # PRP generation from INITIAL.md
+376: └── prp.py            # PRP state management
+377: ```
+378: 
+379: **Design Principles**:
+380: - **KISS**: Single responsibility per function
+381: - **SOLID**: Clear interfaces, dependency injection
+382: - **DRY**: Shared utilities
+383: - **No Fishy Fallbacks**: Exceptions thrown, not caught silently
+384: - **Real Testing**: Actual functionality, no mocks
+385: 
+386: ## Development
+387: 
+388: ### Run Tests
+389: ```bash
+390: uv run pytest tests/ -v
+391: 
+392: # With coverage
+393: uv run pytest tests/ --cov=ce --cov-report=term-missing
+394: ```
+395: 
+396: ### Add Dependencies
+397: ```bash
+398: # Never edit pyproject.toml directly!
+399: uv add package-name              # Production
+400: uv add --dev package-name        # Development
+401: ```
+402: 
+403: ### Test Locally
+404: ```bash
+405: # Install in editable mode
+406: uv pip install -e .
+407: 
+408: # Use anywhere
+409: ce --help
+410: ```
+411: 
+412: ## Integration with Context Engineering Framework
+413: 
+414: This CLI complements the Context Engineering framework documented in `/docs/`:
+415: 
+416: - **Validation Gates**: Implements 3-level validation from `08-validation-testing.md`
+417: - **Context Sync**: Implements drift detection from `04-self-healing-framework.md`
+418: - **Git Operations**: Supports checkpoint pattern from `06-workflow-patterns.md`
+419: 
+420: ## Troubleshooting
+421: 
+422: **Command not found: ce**
+423: ```bash
+424: # Ensure you're in tools directory
+425: cd tools
+426: 
+427: # Reinstall
+428: uv pip install -e .
+429: 
+430: # Or use directly
+431: uv run python -m ce --help
+432: ```
+433: 
+434: **Tests failing**
+435: ```bash
+436: # Install dev dependencies
+437: uv sync
+438: 
+439: # Run specific test
+440: uv run pytest tests/test_core.py::test_run_cmd_success -v
+441: ```
+442: 
+443: **npm commands not available**
+444: ```bash
+445: # Some tests/commands require npm scripts
+446: # Ensure package.json has required scripts:
+447: npm run lint
+448: npm run type-check
+449: npm test
+450: ```
+451: 
+452: ## License
+453: 
+454: Part of the Context Engineering Framework.
+455: 
+456: ## Version
+457: 
+458: Current: 0.1.0
+</file>
+
 <file path=".ce/PRPs/executed/system/PRP-0-CONTEXT-ENGINEERING.md">
   1: ---
   2: prp_id: PRP-0
@@ -13437,240 +14221,610 @@ This section contains the contents of the repository's files.
 275: **CE Version**: {CE_VERSION}
 </file>
 
-<file path=".claude/commands/denoise.md">
-  1: # /denoise - Boil Out Document Noise
+<file path=".ce/blend-config.yml">
+ 1: # CE Framework Blending Configuration
+ 2: # Defines blending rules for each domain (settings, CLAUDE.md, memories, etc.)
+ 3: 
+ 4: domains:
+ 5:   settings:
+ 6:     strategy: rule-based
+ 7:     source: .claude/settings.local.json
+ 8:     backup: true
+ 9:     rules:
+10:       - ce_deny_wins           # CE deny list takes precedence
+11:       - merge_lists            # Merge CE entries to target lists
+12:       - single_membership      # Each tool in ONE list only
+13:     description: "Settings JSON structural merge (3 rules)"
+14: 
+15:   claude_md:
+16:     strategy: nl-blend
+17:     source: CLAUDE.md
+18:     framework_rules: .ce/RULES.md
+19:     backup: true
+20:     llm_model: claude-sonnet-4-5-20250929
+21:     max_tokens: 8192
+22:     description: "CLAUDE.md NL-blend with RULES.md awareness (Sonnet)"
+23: 
+24:   memories:
+25:     strategy: nl-blend
+26:     source: .serena/memories/
+27:     backup: true
+28:     llm_model_similarity: claude-3-5-haiku-20241022    # Fast similarity checks
+29:     llm_model_merge: claude-sonnet-4-5-20250929        # Quality merges
+30:     conflict_resolution: ask-user
+31:     similarity_threshold: 0.9
+32:     description: "Serena memories NL-blend (Haiku similarity → Sonnet merge)"
+33: 
+34:   examples:
+35:     strategy: dedupe-copy
+36:     source: examples/
+37:     destination: .ce/examples/
+38:     backup: false
+39:     dedup_method: nl-similarity
+40:     llm_model: claude-3-5-haiku-20241022               # Fast deduplication
+41:     similarity_threshold: 0.9
+42:     description: "Examples NL-dedupe (Haiku semantic comparison)"
+43: 
+44:   prps:
+45:     strategy: move-all
+46:     source: PRPs/
+47:     legacy_sources:
+48:       - PRPs/
+49:       - context-engineering/PRPs/
+50:     destination: .ce/PRPs/
+51:     backup: false
+52:     dedup_method: content-hash                          # Only skip if exact file exists
+53:     add_user_header: true
+54:     note: "Move all user PRPs (no ID-based deduplication - different projects can have same IDs)"
+55:     description: "PRPs move-all (hash dedupe only, no ID dedupe)"
+56: 
+57:   commands:
+58:     strategy: overwrite
+59:     source: .claude/commands/
+60:     backup: true
+61:     backup_location: .claude/commands.backup/
+62:     description: "Commands overwrite (framework canonical)"
+63: 
+64: # LLM Configuration
+65: llm:
+66:   api_key_env: ANTHROPIC_API_KEY
+67:   timeout: 60
+68:   max_retries: 3
+69: 
+70: # Global settings
+71: global:
+72:   verify_before_cleanup: true
+73:   backup_prefix: ".backup"
+74:   legacy_directories:
+75:     - PRPs/
+76:     - examples/
+77:     - context-engineering/
+78:   standard_locations:
+79:     - .claude/
+80:     - .serena/
+81:     - CLAUDE.md
+82:     - .ce/
+</file>
+
+<file path=".claude/commands/execute-prp.md">
+  1: # /execute-prp - Execute PRP with Self-Healing
   2: 
-  3: Boil out noise from documents—remove verbosity while strictly guaranteeing complete retention of all essential information.
+  3: Automates PRP execution with phase-by-phase implementation, L1-L4 validation loops, self-healing error recovery, and automatic escalation triggers.
   4: 
-  5: ## Usage
+  5: **Note**: This command defines the PRP execution protocol. `/batch-exe-prp` launches parallel agents that follow this protocol independently in separate git worktrees.
   6: 
-  7: ```bash
-  8: # Denoise single document
-  9: /denoise path/to/document.md
- 10: 
- 11: # Denoise with custom compression target (default: 60-75% reduction)
- 12: /denoise path/to/document.md --target 70
- 13: 
- 14: # Preview changes without writing (dry-run)
- 15: /denoise path/to/document.md --dry-run
- 16: 
- 17: # Denoise multiple documents
- 18: /denoise docs/*.md
- 19: 
- 20: # Denoise and show statistics
- 21: /denoise path/to/document.md --verbose
- 22: ```
- 23: 
- 24: ## What It Does
- 25: 
- 26: **Removes**:
- 27: - Verbose explanations (keeps essential meaning)
- 28: - Redundant examples (keeps one representative)
- 29: - Long code blocks (keeps signature + key logic)
- 30: - Repetitive sections
- 31: - Wordy transitions
- 32: - Multiple ways of saying same thing
+  7: ## Usage
+  8: 
+  9: ```
+ 10: /execute-prp <prp-file-or-id>
+ 11: ```
+ 12: 
+ 13: **Examples:**
+ 14: ```
+ 15: /execute-prp PRP-5
+ 16: /execute-prp PRPs/feature-requests/PRP-5-context-sync-integration.md
+ 17: ```
+ 18: 
+ 19: ## What It Does
+ 20: 
+ 21: 1. **Parses PRP Blueprint**:
+ 22:    - Extracts phases from `## 🔧 Implementation Blueprint`
+ 23:    - Validates phase structure (number, name, hours, goal, approach)
+ 24:    - Identifies files to create/modify and functions to implement
+ 25:    - Extracts validation commands and checkpoint instructions
+ 26: 
+ 27: 2. **Creates Git Branch** (in worktree if specified):
+ 28:    - If executing in git worktree: Uses existing branch from worktree setup
+ 29:    - If executing in main repo: Creates branch `prp-{prp_id}-{sanitized-name}`
+ 30:    - Format example: `prp-6-user-authentication`
+ 31:    - Enables parallel PRP execution (see CLAUDE.md "Git Worktree" section)
+ 32:    - **Pattern**: Branch created/verified BEFORE any file modifications
  33: 
- 34: **Preserves**:
- 35: - All essential information
- 36: - Technical accuracy
- 37: - Commands and references
- 38: - Critical warnings and errors
- 39: - Quick reference data
- 40: - Structure and organization
- 41: 
- 42: **Guaranteed**: Zero information loss, only noise removal
- 43: 
- 44: ## Algorithm
+ 34: 3. **Initializes PRP Context**:
+ 35:    - Creates active PRP session in `.ce/active_prp_session`
+ 36:    - Initializes state tracking for phases
+ 37:    - Sets up checkpoint namespace: `checkpoint-{prp_id}-{phase}`
+ 38:    - Stores branch name and worktree path if applicable
+ 39: 
+ 40: 4. **Executes Each Phase**:
+ 41:    - Creates/modifies files using Serena MCP
+ 42:    - Implements functions from blueprint
+ 43:    - Logs progress to console
+ 44:    - Updates phase state
  45: 
- 46: ### Phase 1: Structural Analysis
- 47: - Parse markdown sections
- 48: - Identify redundant patterns
- 49: - Detect verbose vs concise sections
- 50: - Map cross-references
+ 46: 4. **Runs Validation Loop** (L1-L4 with self-healing):
+ 47:    - **L1 (Syntax & Style)**: `validate_level_1()` - Linting, formatting, type checks
+ 48:    - **L2 (Unit Tests)**: Runs phase validation command (e.g., `pytest tests/test_auth.py`)
+ 49:    - **L3 (Integration)**: `validate_level_3()` - Integration tests
+ 50:    - **L4 (Pattern Conformance)**: `validate_level_4(prp_path)` - Drift detection (<30%)
  51: 
- 52: ### Phase 2: Content Classification
- 53: - **Keep**: Commands, references, warnings, key facts
- 54: - **Compress**: Long explanations → bullet points
- 55: - **Deduplicate**: Multiple examples → single best
- 56: - **Condense**: Multi-paragraph → 2-3 lines
- 57: 
- 58: ### Phase 3: Optimization
- 59: - Convert verbose text to scannable format
- 60: - Preserve all unique information
- 61: - Maintain readability
- 62: - Keep structure intact
- 63: 
- 64: ### Phase 4: Validation
- 65: - Verify no information loss
- 66: - Check all references intact
- 67: - Ensure commands preserved
- 68: - Validate structure
- 69: 
- 70: ## Output
- 71: 
- 72: ```
- 73: 📄 Denoising: CLAUDE.md
- 74: 
- 75: Before: 1040 lines
- 76: After:  259 lines
- 77: Reduction: 75% (781 lines)
- 78: 
- 79: ✅ Preserved:
- 80:   - All 5 core principles
- 81:   - 48 allowed tools summary
- 82:   - 15 quick commands
- 83:   - 12 troubleshooting entries
- 84:   - All resource paths
- 85: 
- 86: ❌ Removed:
- 87:   - 6 verbose sections (150+ lines)
- 88:   - 12 redundant code examples
- 89:   - 8 long explanations
- 90:   - 4 duplicate references
+ 52:    **Self-Healing** (L1-L2 only, max 3 attempts):
+ 53:    - Parses error output (type, file, line, message)
+ 54:    - Checks escalation triggers
+ 55:    - Applies automatic fixes (e.g., add missing imports)
+ 56:    - Re-runs validation
+ 57:    - Escalates to human if persistent/ambiguous
+ 58: 
+ 59:    **Error Escalation Triggers**:
+ 60:    - **Persistent**: Same error after 3 attempts
+ 61:    - **Ambiguous**: Generic error with no file/line info
+ 62:    - **Architectural**: Keywords: refactor, redesign, circular import
+ 63:    - **External**: Network errors, package issues
+ 64:    - **Security**: CVE, credentials, permissions
+ 65: 
+ 66: 5. **Creates Checkpoints**:
+ 67:    - Git commit after each phase: `git commit -m "Phase N: {goal}"`
+ 68:    - Git tag after validation gate: `checkpoint-{prp_id}-phase{N}-{timestamp}`
+ 69:    - Preserves rollback points for easy recovery
+ 70: 
+ 71: 6. **Post-Execution Sync** (if auto-sync enabled via PRP-5):
+ 72:    - Runs cleanup protocol (archives memories, deletes ephemeral state)
+ 73:    - Syncs context (reindexes new code)
+ 74:    - Creates final checkpoint
+ 75:    - Verifies drift < 10%
+ 76: 
+ 77: 7. **Calculates Confidence Score**:
+ 78:    - **10/10**: All L1-L4 passed on first attempt
+ 79:    - **9/10**: All passed, 1-2 self-heals
+ 80:    - **8/10**: All passed, 3+ self-heals
+ 81:    - **7/10**: L1-L3 passed, L4 skipped
+ 82:    - **5/10**: Validation failures
+ 83: 
+ 84: 8. **Ends PRP Context**:
+ 85:    - Removes active session
+ 86:    - Returns execution summary
+ 87: 
+ 88: ## Execution Protocol Specification
+ 89: 
+ 90: **This section defines the PRP execution protocol that `/batch-exe-prp` agents follow independently.**
  91: 
- 92: Validation: PASS ✅
- 93: All essential information preserved.
- 94: 
- 95: Written to: CLAUDE.md
- 96: ```
- 97: 
- 98: ## Examples
- 99: 
-100: ### Before (Verbose)
-101: ```markdown
-102: ## Working Directory
-103: 
-104: **Default Context:** Project root (`/Users/bprzybysz/nc-src/ctx-eng-plus`)
-105: 
-106: **For tools/ commands:** Always prefix with `cd tools &&` or use full paths from root.
-107: 
-108: **Note:** Claude Code doesn't have a persistent working directory setting per project.
-109: Always specify context explicitly:
-110: 
-111: ```bash
-112: # Correct patterns
-113: cd tools && uv run ce --help
-114: cd tools && uv run pytest tests/ -v
-115: uv run -C tools ce validate --level all  # Using uv -C flag
-116: 
-117: # Avoid (relative paths from wrong location)
-118: uv run ce --help  # Will fail if not in tools/
-119: ```
-120: ```
-121: 
-122: ### After (Denoised)
-123: ```markdown
-124: ## Working Directory
-125: 
-126: **Default**: `/Users/bprzybysz/nc-src/ctx-eng-plus`
-127: 
-128: **For tools/ commands**: Use `cd tools &&` or `uv run -C tools`
-129: ```
-130: 
-131: ## Configuration
-132: 
-133: **Location**: `.ce/denoise-config.yml` (optional)
-134: 
-135: ```yaml
-136: denoise:
-137:   # Target compression ratio (default: 60-75%)
-138:   target_reduction: 70
+ 92: ### Protocol Steps (Sequential per Phase)
+ 93: 
+ 94: ```
+ 95: For each phase in PRP blueprint:
+ 96:   1. Parse phase metadata (number, name, goal, hours)
+ 97:   2. Execute implementation steps:
+ 98:      - Read files (if modifying existing)
+ 99:      - Apply changes (Edit/Write tools)
+100:      - Create new files if needed
+101:   3. Run validation loop:
+102:      a. L1 (Syntax & Style):
+103:         - Run linting (ruff/pylint/eslint)
+104:         - Run formatting (black/prettier)
+105:         - Run type checking (mypy/tsc)
+106:         - Self-heal if failed (max 3 attempts)
+107:      b. L2 (Unit Tests):
+108:         - Run phase validation command
+109:         - Parse test failures
+110:         - Self-heal if failed (max 3 attempts)
+111:      c. L3 (Integration Tests):
+112:         - Run integration test suite
+113:         - NO self-healing (escalate on failure)
+114:      d. L4 (Pattern Conformance):
+115:         - Calculate drift score
+116:         - ABORT if drift >30%
+117:         - NO self-healing (escalate on failure)
+118:   4. Create checkpoint:
+119:      - Git commit: "Phase {N}: {goal}"
+120:      - Git tag: "checkpoint-{prp_id}-phase{N}-{timestamp}"
+121:   5. Output progress signal:
+122:      - "STATUS:PHASE_COMPLETE:{N}/{total}"
+123: 
+124: Return JSON report:
+125: {
+126:   "prp_id": "PRP-X",
+127:   "status": "SUCCESS|FAILED|PARTIAL",
+128:   "phases_completed": N,
+129:   "phases_total": M,
+130:   "confidence_score": 1-10,
+131:   "validation_results": {...},
+132:   "self_heals": N,
+133:   "commit_hash": "abc123",
+134:   "execution_time": "Xm Ys",
+135:   "files_modified": ["file1", "file2"],
+136:   "errors": [...]
+137: }
+138: ```
 139: 
-140:   # Preserve these sections verbatim
-141:   preserve_sections:
-142:     - "Quick Commands"
-143:     - "Troubleshooting"
-144: 
-145:   # Maximum examples to keep per section
-146:   max_examples: 1
-147: 
-148:   # Condense code blocks longer than N lines
-149:   condense_code_threshold: 20
-150: ```
-151: 
-152: ## Rules
-153: 
-154: ### MUST Preserve
-155: - Commands and CLI references
-156: - Configuration examples
-157: - Error messages and troubleshooting
-158: - Technical specifications
-159: - Quick reference tables
-160: - Resource paths
-161: 
-162: ### MAY Compress
-163: - Long explanations (→ bullet points)
-164: - Multiple examples (→ best one)
-165: - Verbose prose (→ concise)
-166: - Repetitive sections (→ single instance)
-167: 
-168: ### MUST NOT Change
-169: - Technical accuracy
-170: - Command syntax
-171: - File paths
-172: - URLs and references
-173: - Code logic (only formatting/length)
-174: 
-175: ## When to Use
-176: 
-177: **Good for**:
-178: - Documentation that grew organically
-179: - Multiple authors with varying styles
-180: - Copy-paste accumulation
-181: - Tutorial-style docs needing quick reference format
-182: - Token-heavy files
-183: 
-184: **Not for**:
-185: - Tutorial content (intentional verbosity)
-186: - Step-by-step guides with explanations
-187: - API documentation with full examples
-188: - Already concise documents
-189: 
-190: ## Implementation
+140: ### Self-Healing Rules
+141: 
+142: **L1-L2 ONLY** (max 3 attempts per error):
+143: 
+144: **Auto-fixable**:
+145: - Import errors → Add missing import
+146: - Formatting errors → Apply formatter
+147: - Simple type errors → Add type hints
+148: 
+149: **DO NOT auto-fix**:
+150: - Persistent errors (same error 3x) → Escalate
+151: - Ambiguous errors (no file/line) → Escalate
+152: - Architectural errors (circular import, refactor needed) → Escalate
+153: - External errors (network, package not found) → Escalate
+154: - Security errors (CVE, credentials) → Escalate immediately
+155: 
+156: ### Health Check Protocol (for batch agents)
+157: 
+158: **Output every 5 minutes**:
+159: ```
+160: HEALTH:OK                          # All systems normal
+161: HEALTH:ERROR:timeout               # Validation timeout
+162: HEALTH:ERROR:import_error:file.py  # Specific error detected
+163: ```
+164: 
+165: **Completion signals**:
+166: ```
+167: STATUS:COMPLETE:10/10              # Success (confidence score)
+168: STATUS:FAILED:L3_timeout           # Failure reason
+169: STATUS:PARTIAL:2/3                 # Partial (N of M phases done)
+170: ```
+171: 
+172: ## CLI Command
+173: 
+174: ```bash
+175: # Basic usage
+176: cd tools
+177: uv run ce execute <prp-id-or-path>
+178: 
+179: # Execute specific phase range
+180: uv run ce execute PRP-5 --start-phase 2 --end-phase 3
+181: 
+182: # Dry run (parse blueprint without execution)
+183: uv run ce execute PRP-5 --dry-run
+184: 
+185: # Skip validation (dangerous - for debugging only)
+186: uv run ce execute PRP-5 --skip-validation
+187: 
+188: # JSON output (for scripting)
+189: uv run ce execute PRP-5 --json
+190: ```
 191: 
-192: This command uses:
-193: 1. **LLM-based analysis** (via Syntropy thinking tool)
-194:    - Semantic understanding of content
-195:    - Intelligent redundancy detection
-196:    - Context-aware compression
-197: 
-198: 2. **Rule-based optimization**
-199:    - Markdown structure preservation
-200:    - Code block condensing
-201:    - Bullet point conversion
-202: 
-203: 3. **Validation layer**
-204:    - Information extraction (before/after)
-205:    - Completeness check
-206:    - Cross-reference validation
-207: 
-208: ## Integration
-209: 
-210: **Pre-commit hook** (optional):
-211: ```yaml
-212: # .claude/settings.local.json
-213: {
-214:   "hooks": {
-215:     "preCommit": {
-216:       "command": "/denoise docs/*.md --dry-run --verbose",
-217:       "description": "Check for document bloat before commit"
-218:     }
-219:   }
-220: }
-221: ```
-222: 
-223: **Weekly maintenance**:
-224: ```bash
-225: # Add to crontab or CI/CD
-226: /denoise CLAUDE.md syntropy-mcp/CLAUDE.md --verbose
-227: ```
-228: 
-229: ## Related
-230: 
-231: - `/peer-review` - Review document quality
-232: - `/update-context` - Sync context with codebase
-233: - `ce validate --level 1` - Markdown linting
+192: ## Example Workflow
+193: 
+194: ```bash
+195: # 1. Generate PRP from INITIAL.md
+196: /generate-prp feature-requests/auth/INITIAL.md
+197: # Output: PRPs/feature-requests/PRP-6-user-authentication-system.md
+198: 
+199: # 2. Review generated PRP
+200: # - Check implementation blueprint phases
+201: # - Verify validation commands
+202: # - Adjust if needed
+203: 
+204: # 3. Execute PRP with auto-sync
+205: cd tools
+206: uv run ce context auto-sync --enable  # Enable auto-sync (PRP-5)
+207: /execute-prp PRP-6
+208: 
+209: # Expected output:
+210: # ================================================================================
+211: # Phase 1: Core Logic Implementation
+212: # Goal: Implement main authentication flow
+213: # ================================================================================
+214: #
+215: #   📝 Create: src/auth.py - Authentication logic
+216: #   🔧 Implement: authenticate_user
+217: #   🔧 Implement: validate_token
+218: #
+219: #   🧪 Running validation...
+220: #     L1: Syntax & Style...
+221: #     ✅ L1 passed (0.45s)
+222: #     L2: Running pytest tests/test_auth.py -v...
+223: #     ✅ L2 passed (1.23s)
+224: #     L3: Integration Tests...
+225: #     ✅ L3 passed (2.15s)
+226: #     L4: Pattern Conformance...
+227: #     ✅ L4 passed (drift: 5.2%)
+228: #   ✅ Validation complete
+229: #
+230: # ✅ Phase 1 complete
+231: #
+232: # ... (phases 2-3)
+233: #
+234: # ================================================================================
+235: # Running post-execution sync...
+236: # ================================================================================
+237: #
+238: # ✅ Post-sync complete: drift=3.1%
+239: #    Cleanup: True
+240: #    Memories archived: 2
+241: #    Final checkpoint: checkpoint-PRP-6-final-20251013-120000
+242: #
+243: # ✅ Execution complete: 10/10 confidence (45m 23s)
+244: ```
+245: 
+246: ## Self-Healing Capabilities
+247: 
+248: ### Auto-Fixable Errors (L1-L2)
+249: 
+250: **Import Errors**:
+251: ```python
+252: # Error: ImportError: No module named 'jwt'
+253: # Fix: Adds "import jwt" to file at appropriate location
+254: ```
+255: 
+256: ### Escalation Triggers (Human Intervention Required)
+257: 
+258: The system escalates to human when:
+259: 
+260: 1. **Persistent Error** (same error after 3 attempts):
+261:    ```
+262:    ❌ L2 failed after 3 attempts - escalating
+263:    🔧 Troubleshooting:
+264:       1. Review error details - same error occurred 3 times
+265:       2. Check if fix logic matches error type
+266:       3. Consider if architectural change needed
+267:    ```
+268: 
+269: 2. **Ambiguous Error** (generic error with no file/line info):
+270:    ```
+271:    Error: "something went wrong"
+272:    🔧 Troubleshooting:
+273:       1. Run validation command manually for full context
+274:       2. Check logs for additional error details
+275:    ```
+276: 
+277: 3. **Architectural Changes** (keywords: refactor, redesign, circular import):
+278:    ```
+279:    Error: "circular import detected between auth.py and models.py"
+280:    🔧 Troubleshooting:
+281:       1. Review error for architectural keywords
+282:       2. Consider if code structure needs reorganization
+283:    ```
+284: 
+285: 4. **External Dependencies** (network errors, package issues):
+286:    ```
+287:    Error: "connection refused" or "package not found"
+288:    🔧 Troubleshooting:
+289:       1. Check network connectivity
+290:       2. Verify package repository access (PyPI, npm)
+291:    ```
+292: 
+293: 5. **Security Concerns** (CVE, credentials, permissions):
+294:    ```
+295:    Error: "vulnerability detected" or "secret exposed"
+296:    🔧 Troubleshooting:
+297:       1. DO NOT auto-fix security-related errors
+298:       2. Review error for exposed secrets/credentials
+299:    ```
+300: 
+301: ## Options
+302: 
+303: | Flag | Description | Example |
+304: |------|-------------|---------|
+305: | `--start-phase N` | Start execution from phase N | `--start-phase 2` |
+306: | `--end-phase N` | Stop execution at phase N | `--end-phase 3` |
+307: | `--skip-validation` | Skip validation loops (debugging only) | `--skip-validation` |
+308: | `--dry-run` | Parse blueprint without execution | `--dry-run` |
+309: | `--json` | Output results as JSON | `--json` |
+310: 
+311: ## Validation Gates
+312: 
+313: Each phase runs through 4 validation levels:
+314: 
+315: ### L1: Syntax & Style (Auto-healing: Yes)
+316: - Linting (ruff, pylint, eslint)
+317: - Formatting (black, prettier)
+318: - Type checking (mypy, tsc)
+319: - **Max 3 self-healing attempts**
+320: 
+321: ### L2: Unit Tests (Auto-healing: Yes)
+322: - Runs phase validation command
+323: - Parses test failures
+324: - Attempts automatic fixes (import errors, simple logic)
+325: - **Max 3 self-healing attempts**
+326: 
+327: ### L3: Integration Tests (Auto-healing: No)
+328: - End-to-end functionality tests
+329: - Manual intervention on failure
+330: - Escalates architectural issues
+331: 
+332: ### L4: Pattern Conformance (Auto-healing: No)
+333: - Compares implementation to INITIAL.md EXAMPLES
+334: - Calculates drift score (0-100%)
+335: - **Aborts if drift > 30%** (requires explicit user acceptance)
+336: - User decision: accept/reject/update EXAMPLES
+337: 
+338: ## PRP State Isolation (via PRP-2)
+339: 
+340: Each execution maintains isolated state:
+341: 
+342: - **Checkpoints**: `checkpoint-{prp_id}-phase{N}-{timestamp}`
+343: - **Memories**: `{prp_id}-checkpoint-*`, `{prp_id}-learnings-*`
+344: - **Active Session**: `.ce/active_prp_session` (JSON with prp_id, phase, validation_attempts)
+345: - **Cleanup**: Automatic ephemeral state removal after execution (if auto-sync enabled)
+346: 
+347: ## Context Sync Integration (via PRP-5)
+348: 
+349: With auto-sync enabled (`ce context auto-sync --enable`):
+350: 
+351: **Before execution**: N/A (pre-sync happens in generation phase)
+352: 
+353: **After execution** (Step 6.5):
+354: 1. Runs cleanup protocol (PRP-2)
+355: 2. Syncs context (reindexes new code)
+356: 3. Verifies drift < 10%
+357: 4. Creates final checkpoint
+358: 5. Removes active PRP session
+359: 
+360: ## Claude Code Hooks
+361: 
+362: **Integrated Context Monitoring** (configured in `.claude/settings.local.json`):
+363: 
+364: **Active Hooks**:
+365: 
+366: - **SessionStart**: Context health check - Warns about drift on session start (>10%)
+367: 
+368: **Additional hooks available** (add to settings.local.json as needed):
+369: 
+370: - **UserPromptSubmit**: Auto-sync reminder (checks if auto-sync disabled)
+371: - **PostToolUse**: Drift spike detector (alerts after Edit/Write if drift >40%)
+372: 
+373: **Current hook configuration**:
+374: 
+375: ```json
+376: {
+377:   "hooks": {
+378:     "SessionStart": [
+379:       {
+380:         "matcher": "*",
+381:         "hooks": [
+382:           {
+383:             "type": "command",
+384:             "command": "cd tools && uv run ce context health --json | jq -r 'if .drift_score > 30 then \"⚠️ HIGH DRIFT: \" + (.drift_score | tostring) + \"% - Run: ce context sync\" elif .drift_score > 10 then \"⚠️ Moderate drift: \" + (.drift_score | tostring) + \"%\" else \"✅ Context healthy: \" + (.drift_score | tostring) + \"%\" end'",
+385:             "timeout": 5
+386:           }
+387:         ]
+388:       }
+389:     ]
+390:   }
+391: }
+392: ```
+393: 
+394: **Use cases**:
+395: 
+396: - Daily development: SessionStart health check (drift warning)
+397: - Long sessions: PostToolUse drift spike detector (alerts >40% drift)
+398: - Exploration: Complements auto-sync for non-PRP work
+399: 
+400: **Note**: Hooks are optional. Auto-sync mode handles PRP workflow automatically.
+401: 
+402: **More info**: See official docs at <https://docs.claude.com/en/docs/claude-code/hooks>
+403: 
+404: ## Common Issues
+405: 
+406: ### Issue: "PRP file not found: PRP-5"
+407: 
+408: ```bash
+409: # Solution: Use full path or ensure PRP is in PRPs/feature-requests/
+410: /execute-prp PRPs/feature-requests/PRP-5-context-sync-integration.md
+411: ```
+412: 
+413: ### Issue: Validation fails with "command not found"
+414: 
+415: ```bash
+416: # Solution: Ensure validation command is correct in PRP blueprint
+417: # Example: Use "uv run pytest tests/" not just "pytest tests/"
+418: ```
+419: 
+420: ### Issue: Self-healing stuck in loop
+421: 
+422: ```bash
+423: # Solution: Same error 3 times triggers escalation
+424: # Review escalation message for troubleshooting guidance
+425: ```
+426: 
+427: ### Issue: "Auto-sync failed"
+428: 
+429: ```bash
+430: # Solution: Post-sync is non-blocking, execution still completes
+431: # Run manual sync: cd tools && uv run ce context post-sync PRP-5
+432: ```
+433: 
+434: ## Output Structure
+435: 
+436: ```json
+437: {
+438:   "success": true,
+439:   "prp_id": "PRP-6",
+440:   "phases_completed": 3,
+441:   "validation_results": {
+442:     "Phase1": {
+443:       "success": true,
+444:       "validation_levels": {
+445:         "L1": {"passed": true, "attempts": 1, "errors": []},
+446:         "L2": {"passed": true, "attempts": 2, "errors": ["import error"]},
+447:         "L3": {"passed": true, "attempts": 1, "errors": []},
+448:         "L4": {"passed": true, "attempts": 1, "drift_score": 5.2}
+449:       },
+450:       "self_healed": ["L2: Fixed after 2 attempts"]
+451:     }
+452:   },
+453:   "checkpoints_created": [
+454:     "checkpoint-PRP-6-phase1-20251013-100000",
+455:     "checkpoint-PRP-6-phase2-20251013-110000",
+456:     "checkpoint-PRP-6-phase3-20251013-120000"
+457:   ],
+458:   "confidence_score": "10/10",
+459:   "execution_time": "45m 23s"
+460: }
+461: ```
+462: 
+463: ## Next Steps After Execution
+464: 
+465: 1. **Review Execution Summary**:
+466:    - Check confidence score (target: 10/10)
+467:    - Review self-healing actions taken
+468:    - Verify all validation gates passed
+469: 
+470: 2. **Test Manually** (if confidence < 10/10):
+471:    - Run validation commands manually
+472:    - Review self-healing fixes
+473:    - Address any escalated errors
+474: 
+475: 3. **Rollback if Needed** (via PRP-2):
+476: 
+477:    ```bash
+478:    cd tools
+479:    uv run ce prp restore PRP-6 phase2
+480:    ```
+481: 
+482: 4. **Context Sync** (if auto-sync disabled):
+483: 
+484:    ```bash
+485:    cd tools
+486:    uv run ce context post-sync PRP-6
+487:    ```
+488: 
+489: 5. **Peer Review**:
+490: 
+491:    ```bash
+492:    /peer-review exe PRPs/feature-requests/PRP-6-user-authentication-system.md
+493:    ```
+494: 
+495: ## Tips
+496: 
+497: 1. **Enable auto-sync** before execution: `ce context auto-sync --enable`
+498: 2. **Use dry-run** to preview phases: `ce execute PRP-6 --dry-run`
+499: 3. **Test incrementally**: Use `--start-phase` and `--end-phase` for partial execution
+500: 4. **Trust self-healing**: Let L1-L2 auto-fixes run before manual intervention
+501: 5. **Review escalations**: Escalation messages include specific troubleshooting guidance
+502: 6. **Check confidence score**: 10/10 means production-ready, <8/10 needs review
+503: 
+504: ## Implementation Details
+505: 
+506: - **Module**: `tools/ce/execute.py`
+507: - **Tests**: `tools/tests/test_execute.py` (20+ tests)
+508: - **PRP Reference**: `PRPs/feature-requests/PRP-4-execute-prp-orchestration.md`
+509: - **Self-Healing**: 90%+ success rate on L1-L2 errors
+510: - **Speed Improvement**: 10-24x faster than manual implementation
+511: 
+512: ## Related Commands
+513: 
+514: - `/generate-prp` - Generate PRP from INITIAL.md
+515: - `/peer-review exe <prp-file>` - Review execution quality
+516: - `ce prp restore <prp-id> [phase]` - Rollback to checkpoint (PRP-2)
+517: - `ce context post-sync <prp-id>` - Manual post-execution sync (PRP-5)
+518: - `ce validate --level 4 <prp-path>` - Run L4 pattern conformance (PRP-1)
 </file>
 
 <file path=".claude/commands/sync-with-syntropy.md">
@@ -13763,90 +14917,6 @@ This section contains the contents of the repository's files.
 87: 
 88:   Skipping settings update (nothing to sync)
 89: ```
-</file>
-
-<file path=".claude/commands/syntropy-health.md">
- 1: # /syntropy-health - Syntropy MCP Health Check
- 2: 
- 3: Check health status of Syntropy MCP server and all underlying servers.
- 4: 
- 5: ## Usage
- 6: 
- 7: ```bash
- 8: # Quick check (default - fast, essential servers only)
- 9: /syntropy-health
-10: 
-11: # Full diagnostic check (all servers, detailed info)
-12: /syntropy-health full
-13: ```
-14: 
-15: ## What It Checks
-16: 
-17: **Quick Mode** (default):
-18: - Essential servers: Serena, Filesystem, Git, Linear, Thinking
-19: - Response times for each server
-20: - Connection status
-21: - Tool call counts (if available)
-22: 
-23: **Full Mode**:
-24: - All 9 MCP servers (including lazy-loaded: Context7, Repomix, GitHub, Perplexity)
-25: - Detailed diagnostics
-26: - Last errors (if any)
-27: - Call statistics
-28: 
-29: ## Output Format
-30: 
-31: ```
-32: 🏥 Syntropy MCP Health Check
-33: 
-34: ✅ serena: 124ms (15 calls)
-35: ✅ filesystem: 45ms (8 calls)
-36: ✅ git: 67ms (3 calls)
-37: ⚠️  linear: 1205ms (2 calls) - SLOW
-38: ❌ github: Not connected
-39: 
-40: Overall: 4/5 servers healthy
-41: ```
-42: 
-43: ## Troubleshooting
-44: 
-45: ### "Not connected" errors
-46: 
-47: Clear MCP auth cache and restart:
-48: ```bash
-49: rm -rf ~/.mcp-auth
-50: ```
-51: 
-52: ### Slow response times (>1s)
-53: 
-54: Server may be starting up or overloaded. Wait 30s and retry.
-55: 
-56: ### All servers failing
-57: 
-58: Check if MCP servers are running:
-59: ```bash
-60: ps aux | grep mcp
-61: ```
-62: 
-63: ## When to Use
-64: 
-65: **Recommended on session start** to verify MCP infrastructure:
-66: - After Claude Code restart
-67: - When seeing unexpected tool failures
-68: - Before starting major work (PRPs, refactoring)
-69: - After clearing auth cache
-70: 
-71: ## Implementation
-72: 
-73: This command calls the `healthcheck` tool with appropriate parameters:
-74: - Default: `{"detailed": false, "timeout_ms": 2000}`
-75: - Full: `{"detailed": true, "timeout_ms": 5000}`
-76: 
-77: ## Related
-78: 
-79: - `/update-context` - Updates project context (requires healthy Serena)
-80: - `/generate-prp` - Requires healthy Serena + Filesystem
-81: - `/execute-prp` - Requires multiple healthy servers
 </file>
 
 <file path=".claude/commands/tools-misuse-scan.md">
@@ -14219,43 +15289,136 @@ This section contains the contents of the repository's files.
 138:         return 1
 </file>
 
-<file path="tools/pyproject.toml">
- 1: [project]
- 2: name = "ce-tools"
- 3: version = "0.1.0"
- 4: description = "Context Engineering CLI Tools"
- 5: readme = "README.md"
- 6: requires-python = ">=3.10"
- 7: dependencies = [
- 8:     "anthropic>=0.40.0",
- 9:     "deepdiff>=6.0",
-10:     "diagrams>=0.24.4",
-11:     "jsonschema>=4.25.1",
-12:     "python-frontmatter>=1.1.0",
-13:     "pyyaml>=6.0",
-14: ]
-15: 
-16: [project.scripts]
-17: ce = "ce.__main__:main"
-18: 
-19: [build-system]
-20: requires = ["hatchling"]
-21: build-backend = "hatchling.build"
-22: 
-23: [tool.pytest.ini_options]
-24: testpaths = ["tests"]
-25: python_files = "test_*.py"
-26: python_functions = "test_*"
-27: addopts = "-v --tb=short"
-28: 
-29: [tool.hatch.build.targets.wheel]
-30: packages = ["ce"]
-31: 
-32: [dependency-groups]
-33: dev = [
-34:     "pytest>=8.4.2",
-35:     "pytest-cov>=7.0.0",
-36: ]
+<file path="tools/ce/toml_merger.py">
+  1: #!/usr/bin/env python3
+  2: """
+  3: TOML Merger - Intelligent pyproject.toml merging with version unification.
+  4: 
+  5: Supports PEP 621, Poetry, and Setuptools formats.
+  6: Uses version intersection strategy (not "higher wins").
+  7: """
+  8: 
+  9: from pathlib import Path
+ 10: from typing import Dict, Optional
+ 11: 
+ 12: try:
+ 13:     import tomllib  # Python 3.11+
+ 14: except ImportError:
+ 15:     import tomli as tomllib  # Fallback for Python 3.10
+ 16: 
+ 17: import tomli_w
+ 18: 
+ 19: from .toml_formats.pep621_handler import PEP621Handler
+ 20: from .toml_formats.poetry_handler import PoetryHandler
+ 21: from .toml_formats.setuptools_handler import SetuptoolsHandler
+ 22: from .toml_formats.version_resolver import VersionResolver
+ 23: 
+ 24: 
+ 25: class TomlMerger:
+ 26:     """
+ 27:     Orchestrates TOML merging using format-specific handlers.
+ 28: 
+ 29:     Strategy pattern delegation:
+ 30:     - PEP621Handler: PEP 621 format
+ 31:     - PoetryHandler: Poetry format
+ 32:     - SetuptoolsHandler: Setuptools format
+ 33:     - VersionResolver: Version intersection logic
+ 34:     """
+ 35: 
+ 36:     def __init__(self, framework_toml: Path, target_toml: Optional[Path] = None):
+ 37:         self.framework_toml = Path(framework_toml)
+ 38:         self.target_toml = Path(target_toml) if target_toml else None
+ 39: 
+ 40:         # Load framework TOML
+ 41:         with open(self.framework_toml, "rb") as f:
+ 42:             self.framework_data = tomllib.load(f)
+ 43: 
+ 44:         # Load target TOML if exists
+ 45:         self.target_data = None
+ 46:         if self.target_toml and self.target_toml.exists():
+ 47:             with open(self.target_toml, "rb") as f:
+ 48:                 self.target_data = tomllib.load(f)
+ 49: 
+ 50:     def merge(self) -> Dict:
+ 51:         """
+ 52:         Merge framework and target TOMLs with version intersection.
+ 53: 
+ 54:         Returns:
+ 55:             Merged TOML data (dict)
+ 56: 
+ 57:         Raises:
+ 58:             ValueError: If version conflict detected
+ 59:         """
+ 60:         # No target TOML → use framework directly
+ 61:         if not self.target_data:
+ 62:             return self.framework_data.copy()
+ 63: 
+ 64:         # Detect target format and convert to PEP 621
+ 65:         if PoetryHandler.detect(self.target_data):
+ 66:             target_pep621 = PoetryHandler.convert_to_pep621(self.target_data)
+ 67:         elif SetuptoolsHandler.detect(self.target_data):
+ 68:             target_pep621 = SetuptoolsHandler.convert_to_pep621(self.target_data)
+ 69:         elif PEP621Handler.detect(self.target_data):
+ 70:             target_pep621 = self.target_data.copy()
+ 71:         else:
+ 72:             # Unknown format → use framework
+ 73:             return self.framework_data.copy()
+ 74: 
+ 75:         # Start with framework data
+ 76:         merged = self.framework_data.copy()
+ 77: 
+ 78:         # Merge production dependencies
+ 79:         if "project" in target_pep621 and "dependencies" in target_pep621["project"]:
+ 80:             framework_deps = self.framework_data.get("project", {}).get("dependencies", [])
+ 81:             target_deps = target_pep621["project"]["dependencies"]
+ 82: 
+ 83:             merged["project"]["dependencies"] = VersionResolver.merge_dependencies(
+ 84:                 framework_deps, target_deps
+ 85:             )
+ 86: 
+ 87:         # Merge dev dependencies (dependency-groups)
+ 88:         if "dependency-groups" in target_pep621:
+ 89:             if "dependency-groups" not in merged:
+ 90:                 merged["dependency-groups"] = {}
+ 91: 
+ 92:             for group, deps in target_pep621["dependency-groups"].items():
+ 93:                 framework_deps = merged["dependency-groups"].get(group, [])
+ 94:                 merged["dependency-groups"][group] = VersionResolver.merge_dependencies(
+ 95:                     framework_deps, deps
+ 96:                 )
+ 97: 
+ 98:         # Preserve target's metadata
+ 99:         merged = PEP621Handler.preserve_metadata(target_pep621, merged)
+100: 
+101:         return merged
+102: 
+103:     def write(self, output_path: Path):
+104:         """
+105:         Write merged TOML to file.
+106: 
+107:         Args:
+108:             output_path: Path to write merged TOML
+109:         """
+110:         merged_data = self.merge()
+111: 
+112:         with open(output_path, "wb") as f:
+113:             tomli_w.dump(merged_data, f)
+114: 
+115: 
+116: def merge_toml_files(framework_toml: Path, target_toml: Optional[Path], output_path: Path):
+117:     """
+118:     Convenience function to merge TOML files.
+119: 
+120:     Args:
+121:         framework_toml: Path to framework pyproject.toml
+122:         target_toml: Path to target pyproject.toml (optional)
+123:         output_path: Path to write merged TOML
+124: 
+125:     Raises:
+126:         ValueError: If version conflict detected
+127:     """
+128:     merger = TomlMerger(framework_toml, target_toml)
+129:     merger.write(output_path)
 </file>
 
 <file path=".claude/commands/batch-gen-prp.md">
@@ -15239,527 +16402,6 @@ This section contains the contents of the repository's files.
 978: 4. Or execute stage-by-stage for more control
 </file>
 
-<file path=".claude/commands/execute-prp.md">
-  1: # /execute-prp - Execute PRP with Self-Healing
-  2: 
-  3: Automates PRP execution with phase-by-phase implementation, L1-L4 validation loops, self-healing error recovery, and automatic escalation triggers.
-  4: 
-  5: **Note**: This command defines the PRP execution protocol. `/batch-exe-prp` launches parallel agents that follow this protocol independently in separate git worktrees.
-  6: 
-  7: ## Usage
-  8: 
-  9: ```
- 10: /execute-prp <prp-file-or-id>
- 11: ```
- 12: 
- 13: **Examples:**
- 14: ```
- 15: /execute-prp PRP-5
- 16: /execute-prp PRPs/feature-requests/PRP-5-context-sync-integration.md
- 17: ```
- 18: 
- 19: ## What It Does
- 20: 
- 21: 1. **Parses PRP Blueprint**:
- 22:    - Extracts phases from `## 🔧 Implementation Blueprint`
- 23:    - Validates phase structure (number, name, hours, goal, approach)
- 24:    - Identifies files to create/modify and functions to implement
- 25:    - Extracts validation commands and checkpoint instructions
- 26: 
- 27: 2. **Creates Git Branch** (in worktree if specified):
- 28:    - If executing in git worktree: Uses existing branch from worktree setup
- 29:    - If executing in main repo: Creates branch `prp-{prp_id}-{sanitized-name}`
- 30:    - Format example: `prp-6-user-authentication`
- 31:    - Enables parallel PRP execution (see CLAUDE.md "Git Worktree" section)
- 32:    - **Pattern**: Branch created/verified BEFORE any file modifications
- 33: 
- 34: 3. **Initializes PRP Context**:
- 35:    - Creates active PRP session in `.ce/active_prp_session`
- 36:    - Initializes state tracking for phases
- 37:    - Sets up checkpoint namespace: `checkpoint-{prp_id}-{phase}`
- 38:    - Stores branch name and worktree path if applicable
- 39: 
- 40: 4. **Executes Each Phase**:
- 41:    - Creates/modifies files using Serena MCP
- 42:    - Implements functions from blueprint
- 43:    - Logs progress to console
- 44:    - Updates phase state
- 45: 
- 46: 4. **Runs Validation Loop** (L1-L4 with self-healing):
- 47:    - **L1 (Syntax & Style)**: `validate_level_1()` - Linting, formatting, type checks
- 48:    - **L2 (Unit Tests)**: Runs phase validation command (e.g., `pytest tests/test_auth.py`)
- 49:    - **L3 (Integration)**: `validate_level_3()` - Integration tests
- 50:    - **L4 (Pattern Conformance)**: `validate_level_4(prp_path)` - Drift detection (<30%)
- 51: 
- 52:    **Self-Healing** (L1-L2 only, max 3 attempts):
- 53:    - Parses error output (type, file, line, message)
- 54:    - Checks escalation triggers
- 55:    - Applies automatic fixes (e.g., add missing imports)
- 56:    - Re-runs validation
- 57:    - Escalates to human if persistent/ambiguous
- 58: 
- 59:    **Error Escalation Triggers**:
- 60:    - **Persistent**: Same error after 3 attempts
- 61:    - **Ambiguous**: Generic error with no file/line info
- 62:    - **Architectural**: Keywords: refactor, redesign, circular import
- 63:    - **External**: Network errors, package issues
- 64:    - **Security**: CVE, credentials, permissions
- 65: 
- 66: 5. **Creates Checkpoints**:
- 67:    - Git commit after each phase: `git commit -m "Phase N: {goal}"`
- 68:    - Git tag after validation gate: `checkpoint-{prp_id}-phase{N}-{timestamp}`
- 69:    - Preserves rollback points for easy recovery
- 70: 
- 71: 6. **Post-Execution Sync** (if auto-sync enabled via PRP-5):
- 72:    - Runs cleanup protocol (archives memories, deletes ephemeral state)
- 73:    - Syncs context (reindexes new code)
- 74:    - Creates final checkpoint
- 75:    - Verifies drift < 10%
- 76: 
- 77: 7. **Calculates Confidence Score**:
- 78:    - **10/10**: All L1-L4 passed on first attempt
- 79:    - **9/10**: All passed, 1-2 self-heals
- 80:    - **8/10**: All passed, 3+ self-heals
- 81:    - **7/10**: L1-L3 passed, L4 skipped
- 82:    - **5/10**: Validation failures
- 83: 
- 84: 8. **Ends PRP Context**:
- 85:    - Removes active session
- 86:    - Returns execution summary
- 87: 
- 88: ## Execution Protocol Specification
- 89: 
- 90: **This section defines the PRP execution protocol that `/batch-exe-prp` agents follow independently.**
- 91: 
- 92: ### Protocol Steps (Sequential per Phase)
- 93: 
- 94: ```
- 95: For each phase in PRP blueprint:
- 96:   1. Parse phase metadata (number, name, goal, hours)
- 97:   2. Execute implementation steps:
- 98:      - Read files (if modifying existing)
- 99:      - Apply changes (Edit/Write tools)
-100:      - Create new files if needed
-101:   3. Run validation loop:
-102:      a. L1 (Syntax & Style):
-103:         - Run linting (ruff/pylint/eslint)
-104:         - Run formatting (black/prettier)
-105:         - Run type checking (mypy/tsc)
-106:         - Self-heal if failed (max 3 attempts)
-107:      b. L2 (Unit Tests):
-108:         - Run phase validation command
-109:         - Parse test failures
-110:         - Self-heal if failed (max 3 attempts)
-111:      c. L3 (Integration Tests):
-112:         - Run integration test suite
-113:         - NO self-healing (escalate on failure)
-114:      d. L4 (Pattern Conformance):
-115:         - Calculate drift score
-116:         - ABORT if drift >30%
-117:         - NO self-healing (escalate on failure)
-118:   4. Create checkpoint:
-119:      - Git commit: "Phase {N}: {goal}"
-120:      - Git tag: "checkpoint-{prp_id}-phase{N}-{timestamp}"
-121:   5. Output progress signal:
-122:      - "STATUS:PHASE_COMPLETE:{N}/{total}"
-123: 
-124: Return JSON report:
-125: {
-126:   "prp_id": "PRP-X",
-127:   "status": "SUCCESS|FAILED|PARTIAL",
-128:   "phases_completed": N,
-129:   "phases_total": M,
-130:   "confidence_score": 1-10,
-131:   "validation_results": {...},
-132:   "self_heals": N,
-133:   "commit_hash": "abc123",
-134:   "execution_time": "Xm Ys",
-135:   "files_modified": ["file1", "file2"],
-136:   "errors": [...]
-137: }
-138: ```
-139: 
-140: ### Self-Healing Rules
-141: 
-142: **L1-L2 ONLY** (max 3 attempts per error):
-143: 
-144: **Auto-fixable**:
-145: - Import errors → Add missing import
-146: - Formatting errors → Apply formatter
-147: - Simple type errors → Add type hints
-148: 
-149: **DO NOT auto-fix**:
-150: - Persistent errors (same error 3x) → Escalate
-151: - Ambiguous errors (no file/line) → Escalate
-152: - Architectural errors (circular import, refactor needed) → Escalate
-153: - External errors (network, package not found) → Escalate
-154: - Security errors (CVE, credentials) → Escalate immediately
-155: 
-156: ### Health Check Protocol (for batch agents)
-157: 
-158: **Output every 5 minutes**:
-159: ```
-160: HEALTH:OK                          # All systems normal
-161: HEALTH:ERROR:timeout               # Validation timeout
-162: HEALTH:ERROR:import_error:file.py  # Specific error detected
-163: ```
-164: 
-165: **Completion signals**:
-166: ```
-167: STATUS:COMPLETE:10/10              # Success (confidence score)
-168: STATUS:FAILED:L3_timeout           # Failure reason
-169: STATUS:PARTIAL:2/3                 # Partial (N of M phases done)
-170: ```
-171: 
-172: ## CLI Command
-173: 
-174: ```bash
-175: # Basic usage
-176: cd tools
-177: uv run ce execute <prp-id-or-path>
-178: 
-179: # Execute specific phase range
-180: uv run ce execute PRP-5 --start-phase 2 --end-phase 3
-181: 
-182: # Dry run (parse blueprint without execution)
-183: uv run ce execute PRP-5 --dry-run
-184: 
-185: # Skip validation (dangerous - for debugging only)
-186: uv run ce execute PRP-5 --skip-validation
-187: 
-188: # JSON output (for scripting)
-189: uv run ce execute PRP-5 --json
-190: ```
-191: 
-192: ## Example Workflow
-193: 
-194: ```bash
-195: # 1. Generate PRP from INITIAL.md
-196: /generate-prp feature-requests/auth/INITIAL.md
-197: # Output: PRPs/feature-requests/PRP-6-user-authentication-system.md
-198: 
-199: # 2. Review generated PRP
-200: # - Check implementation blueprint phases
-201: # - Verify validation commands
-202: # - Adjust if needed
-203: 
-204: # 3. Execute PRP with auto-sync
-205: cd tools
-206: uv run ce context auto-sync --enable  # Enable auto-sync (PRP-5)
-207: /execute-prp PRP-6
-208: 
-209: # Expected output:
-210: # ================================================================================
-211: # Phase 1: Core Logic Implementation
-212: # Goal: Implement main authentication flow
-213: # ================================================================================
-214: #
-215: #   📝 Create: src/auth.py - Authentication logic
-216: #   🔧 Implement: authenticate_user
-217: #   🔧 Implement: validate_token
-218: #
-219: #   🧪 Running validation...
-220: #     L1: Syntax & Style...
-221: #     ✅ L1 passed (0.45s)
-222: #     L2: Running pytest tests/test_auth.py -v...
-223: #     ✅ L2 passed (1.23s)
-224: #     L3: Integration Tests...
-225: #     ✅ L3 passed (2.15s)
-226: #     L4: Pattern Conformance...
-227: #     ✅ L4 passed (drift: 5.2%)
-228: #   ✅ Validation complete
-229: #
-230: # ✅ Phase 1 complete
-231: #
-232: # ... (phases 2-3)
-233: #
-234: # ================================================================================
-235: # Running post-execution sync...
-236: # ================================================================================
-237: #
-238: # ✅ Post-sync complete: drift=3.1%
-239: #    Cleanup: True
-240: #    Memories archived: 2
-241: #    Final checkpoint: checkpoint-PRP-6-final-20251013-120000
-242: #
-243: # ✅ Execution complete: 10/10 confidence (45m 23s)
-244: ```
-245: 
-246: ## Self-Healing Capabilities
-247: 
-248: ### Auto-Fixable Errors (L1-L2)
-249: 
-250: **Import Errors**:
-251: ```python
-252: # Error: ImportError: No module named 'jwt'
-253: # Fix: Adds "import jwt" to file at appropriate location
-254: ```
-255: 
-256: ### Escalation Triggers (Human Intervention Required)
-257: 
-258: The system escalates to human when:
-259: 
-260: 1. **Persistent Error** (same error after 3 attempts):
-261:    ```
-262:    ❌ L2 failed after 3 attempts - escalating
-263:    🔧 Troubleshooting:
-264:       1. Review error details - same error occurred 3 times
-265:       2. Check if fix logic matches error type
-266:       3. Consider if architectural change needed
-267:    ```
-268: 
-269: 2. **Ambiguous Error** (generic error with no file/line info):
-270:    ```
-271:    Error: "something went wrong"
-272:    🔧 Troubleshooting:
-273:       1. Run validation command manually for full context
-274:       2. Check logs for additional error details
-275:    ```
-276: 
-277: 3. **Architectural Changes** (keywords: refactor, redesign, circular import):
-278:    ```
-279:    Error: "circular import detected between auth.py and models.py"
-280:    🔧 Troubleshooting:
-281:       1. Review error for architectural keywords
-282:       2. Consider if code structure needs reorganization
-283:    ```
-284: 
-285: 4. **External Dependencies** (network errors, package issues):
-286:    ```
-287:    Error: "connection refused" or "package not found"
-288:    🔧 Troubleshooting:
-289:       1. Check network connectivity
-290:       2. Verify package repository access (PyPI, npm)
-291:    ```
-292: 
-293: 5. **Security Concerns** (CVE, credentials, permissions):
-294:    ```
-295:    Error: "vulnerability detected" or "secret exposed"
-296:    🔧 Troubleshooting:
-297:       1. DO NOT auto-fix security-related errors
-298:       2. Review error for exposed secrets/credentials
-299:    ```
-300: 
-301: ## Options
-302: 
-303: | Flag | Description | Example |
-304: |------|-------------|---------|
-305: | `--start-phase N` | Start execution from phase N | `--start-phase 2` |
-306: | `--end-phase N` | Stop execution at phase N | `--end-phase 3` |
-307: | `--skip-validation` | Skip validation loops (debugging only) | `--skip-validation` |
-308: | `--dry-run` | Parse blueprint without execution | `--dry-run` |
-309: | `--json` | Output results as JSON | `--json` |
-310: 
-311: ## Validation Gates
-312: 
-313: Each phase runs through 4 validation levels:
-314: 
-315: ### L1: Syntax & Style (Auto-healing: Yes)
-316: - Linting (ruff, pylint, eslint)
-317: - Formatting (black, prettier)
-318: - Type checking (mypy, tsc)
-319: - **Max 3 self-healing attempts**
-320: 
-321: ### L2: Unit Tests (Auto-healing: Yes)
-322: - Runs phase validation command
-323: - Parses test failures
-324: - Attempts automatic fixes (import errors, simple logic)
-325: - **Max 3 self-healing attempts**
-326: 
-327: ### L3: Integration Tests (Auto-healing: No)
-328: - End-to-end functionality tests
-329: - Manual intervention on failure
-330: - Escalates architectural issues
-331: 
-332: ### L4: Pattern Conformance (Auto-healing: No)
-333: - Compares implementation to INITIAL.md EXAMPLES
-334: - Calculates drift score (0-100%)
-335: - **Aborts if drift > 30%** (requires explicit user acceptance)
-336: - User decision: accept/reject/update EXAMPLES
-337: 
-338: ## PRP State Isolation (via PRP-2)
-339: 
-340: Each execution maintains isolated state:
-341: 
-342: - **Checkpoints**: `checkpoint-{prp_id}-phase{N}-{timestamp}`
-343: - **Memories**: `{prp_id}-checkpoint-*`, `{prp_id}-learnings-*`
-344: - **Active Session**: `.ce/active_prp_session` (JSON with prp_id, phase, validation_attempts)
-345: - **Cleanup**: Automatic ephemeral state removal after execution (if auto-sync enabled)
-346: 
-347: ## Context Sync Integration (via PRP-5)
-348: 
-349: With auto-sync enabled (`ce context auto-sync --enable`):
-350: 
-351: **Before execution**: N/A (pre-sync happens in generation phase)
-352: 
-353: **After execution** (Step 6.5):
-354: 1. Runs cleanup protocol (PRP-2)
-355: 2. Syncs context (reindexes new code)
-356: 3. Verifies drift < 10%
-357: 4. Creates final checkpoint
-358: 5. Removes active PRP session
-359: 
-360: ## Claude Code Hooks
-361: 
-362: **Integrated Context Monitoring** (configured in `.claude/settings.local.json`):
-363: 
-364: **Active Hooks**:
-365: 
-366: - **SessionStart**: Context health check - Warns about drift on session start (>10%)
-367: 
-368: **Additional hooks available** (add to settings.local.json as needed):
-369: 
-370: - **UserPromptSubmit**: Auto-sync reminder (checks if auto-sync disabled)
-371: - **PostToolUse**: Drift spike detector (alerts after Edit/Write if drift >40%)
-372: 
-373: **Current hook configuration**:
-374: 
-375: ```json
-376: {
-377:   "hooks": {
-378:     "SessionStart": [
-379:       {
-380:         "matcher": "*",
-381:         "hooks": [
-382:           {
-383:             "type": "command",
-384:             "command": "cd tools && uv run ce context health --json | jq -r 'if .drift_score > 30 then \"⚠️ HIGH DRIFT: \" + (.drift_score | tostring) + \"% - Run: ce context sync\" elif .drift_score > 10 then \"⚠️ Moderate drift: \" + (.drift_score | tostring) + \"%\" else \"✅ Context healthy: \" + (.drift_score | tostring) + \"%\" end'",
-385:             "timeout": 5
-386:           }
-387:         ]
-388:       }
-389:     ]
-390:   }
-391: }
-392: ```
-393: 
-394: **Use cases**:
-395: 
-396: - Daily development: SessionStart health check (drift warning)
-397: - Long sessions: PostToolUse drift spike detector (alerts >40% drift)
-398: - Exploration: Complements auto-sync for non-PRP work
-399: 
-400: **Note**: Hooks are optional. Auto-sync mode handles PRP workflow automatically.
-401: 
-402: **More info**: See official docs at <https://docs.claude.com/en/docs/claude-code/hooks>
-403: 
-404: ## Common Issues
-405: 
-406: ### Issue: "PRP file not found: PRP-5"
-407: 
-408: ```bash
-409: # Solution: Use full path or ensure PRP is in PRPs/feature-requests/
-410: /execute-prp PRPs/feature-requests/PRP-5-context-sync-integration.md
-411: ```
-412: 
-413: ### Issue: Validation fails with "command not found"
-414: 
-415: ```bash
-416: # Solution: Ensure validation command is correct in PRP blueprint
-417: # Example: Use "uv run pytest tests/" not just "pytest tests/"
-418: ```
-419: 
-420: ### Issue: Self-healing stuck in loop
-421: 
-422: ```bash
-423: # Solution: Same error 3 times triggers escalation
-424: # Review escalation message for troubleshooting guidance
-425: ```
-426: 
-427: ### Issue: "Auto-sync failed"
-428: 
-429: ```bash
-430: # Solution: Post-sync is non-blocking, execution still completes
-431: # Run manual sync: cd tools && uv run ce context post-sync PRP-5
-432: ```
-433: 
-434: ## Output Structure
-435: 
-436: ```json
-437: {
-438:   "success": true,
-439:   "prp_id": "PRP-6",
-440:   "phases_completed": 3,
-441:   "validation_results": {
-442:     "Phase1": {
-443:       "success": true,
-444:       "validation_levels": {
-445:         "L1": {"passed": true, "attempts": 1, "errors": []},
-446:         "L2": {"passed": true, "attempts": 2, "errors": ["import error"]},
-447:         "L3": {"passed": true, "attempts": 1, "errors": []},
-448:         "L4": {"passed": true, "attempts": 1, "drift_score": 5.2}
-449:       },
-450:       "self_healed": ["L2: Fixed after 2 attempts"]
-451:     }
-452:   },
-453:   "checkpoints_created": [
-454:     "checkpoint-PRP-6-phase1-20251013-100000",
-455:     "checkpoint-PRP-6-phase2-20251013-110000",
-456:     "checkpoint-PRP-6-phase3-20251013-120000"
-457:   ],
-458:   "confidence_score": "10/10",
-459:   "execution_time": "45m 23s"
-460: }
-461: ```
-462: 
-463: ## Next Steps After Execution
-464: 
-465: 1. **Review Execution Summary**:
-466:    - Check confidence score (target: 10/10)
-467:    - Review self-healing actions taken
-468:    - Verify all validation gates passed
-469: 
-470: 2. **Test Manually** (if confidence < 10/10):
-471:    - Run validation commands manually
-472:    - Review self-healing fixes
-473:    - Address any escalated errors
-474: 
-475: 3. **Rollback if Needed** (via PRP-2):
-476: 
-477:    ```bash
-478:    cd tools
-479:    uv run ce prp restore PRP-6 phase2
-480:    ```
-481: 
-482: 4. **Context Sync** (if auto-sync disabled):
-483: 
-484:    ```bash
-485:    cd tools
-486:    uv run ce context post-sync PRP-6
-487:    ```
-488: 
-489: 5. **Peer Review**:
-490: 
-491:    ```bash
-492:    /peer-review exe PRPs/feature-requests/PRP-6-user-authentication-system.md
-493:    ```
-494: 
-495: ## Tips
-496: 
-497: 1. **Enable auto-sync** before execution: `ce context auto-sync --enable`
-498: 2. **Use dry-run** to preview phases: `ce execute PRP-6 --dry-run`
-499: 3. **Test incrementally**: Use `--start-phase` and `--end-phase` for partial execution
-500: 4. **Trust self-healing**: Let L1-L2 auto-fixes run before manual intervention
-501: 5. **Review escalations**: Escalation messages include specific troubleshooting guidance
-502: 6. **Check confidence score**: 10/10 means production-ready, <8/10 needs review
-503: 
-504: ## Implementation Details
-505: 
-506: - **Module**: `tools/ce/execute.py`
-507: - **Tests**: `tools/tests/test_execute.py` (20+ tests)
-508: - **PRP Reference**: `PRPs/feature-requests/PRP-4-execute-prp-orchestration.md`
-509: - **Self-Healing**: 90%+ success rate on L1-L2 errors
-510: - **Speed Improvement**: 10-24x faster than manual implementation
-511: 
-512: ## Related Commands
-513: 
-514: - `/generate-prp` - Generate PRP from INITIAL.md
-515: - `/peer-review exe <prp-file>` - Review execution quality
-516: - `ce prp restore <prp-id> [phase]` - Rollback to checkpoint (PRP-2)
-517: - `ce context post-sync <prp-id>` - Manual post-execution sync (PRP-5)
-518: - `ce validate --level 4 <prp-path>` - Run L4 pattern conformance (PRP-1)
-</file>
-
 <file path="tools/ce/init_project.py">
   1: #!/usr/bin/env python3
   2: """
@@ -16617,6 +17259,48 @@ This section contains the contents of the repository's files.
 314: 
 315: if __name__ == "__main__":
 316:     sys.exit(main())
+</file>
+
+<file path="tools/pyproject.toml">
+ 1: [project]
+ 2: name = "ce-tools"
+ 3: version = "0.1.0"
+ 4: description = "Context Engineering CLI Tools"
+ 5: readme = "README.md"
+ 6: requires-python = ">=3.10"
+ 7: dependencies = [
+ 8:     "anthropic>=0.40.0",
+ 9:     "deepdiff>=6.0",
+10:     "diagrams>=0.24.4",
+11:     "jsonschema>=4.25.1",
+12:     "packaging>=25.0",
+13:     "python-frontmatter>=1.1.0",
+14:     "pyyaml>=6.0",
+15:     "tomli>=2.3.0",
+16:     "tomli-w>=1.2.0",
+17: ]
+18: 
+19: [project.scripts]
+20: ce = "ce.__main__:main"
+21: 
+22: [build-system]
+23: requires = ["hatchling"]
+24: build-backend = "hatchling.build"
+25: 
+26: [tool.pytest.ini_options]
+27: testpaths = ["tests"]
+28: python_files = "test_*.py"
+29: python_functions = "test_*"
+30: addopts = "-v --tb=short"
+31: 
+32: [tool.hatch.build.targets.wheel]
+33: packages = ["ce"]
+34: 
+35: [dependency-groups]
+36: dev = [
+37:     "pytest>=8.4.2",
+38:     "pytest-cov>=7.0.0",
+39: ]
 </file>
 
 <file path=".claude/commands/batch-exe-prp.md">
@@ -18432,6 +19116,300 @@ This section contains the contents of the repository's files.
 229: Maintain clean project state by identifying and safely removing noise while preserving all vital content through confidence-based safety mechanisms.
 </file>
 
+<file path=".claude/commands/generate-prp.md">
+  1: # /generate-prp - Generate PRP from INITIAL.md
+  2: 
+  3: Automates PRP (Product Requirements Prompt) generation from INITIAL.md with comprehensive codebase research, documentation fetching, and context synthesis.
+  4: 
+  5: ## Usage
+  6: 
+  7: ```
+  8: /generate-prp <initial-md-path>                        # Creates new PRP + Linear issue
+  9: /generate-prp <initial-md-path> --join-prp <prp-ref>  # Joins existing PRP's Linear issue
+ 10: ```
+ 11: 
+ 12: **PRP Reference Formats**:
+ 13: - Number: `--join-prp 12` (searches for PRP-12)
+ 14: - ID: `--join-prp PRP-12`
+ 15: - File path: `--join-prp PRPs/executed/PRP-12-feature.md`
+ 16: 
+ 17: ## What It Does
+ 18: 
+ 19: 1. **Parses INITIAL.md structure**:
+ 20:    - Extracts FEATURE, EXAMPLES, DOCUMENTATION, OTHER CONSIDERATIONS sections
+ 21:    - Validates required sections present (FEATURE and EXAMPLES are mandatory)
+ 22: 
+ 23: 2. **Proposes clean code**:
+ 24:    - Follows project code quality standards (50-line functions, 500-line files)
+ 25:    - Applies KISS principle (simple solutions, minimal dependencies)
+ 26:    - Ensures no fishy fallbacks or silent error masking
+ 27:    - All mocks marked with FIXME comments in production code
+ 28:    - Includes actionable error messages with troubleshooting guidance
+ 29: 
+ 30: 3. **Researches codebase** (via Serena MCP):
+ 31:    - Searches for similar patterns using keywords
+ 32:    - Analyzes symbol structure and relationships
+ 33:    - Infers test framework (pytest/unittest/jest)
+ 34:    - Identifies architectural patterns
+ 35: 
+ 36: 3. **Fetches documentation** (via Context7 MCP):
+ 37:    - Resolves library names to Context7 IDs
+ 38:    - Fetches relevant library documentation
+ 39:    - Extracts topics from feature description
+ 40:    - Includes external documentation links
+ 41: 
+ 42: 4. **Generates complete PRP**:
+ 43:    - Synthesizes 6-section PRP structure (TL;DR, Context, Implementation Steps, Validation Gates, Testing Strategy, Rollout Plan)
+ 44:    - Creates YAML header with metadata
+ 45:    - Auto-generates next PRP ID (PRP-N+1)
+ 46:    - Validates completeness (ensures all required sections present)
+ 47: 
+ 48: 5. **Creates/Updates Linear issue**:
+ 49:    - **Without --join-prp**: Creates new Linear issue with project defaults (from `.ce/linear-defaults.yml`)
+ 50:    - **With --join-prp**: Updates existing PRP's Linear issue with new PRP information
+ 51:    - Updates PRP YAML header with `issue: {ISSUE-ID}`
+ 52: 
+ 53: 6. **Outputs to**: `PRPs/feature-requests/PRP-{id}-{feature-slug}.md`
+ 54: 
+ 55: ## INITIAL.md Structure
+ 56: 
+ 57: Your INITIAL.md must follow this structure:
+ 58: 
+ 59: ```markdown
+ 60: # Feature: <Feature Name>
+ 61: 
+ 62: ## FEATURE
+ 63: <What to build - user story, acceptance criteria>
+ 64: 
+ 65: ## EXAMPLES
+ 66: <Similar code patterns from codebase, inline code blocks, or file references>
+ 67: 
+ 68: ## DOCUMENTATION
+ 69: <Library docs, API references, external resources>
+ 70: 
+ 71: ## OTHER CONSIDERATIONS
+ 72: <Gotchas, constraints, security concerns, edge cases>
+ 73: ```
+ 74: 
+ 75: **Required sections**: FEATURE, EXAMPLES
+ 76: **Optional sections**: DOCUMENTATION, OTHER CONSIDERATIONS
+ 77: 
+ 78: ## Example
+ 79: 
+ 80: ```bash
+ 81: # Create INITIAL.md
+ 82: cat > feature-requests/user-auth/INITIAL.md << 'EOF'
+ 83: # Feature: User Authentication System
+ 84: 
+ 85: ## FEATURE
+ 86: Build JWT-based user authentication with:
+ 87: - User registration with email/password
+ 88: - Login with JWT token generation
+ 89: - Token refresh mechanism
+ 90: 
+ 91: **Acceptance Criteria:**
+ 92: 1. Users can register with valid email and password
+ 93: 2. Login returns JWT access token and refresh token
+ 94: 3. Protected endpoints validate JWT tokens
+ 95: 
+ 96: ## EXAMPLES
+ 97: ```python
+ 98: async def authenticate_user(email: str, password: str) -> dict:
+ 99:     user = await db.users.find_one({"email": email})
+100:     if not user or not verify_password(password, user["password_hash"]):
+101:         raise AuthenticationError("Invalid credentials")
+102: 
+103:     access_token = create_jwt(user["id"], expires_in=3600)
+104:     return {"access_token": access_token}
+105: ```
+106: 
+107: See src/oauth.py:42-67 for similar async authentication pattern
+108: 
+109: ## DOCUMENTATION
+110: - [JWT Best Practices](https://jwt.io/introduction)
+111: - [FastAPI Security](https://fastapi.tiangolo.com/tutorial/security/)
+112: - "pytest" for testing
+113: - "bcrypt" for password hashing
+114: 
+115: ## OTHER CONSIDERATIONS
+116: **Security:**
+117: - Hash passwords with bcrypt (cost factor 12)
+118: - Rate limiting on login endpoint (5 attempts per 15 min)
+119: EOF
+120: 
+121: # Generate PRP
+122: cd tools
+123: uv run ce prp generate feature-requests/user-auth/INITIAL.md
+124: 
+125: # Output: PRPs/feature-requests/PRP-6-user-authentication-system.md
+126: ```
+127: 
+128: ## CLI Command
+129: 
+130: ```bash
+131: # Basic usage (creates new PRP + Linear issue)
+132: cd tools
+133: uv run ce prp generate <path-to-initial.md>
+134: 
+135: # Join existing PRP's Linear issue
+136: uv run ce prp generate <path-to-initial.md> --join-prp 12
+137: uv run ce prp generate <path-to-initial.md> --join-prp PRP-12
+138: uv run ce prp generate <path-to-initial.md> --join-prp PRPs/executed/PRP-12-feature.md
+139: 
+140: # Custom output directory
+141: uv run ce prp generate <path-to-initial.md> -o /custom/path
+142: 
+143: # JSON output (for scripting)
+144: uv run ce prp generate <path-to-initial.md> --json
+145: 
+146: # Combined options
+147: uv run ce prp generate <path-to-initial.md> --join-prp 12 --json
+148: ```
+149: 
+150: **Use Cases for --join-prp**:
+151: - **Related features**: Multiple PRPs implementing parts of same initiative
+152: - **Incremental work**: Breaking large PRP into smaller chunks
+153: - **Follow-up work**: Additional PRP for same feature area
+154: 
+155: **Example workflow**:
+156: ```bash
+157: # Create first PRP for auth system
+158: uv run ce prp generate auth-part1.md
+159: # Output: PRP-10 created, Linear issue BLA-25 created
+160: 
+161: # Create second PRP, join same issue
+162: uv run ce prp generate auth-part2.md --join-prp 10
+163: # Output: PRP-11 created, BLA-25 updated with PRP-11 info
+164: ```
+165: 
+166: ## Output Structure
+167: 
+168: The generated PRP will have:
+169: 
+170: ```markdown
+171: ---
+172: prp_id: TBD
+173: feature_name: User Authentication System
+174: status: pending
+175: created: 2025-10-13T00:00:00Z
+176: updated: 2025-10-13T00:00:00Z
+177: complexity: medium
+178: estimated_hours: 3-5
+179: dependencies: JWT Best Practices, FastAPI Security, pytest
+180: ---
+181: 
+182: # User Authentication System
+183: 
+184: ## 1. TL;DR
+185: **Objective**: ...
+186: **What**: ...
+187: **Why**: ...
+188: **Effort**: ...
+189: **Dependencies**: ...
+190: 
+191: ## 2. Context
+192: ### Background
+193: ...
+194: ### Constraints and Considerations
+195: ...
+196: ### Documentation References
+197: ...
+198: 
+199: ## 3. Implementation Steps
+200: ### Phase 1: Setup and Research (30 min)
+201: ...
+202: ### Phase 2: Core Implementation (2-3 hours)
+203: ...
+204: ### Phase 3: Testing and Validation (1-2 hours)
+205: ...
+206: 
+207: ## 4. Validation Gates
+208: ### Gate 1: Unit Tests Pass
+209: **Command**: `uv run pytest tests/unit/ -v`
+210: ...
+211: 
+212: ## 5. Testing Strategy
+213: ### Test Framework
+214: pytest
+215: ### Test Command
+216: ```bash
+217: uv run pytest tests/ -v
+218: ```
+219: ...
+220: 
+221: ## 6. Rollout Plan
+222: ### Phase 1: Development
+223: ...
+224: ### Phase 2: Review
+225: ...
+226: ### Phase 3: Deployment
+227: ...
+228: 
+229: ---
+230: 
+231: ## Research Findings
+232: ### Serena Codebase Analysis
+233: ...
+234: ### Documentation Sources
+235: ...
+236: ```
+237: 
+238: ## Graceful Degradation
+239: 
+240: The tool works even if MCP servers are unavailable:
+241: - **Without Serena**: No codebase research, but PRP still generated with user-provided examples
+242: - **Without Context7**: No library documentation fetched, but external links preserved
+243: - **Without Sequential Thinking**: Heuristic-based topic extraction used
+244: 
+245: ## Code Quality Standards Applied
+246: 
+247: All generated implementations follow:
+248: - **Function limits**: Target 50 lines max per function
+249: - **File limits**: Target 500 lines max per file
+250: - **KISS principle**: Simple solutions first, clear code over clever code
+251: - **Error handling**: Fast failure with actionable troubleshooting messages
+252: - **No silent failures**: Exceptions bubble up, never swallowed
+253: - **Real functionality**: No hardcoded success messages or fake results
+254: - **Naming conventions**: Business-focused (no version numbers or placeholders)
+255: 
+256: ## Tips
+257: 
+258: 1. **Be specific in FEATURE section**: Include clear acceptance criteria
+259: 2. **Provide relevant EXAMPLES**: Reference similar code in your codebase
+260: 3. **Link to DOCUMENTATION**: Include library docs and external resources
+261: 4. **Note OTHER CONSIDERATIONS**: Security concerns, edge cases, constraints
+262: 5. **Code quality alignment**: Generated code will follow project standards - review for consistency
+263: 
+264: ## Haiku-Ready PRP Checklist
+265: 
+266: Before executing a generated PRP, verify it's optimized for Claude 4.5 Haiku execution:
+267: 
+268: - [ ] **Goal**: Exact end state described, not vague improvement
+269: - [ ] **Output**: File paths and line numbers specified
+270: - [ ] **Limits**: Scope boundaries explicit (what's IN/OUT)
+271: - [ ] **Data**: All required context inline in PRP (no external references)
+272: - [ ] **Evaluation**: Validation gates are copy-paste bash commands
+273: - [ ] **Decisions**: All architectural choices made (Haiku executes, doesn't decide)
+274: - [ ] **Code Snippets**: Before/after code provided for major changes
+275: - [ ] **No Vague Language**: Check for "appropriate", "suitable", "handle appropriately"
+276: 
+277: **Reference**: See [PRP-23: Haiku-Optimized PRP Guidelines](../../PRPs/feature-requests/PRP-23-haiku-optimized-prp-guidelines.md) for detailed patterns.
+278: 
+279: ## Next Steps After Generation
+280: 
+281: 1. Review generated PRP for completeness
+282: 2. Fill in TBD fields (prp_id will be auto-assigned on execution)
+283: 3. Adjust estimated hours if needed
+284: 4. **Check Haiku-Ready checklist above**
+285: 5. Execute PRP using `/execute-prp <prp-file>`
+286: 
+287: ## Implementation Details
+288: 
+289: - **Module**: `tools/ce/generate.py`
+290: - **Tests**: `tools/tests/test_generate.py` (24 tests)
+291: - **PRP Reference**: `PRPs/feature-requests/PRP-3-command-automation.md`
+</file>
+
 <file path="tools/ce/__main__.py">
   1: """Context Engineering CLI - Main entry point.
   2: 
@@ -19006,300 +19984,6 @@ This section contains the contents of the repository's files.
 571: 
 572: if __name__ == "__main__":
 573:     sys.exit(main())
-</file>
-
-<file path=".claude/commands/generate-prp.md">
-  1: # /generate-prp - Generate PRP from INITIAL.md
-  2: 
-  3: Automates PRP (Product Requirements Prompt) generation from INITIAL.md with comprehensive codebase research, documentation fetching, and context synthesis.
-  4: 
-  5: ## Usage
-  6: 
-  7: ```
-  8: /generate-prp <initial-md-path>                        # Creates new PRP + Linear issue
-  9: /generate-prp <initial-md-path> --join-prp <prp-ref>  # Joins existing PRP's Linear issue
- 10: ```
- 11: 
- 12: **PRP Reference Formats**:
- 13: - Number: `--join-prp 12` (searches for PRP-12)
- 14: - ID: `--join-prp PRP-12`
- 15: - File path: `--join-prp PRPs/executed/PRP-12-feature.md`
- 16: 
- 17: ## What It Does
- 18: 
- 19: 1. **Parses INITIAL.md structure**:
- 20:    - Extracts FEATURE, EXAMPLES, DOCUMENTATION, OTHER CONSIDERATIONS sections
- 21:    - Validates required sections present (FEATURE and EXAMPLES are mandatory)
- 22: 
- 23: 2. **Proposes clean code**:
- 24:    - Follows project code quality standards (50-line functions, 500-line files)
- 25:    - Applies KISS principle (simple solutions, minimal dependencies)
- 26:    - Ensures no fishy fallbacks or silent error masking
- 27:    - All mocks marked with FIXME comments in production code
- 28:    - Includes actionable error messages with troubleshooting guidance
- 29: 
- 30: 3. **Researches codebase** (via Serena MCP):
- 31:    - Searches for similar patterns using keywords
- 32:    - Analyzes symbol structure and relationships
- 33:    - Infers test framework (pytest/unittest/jest)
- 34:    - Identifies architectural patterns
- 35: 
- 36: 3. **Fetches documentation** (via Context7 MCP):
- 37:    - Resolves library names to Context7 IDs
- 38:    - Fetches relevant library documentation
- 39:    - Extracts topics from feature description
- 40:    - Includes external documentation links
- 41: 
- 42: 4. **Generates complete PRP**:
- 43:    - Synthesizes 6-section PRP structure (TL;DR, Context, Implementation Steps, Validation Gates, Testing Strategy, Rollout Plan)
- 44:    - Creates YAML header with metadata
- 45:    - Auto-generates next PRP ID (PRP-N+1)
- 46:    - Validates completeness (ensures all required sections present)
- 47: 
- 48: 5. **Creates/Updates Linear issue**:
- 49:    - **Without --join-prp**: Creates new Linear issue with project defaults (from `.ce/linear-defaults.yml`)
- 50:    - **With --join-prp**: Updates existing PRP's Linear issue with new PRP information
- 51:    - Updates PRP YAML header with `issue: {ISSUE-ID}`
- 52: 
- 53: 6. **Outputs to**: `PRPs/feature-requests/PRP-{id}-{feature-slug}.md`
- 54: 
- 55: ## INITIAL.md Structure
- 56: 
- 57: Your INITIAL.md must follow this structure:
- 58: 
- 59: ```markdown
- 60: # Feature: <Feature Name>
- 61: 
- 62: ## FEATURE
- 63: <What to build - user story, acceptance criteria>
- 64: 
- 65: ## EXAMPLES
- 66: <Similar code patterns from codebase, inline code blocks, or file references>
- 67: 
- 68: ## DOCUMENTATION
- 69: <Library docs, API references, external resources>
- 70: 
- 71: ## OTHER CONSIDERATIONS
- 72: <Gotchas, constraints, security concerns, edge cases>
- 73: ```
- 74: 
- 75: **Required sections**: FEATURE, EXAMPLES
- 76: **Optional sections**: DOCUMENTATION, OTHER CONSIDERATIONS
- 77: 
- 78: ## Example
- 79: 
- 80: ```bash
- 81: # Create INITIAL.md
- 82: cat > feature-requests/user-auth/INITIAL.md << 'EOF'
- 83: # Feature: User Authentication System
- 84: 
- 85: ## FEATURE
- 86: Build JWT-based user authentication with:
- 87: - User registration with email/password
- 88: - Login with JWT token generation
- 89: - Token refresh mechanism
- 90: 
- 91: **Acceptance Criteria:**
- 92: 1. Users can register with valid email and password
- 93: 2. Login returns JWT access token and refresh token
- 94: 3. Protected endpoints validate JWT tokens
- 95: 
- 96: ## EXAMPLES
- 97: ```python
- 98: async def authenticate_user(email: str, password: str) -> dict:
- 99:     user = await db.users.find_one({"email": email})
-100:     if not user or not verify_password(password, user["password_hash"]):
-101:         raise AuthenticationError("Invalid credentials")
-102: 
-103:     access_token = create_jwt(user["id"], expires_in=3600)
-104:     return {"access_token": access_token}
-105: ```
-106: 
-107: See src/oauth.py:42-67 for similar async authentication pattern
-108: 
-109: ## DOCUMENTATION
-110: - [JWT Best Practices](https://jwt.io/introduction)
-111: - [FastAPI Security](https://fastapi.tiangolo.com/tutorial/security/)
-112: - "pytest" for testing
-113: - "bcrypt" for password hashing
-114: 
-115: ## OTHER CONSIDERATIONS
-116: **Security:**
-117: - Hash passwords with bcrypt (cost factor 12)
-118: - Rate limiting on login endpoint (5 attempts per 15 min)
-119: EOF
-120: 
-121: # Generate PRP
-122: cd tools
-123: uv run ce prp generate feature-requests/user-auth/INITIAL.md
-124: 
-125: # Output: PRPs/feature-requests/PRP-6-user-authentication-system.md
-126: ```
-127: 
-128: ## CLI Command
-129: 
-130: ```bash
-131: # Basic usage (creates new PRP + Linear issue)
-132: cd tools
-133: uv run ce prp generate <path-to-initial.md>
-134: 
-135: # Join existing PRP's Linear issue
-136: uv run ce prp generate <path-to-initial.md> --join-prp 12
-137: uv run ce prp generate <path-to-initial.md> --join-prp PRP-12
-138: uv run ce prp generate <path-to-initial.md> --join-prp PRPs/executed/PRP-12-feature.md
-139: 
-140: # Custom output directory
-141: uv run ce prp generate <path-to-initial.md> -o /custom/path
-142: 
-143: # JSON output (for scripting)
-144: uv run ce prp generate <path-to-initial.md> --json
-145: 
-146: # Combined options
-147: uv run ce prp generate <path-to-initial.md> --join-prp 12 --json
-148: ```
-149: 
-150: **Use Cases for --join-prp**:
-151: - **Related features**: Multiple PRPs implementing parts of same initiative
-152: - **Incremental work**: Breaking large PRP into smaller chunks
-153: - **Follow-up work**: Additional PRP for same feature area
-154: 
-155: **Example workflow**:
-156: ```bash
-157: # Create first PRP for auth system
-158: uv run ce prp generate auth-part1.md
-159: # Output: PRP-10 created, Linear issue BLA-25 created
-160: 
-161: # Create second PRP, join same issue
-162: uv run ce prp generate auth-part2.md --join-prp 10
-163: # Output: PRP-11 created, BLA-25 updated with PRP-11 info
-164: ```
-165: 
-166: ## Output Structure
-167: 
-168: The generated PRP will have:
-169: 
-170: ```markdown
-171: ---
-172: prp_id: TBD
-173: feature_name: User Authentication System
-174: status: pending
-175: created: 2025-10-13T00:00:00Z
-176: updated: 2025-10-13T00:00:00Z
-177: complexity: medium
-178: estimated_hours: 3-5
-179: dependencies: JWT Best Practices, FastAPI Security, pytest
-180: ---
-181: 
-182: # User Authentication System
-183: 
-184: ## 1. TL;DR
-185: **Objective**: ...
-186: **What**: ...
-187: **Why**: ...
-188: **Effort**: ...
-189: **Dependencies**: ...
-190: 
-191: ## 2. Context
-192: ### Background
-193: ...
-194: ### Constraints and Considerations
-195: ...
-196: ### Documentation References
-197: ...
-198: 
-199: ## 3. Implementation Steps
-200: ### Phase 1: Setup and Research (30 min)
-201: ...
-202: ### Phase 2: Core Implementation (2-3 hours)
-203: ...
-204: ### Phase 3: Testing and Validation (1-2 hours)
-205: ...
-206: 
-207: ## 4. Validation Gates
-208: ### Gate 1: Unit Tests Pass
-209: **Command**: `uv run pytest tests/unit/ -v`
-210: ...
-211: 
-212: ## 5. Testing Strategy
-213: ### Test Framework
-214: pytest
-215: ### Test Command
-216: ```bash
-217: uv run pytest tests/ -v
-218: ```
-219: ...
-220: 
-221: ## 6. Rollout Plan
-222: ### Phase 1: Development
-223: ...
-224: ### Phase 2: Review
-225: ...
-226: ### Phase 3: Deployment
-227: ...
-228: 
-229: ---
-230: 
-231: ## Research Findings
-232: ### Serena Codebase Analysis
-233: ...
-234: ### Documentation Sources
-235: ...
-236: ```
-237: 
-238: ## Graceful Degradation
-239: 
-240: The tool works even if MCP servers are unavailable:
-241: - **Without Serena**: No codebase research, but PRP still generated with user-provided examples
-242: - **Without Context7**: No library documentation fetched, but external links preserved
-243: - **Without Sequential Thinking**: Heuristic-based topic extraction used
-244: 
-245: ## Code Quality Standards Applied
-246: 
-247: All generated implementations follow:
-248: - **Function limits**: Target 50 lines max per function
-249: - **File limits**: Target 500 lines max per file
-250: - **KISS principle**: Simple solutions first, clear code over clever code
-251: - **Error handling**: Fast failure with actionable troubleshooting messages
-252: - **No silent failures**: Exceptions bubble up, never swallowed
-253: - **Real functionality**: No hardcoded success messages or fake results
-254: - **Naming conventions**: Business-focused (no version numbers or placeholders)
-255: 
-256: ## Tips
-257: 
-258: 1. **Be specific in FEATURE section**: Include clear acceptance criteria
-259: 2. **Provide relevant EXAMPLES**: Reference similar code in your codebase
-260: 3. **Link to DOCUMENTATION**: Include library docs and external resources
-261: 4. **Note OTHER CONSIDERATIONS**: Security concerns, edge cases, constraints
-262: 5. **Code quality alignment**: Generated code will follow project standards - review for consistency
-263: 
-264: ## Haiku-Ready PRP Checklist
-265: 
-266: Before executing a generated PRP, verify it's optimized for Claude 4.5 Haiku execution:
-267: 
-268: - [ ] **Goal**: Exact end state described, not vague improvement
-269: - [ ] **Output**: File paths and line numbers specified
-270: - [ ] **Limits**: Scope boundaries explicit (what's IN/OUT)
-271: - [ ] **Data**: All required context inline in PRP (no external references)
-272: - [ ] **Evaluation**: Validation gates are copy-paste bash commands
-273: - [ ] **Decisions**: All architectural choices made (Haiku executes, doesn't decide)
-274: - [ ] **Code Snippets**: Before/after code provided for major changes
-275: - [ ] **No Vague Language**: Check for "appropriate", "suitable", "handle appropriately"
-276: 
-277: **Reference**: See [PRP-23: Haiku-Optimized PRP Guidelines](../../PRPs/feature-requests/PRP-23-haiku-optimized-prp-guidelines.md) for detailed patterns.
-278: 
-279: ## Next Steps After Generation
-280: 
-281: 1. Review generated PRP for completeness
-282: 2. Fill in TBD fields (prp_id will be auto-assigned on execution)
-283: 3. Adjust estimated hours if needed
-284: 4. **Check Haiku-Ready checklist above**
-285: 5. Execute PRP using `/execute-prp <prp-file>`
-286: 
-287: ## Implementation Details
-288: 
-289: - **Module**: `tools/ce/generate.py`
-290: - **Tests**: `tools/tests/test_generate.py` (24 tests)
-291: - **PRP Reference**: `PRPs/feature-requests/PRP-3-command-automation.md`
 </file>
 
 <file path="tools/ce/cli_handlers.py">
@@ -22002,6 +22686,7 @@ This section contains the contents of the repository's files.
 879: - Compact conversation: Use claude-3-haiku-20240307
 880: - Activate Serena: Use project's root full path
 881: - Ad-hoc code strict: 3 LOC max, no exceptions
+882: - reset target branch = means reset --hard /Users/bprzybyszi/nc-src/ctx-eng-plus-test-target to main HEAD; create 'prp36test' branch
 </file>
 
 </files>

@@ -136,19 +136,47 @@ class ProjectInitializer:
                 status["message"] = "❌ No files extracted from package"
                 return status
 
-            # Reorganize: Move system/ to .ce/, tools/ to .ce/tools/
+            # Reorganize extracted files to .ce/ structure
             self.ce_dir.mkdir(parents=True, exist_ok=True)
 
-            # Move system/ contents to .ce/
-            system_dir = temp_extract / "system"
-            if system_dir.exists():
-                for item in system_dir.iterdir():
-                    shutil.move(str(item), str(self.ce_dir / item.name))
+            # Move .ce/ contents (blend-config.yml, PRPs/, etc.)
+            ce_extracted = temp_extract / ".ce"
+            if ce_extracted.exists():
+                for item in ce_extracted.iterdir():
+                    dest = self.ce_dir / item.name
+                    if dest.exists():
+                        if dest.is_dir():
+                            shutil.rmtree(dest)
+                        else:
+                            dest.unlink()
+                    shutil.move(str(item), str(dest))
+
+            # Move .claude/ contents (commands, settings)
+            claude_extracted = temp_extract / ".claude"
+            claude_target = self.target_project / ".claude"
+            if claude_extracted.exists():
+                claude_target.mkdir(parents=True, exist_ok=True)
+                for item in claude_extracted.iterdir():
+                    dest = claude_target / item.name
+                    if dest.exists():
+                        if dest.is_dir():
+                            shutil.rmtree(dest)
+                        else:
+                            dest.unlink()
+                    shutil.move(str(item), str(dest))
 
             # Move tools/ to .ce/tools/
             tools_source = temp_extract / "tools"
             if tools_source.exists():
+                if self.tools_dir.exists():
+                    shutil.rmtree(self.tools_dir)
                 shutil.move(str(tools_source), str(self.tools_dir))
+
+            # Move CLAUDE.md to target root
+            claude_md_source = temp_extract / "CLAUDE.md"
+            claude_md_target = self.target_project / "CLAUDE.md"
+            if claude_md_source.exists():
+                shutil.copy2(claude_md_source, claude_md_target)
 
             # Copy ce-workflow-docs.xml (reference package)
             if self.workflow_xml.exists():
