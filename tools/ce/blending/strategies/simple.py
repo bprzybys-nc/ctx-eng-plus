@@ -98,10 +98,17 @@ class PRPMoveStrategy:
                 relative_path = prp_file.relative_to(source_dir)
 
                 # Determine target subdirectory
-                # If already in executed/ or feature-requests/, preserve structure
-                # Otherwise, use status from content
-                if relative_path.parent.name in ["executed", "feature-requests", "system"]:
-                    dest = target_dir / relative_path
+                # Check if any parent in the path hierarchy is a target subdirectory
+                target_subdirs = ["executed", "feature-requests", "system"]
+                found_subdir = None
+                for parent in relative_path.parents:
+                    if parent.name in target_subdirs:
+                        found_subdir = parent.name
+                        break
+
+                if found_subdir:
+                    # Flatten to target_subdir/filename (preserves subdirectory, flattens deep nesting)
+                    dest = target_dir / found_subdir / prp_file.name
                 else:
                     # Root-level or other subdirectories: classify by content
                     dest = target_dir / status / prp_file.name
