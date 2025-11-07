@@ -7,23 +7,12 @@ from typing import Dict, List, Tuple
 
 logger = logging.getLogger(__name__)
 
-# Patterns for files that should NOT be migrated
-SKIP_PATTERNS = [
-    "REPORT", "INITIAL", "summary", "analysis",
-    "PLAN", ".backup", "~", ".tmp", ".log",
-    ".DS_Store", "README.md", "README"  # System files and documentation
-]
-
-# Directories that should NOT be migrated
-SKIP_DIRS = ["templates"]
-
-# Files explicitly excluded from framework package (project-specific examples)
-# These are expected to remain in root examples/ directory
-EXCLUDED_FROM_PACKAGE = [
-    "examples/l4-validation-example.md",
-    "examples/syntropy-status-hook-system.md",
-    "examples/patterns/example-simple-feature.md",
-    "examples/patterns/git-message-rules.md"
+# System files that should be ignored during cleanup validation
+# These are not migrated and should not cause cleanup to fail
+SYSTEM_FILES = [
+    ".DS_Store",    # Mac system files
+    ".gitignore",   # Git ignore files
+    "Thumbs.db"     # Windows system files
 ]
 
 
@@ -117,34 +106,16 @@ def cleanup_legacy_dirs(
 
 def _should_skip_file(file_path: Path) -> bool:
     """
-    Check if file should be skipped (not expected to migrate).
+    Check if file should be skipped (system files only).
 
     Args:
         file_path: File path to check
 
     Returns:
-        True if file should be skipped (templates, garbage patterns, excluded files)
+        True if file is a system file that should be ignored
     """
-    # Convert to string for comparison
-    file_str = str(file_path)
-
-    # Check if explicitly excluded from package
-    for excluded in EXCLUDED_FROM_PACKAGE:
-        if file_str.endswith(excluded) or excluded in file_str:
-            return True
-
-    # Check if in skip directory (e.g., templates/)
-    for part in file_path.parts:
-        if part in SKIP_DIRS:
-            return True
-
-    # Check if filename matches skip patterns
     filename = file_path.name
-    for pattern in SKIP_PATTERNS:
-        if pattern.lower() in filename.lower():
-            return True
-
-    return False
+    return filename in SYSTEM_FILES
 
 
 def verify_migration_complete(
