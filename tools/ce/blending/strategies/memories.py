@@ -434,4 +434,4 @@ class MemoriesBlendStrategy(BlendStrategy):
         if not path or not path.exists():
             return []
 
-        return [f.name for f in path.glob("*.md") if f.is_file()]
+        return [f.name for f in path.glob("*.md") if f.is_file() and not f.is_symlink()]
