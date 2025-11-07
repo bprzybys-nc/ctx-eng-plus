@@ -434,7 +434,11 @@ class BlendingOrchestrator:
                         logger.debug(f"  {domain}: No files to blend")
                         continue
 
-                    source_dir = files[0].parent
+                    # Find common root directory for all files
+                    # For PRPs: files could be in PRPs/, PRPs/executed/, PRPs/feature-requests/, etc.
+                    # We need to find the common ancestor (PRPs/)
+                    file_paths = [Path(f) for f in files]
+                    source_dir = self._find_common_ancestor(file_paths)
 
                     # Domain-specific parameters
                     if domain == 'prps':
@@ -557,3 +561,40 @@ class BlendingOrchestrator:
             "implemented": True,
             "status": status
         }
+
+    def _find_common_ancestor(self, paths: List[Path]) -> Path:
+        """
+        Find common ancestor directory for a list of paths.
+
+        For PRPs in subdirectories (PRPs/executed/, PRPs/feature-requests/),
+        returns the common root (PRPs/).
+
+        Args:
+            paths: List of file paths
+
+        Returns:
+            Common ancestor directory
+
+        Example:
+            >>> paths = [Path("PRPs/executed/PRP-1.md"), Path("PRPs/feature-requests/PRP-2.md")]
+            >>> _find_common_ancestor(paths)
+            Path("PRPs")
+        """
+        if not paths:
+            raise ValueError("Cannot find common ancestor of empty path list")
+
+        # Convert all paths to absolute for comparison
+        abs_paths = [p.resolve() for p in paths]
+
+        # Start with first path's parents
+        common = abs_paths[0].parent
+
+        # Find common ancestor by checking each parent
+        while not all(common in p.parents or p.parent == common for p in abs_paths):
+            common = common.parent
+
+            # Safety check - don't go above project root
+            if common.parent == common:
+                raise RuntimeError(f"Could not find common ancestor for paths: {paths}")
+
+        return common
