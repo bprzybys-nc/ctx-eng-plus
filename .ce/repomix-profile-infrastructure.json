@@ -49,7 +49,24 @@
     ".claude/settings.local.json",
     "CLAUDE.md",
     ".ce/blend-config.yml",
-    "tools/README.md"
+    "tools/README.md",
+    "examples/ce-blend-usage.md",
+    "examples/ce-init-project-usage.md",
+    "examples/example.setting.local.md",
+    "examples/INDEX.md",
+    "examples/INITIALIZATION.md",
+    "examples/linear-integration-example.md",
+    "examples/mermaid-color-palette.md",
+    "examples/prp-decomposition-patterns.md",
+    "examples/README.md",
+    "examples/tmp-directory-convention.md",
+    "examples/TOOL-USAGE-GUIDE.md",
+    "examples/patterns/dedrifting-lessons.md",
+    "examples/patterns/error-recovery.py",
+    "examples/patterns/mocks-marking.md",
+    "examples/patterns/pipeline-testing.py",
+    "examples/patterns/strategy-testing.py",
+    "examples/model/SystemModel.md"
   ],
   "ignore": {
     "customPatterns": [
