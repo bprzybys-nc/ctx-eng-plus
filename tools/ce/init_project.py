@@ -220,9 +220,12 @@ class ProjectInitializer:
             return status
 
         try:
-            # Run blend command
+            # Run blend command with explicit config path
+            blend_config = self.ce_dir / "blend-config.yml"
             result = subprocess.run(
-                ["uv", "run", "ce", "blend", "--all", "--target-dir", str(self.target_project)],
+                ["uv", "run", "ce", "blend", "--all",
+                 "--config", str(blend_config),
+                 "--target-dir", str(self.target_project)],
                 cwd=self.ctx_eng_root / "tools",
                 capture_output=True,
                 text=True,
