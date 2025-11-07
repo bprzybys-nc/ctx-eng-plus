@@ -47,7 +47,9 @@
     "tools/pyproject.toml",
     "tools/bootstrap.sh",
     ".claude/settings.local.json",
-    "CLAUDE.md"
+    "CLAUDE.md",
+    ".ce/blend-config.yml",
+    "tools/README.md"
   ],
   "ignore": {
     "customPatterns": [

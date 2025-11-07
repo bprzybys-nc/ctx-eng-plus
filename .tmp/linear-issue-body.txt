@@ -1,0 +1,32 @@
+## PRP-37.1.1: Add Missing Files to Package
+
+**Objective**: Include blend-config.yml and README.md in ce-infrastructure.xml
+
+**Effort**: 1 hour (low complexity)
+
+**Stage**: stage-1-sequential (foundation phase, no dependencies)
+
+### What
+Add two missing files to repomix profile:
+- .ce/blend-config.yml (blending configuration)
+- tools/README.md (CLI documentation)
+
+### Why
+E2E testing revealed these files are required during initialization but missing from package, forcing manual workarounds.
+
+### Implementation
+1. Update .ce/repomix-profile-infrastructure.yml include section
+2. Rebuild packages with build-and-distribute.sh
+3. Verify files present in XML package
+4. Run E2E tests to confirm no workarounds needed
+
+### Validation Gates
+- Files added to repomix profile
+- README.md exists in tools/
+- Packages rebuilt successfully
+- npx repomix --unpack --list shows both files
+- E2E test runs without workarounds
+
+**PRP File**: PRPs/feature-requests/PRP-37.1.1-add-missing-files-to-package.md
+
+**Batch**: Part of PRP-36.3 fix (batch 37)
