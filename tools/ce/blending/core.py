@@ -1,6 +1,7 @@
 """Core blending framework: 4-phase pipeline orchestration."""
 
 import shutil
+import json
 import logging
 from pathlib import Path
 from typing import Generator, Dict, List, Any, Optional
@@ -321,8 +322,109 @@ class BlendingOrchestrator:
                 # This is simplified - actual implementation may vary by strategy
                 if hasattr(strategy, 'blend'):
                     # BlendStrategy interface (settings, claude_md, memories, examples)
-                    # This would need proper implementation with file reading/writing
                     logger.debug(f"    Using blend() interface for {domain}")
+
+                    # Domain-specific I/O and blending
+                    if domain == 'settings':
+                        # Read JSON files
+                        framework_file = target_dir / ".ce" / ".claude" / "settings.local.json"
+                        target_file = target_dir / ".claude" / "settings.local.json"
+
+                        if not framework_file.exists():
+                            logger.warning(f"  {domain}: Framework file not found: {framework_file}")
+                            continue
+
+                        with open(framework_file) as f:
+                            framework_content = json.load(f)
+
+                        target_content = None
+                        if target_file.exists():
+                            with open(target_file) as f:
+                                target_content = json.load(f)
+
+                        # Call strategy
+                        blended = strategy.blend(
+                            framework_content=framework_content,
+                            target_content=target_content,
+                            context={"target_dir": target_dir}
+                        )
+
+                        # Write result
+                        target_file.parent.mkdir(parents=True, exist_ok=True)
+                        with open(target_file, 'w') as f:
+                            json.dump(blended, f, indent=2)
+
+                        results[domain] = {
+                            "success": True,
+                            "files_processed": 1,
+                            "message": f"✓ {domain} blended successfully"
+                        }
+
+                    elif domain == 'claude_md':
+                        # Read markdown files
+                        framework_file = target_dir / ".ce" / "CLAUDE.md"
+                        target_file = target_dir / "CLAUDE.md"
+
+                        if not framework_file.exists():
+                            logger.warning(f"  {domain}: Framework file not found")
+                            continue
+
+                        framework_content = framework_file.read_text()
+                        target_content = target_file.read_text() if target_file.exists() else None
+
+                        # Call strategy
+                        blended = strategy.blend(
+                            framework_content=framework_content,
+                            target_content=target_content,
+                            context={"target_dir": target_dir}
+                        )
+
+                        # Write result
+                        target_file.write_text(blended)
+
+                        results[domain] = {
+                            "success": True,
+                            "files_processed": 1,
+                            "message": f"✓ {domain} blended successfully"
+                        }
+
+                    elif domain in ['memories', 'examples']:
+                        # Path-based strategies (handle their own I/O)
+                        framework_dir = target_dir / ".ce" / domain
+
+                        # Construct target directory path
+                        if domain == "memories":
+                            target_domain_dir = target_dir / ".serena" / "memories"
+                        else:
+                            target_domain_dir = target_dir / domain
+
+                        if not framework_dir.exists():
+                            logger.warning(f"  {domain}: Framework directory not found: {framework_dir}")
+                            continue
+
+                        # Call strategy with paths (memories expects output_path in context)
+                        if domain == "memories":
+                            result = strategy.blend(
+                                framework_content=framework_dir,
+                                target_content=target_domain_dir if target_domain_dir.exists() else None,
+                                context={"output_path": target_domain_dir, "target_dir": target_dir}
+                            )
+                        else:  # examples
+                            result = strategy.blend(
+                                framework_dir=framework_dir,
+                                target_dir=target_domain_dir,
+                                context={"target_dir": target_dir}
+                            )
+
+                        results[domain] = {
+                            "success": result.get("success", True),
+                            "files_processed": result.get("files_processed", 0),
+                            "message": f"✓ {domain} blended successfully"
+                        }
+
+                    else:
+                        logger.warning(f"  {domain}: Unknown blend() domain")
+                        continue
                 elif hasattr(strategy, 'execute'):
                     # Simple strategy interface (prps, commands)
                     # Derive source_dir from classified files
@@ -359,16 +461,70 @@ class BlendingOrchestrator:
                     logger.warning(f"    Strategy {domain} has no blend() or execute() method")
 
             except Exception as e:
-                logger.error(f"  ❌ {domain} blending failed: {e}")
-                results[domain] = {"success": False, "error": str(e)}
+                error_msg = f"❌ {domain} blending failed: {e}"
+                logger.error(f"  {error_msg}")
+                results[domain] = {
+                    "success": False,
+                    "error": str(e),
+                    "message": error_msg
+                }
 
-        logger.info(f"✓ Blending complete ({len(results)} domains processed)")
+                # Fail fast for critical domains
+                if domain in ["settings", "claude_md"]:
+                    raise RuntimeError(
+                        f"Critical domain '{domain}' failed - cannot continue\n"
+                        f"Error: {e}\n"
+                        f"🔧 Fix {domain} blending before proceeding"
+                    )
+
+        # Check for failures
+        failed_domains = [d for d, r in results.items() if not r.get("success", False)]
+
+        if failed_domains:
+            logger.warning(f"⚠️  Blending complete with failures ({len(results)} domains processed, {len(failed_domains)} failed)")
+        else:
+            logger.info(f"✓ Blending complete ({len(results)} domains processed)")
 
         return {
             "phase": "blend",
             "implemented": True,
-            "results": results
+            "results": results,
+            "success": len(failed_domains) == 0,
+            "failed_domains": failed_domains,
+            "message": self._format_blend_summary(results)
         }
+
+    def _format_blend_summary(self, results: Dict[str, Any]) -> str:
+        """
+        Format a summary message for blend results.
+
+        Args:
+            results: Dictionary of blend results per domain
+
+        Returns:
+            Formatted summary string
+        """
+        success_count = sum(1 for r in results.values() if r.get("success", False))
+        total = len(results)
+        failed = [d for d, r in results.items() if not r.get("success", False)]
+
+        summary_parts = []
+        for domain, result in results.items():
+            if result.get("success", False):
+                files = result.get("files_processed", 0)
+                summary_parts.append(f"  ✓ {domain} ({files} file{'s' if files != 1 else ''})")
+            else:
+                error = result.get("error", "Unknown error")
+                summary_parts.append(f"  ❌ {domain}: {error}")
+
+        summary = "\n".join(summary_parts)
+
+        if failed:
+            header = f"⚠️  Blend completed with failures: {success_count}/{total} domains succeeded\n"
+        else:
+            header = f"✅ Blend completed successfully: {success_count}/{total} domains\n"
+
+        return header + summary
 
     def _run_cleanup(self, target_dir: Path) -> Dict[str, Any]:
         """

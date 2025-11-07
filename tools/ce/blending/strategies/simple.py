@@ -110,9 +110,11 @@ class PRPMoveStrategy:
                 errors.append(f"Error processing {prp_file.name}: {str(e)}")
 
         return {
+            "success": len(errors) == 0,
             "prps_moved": moved,
             "prps_skipped": skipped,
-            "errors": errors
+            "errors": errors,
+            "files_processed": moved
         }
 
     def _has_yaml_header(self, content: str) -> bool:
@@ -287,10 +289,12 @@ class CommandOverwriteStrategy:
                 errors.append(f"Error processing {cmd_file.name}: {str(e)}")
 
         return {
+            "success": len(errors) == 0,
             "commands_overwritten": overwritten,
             "commands_backed_up": backed_up,
             "commands_skipped": skipped,
-            "errors": errors
+            "errors": errors,
+            "files_processed": overwritten
         }
 
     def _calculate_hash(self, content: str) -> str:
