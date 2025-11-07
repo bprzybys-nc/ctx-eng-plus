@@ -7,6 +7,8 @@ from pathlib import Path
 from typing import Generator, Dict, List, Any, Optional
 from contextlib import contextmanager
 
+from ce.blending.llm import BlendingLLM
+
 logger = logging.getLogger(__name__)
 
 
@@ -343,7 +345,6 @@ class BlendingOrchestrator:
                                 target_content = json.load(f)
 
                         # Call strategy
-                        from ce.blending.llm import BlendingLLM
                         blended = strategy.blend(
                             framework_content=framework_content,
                             target_content=target_content,
@@ -374,7 +375,6 @@ class BlendingOrchestrator:
                         target_content = target_file.read_text() if target_file.exists() else None
 
                         # Call strategy (needs LLM client)
-                        from ce.blending.llm import BlendingLLM
                         blended = strategy.blend(
                             framework_content=framework_content,
                             target_content=target_content,
@@ -406,7 +406,6 @@ class BlendingOrchestrator:
 
                         # Call strategy with paths (memories expects output_path in context + LLM client)
                         if domain == "memories":
-                            from ce.blending.llm import BlendingLLM
                             result = strategy.blend(
                                 framework_content=framework_dir,
                                 target_content=target_domain_dir if target_domain_dir.exists() else None,
