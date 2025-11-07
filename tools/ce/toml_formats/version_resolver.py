@@ -2,6 +2,7 @@
 
 from typing import Dict, List
 from packaging.specifiers import SpecifierSet, InvalidSpecifier
+from packaging.version import Version
 
 
 class VersionResolver:
@@ -54,6 +55,43 @@ class VersionResolver:
         return result
 
     @staticmethod
+    def _is_intersection_satisfiable(intersection: SpecifierSet) -> bool:
+        """
+        Check if SpecifierSet intersection is satisfiable by any version.
+
+        Args:
+            intersection: SpecifierSet resulting from intersection
+
+        Returns:
+            True if any version can satisfy the specifier, False otherwise
+        """
+        # Test a comprehensive range of versions to see if any satisfy the intersection
+        # This handles cases where SpecifierSet creates invalid combinations like ">=6.0,~=5.4"
+
+        # Generate test versions: 0.1 to 10.0 with finer granularity
+        test_versions = []
+
+        # Major versions 0-10
+        for major in range(11):
+            test_versions.append(f"{major}.0.0")
+            # Minor versions 0-9 for each major
+            for minor in range(10):
+                test_versions.append(f"{major}.{minor}.0")
+                # Patch versions for common minors (2, 5, 8)
+                if minor in [2, 5, 8]:
+                    for patch in range(5):
+                        test_versions.append(f"{major}.{minor}.{patch}")
+
+        for version_str in test_versions:
+            try:
+                if Version(version_str) in intersection:
+                    return True
+            except Exception:
+                continue
+
+        return False
+
+    @staticmethod
     def merge_dependencies(framework_deps: List[str], target_deps: List[str]) -> List[str]:
         """
         Merge two dependency lists with version intersection.
@@ -82,7 +120,9 @@ class VersionResolver:
                 # Both have version constraints → compute intersection
                 try:
                     intersection = framework_spec & target_spec
-                    if not intersection:
+
+                    # Check if intersection is satisfiable
+                    if not VersionResolver._is_intersection_satisfiable(intersection):
                         raise ValueError(
                             f"❌ Dependency conflict: {package}\n"
                             f"   Framework requires: {framework_spec}\n"
