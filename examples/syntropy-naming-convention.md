@@ -266,6 +266,6 @@ cat ~/.syntropy/tool-state.json
 ## Complete Reference
 
 For full technical details, see:
-- **Naming Convention Spec**: `syntropy-mcp/NAMING-CONVENTION.md`
+- **Naming Convention Spec**: [syntropy-mcp-naming-convention.md](syntropy-mcp-naming-convention.md)
 - **Tool Index**: `syntropy-mcp/tool-index.md`
 - **Syntropy README**: `syntropy-mcp/README.md`

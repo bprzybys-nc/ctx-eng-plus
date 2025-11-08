@@ -1,6 +1,6 @@
 # Syntropy MCP - Project Guide
 
-**v0.1.0**: Aggregation layer routing 78 tools across 9 MCP servers. Format: `mcp__syntropy_<server>_<tool>`.
+**v0.1.0**: Aggregation layer routing 78 tools across 9 MCP servers. Format: `mcp__syntropy__<server>_<tool>`.
 
 ## Commands
 

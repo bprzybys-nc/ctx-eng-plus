@@ -8,7 +8,7 @@
 
 ## Quick Navigation
 
-- **[NAMING-CONVENTION.md](./NAMING-CONVENTION.md)** → Canonical naming spec (use this for all tool references)
+- **[NAMING-CONVENTION.md](../examples/syntropy-mcp-naming-convention.md)** → Canonical naming spec (use this for all tool references)
 - **[MINIMAL-FIX-PLAN.md](./MINIMAL-FIX-PLAN.md)** → Current issue diagnosis and fix plan
 - **[README.md](./README.md)** → Project overview and architecture
 - **[QUICKSTART.md](./QUICKSTART.md)** → Setup and usage examples
@@ -25,7 +25,7 @@
 
 **Rule**: Use this format EVERYWHERE - no exceptions.
 
-**Details**: See [NAMING-CONVENTION.md](./NAMING-CONVENTION.md)
+**Details**: See [NAMING-CONVENTION.md](../examples/syntropy-mcp-naming-convention.md)
 
 ---
 
@@ -267,7 +267,7 @@ Return tool name as-is
 ### Error: "No such tool available"
 
 **Possible Causes**:
-1. Tool name mismatch (check NAMING-CONVENTION.md)
+1. Tool name mismatch (check [NAMING-CONVENTION.md](../examples/syntropy-mcp-naming-convention.md))
 2. Server not connected (run `/syntropy-health`)
 3. Tool disabled in `~/.syntropy/tool-state.json`
 4. Permission denied in `.claude/settings.local.json`
@@ -400,7 +400,7 @@ npm start
 
 ### Core Docs
 - [README.md](./README.md) - Project overview
-- [NAMING-CONVENTION.md](./NAMING-CONVENTION.md) - Canonical naming spec
+- [NAMING-CONVENTION.md](../examples/syntropy-mcp-naming-convention.md) - Canonical naming spec
 - [QUICKSTART.md](./QUICKSTART.md) - Setup guide
 - [tool-index.md](./tool-index.md) - Complete tool list
 
@@ -436,7 +436,7 @@ npm start
 **Update Frequency**: On every Syntropy MCP change
 
 **Update Checklist**:
-- [ ] Update NAMING-CONVENTION.md if convention changes
+- [ ] Update [NAMING-CONVENTION.md](../examples/syntropy-mcp-naming-convention.md) if convention changes
 - [ ] Update tool-index.md when tools added/removed
 - [ ] Update this index when new docs created
 - [ ] Update MINIMAL-FIX-PLAN.md when issues resolved

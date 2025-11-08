@@ -277,6 +277,155 @@ grep "thinking" .claude/settings.local.json
 
 ---
 
+## Testing & Prevention Strategy
+
+### Automated Testing
+
+Use `test_mcp_server.py` to verify tool name registration:
+
+```bash
+cd syntropy-mcp
+python3 test_mcp_server.py
+```
+
+**What it tests:**
+1. Server starts successfully
+2. Eager servers initialize (serena, filesystem, git, linear)
+3. MCP handshake completes
+4. tools/list returns correct prefixed names
+5. Tools are callable (tests healthcheck)
+
+**When to run:**
+- Before every commit touching tool registration
+- After modifying `ListToolsRequestSchema` handler
+- After updating `SYNTROPY_TOOLS` definitions
+- When adding new MCP servers
+
+### Pre-Commit Checklist
+
+When modifying tool naming or registration:
+
+- [ ] Run `python3 test_mcp_server.py` ✅
+- [ ] Verify tool names have `mcp__syntropy__` prefix in output
+- [ ] Test calling at least one tool from each server type
+- [ ] Check `~/.syntropy/tool-state.json` uses prefixed names
+- [ ] Verify `.claude/settings.local.json` has prefixed names
+- [ ] Update tool count in documentation if tools added/removed
+- [ ] Build succeeds: `npm run build`
+- [ ] No TypeScript errors
+
+### Common Mistakes to Avoid
+
+**❌ Mistake 1: Returning unprefixed tools in ListTools**
+```typescript
+// WRONG
+return { tools: enabledTools };  // Returns "thinking_sequentialthinking"
+```
+
+**✅ Fix:**
+```typescript
+// RIGHT
+return {
+  tools: enabledTools.map(tool => ({
+    ...tool,
+    name: `mcp__syntropy__${tool.name}`
+  }))
+};
+```
+
+**❌ Mistake 2: Using single underscore in docs**
+```markdown
+Call `mcp__syntropy_thinking_sequentialthinking`  ❌
+```
+
+**✅ Fix:**
+```markdown
+Call `mcp__syntropy__thinking_sequentialthinking`  ✅
+```
+
+**❌ Mistake 3: Inconsistent tool state file**
+```json
+{
+  "enabled": ["thinking_sequentialthinking"]  ❌ Missing prefix
+}
+```
+
+**✅ Fix:**
+```json
+{
+  "enabled": ["mcp__syntropy__thinking_sequentialthinking"]  ✅
+}
+```
+
+### Root Cause Prevention
+
+**The PRP-44 Issue**: ListTools returned unprefixed tool names, causing registration/call mismatch.
+
+**Prevention Rules**:
+1. **Tool definitions** (`tools-definition.ts`): Use `<server>_<tool>` format
+2. **ListTools handler** (`index.ts`): MUST add prefix when returning tools
+3. **Permissions** (`.claude/settings.local.json`): Always use full `mcp__syntropy__<server>_<tool>` format
+4. **Tool state** (`~/.syntropy/tool-state.json`): Always use full prefixed format
+5. **Documentation**: Always show full prefixed format to users
+
+**Test Data Flow**:
+```
+Tool defined as: "thinking_sequentialthinking"
+         ↓
+ListTools returns: "mcp__syntropy__thinking_sequentialthinking" ✅
+         ↓
+Claude Code registers as: "mcp__syntropy__thinking_sequentialthinking"
+         ↓
+User calls: mcp__syntropy__thinking_sequentialthinking
+         ↓
+parseSyntropyTool extracts: server="thinking", tool="sequentialthinking"
+         ↓
+Forwards to MCP server: "sequentialthinking" ✅
+         ↓
+SUCCESS
+```
+
+### Integration Test
+
+Test all 28 tools after changes:
+
+```bash
+# 1. Enable all tools
+echo '{"enabled":[],"disabled":[]}' > ~/.syntropy/tool-state.json
+
+# 2. Copy permissions from settings
+cat > ~/.syntropy/tool-state.json << 'EOF'
+{
+  "enabled": [
+    "mcp__syntropy__serena_activate_project",
+    "mcp__syntropy__serena_find_symbol",
+    "mcp__syntropy__thinking_sequentialthinking",
+    "mcp__syntropy__context7_get_library_docs",
+    "mcp__syntropy__linear_create_issue",
+    "mcp__syntropy__healthcheck"
+  ],
+  "disabled": []
+}
+EOF
+
+# 3. Run test
+python3 test_mcp_server.py
+
+# 4. Test in Claude Code
+# Restart Claude Code, then call tools
+```
+
+### Documentation Sync
+
+After any tool naming changes, update:
+1. `examples/syntropy-mcp-naming-convention.md` (this file)
+2. `examples/syntropy-naming-convention.md` (user quick guide)
+3. `syntropy-mcp/tool-index.md` (tool catalog)
+4. `syntropy-mcp/CLAUDE.md` (project guide)
+5. Main `CLAUDE.md` (if tool count changes)
+
+---
+
 ## References
 
 - MCP Specification: https://modelcontextprotocol.io/specification/
