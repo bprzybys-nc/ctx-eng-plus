@@ -1,8 +1,23 @@
 # Syntropy MCP Tool Naming Convention
 
-**Version**: 1.0
+**Version**: 2.0
 **Status**: CANONICAL - Single source of truth
 **Last Updated**: 2025-11-08
+**Protocol**: Standard MCP (client-side prefixing)
+
+---
+
+## CRITICAL: Standard MCP Protocol
+
+**MCP servers return tool names WITHOUT prefix. Claude Code adds prefix CLIENT-SIDE.**
+
+Standard MCP protocol (all compliant clients):
+- Server returns in `tools/list`: `healthcheck` ✅
+- Client registers as: `mcp__syntropy__healthcheck` ✅
+- User calls: `mcp__syntropy__healthcheck()` ✅
+
+**NOT** (causes double-prefixing):
+- Server returns: `mcp__syntropy__healthcheck` ❌
 
 ---
 
@@ -43,17 +58,38 @@ mcp__syntropy__linear_create_issue
 
 ### Layer 2: Syntropy Tool Definitions (Internal Registry)
 
-**Format**: `<server>_<tool>`
+**Format**: `<server>_<tool>` (WITHOUT `mcp__syntropy__` prefix)
 
 **Location**: `syntropy-mcp/src/tools-definition.ts`
 
 **Example**:
 ```typescript
 {
-  name: "thinking_sequentialthinking",  // Format: SERVER_TOOL
+  name: "thinking_sequentialthinking",  // Format: SERVER_TOOL (no prefix)
   description: "Sequential thinking process",
   inputSchema: { ... }
 }
+```
+
+**Returned to Client WITHOUT Prefix**: The `ListToolsRequestSchema` handler returns tools as-is (no prefix added):
+
+```typescript
+// Line ~230 in syntropy-mcp/src/index.ts
+server.setRequestHandler(ListToolsRequestSchema, async () => {
+  const enabledTools = SYNTROPY_TOOLS.filter(tool => {
+    const toolName = `mcp__syntropy__${tool.name}`;
+    return toolStateManager.isEnabled(toolName);
+  });
+
+  // Return tools WITHOUT prefix - Claude Code adds prefix client-side
+  return {
+    tools: enabledTools  // ✅ Returns: "thinking_sequentialthinking"
+  };
+});
+
+// Claude Code receives: "thinking_sequentialthinking"
+// Claude Code registers as: "mcp__syntropy__thinking_sequentialthinking"
+// User calls: mcp__syntropy__thinking_sequentialthinking()
 ```
 
 ### Layer 3: MCP Server Routes (Connection Mapping)
@@ -359,24 +395,33 @@ Call `mcp__syntropy__thinking_sequentialthinking`  ✅
 
 ### Root Cause Prevention
 
-**The PRP-44 Issue**: ListTools returned unprefixed tool names, causing registration/call mismatch.
+**The PRP-44 Issue (INCORRECT DIAGNOSIS)**: Initial fix ADDED prefixes server-side, which was WRONG. Standard MCP protocol requires servers to return unprefixed names.
 
-**Prevention Rules**:
-1. **Tool definitions** (`tools-definition.ts`): Use `<server>_<tool>` format
-2. **ListTools handler** (`index.ts`): MUST add prefix when returning tools
-3. **Permissions** (`.claude/settings.local.json`): Always use full `mcp__syntropy__<server>_<tool>` format
-4. **Tool state** (`~/.syntropy/tool-state.json`): Always use full prefixed format
-5. **Documentation**: Always show full prefixed format to users
+**What actually happened**:
+1. Initial implementation correctly returned unprefixed names
+2. Misunderstood Claude Code behavior as requiring server-side prefixing
+3. Added prefixes server-side (PRP-44) → caused double-prefixing → tools not callable
+4. Reverted to standard MCP protocol → tools work correctly
 
-**Test Data Flow**:
+**CORRECT Implementation**:
+1. **Tool definitions** (`tools-definition.ts`): Use `<server>_<tool>` format (no prefix)
+2. **ListTools handler** (`index.ts`): Return tools WITHOUT prefix (standard MCP protocol)
+3. **Claude Code** (client): Adds `mcp__syntropy__` prefix when registering tools
+4. **Permissions** (`.claude/settings.local.json`): Always use full `mcp__syntropy__<server>_<tool>` format
+5. **Tool state** (`~/.syntropy/tool-state.json`): Always use full prefixed format
+6. **Documentation**: Always show full prefixed format to users (how they're called)
+
+**Test Data Flow (CORRECT)**:
 ```
 Tool defined as: "thinking_sequentialthinking"
          ↓
-ListTools returns: "mcp__syntropy__thinking_sequentialthinking" ✅
+ListTools returns: "thinking_sequentialthinking" ✅ (NO prefix)
          ↓
-Claude Code registers as: "mcp__syntropy__thinking_sequentialthinking"
+Claude Code receives: "thinking_sequentialthinking"
          ↓
-User calls: mcp__syntropy__thinking_sequentialthinking
+Claude Code registers as: "mcp__syntropy__thinking_sequentialthinking" ✅ (adds prefix)
+         ↓
+User calls: mcp__syntropy__thinking_sequentialthinking()
          ↓
 parseSyntropyTool extracts: server="thinking", tool="sequentialthinking"
          ↓

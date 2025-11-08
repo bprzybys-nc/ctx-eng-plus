@@ -1,18 +1,51 @@
-# PRP-44-INITIAL: Fix Syntropy MCP Tool Name Prefix Registration
+# PRP-44: Fix Syntropy MCP Tool Name Prefix Registration
 
-**Status**: initial
+**Status**: completed (INCORRECT DIAGNOSIS - SEE CORRECTION BELOW)
 **Created**: 2025-11-08
-**Estimated Hours**: 2-3h
+**Corrected**: 2025-11-08
+**Estimated Hours**: 2-3h (actual: 4h including correction)
 **Complexity**: low
-**Tags**: [mcp, syntropy, bug-fix, tool-registration]
+**Tags**: [mcp, syntropy, bug-fix, tool-registration, **incorrect-diagnosis**]
 
 ---
 
-## TL;DR
+## ⚠️ CORRECTION NOTE
 
-Syntropy MCP tools show as available but fail when called with "No such tool available". Root cause: `ListToolsRequestSchema` handler returns tools WITHOUT the `mcp__syntropy__` prefix, causing naming mismatch.
+**This PRP had INCORRECT diagnosis and solution.**
 
-**Fix**: Add prefix to tool names in ListTools response + simplify SERVER_ROUTES.
+**What we thought**: Claude Code 2.0 requires servers to add prefixes (server-side prefixing)
+**What's actually true**: Claude Code follows standard MCP protocol (client-side prefixing)
+
+**INCORRECT Fix (PRP-44 initial)**:
+```typescript
+// Added prefix server-side (WRONG)
+return {
+  tools: enabledTools.map(tool => ({
+    ...tool,
+    name: `mcp__syntropy__${tool.name}`
+  }))
+};
+```
+
+**CORRECT Implementation** (reverted to standard MCP):
+```typescript
+// Return WITHOUT prefix (CORRECT - standard MCP protocol)
+return {
+  tools: enabledTools  // Claude Code adds prefix client-side
+};
+```
+
+**See**: `examples/syntropy-mcp-naming-convention.md` for correct implementation details.
+
+---
+
+## TL;DR (ORIGINAL - INCORRECT)
+
+Syntropy MCP tools show as available but fail when called with "No such tool available". ~~Root cause: `ListToolsRequestSchema` handler returns tools WITHOUT the `mcp__syntropy__` prefix, required by Claude Code 2.0.~~
+
+**~~Fix~~**: ~~Add prefix to tool names in ListTools response (server-side prefixing for Claude Code 2.0).~~
+
+**ACTUAL Fix**: Return tools WITHOUT prefix (standard MCP protocol - client-side prefixing).
 
 ---
 

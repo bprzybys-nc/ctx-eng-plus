@@ -9,8 +9,9 @@ Direct, token-efficient. No fluff. Call out problems directly.
 ## Core Principles
 
 ### Syntropy MCP First
-- Use `mcp__syntropy__<server>_<tool>` format
+- Use `mcp__syntropy__<server>_<tool>` format (standard MCP protocol - client-side prefixing)
 - Prefer Syntropy tools over bash/cmdline
+- See [Naming Convention](examples/syntropy-mcp-naming-convention.md) for complete spec
 
 ### No Fishy Fallbacks
 - Fast failure: Let exceptions bubble up

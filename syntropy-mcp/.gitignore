@@ -8,6 +8,7 @@ yarn-error.log*
 build/
 dist/
 *.tsbuildinfo
+src/build-info.ts
 
 # Python
 __pycache__/

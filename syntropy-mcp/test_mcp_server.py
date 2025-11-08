@@ -174,32 +174,39 @@ def test_syntropy_server():
 
         print(f"✅ Received {len(tools)} tools")
 
-        # Step 6: Check tool name prefixes
-        print("\n🔍 Checking tool name prefixes...")
-        correct_prefix = 0
-        wrong_prefix = 0
+        # Step 6: Check tool name prefixes (Standard MCP Protocol)
+        print("\n🔍 Checking tool name format (standard MCP protocol)...")
+        print("   Expected: Tools returned WITHOUT mcp__syntropy__ prefix")
+        print("   Reason: Client adds prefix, not server")
+
+        unprefixed = 0
+        prefixed = 0
 
         for tool in tools[:5]:  # Check first 5
             name = tool.get("name", "")
             if name.startswith("mcp__syntropy__"):
-                correct_prefix += 1
-                print(f"  ✅ {name}")
+                prefixed += 1
+                print(f"  ❌ {name} (has prefix - WRONG!)")
             else:
-                wrong_prefix += 1
-                print(f"  ❌ {name} (missing prefix!)")
+                unprefixed += 1
+                print(f"  ✅ {name} (no prefix - CORRECT)")
 
-        if wrong_prefix > 0:
-            print(f"\n❌ FAIL: {wrong_prefix} tools missing mcp__syntropy__ prefix")
-            print(f"Expected format: mcp__syntropy__<server>_<tool>")
-            print(f"Sample tools:")
+        if prefixed > 0:
+            print(f"\n❌ FAIL: {prefixed} tools have mcp__syntropy__ prefix (server-side prefixing)")
+            print(f"Standard MCP protocol: Server returns unprefixed names")
+            print(f"Claude Code adds prefix client-side")
+            print(f"Sample tools with incorrect prefix:")
             for tool in tools[:3]:
-                print(f"  - {tool.get('name')}")
+                if tool.get('name', '').startswith("mcp__syntropy__"):
+                    print(f"  - {tool.get('name')}")
             return False
 
-        print(f"✅ All checked tools have correct prefix")
+        print(f"✅ All checked tools follow standard MCP protocol (unprefixed)")
 
         # Step 7: Try calling a tool (healthcheck)
-        print("\n🏥 Testing tool call (healthcheck)...")
+        # NOTE: We call with prefix because Syntropy expects prefixed names in tools/call
+        # (it strips the prefix internally before routing)
+        print("\n🏥 Testing tool call (healthcheck with prefix in tools/call)...")
         req_id = client.send_request("tools/call", {
             "name": "mcp__syntropy__healthcheck",
             "arguments": {"detailed": False}

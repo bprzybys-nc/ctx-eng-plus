@@ -1,5 +1,7 @@
 # Syntropy MCP Tool Naming - Quick Guide
 
+**Standard MCP Protocol**: Servers return unprefixed names, clients add prefix. See [full spec](syntropy-mcp-naming-convention.md) for details.
+
 ## The Format (Copy This)
 
 ```
@@ -7,6 +9,9 @@ mcp__syntropy__<server>_<tool>
 ```
 
 **Double underscores** after `mcp` and `syntropy`, **single underscore** between server and tool.
+
+**This format is used for CALLING tools**: tool calls, permissions, tool state, documentation.
+**Servers return WITHOUT prefix**: `healthcheck` → Claude Code registers as `mcp__syntropy__healthcheck`
 
 ---
 
