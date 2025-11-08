@@ -21,7 +21,7 @@ class CommentedCodeStrategy(BaseStrategy):
         candidates = []
 
         # Find all Python files
-        for py_file in self.project_root.glob("**/*.py"):
+        for py_file in self.scan_path.glob("**/*.py"):
             if not py_file.exists() or py_file.is_dir():
                 continue
 

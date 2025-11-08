@@ -25,7 +25,7 @@ class BackupFileStrategy(BaseStrategy):
         candidates = []
 
         for pattern in self.BACKUP_PATTERNS:
-            for path in self.project_root.glob(pattern):
+            for path in self.scan_path.glob(pattern):
                 if not path.exists():
                     continue
 
