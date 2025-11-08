@@ -85,17 +85,17 @@ class MemoriesBlendStrategy(BlendStrategy):
             ValueError: If framework_content is not a Path or doesn't exist
         """
         if not isinstance(framework_content, Path):
-            raise ValueError(f"framework_content must be Path, got {type(framework_content)}")
+            raise ValueError(f"framework_content must be Path, got {type(framework_content)}\n🔧 Troubleshooting: Check inputs and system state")
 
         if not framework_content.exists():
-            raise ValueError(f"Framework memories path does not exist: {framework_content}")
+            raise ValueError(f"Framework memories path does not exist: {framework_content}\n🔧 Troubleshooting: Check inputs and system state")
 
         framework_path = framework_content
         target_path = target_content if target_content else None
         output_path = context.get("output_path")
 
         if not output_path:
-            raise ValueError("context must contain 'output_path'")
+            raise ValueError("context must contain 'output_path'\n🔧 Troubleshooting: Check inputs and system state")
 
         output_path.mkdir(parents=True, exist_ok=True)
 
@@ -381,11 +381,11 @@ class MemoriesBlendStrategy(BlendStrategy):
             ValueError: If YAML parse fails or invalid structure
         """
         if not content.startswith("---\n"):
-            raise ValueError("Memory file must start with YAML frontmatter (---)")
+            raise ValueError("Memory file must start with YAML frontmatter (---)\n🔧 Troubleshooting: Check inputs and system state")
 
         parts = content.split("---", 2)
         if len(parts) < 3:
-            raise ValueError("Missing closing --- delimiter for YAML header")
+            raise ValueError("Missing closing --- delimiter for YAML header\n🔧 Troubleshooting: Check inputs and system state")
 
         yaml_content = parts[1].strip()
         body = parts[2].strip()
@@ -393,7 +393,7 @@ class MemoriesBlendStrategy(BlendStrategy):
         try:
             header = yaml.safe_load(yaml_content)
         except yaml.YAMLError as e:
-            raise ValueError(f"YAML parse error: {e}")
+            raise ValueError(f"YAML parse error: {e}\n🔧 Troubleshooting: Check inputs and system state")
 
         return header, body
 

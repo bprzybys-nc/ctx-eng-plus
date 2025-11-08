@@ -59,11 +59,11 @@ class SettingsBlendStrategy(BlendStrategy):
             try:
                 ce_settings = json.loads(framework_content)
             except json.JSONDecodeError as e:
-                raise ValueError(f"CE settings JSON invalid: {e}")
+                raise ValueError(f"CE settings JSON invalid: {e}\n🔧 Troubleshooting: Check inputs and system state")
         elif isinstance(framework_content, dict):
             ce_settings = framework_content
         else:
-            raise ValueError(f"CE settings must be dict or JSON string, got {type(framework_content)}")
+            raise ValueError(f"CE settings must be dict or JSON string, got {type(framework_content)}\n🔧 Troubleshooting: Check inputs and system state")
 
         # Parse target settings
         if target_content is None or target_content == "":
@@ -75,11 +75,11 @@ class SettingsBlendStrategy(BlendStrategy):
                 try:
                     target_settings = json.loads(target_content)
                 except json.JSONDecodeError as e:
-                    raise ValueError(f"Target settings JSON invalid: {e}")
+                    raise ValueError(f"Target settings JSON invalid: {e}\n🔧 Troubleshooting: Check inputs and system state")
         elif isinstance(target_content, dict):
             target_settings = target_content
         else:
-            raise ValueError(f"Target settings must be dict or JSON string, got {type(target_content)}")
+            raise ValueError(f"Target settings must be dict or JSON string, got {type(target_content)}\n🔧 Troubleshooting: Check inputs and system state")
 
         # Initialize default structure if missing
         for list_name in ["allow", "deny", "ask"]:
@@ -132,18 +132,18 @@ class SettingsBlendStrategy(BlendStrategy):
             try:
                 settings = json.loads(blended_content)
             except json.JSONDecodeError as e:
-                raise ValueError(f"Blended settings JSON invalid: {e}")
+                raise ValueError(f"Blended settings JSON invalid: {e}\n🔧 Troubleshooting: Check inputs and system state")
         elif isinstance(blended_content, dict):
             settings = blended_content
         else:
-            raise ValueError(f"Blended content must be dict or JSON string, got {type(blended_content)}")
+            raise ValueError(f"Blended content must be dict or JSON string, got {type(blended_content)}\n🔧 Troubleshooting: Check inputs and system state")
 
         # Check structure
         for list_name in ["allow", "deny", "ask"]:
             if list_name not in settings:
-                raise ValueError(f"Missing '{list_name}' list in blended settings")
+                raise ValueError(f"Missing '{list_name}' list in blended settings\n🔧 Troubleshooting: Check inputs and system state")
             if not isinstance(settings[list_name], list):
-                raise ValueError(f"'{list_name}' must be a list, got {type(settings[list_name])}")
+                raise ValueError(f"'{list_name}' must be a list, got {type(settings[list_name])}\n🔧 Troubleshooting: Check inputs and system state")
 
         # Check no duplicates across lists
         all_entries = (
@@ -151,6 +151,6 @@ class SettingsBlendStrategy(BlendStrategy):
         )
         duplicates = [entry for entry in all_entries if all_entries.count(entry) > 1]
         if duplicates:
-            raise ValueError(f"Duplicate entries across lists: {set(duplicates)}")
+            raise ValueError(f"Duplicate entries across lists: {set(duplicates)}\n🔧 Troubleshooting: Check inputs and system state")
 
         return True

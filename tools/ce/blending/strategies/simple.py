@@ -60,7 +60,7 @@ class PRPMoveStrategy:
         target_dir = input_data.get("target_dir")
 
         if not source_dir or not target_dir:
-            raise ValueError("source_dir and target_dir are required")
+            raise ValueError("source_dir and target_dir are required\n🔧 Troubleshooting: Check inputs and system state")
 
         source_dir = Path(source_dir)
         target_dir = Path(target_dir)
@@ -254,7 +254,7 @@ class CommandOverwriteStrategy:
         backup_dir = input_data.get("backup_dir")
 
         if not source_dir or not target_dir or not backup_dir:
-            raise ValueError("source_dir, target_dir, and backup_dir are required")
+            raise ValueError("source_dir, target_dir, and backup_dir are required\n🔧 Troubleshooting: Check inputs and system state")
 
         source_dir = Path(source_dir)
         target_dir = Path(target_dir)

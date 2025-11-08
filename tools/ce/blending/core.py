@@ -649,7 +649,7 @@ class BlendingOrchestrator:
             Path("PRPs")
         """
         if not paths:
-            raise ValueError("Cannot find common ancestor of empty path list")
+            raise ValueError("Cannot find common ancestor of empty path list\n🔧 Troubleshooting: Check inputs and system state")
 
         # Convert all paths to absolute for comparison
         abs_paths = [p.resolve() for p in paths]
@@ -663,6 +663,6 @@ class BlendingOrchestrator:
 
             # Safety check - don't go above project root
             if common.parent == common:
-                raise RuntimeError(f"Could not find common ancestor for paths: {paths}")
+                raise RuntimeError(f"Could not find common ancestor for paths: {paths}\n🔧 Troubleshooting: Check inputs and system state")
 
         return common

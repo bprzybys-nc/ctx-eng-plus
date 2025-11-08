@@ -61,7 +61,7 @@ class ProjectInitializer:
         """
         valid_phases = ["all", "extract", "blend", "initialize", "verify"]
         if phase not in valid_phases:
-            raise ValueError(f"Invalid phase '{phase}'. Must be one of: {valid_phases}")
+            raise ValueError(f"Invalid phase '{phase}'. Must be one of: {valid_phases}\n🔧 Troubleshooting: Check input parameters and documentation")
 
         results = {}
 

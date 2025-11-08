@@ -46,7 +46,7 @@ def load_config(config_path: Path) -> Dict[str, Any]:
             config = yaml.safe_load(f)
 
         if not config or 'domains' not in config:
-            raise ValueError("Config missing 'domains' section")
+            raise ValueError("Config missing 'domains' section\n🔧 Troubleshooting: Check input parameters and documentation")
 
         return config
 
