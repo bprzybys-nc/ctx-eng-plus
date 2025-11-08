@@ -13,11 +13,7 @@
 
 ## Session Start
 
-Auto health check shows:
-```
-✅ serena, filesystem, git, thinking, linear, github, perplexity, context7, repomix
-Total: 9/9 healthy
-```
+Check syntropy mcp helath. If not healthy prompot it swiftly with clear message.
 
 **Manual check**: Call `mcp__syntropy__healthcheck(detailed=true)` for diagnostics
 
