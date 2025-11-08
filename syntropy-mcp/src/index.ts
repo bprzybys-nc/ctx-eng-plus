@@ -227,7 +227,13 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
     return toolStateManager.isEnabled(toolName);
   });
 
-  return { tools: enabledTools };
+  // Add mcp__syntropy__ prefix to returned tool names so Claude Code can call them
+  return {
+    tools: enabledTools.map(tool => ({
+      ...tool,
+      name: `mcp__syntropy__${tool.name}`
+    }))
+  };
 });
 
 /**
