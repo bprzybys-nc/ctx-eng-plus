@@ -7,22 +7,13 @@ from typing import Dict, List, Tuple
 
 logger = logging.getLogger(__name__)
 
-# Patterns for files that should NOT be migrated
-SKIP_PATTERNS = [
-    "REPORT", "INITIAL", "summary", "analysis",
-    "PLAN", ".backup", "~", ".tmp", ".log"
-]
-
-# Directories that should NOT be migrated
-SKIP_DIRS = ["templates"]
-
-# Files explicitly excluded from framework package (project-specific examples)
-# These are expected to remain in root examples/ directory
-EXCLUDED_FROM_PACKAGE = [
-    "examples/l4-validation-example.md",
-    "examples/syntropy-status-hook-system.md",
-    "examples/patterns/example-simple-feature.md",
-    "examples/patterns/git-message-rules.md"
+# System files that should be ignored during cleanup validation
+# All legacy domain locations (PRPs/, examples/, context-engineering/, .serena/)
+# and their .old variants are removed after migration validation
+SYSTEM_FILES = [
+    ".DS_Store",    # Mac system files
+    ".gitignore",   # Git ignore files
+    "Thumbs.db"     # Windows system files
 ]
 
 
@@ -46,7 +37,8 @@ def cleanup_legacy_dirs(
     legacy_dirs = [
         "PRPs",
         "examples",
-        "context-engineering"
+        "context-engineering",
+        ".serena.old"  # NEW: Cleanup after memories blending
     ]
 
     status: Dict[str, bool] = {}
@@ -65,6 +57,14 @@ def cleanup_legacy_dirs(
         # Skip if directory doesn't exist
         if not legacy_path.exists():
             print(f"⏭️  {legacy_dir}/ - Not found (skipping)")
+            status[legacy_dir] = True
+            continue
+
+        # Skip root examples/ directory (user code, not CE framework files)
+        # Examples domain only migrates framework examples from .ce.old/examples/
+        # Root examples/ are considered user code outside CE structure
+        if legacy_dir == "examples":
+            print(f"⏭️  {legacy_dir}/ - Skipping (user code, not CE framework)")
             status[legacy_dir] = True
             continue
 
@@ -115,34 +115,16 @@ def cleanup_legacy_dirs(
 
 def _should_skip_file(file_path: Path) -> bool:
     """
-    Check if file should be skipped (not expected to migrate).
+    Check if file should be skipped (system files only).
 
     Args:
         file_path: File path to check
 
     Returns:
-        True if file should be skipped (templates, garbage patterns, excluded files)
+        True if file is a system file that should be ignored
     """
-    # Convert to string for comparison
-    file_str = str(file_path)
-
-    # Check if explicitly excluded from package
-    for excluded in EXCLUDED_FROM_PACKAGE:
-        if file_str.endswith(excluded) or excluded in file_str:
-            return True
-
-    # Check if in skip directory (e.g., templates/)
-    for part in file_path.parts:
-        if part in SKIP_DIRS:
-            return True
-
-    # Check if filename matches skip patterns
     filename = file_path.name
-    for pattern in SKIP_PATTERNS:
-        if pattern.lower() in filename.lower():
-            return True
-
-    return False
+    return filename in SYSTEM_FILES
 
 
 def verify_migration_complete(
@@ -179,18 +161,40 @@ def verify_migration_complete(
             continue
 
         # Check if migrated to .ce/
-        # PRPs/executed/PRP-1.md → .ce/PRPs/executed/PRP-1.md
-        # examples/pattern.py → .ce/examples/user/pattern.py
+        # PRPs get reorganized during migration (classified into executed/ or feature-requests/)
+        # So we search by filename, not path
+        # examples/pattern.py → .ce/examples/pattern.py (direct mapping)
 
-        # For PRPs: direct mapping
+        # For PRPs: search by filename (files get reorganized during migration)
         if relative_path.parts[0] == "PRPs":
-            ce_path = ce_dir / relative_path
-        # For examples: user subdirectory
+            # Search in all PRP subdirectories for this filename
+            filename = legacy_file.name
+            ce_path = None
+            for subdir in ["executed", "feature-requests", "system"]:
+                candidate = ce_dir / "PRPs" / subdir / filename
+                if candidate.exists():
+                    ce_path = candidate
+                    break
+            # If not found in subdirs, check if it exists with direct mapping
+            if not ce_path:
+                ce_path = ce_dir / relative_path
+        # For examples: direct mapping (framework examples extracted directly to .ce/examples/)
         elif relative_path.parts[0] == "examples":
-            ce_path = ce_dir / "examples" / "user" / "/".join(relative_path.parts[1:])
+            ce_path = ce_dir / relative_path
         # For context-engineering: .ce/ itself
         elif relative_path.parts[0] == "context-engineering":
             ce_path = ce_dir / "/".join(relative_path.parts[1:])
+        # For .serena.old/: Check if migrated to .serena/
+        elif relative_path.parts[0] == ".serena.old":
+            # Only check files in memories/ subdirectory
+            # Skip root-level files (.gitignore, project.yml, etc.)
+            if len(relative_path.parts) >= 3 and relative_path.parts[1] == "memories":
+                # .serena.old/memories/file.md → .serena/memories/file.md
+                ce_path = target_project / ".serena" / "/".join(relative_path.parts[1:])
+            else:
+                # Skip non-memory files in .serena.old/ (e.g., .gitignore, project.yml)
+                logger.debug(f"  Skipping .serena.old/ non-memory file: {relative_path}")
+                continue
         else:
             # Unknown legacy structure
             ce_path = ce_dir / relative_path

@@ -400,15 +400,55 @@ class BlendingOrchestrator:
 
                     elif domain in ['memories', 'examples']:
                         # Path-based strategies (handle their own I/O)
-                        framework_dir = target_dir / ".ce" / domain
+                        if domain == "memories":
+                            # Read from .ce/.serena/memories/ (preserve package structure)
+                            framework_dir = target_dir / ".ce" / ".serena" / "memories"
+                        else:  # examples
+                            framework_dir = target_dir / ".ce" / domain
+
+                        # Pre-blend workflow for memories domain
+                        if domain == "memories":
+                            # Rename target's .serena/ → .serena.old/ (preserve existing state)
+                            target_serena = target_dir / ".serena"
+                            target_serena_old = target_dir / ".serena.old"
+
+                            if target_serena.exists():
+                                logger.info(f"    Renaming existing .serena/ → .serena.old/")
+                                if target_serena_old.exists():
+                                    logger.warning(f"    Removing old .serena.old/ backup")
+                                    shutil.rmtree(target_serena_old)
+                                shutil.move(str(target_serena), str(target_serena_old))
+
+                            # Verify framework .serena/ exists
+                            framework_serena = target_dir / ".ce" / ".serena" / "memories"
+                            if not framework_serena.exists():
+                                raise RuntimeError(
+                                    f"Framework memories not found at {framework_serena}\n"
+                                    f"🔧 Troubleshooting: Verify extraction completed successfully"
+                                )
+
+                            # Update target_domain_dir to point to .serena.old/memories/ (for blending)
+                            if target_serena_old.exists():
+                                target_domain_dir = target_serena_old / "memories"
+                                logger.info(f"    Blending from .serena.old/memories/ → .serena/memories/")
+                            else:
+                                target_domain_dir = None
+                                logger.info(f"    No existing memories to blend (fresh installation)")
+
+                            # Note: .serena/memories/ output directory will be created by blend strategy
 
                         # Construct target directory path
                         if domain == "memories":
-                            target_domain_dir = target_dir / ".serena" / "memories"
-                        else:  # examples
+                            # target_domain_dir already set by pre-blend workflow above
+                            # (either .serena.old/memories or None for fresh install)
+                            pass
+                        elif domain == "examples":
                             # Framework examples go to .ce/examples/ (not root examples/)
                             # This keeps them separate from user examples in .ce/examples/user/
                             target_domain_dir = target_dir / ".ce" / "examples"
+                        else:
+                            # Other domains
+                            target_domain_dir = target_dir / ".ce" / domain
 
                         # Check framework dir exists (but allow examples to proceed for migration mode)
                         if not framework_dir.exists():
@@ -421,9 +461,13 @@ class BlendingOrchestrator:
                         # Call strategy with paths (memories expects output_path in context + LLM client)
                         if domain == "memories":
                             result = strategy.blend(
-                                framework_content=framework_dir,
-                                target_content=target_domain_dir if target_domain_dir.exists() else None,
-                                context={"output_path": target_domain_dir, "target_dir": target_dir, "llm_client": BlendingLLM()}
+                                framework_content=framework_dir,  # .ce/.serena/memories/
+                                target_content=target_domain_dir if target_domain_dir and target_domain_dir.exists() else None,  # .serena.old/memories/
+                                context={
+                                    "output_path": target_dir / ".serena" / "memories",  # Output to canonical location
+                                    "target_dir": target_dir,
+                                    "llm_client": BlendingLLM()
+                                }
                             )
                         else:  # examples
                             result = strategy.blend(
