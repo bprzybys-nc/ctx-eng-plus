@@ -1,7 +1,7 @@
 ---
 prp_id: PRP-47.5.2
 title: Refactor /batch-update-context Command
-status: planning
+status: completed
 type: refactor
 complexity: low
 estimated_hours: 2
