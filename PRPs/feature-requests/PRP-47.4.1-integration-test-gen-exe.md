@@ -1,7 +1,7 @@
 ---
 prp_id: PRP-47.4.1
 title: Integration Test - Gen + Exe Workflow
-status: planning
+status: completed
 type: testing
 complexity: low
 estimated_hours: 2
