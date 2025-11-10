@@ -11,6 +11,12 @@ Test coverage:
 """
 
 import pytest
+import sys
+from pathlib import Path
+
+# Add .ce/orchestration to path to import dependency_analyzer
+sys.path.insert(0, str(Path(__file__).parent.parent / '.ce' / 'orchestration'))
+
 from dependency_analyzer import DependencyAnalyzer, analyze_plan_file
 
 
@@ -440,7 +446,7 @@ class TestHelperFunctions:
 
         assert summary["total_phases"] == 3
         assert summary["total_stages"] == 2
-        assert summary["max_parallelism"] == 2  # Phase 2 and 3 parallel
+        assert summary["parallelism"] == 2  # Phase 2 and 3 parallel
 
 
 class TestRealWorldScenarios:
