@@ -1,7 +1,7 @@
 ---
 prp_id: PRP-47.2.2
 title: Unit Tests for Dependency Analyzer
-status: planning
+status: completed
 type: testing
 complexity: low
 estimated_hours: 2
@@ -9,6 +9,10 @@ priority: high
 dependencies: [PRP-47.2.1]
 batch_id: 47
 stage: 3
+completion_date: 2025-11-10
+git_commit: 1aeec75
+test_coverage: 88%
+test_count: 33
 ---
 
 # PRP-47.2.2: Unit Tests for Dependency Analyzer

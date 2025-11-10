@@ -1,7 +1,7 @@
 ---
 prp_id: PRP-47.2.1
 title: Dependency Analyzer - Topological Sort & Cycle Detection
-status: planning
+status: completed
 type: feature
 complexity: medium
 estimated_hours: 2
@@ -9,6 +9,9 @@ priority: high
 dependencies: [PRP-47.1.1]
 batch_id: 47
 stage: 2
+completion_date: 2025-11-10
+git_commit: 806d14c
+notes: Implementation completed as part of PRP-47.1.1 foundation work
 ---
 
 # PRP-47.2.1: Dependency Analyzer - Topological Sort & Cycle Detection
