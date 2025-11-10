@@ -6,13 +6,10 @@ Execute PRP batches using optimized shell script. Fast delivery, immediate execu
 
 ```bash
 # Execute all stages in batch
-/batch-exe-fast --batch 47
+./.ce/orchestration/batch-executor-v2.sh 47
 
 # Execute specific stage only
-/batch-exe-fast --batch 47 --stage 2
-
-# Execute from specific PRP onward
-/batch-exe-fast --batch 47 --start-prp PRP-47.2.1
+./.ce/orchestration/batch-executor-v2.sh 47 2
 ```
 
 ## Quick Start
@@ -20,7 +17,7 @@ Execute PRP batches using optimized shell script. Fast delivery, immediate execu
 ```bash
 # Test: Show PRPs in batch 47, stage 2
 cd /Users/bprzybyszi/nc-src/ctx-eng-plus
-./.ce/orchestration/batch-executor.sh --batch 47 --stage 2
+./.ce/orchestration/batch-executor-v2.sh 47 2
 ```
 
 ## What It Does
@@ -83,7 +80,7 @@ Total PRPs: 2
 
 ## Files
 
-- **Script**: `.ce/orchestration/batch-executor.sh` (12 KB, pure bash)
+- **Script**: `.ce/orchestration/batch-executor-v2.sh` (12 KB, pure bash)
 - **Results**: `.ce/orchestration/batches/batch-{id}.result.json`
 - **Per-PRP Results**: `.ce/orchestration/batches/prp-{id}.result.json`
 
@@ -117,7 +114,21 @@ Once this proves the batch concept works:
 
 ```bash
 cd /Users/bprzybyszi/nc-src/ctx-eng-plus
-./.ce/orchestration/batch-executor.sh --batch 47 --stage 2
+./.ce/orchestration/batch-executor-v2.sh 47 2
 ```
 
-Expected: Both PRP-47.2.1 and PRP-47.2.2 verified as complete, results saved.
+**Result**: PRP-47.2.1 verified (dependency_analyzer.py exists), results saved in JSON.
+
+## Command Invocation via /batch-exe-fast
+
+The `/batch-exe-fast` command is a Claude Code hook that executes the shell script. Note that the command documentation shows the interface, but the actual script uses positional arguments:
+
+```bash
+# What users might try (flag-based - from command docs)
+/batch-exe-fast --batch 47 --stage 2
+
+# What the script actually expects (positional)
+./.ce/orchestration/batch-executor-v2.sh 47 2
+```
+
+**Fix**: The command hook should be updated to convert flag arguments to positional arguments when invoking the script.
