@@ -1,3 +1,9 @@
+# ⚠️  DEPRECATED: See .ce/config.yml for unified configuration
+# This file is kept for backward compatibility only.
+# All blending strategies are now configured in .ce/config.yml
+#
+# Migration status: blend-config.yml will be removed in CE 1.2
+
 # CE Framework Blending Configuration
 # Defines blending rules for each domain (settings, CLAUDE.md, memories, etc.)
 

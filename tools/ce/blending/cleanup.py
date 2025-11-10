@@ -181,9 +181,19 @@ def verify_migration_complete(
         # For examples: direct mapping (framework examples extracted directly to .ce/examples/)
         elif relative_path.parts[0] == "examples":
             ce_path = ce_dir / relative_path
-        # For context-engineering: .ce/ itself
+        # For context-engineering: Handle both nested and root files
+        # Subdirectories map to .ce/ equivalents:
+        #   context-engineering/PRPs/file.md → .ce/PRPs/file.md
+        #   context-engineering/examples/file.md → .ce/examples/file.md
+        # Root-level files map directly to .ce/:
+        #   context-engineering/PROJECT.md → .ce/PROJECT.md
         elif relative_path.parts[0] == "context-engineering":
-            ce_path = ce_dir / "/".join(relative_path.parts[1:])
+            if len(relative_path.parts) > 1:
+                # Nested file: context-engineering/subdir/file.md
+                ce_path = ce_dir / "/".join(relative_path.parts[1:])
+            else:
+                # Root file (shouldn't happen with rglob, but handle it)
+                ce_path = ce_dir / relative_path.name
         # For .serena.old/: Check if migrated to .serena/
         elif relative_path.parts[0] == ".serena.old":
             # Only check files in memories/ subdirectory

@@ -16,6 +16,16 @@ GARBAGE_PATTERNS = [
     "PLAN", ".backup", "~", ".tmp", ".log"
 ]
 
+# Domain search patterns (compatible with test suite)
+SEARCH_PATTERNS = {
+    "prps": ["**/*.md"],
+    "examples": ["**/*.md", "**/*.py"],
+    "claude_md": ["CLAUDE.md"],
+    "settings": ["settings.local.json"],
+    "commands": ["**/*.md"],
+    "memories": ["**/*.md"]
+}
+
 
 class LegacyFileDetector:
     """Detect legacy CE files across multiple locations.
@@ -47,11 +57,13 @@ class LegacyFileDetector:
         """Scan all domains and return inventory.
 
         Uses config-driven search patterns if config available, otherwise uses
-        sensible defaults for backward compatibility.
+        sensible defaults for backward compatibility. Deduplicates results to avoid
+        finding same file via multiple paths (e.g., via context-engineering/ and
+        context-engineering/PRPs/).
 
         Returns:
             Dict with keys: prps, examples, claude_md, settings, commands, memories
-            Each value is List[Path] of detected files
+            Each value is List[Path] of detected files (deduplicated)
 
         Example:
             >>> from ce.config_loader import BlendConfig
@@ -67,6 +79,7 @@ class LegacyFileDetector:
 
         for domain in domains:
             patterns = self._get_domain_search_paths(domain)
+            seen_paths = set()  # Track paths to deduplicate
 
             for pattern in patterns:
                 search_path = self.project_root / pattern
@@ -78,11 +91,18 @@ class LegacyFileDetector:
                     # Single file (e.g., CLAUDE.md)
                     resolved = self._resolve_symlink(search_path)
                     if resolved and not self._is_garbage(resolved):
-                        inventory[domain].append(resolved)
+                        resolved_abs = resolved.resolve()
+                        if resolved_abs not in seen_paths:
+                            seen_paths.add(resolved_abs)
+                            inventory[domain].append(resolved)
                 else:
                     # Directory - collect .md files
                     files = self._collect_files(search_path)
-                    inventory[domain].extend(files)
+                    for file in files:
+                        file_abs = file.resolve()
+                        if file_abs not in seen_paths:
+                            seen_paths.add(file_abs)
+                            inventory[domain].append(file)
 
         return inventory
 
@@ -105,9 +125,12 @@ class LegacyFileDetector:
                 pass
 
         # Fallback to defaults for backward compatibility
+        # Note: All paths are specified in config.yml. These defaults ensure
+        # backward compatibility if config.yml is unavailable.
+        # CRITICAL: Include bare context-engineering/ to detect root-level files
         defaults = {
-            "prps": [Path("PRPs/"), Path("context-engineering/PRPs/")],
-            "examples": [Path("examples/"), Path("context-engineering/examples/")],
+            "prps": [Path("PRPs/"), Path("context-engineering/PRPs/"), Path("context-engineering/")],
+            "examples": [Path("examples/"), Path("context-engineering/examples/"), Path("context-engineering/")],
             "claude_md": [Path("CLAUDE.md")],
             "settings": [Path(".claude/settings.local.json")],
             "commands": [Path(".claude/commands/")],

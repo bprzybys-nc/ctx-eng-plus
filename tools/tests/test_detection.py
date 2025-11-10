@@ -275,3 +275,81 @@ def test_detector_initialization():
     detector = LegacyFileDetector(abs_path)
     assert detector.project_root.is_absolute()
     assert detector.visited_symlinks == set()
+
+
+def test_detect_bare_context_engineering_with_config(temp_project):
+    """Test detection of bare context-engineering/ root-level files with config."""
+    from ce.config_loader import BlendConfig
+    import tempfile
+    import yaml
+
+    # Create a config that includes bare context-engineering/ for prps
+    config_content = {
+        "detection": {
+            "domains": {
+                "prps": {
+                    "legacy_paths": [
+                        "PRPs/",
+                        "context-engineering/PRPs/",
+                        "context-engineering/"
+                    ],
+                    "search_patterns": ["**/*.md"]
+                },
+                "examples": {
+                    "legacy_paths": [
+                        "examples/",
+                        "context-engineering/examples/"
+                    ],
+                    "search_patterns": ["**/*.md", "**/*.py"]
+                },
+                "claude_md": {"legacy_paths": ["CLAUDE.md"]},
+                "settings": {"legacy_paths": [".claude/settings.local.json"]},
+                "commands": {"legacy_paths": [".claude/commands/"]},
+                "memories": {"legacy_paths": [".serena/memories/"]}
+            }
+        },
+        # Minimal directories section required for config validation
+        "directories": {
+            "output": {},
+            "framework": {},
+            "legacy": []
+        }
+    }
+
+    # Write config to temp file
+    with tempfile.NamedTemporaryFile(mode='w', suffix='.yml', delete=False) as f:
+        yaml.dump(config_content, f)
+        config_path = f.name
+
+    try:
+        config = BlendConfig(Path(config_path))
+        detector = LegacyFileDetector(temp_project, config)
+
+        # Create bare context-engineering/ file (not in subdirectory)
+        ce_root = temp_project / "context-engineering"
+        ce_root.mkdir()
+        project_master = ce_root / "PROJECT_MASTER.md"
+        project_master.write_text("# Project Master")
+
+        # Also create subdirectory files
+        (ce_root / "PRPs").mkdir()
+        (ce_root / "PRPs" / "PRP-1.md").write_text("# PRP-1")
+        (ce_root / "examples").mkdir()
+        (ce_root / "examples" / "example-1.md").write_text("# Example")
+
+        inventory = detector.scan_all()
+
+        # Should detect bare context-engineering/ files (PROJECT_MASTER.md)
+        # plus subdirectory files (PRP-1.md, example-1.md)
+        assert len(inventory["prps"]) >= 2
+        assert len(inventory["examples"]) == 1
+
+        # Verify specific files were found
+        prp_names = [p.name for p in inventory["prps"]]
+        assert "PROJECT_MASTER.md" in prp_names
+        assert "PRP-1.md" in prp_names
+
+    finally:
+        # Clean up
+        import os
+        os.unlink(config_path)

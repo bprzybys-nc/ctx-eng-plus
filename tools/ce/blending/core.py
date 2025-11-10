@@ -451,24 +451,7 @@ class BlendingOrchestrator:
 
                         # Pre-blend workflow for memories domain
                         if domain == "memories":
-                            # Rename target's memories dir → backup (preserve existing state)
-                            if self.blend_config:
-                                output_memories = self.blend_config.get_output_path("serena_memories")
-                                target_serena = target_dir / output_memories.parent if output_memories.name == "memories" else target_dir / output_memories
-                                target_serena_old = target_dir / (output_memories.parent.name + ".old")
-                            else:
-                                # Backward compatibility
-                                target_serena = target_dir / ".serena"
-                                target_serena_old = target_dir / ".serena.old"
-
-                            if target_serena.exists():
-                                logger.info(f"    Renaming existing {target_serena.name}/ → {target_serena_old.name}/")
-                                if target_serena_old.exists():
-                                    logger.warning(f"    Removing old {target_serena_old.name}/ backup")
-                                    shutil.rmtree(target_serena_old)
-                                shutil.move(str(target_serena), str(target_serena_old))
-
-                            # Verify framework memories exist
+                            # Verify framework memories exist BEFORE any renaming
                             if self.blend_config:
                                 # Memories at project root: target/.serena/memories/
                                 framework_serena = target_dir / self.blend_config.get_framework_path("serena_memories")
@@ -482,11 +465,42 @@ class BlendingOrchestrator:
                                     f"🔧 Troubleshooting: Verify extraction completed successfully"
                                 )
 
-                            # Update target_domain_dir to point to .serena.old/memories/ (for blending)
-                            if target_serena_old.exists():
+                            # Now handle backing up any pre-existing user memories
+                            if self.blend_config:
+                                output_memories = self.blend_config.get_output_path("serena_memories")
+                                target_serena = target_dir / output_memories.parent if output_memories.name == "memories" else target_dir / output_memories
+                                target_serena_old = target_dir / (output_memories.parent.name + ".old")
+                            else:
+                                # Backward compatibility
+                                target_serena = target_dir / ".serena"
+                                target_serena_old = target_dir / ".serena.old"
+
+                            # Only rename if there are pre-existing user memories to back up
+                            # (i.e., if .serena.old/ already exists, meaning user had memories before)
+                            if target_serena_old.exists() and target_serena.exists():
+                                logger.info(f"    Renaming existing {target_serena.name}/ → {target_serena_old.name}/ (backing up user memories)")
+                                shutil.rmtree(target_serena_old)
+                                shutil.move(str(target_serena), str(target_serena_old))
                                 target_domain_dir = target_serena_old / "memories"
                                 logger.info(f"    Blending from .serena.old/memories/ → .serena/memories/")
+                            elif target_serena.exists() and not target_serena_old.exists():
+                                # .serena exists but no .serena.old - check if .serena contains user memories
+                                # (extracted framework memories go to .serena/memories/, so if there are other files,
+                                # they're likely user memories and should be backed up)
+                                serena_children = list(target_serena.iterdir())
+                                user_memory_files = [f for f in serena_children if f.name != "memories"]
+                                if user_memory_files:
+                                    # Has user memories outside .serena/memories/ - back them up
+                                    logger.info(f"    Renaming existing {target_serena.name}/ → {target_serena_old.name}/ (backing up user memories)")
+                                    shutil.move(str(target_serena), str(target_serena_old))
+                                    target_domain_dir = target_serena_old / "memories"
+                                    logger.info(f"    Blending from .serena.old/memories/ → .serena/memories/")
+                                else:
+                                    # No user memories, just framework memories - keep them in place
+                                    target_domain_dir = None
+                                    logger.info(f"    Fresh installation with framework memories")
                             else:
+                                # Neither .serena nor .serena.old exist
                                 target_domain_dir = None
                                 logger.info(f"    No existing memories to blend (fresh installation)")
 

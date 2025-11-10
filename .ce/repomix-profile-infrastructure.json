@@ -1,4 +1,5 @@
 {
+  "_comment": "Configuration profile for CE framework infrastructure package. Paths are defined in .ce/config.yml (unified configuration). This profile generates: ce-infrastructure.xml (framework + user files). See: .ce/config.yml for complete path specification.",
   "output": {
     "filePath": "ce-32/builds/ce-infrastructure.xml",
     "style": "xml",
@@ -7,19 +8,10 @@
     "copyToClipboard": false
   },
   "include": [
+    ".ce/config.yml",
     ".ce/PRPs/executed/system/PRP-0-CONTEXT-ENGINEERING.md",
     ".serena/memories/**",
-    ".claude/commands/batch-exe-prp.md",
-    ".claude/commands/batch-gen-prp.md",
-    ".claude/commands/denoise.md",
-    ".claude/commands/execute-prp.md",
-    ".claude/commands/generate-prp.md",
-    ".claude/commands/peer-review.md",
-    ".claude/commands/sync-with-syntropy.md",
-    ".claude/commands/syntropy-health.md",
-    ".claude/commands/tools-misuse-scan.md",
-    ".claude/commands/update-context.md",
-    ".claude/commands/vacuum.md",
+    ".claude/**/*.md",
     "tools/ce/**/*.py",
     "tools/pyproject.toml",
     "tools/bootstrap.sh",

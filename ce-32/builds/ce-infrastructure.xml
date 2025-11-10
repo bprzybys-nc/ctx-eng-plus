@@ -30369,6 +30369,363 @@ This section contains the contents of the repository's files.
 545: - `tmp/prp36test/PRP-36-TEST-SUMMARY.md` - E2E test results and known issues
 </file>
 
+<file path="examples/INDEX.md">
+  1: # Context Engineering Examples Index
+  2: 
+  3: Comprehensive catalog of all Context Engineering framework examples, organized by type and category for easy discovery.
+  4: 
+  5: ## Quick Reference
+  6: 
+  7: **I want to...**
+  8: 
+  9: - Initialize CE framework → [Framework Initialization](#framework-initialization)
+ 10: - Learn Syntropy MCP tools → [Tool Usage Guide](TOOL-USAGE-GUIDE.md)
+ 11: - Initialize Serena memories → [Serena Memory Templates](#serena-memory-templates) (23 framework memories with YAML headers)
+ 12: - Run batch PRPs → Slash commands: `/batch-gen-prp`, `/batch-exe-prp` (see `.claude/commands/`)
+ 13: - Clean up my project → Slash command: `/vacuum` (see `.claude/commands/vacuum.md`)
+ 14: - Fix context drift → `cd tools && uv run ce context health`
+ 15: - Configure commands/hooks → [Slash Commands](#slash-commands)
+ 16: - Understand patterns → [Patterns](#patterns)
+ 17: - Migrate existing project → [Migration Workflows](#migration-workflows)
+ 18: 
+ 19: ## All Examples
+ 20: 
+ 21: | Name | Type | Category | IsWorkflow | Description | Path |
+ 22: |------|------|----------|-----------|-------------|------|
+ 23: | **FRAMEWORK INITIALIZATION** | | | | | |
+ 24: | Initialization Guide | Guide | Initialization | Yes | Master CE 1.1 framework initialization (5 phases: buckets, user files, repomix, blending, cleanup). Covers 4 scenarios: Greenfield, Mature Project, CE 1.0 Upgrade, Partial Install | [INITIALIZATION.md](INITIALIZATION.md) |
+ 25: | **TEMPLATES** | | | | | |
+ 26: | PRP-0 Template | Template | Initialization | Yes | Document framework installation in meta-PRP (PRP-0-CONTEXT-ENGINEERING.md template) | [templates/PRP-0-CONTEXT-ENGINEERING.md](templates/PRP-0-CONTEXT-ENGINEERING.md) |
+ 27: | **SLASH COMMANDS** | | | | | |
+ 28: | Batch PRP Execution | Command | Batch | Yes | Execute PRPs in parallel stages with health monitoring (see `.claude/commands/batch-exe-prp.md`) | Command: `/batch-exe-prp` |
+ 29: | Batch PRP Generation | Command | Batch | Yes | Generate multiple PRPs from plan with dependency analysis (see `.claude/commands/batch-gen-prp.md`) | Command: `/batch-gen-prp` |
+ 30: | Context Drift Check | Command | Context | Yes | Fast drift score check without full validation (see `.claude/commands/analyze-context.md`) | Command: `/analyze-context` |
+ 31: | Denoise Documents | Command | Cleanup | Yes | Compress verbose documentation with AI-powered denoising (see `.claude/commands/denoise.md`) | Command: `/denoise` |
+ 32: | Vacuum Cleanup | Command | Cleanup | Yes | Identify and remove project noise with confidence-based deletion (see `.claude/commands/vacuum.md`) | Command: `/vacuum` |
+ 33: | **PATTERNS** | | | | | |
+ 34: | Dedrifting Lessons | Pattern | Context | Yes | Root cause analysis for context drift with prevention strategies | [patterns/dedrifting-lessons.md](patterns/dedrifting-lessons.md) |
+ 35: | Example Simple Feature | Pattern | PRP | No | Complete PRP example for adding git status summary command (ctx-eng-plus specific) | [patterns/example-simple-feature.md](patterns/example-simple-feature.md) |
+ 36: | Git Message Rules | Pattern | Git | No | Git commit message formatting and convention rules (ctx-eng-plus specific) | [patterns/git-message-rules.md](patterns/git-message-rules.md) |
+ 37: | Mock Marking Pattern | Pattern | Testing | Yes | Mark mocks with FIXME comments for tracking temporary test code | [patterns/mocks-marking.md](patterns/mocks-marking.md) |
+ 38: | **GUIDES** | | | | | |
+ 39: | Tool Usage Guide | Guide | Tools | Yes | Complete tool selection guide with native-first philosophy, decision trees and examples. Updated 2025-11-06 with CE Framework Commands section | [TOOL-USAGE-GUIDE.md](TOOL-USAGE-GUIDE.md) |
+ 40: | PRP Decomposition Patterns | Guide | PRP | Yes | Patterns for breaking down large features into manageable PRPs | [prp-decomposition-patterns.md](prp-decomposition-patterns.md) |
+ 41: | CE Blend Command Usage | Guide | Commands | Yes | Complete guide for ce blend command (PRP-34): 4-phase pipeline, 6 domain strategies, 9 scenarios, troubleshooting | [ce-blend-usage.md](ce-blend-usage.md) |
+ 42: | CE Init-Project Command Usage | Guide | Commands | Yes | Complete guide for ce init-project command (PRP-36): 4-phase pipeline, 4 scenarios, error handling for 5 known issues, performance metrics | [ce-init-project-usage.md](ce-init-project-usage.md) |
+ 43: | **REFERENCE** | | | | | |
+ 44: | L4 Validation Example | Reference | Validation | No | Level 4 pattern conformance validation example (ctx-eng-plus specific) | [l4-validation-example.md](l4-validation-example.md) |
+ 45: | Linear Integration Example | Reference | MCP | Yes | Linear MCP integration example with configuration defaults | [linear-integration-example.md](linear-integration-example.md) |
+ 46: | Mermaid Color Palette | Reference | Diagrams | Yes | Standard color palette for mermaid diagrams with light/dark themes | [mermaid-color-palette.md](mermaid-color-palette.md) |
+ 47: | Syntropy Status Hook | Reference | MCP | No | Syntropy MCP health check system (references ctx-eng-plus scripts) | [syntropy-status-hook-system.md](syntropy-status-hook-system.md) |
+ 48: | Settings Local Example | Reference | Configuration | Yes | Example .claude/settings.local.json with permissions (framework template) | [example.setting.local.md](example.setting.local.md) |
+ 49: | tmp/ Directory Convention | Reference | Standards | Yes | Conventions for temporary file storage and cleanup | [tmp-directory-convention.md](tmp-directory-convention.md) |
+ 50: | **MODEL** | | | | | |
+ 51: | System Model | Model | Architecture | Yes | Complete Context Engineering framework architecture and design | [model/SystemModel.md](model/SystemModel.md) |
+ 52: 
+ 53: ## Statistics
+ 54: 
+ 55: ### Examples & Documentation
+ 56: 
+ 57: - **Total Examples**: 25 files (+2 new command guides)
+ 58: - **Framework Initialization**: 6 (Main guide + 4 migration workflows + integration summary)
+ 59: - **Templates**: 1 (PRP-0-CONTEXT-ENGINEERING.md)
+ 60: - **Slash Commands**: 5 (Reference - actual commands in `.claude/commands/`)
+ 61: - **Patterns**: 4 (Git, testing, context, PRP)
+ 62: - **Guides**: 4 (Tools, PRP decomposition, **ce blend**, **ce init-project**) - NEW
+ 63: - **Reference**: 6 (Validation, diagrams, standards, Syntropy overview)
+ 64: - **Model**: 1 (System architecture)
+ 65: 
+ 66: **Note**: Workflows previously referenced in INDEX.md now exist as slash commands (`.claude/commands/`) or CLI tools (`ce` command). Migration guides and initialization documentation are new additions for CE 1.1.
+ 67: 
+ 68: ### Serena Memories
+ 69: 
+ 70: - **Total Memories**: 23 files (~3,621 lines) with YAML type headers (CE 1.1)
+ 71: - **Type System**: All framework memories default to `type: regular` (users upgrade to `type: critical` during target project initialization)
+ 72: - **Categories**: documentation (13), pattern (5), architecture (2), configuration (4), troubleshooting (1)
+ 73: - **Critical Memory Candidates**: 6 memories (code-style-conventions, suggested-commands, task-completion-checklist, testing-standards, tool-usage-syntropy, use-syntropy-tools-not-bash)
+ 74: - **Memory Type README**: See `.serena/memories/README.md` for complete type system documentation
+ 75: - **Storage**: `.serena/memories/` (created automatically by Serena MCP)
+ 76: 
+ 77: ## Categories
+ 78: 
+ 79: ### Framework Initialization
+ 80: 
+ 81: Complete CE 1.1 framework initialization and migration workflows:
+ 82: 
+ 83: | Example | Type | Duration | Description |
+ 84: |---------|------|----------|-------------|
+ 85: | [Initialization Guide](INITIALIZATION.md) | Guide | Variable | Master CE 1.1 framework initialization guide (5 phases: buckets, user files, repomix, blending, cleanup). Covers 4 scenarios: Greenfield (10 min), Mature Project (45 min), CE 1.0 Upgrade (40 min), Partial Install (15 min) |
+ 86: | [PRP-0 Template](templates/PRP-0-CONTEXT-ENGINEERING.md) | Template | - | Document framework installation in meta-PRP |
+ 87: 
+ 88: **Total**: 2 files (1 master guide + 1 template)
+ 89: 
+ 90: **Key Features**:
+ 91: - 5-phase initialization (bucket collection, user files, repomix, blending, cleanup)
+ 92: - /system/ organization for framework files (separation from user files)
+ 93: - YAML header system for memories and PRPs (type: regular/critical/user)
+ 94: - Zero noise guarantee (legacy files cleaned up after migration)
+ 95: - PRP-0 convention (document installation in meta-PRP)
+ 96: 
+ 97: ### Serena Memory Templates
+ 98: 
+ 99: #### Recommended Memory Types for New Projects
+100: 
+101: Recommended initial knowledge base for Serena memory initialization in new projects:
+102: 
+103: | Memory Type | Purpose | IsWorkflow | When to Use | Example Topics |
+104: |-------------|---------|-----------|-------------|-----------------|
+105: | `architecture` | Document architectural decisions and design rationale | Yes | Record why certain patterns/structures were chosen | Validation approach, error handling strategy, module organization |
+106: | `pattern` | Build reusable solution library | Yes | Store recurring solution patterns discovered during development | Retry strategies, error recovery, async patterns, testing approaches |
+107: | `troubleshooting` | Capture issue resolution steps for recurring problems | Yes | Document root causes and fixes for common issues | MCP connection errors, git conflicts, validation failures |
+108: | `configuration` | Setup notes and configuration guidelines | Yes | Record framework setup decisions and best practices | Serena project activation, hook configuration, path conventions |
+109: | `documentation` | Cache frequently-accessed library documentation | Yes | Store Context7-fetched docs for quick offline access | Next.js routing, React patterns, Python asyncio guides |
+110: | `note` | Record session insights, handoffs, and observations | Conditional | Preserve context between sessions; project-specific when filled | Session end state, discovered gotchas, optimization insights |
+111: 
+112: **Initialization Strategy**: When activating Serena for a new CE project, create template memories for architecture, pattern, troubleshooting, and configuration types with framework-level guidance. Let projects accumulate documentation and note types organically during development.
+113: 
+114: #### Existing Project Memories
+115: 
+116: Current knowledge base in `.serena/memories/` (23 files, ~3,719 lines):
+117: 
+118: **Universal Memories (IsWorkflow = Yes)** - Suitable for copying to new projects:
+119: 
+120: | Memory | Type | Purpose | Lines |
+121: |--------|------|---------|-------|
+122: | [code-style-conventions.md](.serena/memories/code-style-conventions.md) | pattern | Coding principles: KISS, no fishy fallbacks, mock marking, function/file size limits | 129 |
+123: | [suggested-commands.md](.serena/memories/suggested-commands.md) | documentation | Common commands reference (UV, pytest, CE tools, Darwin) | 98 |
+124: | [task-completion-checklist.md](.serena/memories/task-completion-checklist.md) | documentation | Pre-commit verification checklist with all quality gates | 80 |
+125: | [testing-standards.md](.serena/memories/testing-standards.md) | pattern | Testing philosophy: real functionality, no mocks, TDD approach | 87 |
+126: | [tool-usage-syntropy.md](.serena/memories/tool-usage-syntropy.md) | documentation | Comprehensive Syntropy tool selection guide with decision trees | 425 |
+127: | [use-syntropy-tools-not-bash.md](.serena/memories/use-syntropy-tools-not-bash.md) | pattern | Core principle & migration patterns: prefer Syntropy over bash | 200 |
+128: 
+129: **Project-Specific Memories (IsWorkflow = No)** - Ctx-eng-plus custom knowledge:
+130: 
+131: | Memory | Type | Purpose | Lines |
+132: |--------|------|---------|-------|
+133: | [codebase-structure.md](.serena/memories/codebase-structure.md) | architecture | Complete directory layout and module organization | 196 |
+134: | [cwe78-prp22-newline-escape-issue.md](.serena/memories/cwe78-prp22-newline-escape-issue.md) | troubleshooting | Security issue with Serena regex replacement and workaround | 100 |
+135: | [l4-validation-usage.md](.serena/memories/l4-validation-usage.md) | pattern | L4 validation system usage, modules, and drift thresholds | 150 |
+136: | [linear-issue-creation-pattern.md](.serena/memories/linear-issue-creation-pattern.md) | pattern | Working example for Linear issue creation with PRP metadata | 69 |
+137: | [linear-issue-tracking-integration.md](.serena/memories/linear-issue-tracking-integration.md) | pattern | Bi-directional Linear/PRP integration workflow | 213 |
+138: | [linear-mcp-integration-example.md](.serena/memories/linear-mcp-integration-example.md) | pattern | Linear MCP integration with configuration defaults | 101 |
+139: | [linear-mcp-integration.md](.serena/memories/linear-mcp-integration.md) | documentation | Complete Linear MCP tool reference (20+ tools) | 114 |
+140: | [project-overview.md](.serena/memories/project-overview.md) | documentation | Master project documentation with tech stack & features | 188 |
+141: | [PRP-15-remediation-workflow-implementation.md](.serena/memories/PRP-15-remediation-workflow-implementation.md) | documentation | Implementation record for PRP-15 remediation workflow | 206 |
+142: | [prp-2-implementation-patterns.md](.serena/memories/prp-2-implementation-patterns.md) | pattern | State management patterns and atomic write practices | 330 |
+143: | [prp-backlog-system.md](.serena/memories/prp-backlog-system.md) | configuration | PRP backlog directory system and workflow | 106 |
+144: | [prp-structure-initialized.md](.serena/memories/prp-structure-initialized.md) | documentation | PRP structure initialization completion record | 80 |
+145: | [serena-implementation-verification-pattern.md](.serena/memories/serena-implementation-verification-pattern.md) | pattern | Pattern for verifying PRP implementations with Serena symbol lookup | 139 |
+146: | [serena-mcp-tool-restrictions.md](.serena/memories/serena-mcp-tool-restrictions.md) | configuration | Current tool restrictions, allowed tools, and workarounds | 236 |
+147: | [syntropy-status-hook-pattern.md](.serena/memories/syntropy-status-hook-pattern.md) | pattern | Cache-based architecture for SessionStart hook MCP access | 177 |
+148: | [system-model-specification.md](.serena/memories/system-model-specification.md) | documentation | Formal specification of Context Engineering target architecture | 157 |
+149: | [tool-config-optimization-completed.md](.serena/memories/tool-config-optimization-completed.md) | documentation | Completion record for tool config optimization (7 violations resolved) | 63 |
+150: 
+151: **Summary**: 23 framework memories with YAML type headers (CE 1.1)
+152: - 6 critical memory candidates (type: regular by default, upgrade to type: critical during initialization)
+153: - 17 project-specific memories (ctx-eng-plus custom knowledge)
+154: - See `.serena/memories/README.md` for complete memory type system documentation
+155: 
+156: **Storage**: `.serena/memories/` (created automatically by Serena MCP)
+157: 
+158: **Related Documentation**:
+159: - [Tool Usage Guide](TOOL-USAGE-GUIDE.md) - Native-first tool selection philosophy
+160: - [Initialization Guide](INITIALIZATION.md) - Framework initialization and memory setup
+161: 
+162: ### Slash Commands & CLI Tools
+163: 
+164: Workflow automation via slash commands and CLI tools:
+165: 
+166: | Command | Type | Description |
+167: |---------|------|-------------|
+168: | `/batch-gen-prp` | Slash Command | Generate multiple PRPs from plan with dependency analysis (see `.claude/commands/batch-gen-prp.md`) |
+169: | `/batch-exe-prp` | Slash Command | Execute PRPs in parallel stages with health monitoring (see `.claude/commands/batch-exe-prp.md`) |
+170: | `/vacuum` | Slash Command | Identify and remove project noise with confidence-based deletion (see `.claude/commands/vacuum.md`) |
+171: | `/denoise` | Slash Command | Compress verbose documentation with AI-powered denoising (see `.claude/commands/denoise.md`) |
+172: | `/analyze-context` | Slash Command | Fast drift score check without full validation (see `.claude/commands/analyze-context.md`) |
+173: | `ce context health` | CLI Tool | Context health check with drift analysis (see `tools/ce/context.py`) |
+174: | `ce validate --level 4` | CLI Tool | Full validation suite with L1-L4 checks (see `tools/ce/validate.py`) |
+175: | `ce vacuum` | CLI Tool | Vacuum cleanup with execute/auto modes (see `tools/ce/` CLI) |
+176: 
+177: **Total**: 5 slash commands + 3 CLI tools
+178: 
+179: **Documentation**: All slash commands documented in `.claude/commands/`, CLI tools documented in `tools/README.md`
+180: 
+181: ### Configuration
+182: 
+183: Commands and hooks:
+184: 
+185: | Example | Lines | Focus |
+186: |---------|-------|-------|
+187: | [Hook Configuration](config/hook-configuration.md) | 649 | Lifecycle hooks (pre-commit, session-start) |
+188: | [Slash Command Template](config/slash-command-template.md) | 622 | Custom command creation |
+189: 
+190: **Total**: 2 examples, 1,271 lines
+191: 
+192: ### Patterns
+193: 
+194: Reusable patterns and practices:
+195: 
+196: | Example | Lines | Focus |
+197: |---------|-------|-------|
+198: | [Dedrifting Lessons](patterns/dedrifting-lessons.md) | 241 | Context drift prevention |
+199: | [Git Message Rules](patterns/git-message-rules.md) | 205 | Commit message conventions |
+200: | [Example Simple Feature](patterns/example-simple-feature.md) | 182 | Complete PRP example |
+201: | [Mock Marking](patterns/mocks-marking.md) | 96 | Test mock tracking |
+202: 
+203: **Total**: 4 examples, 724 lines
+204: 
+205: ### Guides
+206: 
+207: Comprehensive guides:
+208: 
+209: | Example | Lines | Focus |
+210: |---------|-------|-------|
+211: | [Tool Usage Guide](TOOL-USAGE-GUIDE.md) | 606 | Native-first tool selection philosophy |
+212: | [PRP Decomposition Patterns](prp-decomposition-patterns.md) | 357 | Breaking down large features |
+213: 
+214: **Total**: 2 examples, 963 lines
+215: 
+216: ### Reference
+217: 
+218: Quick reference materials:
+219: 
+220: | Example | Lines | Focus |
+221: |---------|-------|-------|
+222: | [Mermaid Color Palette](mermaid-color-palette.md) | 313 | Diagram color standards |
+223: | [L4 Validation Example](l4-validation-example.md) | 290 | Pattern conformance validation |
+224: | [Linear Integration Example](linear-integration-example.md) | 204 | Legacy Linear example |
+225: | [Syntropy Status Hook](syntropy-status-hook-system.md) | 149 | MCP health check |
+226: | [tmp/ Convention](tmp-directory-convention.md) | 130 | Temp file standards |
+227: | [Settings Local Example](example.setting.local.md) | 17 | Configuration example |
+228: 
+229: **Total**: 6 examples, 1,103 lines
+230: 
+231: ### Model
+232: 
+233: System architecture:
+234: 
+235: | Example | Lines | Focus |
+236: |---------|-------|-------|
+237: | [System Model](model/SystemModel.md) | 2,981 | Complete framework architecture |
+238: 
+239: **Total**: 1 example, 2,981 lines
+240: 
+241: ## IsWorkflow Distribution
+242: 
+243: ### Examples
+244: 
+245: - **Yes** (Universal/Framework): 21 examples (84%)
+246: - **No** (Project-Specific): 4 examples (16%)
+247: 
+248: ### Serena Memories
+249: 
+250: - **Yes** (Universal/Framework): 6 memories (1,013 lines, 28%) - Suitable for all CE projects
+251: - **No** (Project-Specific): 17 memories (2,608 lines, 72%) - Ctx-eng-plus custom knowledge
+252: 
+253: ### Classification Legend
+254: 
+255: **IsWorkflow = Yes**: Universal CE framework documentation that should be copied to any target project during initialization. Includes MCP patterns, generic workflows, framework config templates, reusable practices, and essential coding/testing standards.
+256: 
+257: **IsWorkflow = No**: Project-specific documentation tied to ctx-eng-plus codebase, conventions, or implementation details. Not suitable for general distribution to other projects.
+258: 
+259: ### Project-Specific Examples (No)
+260: 
+261: 1. **Example Simple Feature** (patterns/) - Demonstrates adding git status summary command specific to ctx-eng-plus
+262: 2. **Git Message Rules** (patterns/) - Commit message conventions specific to this project
+263: 3. **L4 Validation Example** (reference/) - Validation patterns specific to ctx-eng-plus infrastructure
+264: 4. **Syntropy Status Hook** (reference/) - References ctx-eng-plus-specific scripts (scripts/session-startup.sh)
+265: 
+266: ### Universal Serena Memories to Copy to New Projects
+267: 
+268: 1. **code-style-conventions** (pattern) - Coding principles and standards
+269: 2. **suggested-commands** (documentation) - Common command reference
+270: 3. **task-completion-checklist** (documentation) - Quality gates verification
+271: 4. **testing-standards** (pattern) - Testing philosophy and practices
+272: 5. **tool-usage-syntropy** (documentation) - Syntropy tool selection guide
+273: 6. **use-syntropy-tools-not-bash** (pattern) - Migration patterns and principles
+274: 
+275: ## Syntropy Integration
+276: 
+277: **Examples using Syntropy MCP**: 9/25 (36%)
+278: 
+279: - **Heavy usage** (20+ references): Serena Symbol Search (58), Linear Integration (30), Context7 Docs (29), Tool Usage Guide (34), Memory Management (34), Syntropy README (navigation hub)
+280: - **Moderate usage** (5-20 references): Thinking Sequential (17), System Model (2)
+281: - **Light usage** (1-5 references): Syntropy Status Hook (1), Slash Command Template (1)
+282: 
+283: ## Usage Patterns
+284: 
+285: ### By Use Case
+286: 
+287: **Starting with Context Engineering**:
+288: 
+289: 1. [System Model](model/SystemModel.md) - Understand framework architecture
+290: 2. [Tool Usage Guide](TOOL-USAGE-GUIDE.md) - Learn tool selection
+291: 3. [Example Simple Feature](patterns/example-simple-feature.md) - See complete PRP
+292: 4. [Execute PRP workflow](workflows/batch-prp-execution.md) - Implement PRPs
+293: 
+294: **Learning Syntropy MCP**:
+295: 
+296: 1. [Syntropy README](syntropy/README.md) - Master overview, decision matrix, tool naming
+297: 2. [Serena Symbol Search](syntropy/serena-symbol-search.md) - Code navigation and refactoring
+298: 3. [Context7 Docs Fetch](syntropy/context7-docs-fetch.md) - Library documentation fetching
+299: 4. [Linear Integration](syntropy/linear-integration.md) - Issue tracking and project management
+300: 
+301: **Maintaining Project Health**:
+302: 
+303: 1. [Context Drift Remediation](workflows/context-drift-remediation.md) - Sync PRPs
+304: 2. [Vacuum Cleanup](workflows/vacuum-cleanup.md) - Remove noise
+305: 3. [Denoise Documents](workflows/denoise-documents.md) - Compress docs
+306: 4. [Dedrifting Lessons](patterns/dedrifting-lessons.md) - Prevention strategies
+307: 
+308: **Batch Operations**:
+309: 
+310: 1. [Batch PRP Generation](workflows/batch-prp-generation.md) - Generate from plan
+311: 2. [Batch PRP Execution](workflows/batch-prp-execution.md) - Execute in parallel
+312: 3. [PRP Decomposition Patterns](prp-decomposition-patterns.md) - Break down features
+313: 
+314: **Configuration**:
+315: 
+316: 1. [Slash Command Template](config/slash-command-template.md) - Create commands
+317: 2. [Hook Configuration](config/hook-configuration.md) - Lifecycle hooks
+318: 3. [Settings Local Example](example.setting.local.md) - Configuration format
+319: 
+320: ## Maintenance
+321: 
+322: **Updating this index**:
+323: 
+324: When adding new examples:
+325: 
+326: 1. Create example file following content template (150-300 lines)
+327: 2. Add entry to appropriate category section above
+328: 3. Update statistics
+329: 4. Commit: `git add examples/ && git commit -m "Examples: Added [name]"`
+330: 
+331: **Content template**:
+332: 
+333: - **Purpose**: What this example demonstrates, when to use
+334: - **Prerequisites**: Required setup
+335: - **Examples**: 3-4 concrete examples with input/output
+336: - **Common Patterns**: 3-5 patterns
+337: - **Anti-Patterns**: 2-3 things not to do
+338: - **Related**: Links to related examples
+339: 
+340: ## Related Documentation
+341: 
+342: - [CLAUDE.md](../CLAUDE.md) - Project guide and quick commands
+343: - [PRPs/](../PRPs/) - Executed and feature request PRPs
+344: - [.claude/commands/](../.claude/commands/) - Slash commands (11 framework commands including peer-review)
+345: 
+346: ## Contributing
+347: 
+348: To add new examples:
+349: 
+350: 1. Follow [content template](syntropy/README.md#content-template) structure
+351: 2. Add to appropriate directory (syntropy/, workflows/, config/, patterns/)
+352: 3. Update INDEX.md with new entry
+353: 4. Cross-link with related examples
+354: 5. Run validation: `cd tools && uv run ce validate --level 4`
+</file>
+
 <file path="tools/ce/blending/strategies/base.py">
  1: """Base classes for blending strategies."""
  2: 
@@ -34493,363 +34850,6 @@ This section contains the contents of the repository's files.
 101:     - .serena.old/
 </file>
 
-<file path="examples/INDEX.md">
-  1: # Context Engineering Examples Index
-  2: 
-  3: Comprehensive catalog of all Context Engineering framework examples, organized by type and category for easy discovery.
-  4: 
-  5: ## Quick Reference
-  6: 
-  7: **I want to...**
-  8: 
-  9: - Initialize CE framework → [Framework Initialization](#framework-initialization)
- 10: - Learn Syntropy MCP tools → [Tool Usage Guide](TOOL-USAGE-GUIDE.md)
- 11: - Initialize Serena memories → [Serena Memory Templates](#serena-memory-templates) (23 framework memories with YAML headers)
- 12: - Run batch PRPs → Slash commands: `/batch-gen-prp`, `/batch-exe-prp` (see `.claude/commands/`)
- 13: - Clean up my project → Slash command: `/vacuum` (see `.claude/commands/vacuum.md`)
- 14: - Fix context drift → `cd tools && uv run ce context health`
- 15: - Configure commands/hooks → [Slash Commands](#slash-commands)
- 16: - Understand patterns → [Patterns](#patterns)
- 17: - Migrate existing project → [Migration Workflows](#migration-workflows)
- 18: 
- 19: ## All Examples
- 20: 
- 21: | Name | Type | Category | IsWorkflow | Description | Path |
- 22: |------|------|----------|-----------|-------------|------|
- 23: | **FRAMEWORK INITIALIZATION** | | | | | |
- 24: | Initialization Guide | Guide | Initialization | Yes | Master CE 1.1 framework initialization (5 phases: buckets, user files, repomix, blending, cleanup). Covers 4 scenarios: Greenfield, Mature Project, CE 1.0 Upgrade, Partial Install | [INITIALIZATION.md](INITIALIZATION.md) |
- 25: | **TEMPLATES** | | | | | |
- 26: | PRP-0 Template | Template | Initialization | Yes | Document framework installation in meta-PRP (PRP-0-CONTEXT-ENGINEERING.md template) | [templates/PRP-0-CONTEXT-ENGINEERING.md](templates/PRP-0-CONTEXT-ENGINEERING.md) |
- 27: | **SLASH COMMANDS** | | | | | |
- 28: | Batch PRP Execution | Command | Batch | Yes | Execute PRPs in parallel stages with health monitoring (see `.claude/commands/batch-exe-prp.md`) | Command: `/batch-exe-prp` |
- 29: | Batch PRP Generation | Command | Batch | Yes | Generate multiple PRPs from plan with dependency analysis (see `.claude/commands/batch-gen-prp.md`) | Command: `/batch-gen-prp` |
- 30: | Context Drift Check | Command | Context | Yes | Fast drift score check without full validation (see `.claude/commands/analyze-context.md`) | Command: `/analyze-context` |
- 31: | Denoise Documents | Command | Cleanup | Yes | Compress verbose documentation with AI-powered denoising (see `.claude/commands/denoise.md`) | Command: `/denoise` |
- 32: | Vacuum Cleanup | Command | Cleanup | Yes | Identify and remove project noise with confidence-based deletion (see `.claude/commands/vacuum.md`) | Command: `/vacuum` |
- 33: | **PATTERNS** | | | | | |
- 34: | Dedrifting Lessons | Pattern | Context | Yes | Root cause analysis for context drift with prevention strategies | [patterns/dedrifting-lessons.md](patterns/dedrifting-lessons.md) |
- 35: | Example Simple Feature | Pattern | PRP | No | Complete PRP example for adding git status summary command (ctx-eng-plus specific) | [patterns/example-simple-feature.md](patterns/example-simple-feature.md) |
- 36: | Git Message Rules | Pattern | Git | No | Git commit message formatting and convention rules (ctx-eng-plus specific) | [patterns/git-message-rules.md](patterns/git-message-rules.md) |
- 37: | Mock Marking Pattern | Pattern | Testing | Yes | Mark mocks with FIXME comments for tracking temporary test code | [patterns/mocks-marking.md](patterns/mocks-marking.md) |
- 38: | **GUIDES** | | | | | |
- 39: | Tool Usage Guide | Guide | Tools | Yes | Complete tool selection guide with native-first philosophy, decision trees and examples. Updated 2025-11-06 with CE Framework Commands section | [TOOL-USAGE-GUIDE.md](TOOL-USAGE-GUIDE.md) |
- 40: | PRP Decomposition Patterns | Guide | PRP | Yes | Patterns for breaking down large features into manageable PRPs | [prp-decomposition-patterns.md](prp-decomposition-patterns.md) |
- 41: | CE Blend Command Usage | Guide | Commands | Yes | Complete guide for ce blend command (PRP-34): 4-phase pipeline, 6 domain strategies, 9 scenarios, troubleshooting | [ce-blend-usage.md](ce-blend-usage.md) |
- 42: | CE Init-Project Command Usage | Guide | Commands | Yes | Complete guide for ce init-project command (PRP-36): 4-phase pipeline, 4 scenarios, error handling for 5 known issues, performance metrics | [ce-init-project-usage.md](ce-init-project-usage.md) |
- 43: | **REFERENCE** | | | | | |
- 44: | L4 Validation Example | Reference | Validation | No | Level 4 pattern conformance validation example (ctx-eng-plus specific) | [l4-validation-example.md](l4-validation-example.md) |
- 45: | Linear Integration Example | Reference | MCP | Yes | Linear MCP integration example with configuration defaults | [linear-integration-example.md](linear-integration-example.md) |
- 46: | Mermaid Color Palette | Reference | Diagrams | Yes | Standard color palette for mermaid diagrams with light/dark themes | [mermaid-color-palette.md](mermaid-color-palette.md) |
- 47: | Syntropy Status Hook | Reference | MCP | No | Syntropy MCP health check system (references ctx-eng-plus scripts) | [syntropy-status-hook-system.md](syntropy-status-hook-system.md) |
- 48: | Settings Local Example | Reference | Configuration | Yes | Example .claude/settings.local.json with permissions (framework template) | [example.setting.local.md](example.setting.local.md) |
- 49: | tmp/ Directory Convention | Reference | Standards | Yes | Conventions for temporary file storage and cleanup | [tmp-directory-convention.md](tmp-directory-convention.md) |
- 50: | **MODEL** | | | | | |
- 51: | System Model | Model | Architecture | Yes | Complete Context Engineering framework architecture and design | [model/SystemModel.md](model/SystemModel.md) |
- 52: 
- 53: ## Statistics
- 54: 
- 55: ### Examples & Documentation
- 56: 
- 57: - **Total Examples**: 25 files (+2 new command guides)
- 58: - **Framework Initialization**: 6 (Main guide + 4 migration workflows + integration summary)
- 59: - **Templates**: 1 (PRP-0-CONTEXT-ENGINEERING.md)
- 60: - **Slash Commands**: 5 (Reference - actual commands in `.claude/commands/`)
- 61: - **Patterns**: 4 (Git, testing, context, PRP)
- 62: - **Guides**: 4 (Tools, PRP decomposition, **ce blend**, **ce init-project**) - NEW
- 63: - **Reference**: 6 (Validation, diagrams, standards, Syntropy overview)
- 64: - **Model**: 1 (System architecture)
- 65: 
- 66: **Note**: Workflows previously referenced in INDEX.md now exist as slash commands (`.claude/commands/`) or CLI tools (`ce` command). Migration guides and initialization documentation are new additions for CE 1.1.
- 67: 
- 68: ### Serena Memories
- 69: 
- 70: - **Total Memories**: 23 files (~3,621 lines) with YAML type headers (CE 1.1)
- 71: - **Type System**: All framework memories default to `type: regular` (users upgrade to `type: critical` during target project initialization)
- 72: - **Categories**: documentation (13), pattern (5), architecture (2), configuration (4), troubleshooting (1)
- 73: - **Critical Memory Candidates**: 6 memories (code-style-conventions, suggested-commands, task-completion-checklist, testing-standards, tool-usage-syntropy, use-syntropy-tools-not-bash)
- 74: - **Memory Type README**: See `.serena/memories/README.md` for complete type system documentation
- 75: - **Storage**: `.serena/memories/` (created automatically by Serena MCP)
- 76: 
- 77: ## Categories
- 78: 
- 79: ### Framework Initialization
- 80: 
- 81: Complete CE 1.1 framework initialization and migration workflows:
- 82: 
- 83: | Example | Type | Duration | Description |
- 84: |---------|------|----------|-------------|
- 85: | [Initialization Guide](INITIALIZATION.md) | Guide | Variable | Master CE 1.1 framework initialization guide (5 phases: buckets, user files, repomix, blending, cleanup). Covers 4 scenarios: Greenfield (10 min), Mature Project (45 min), CE 1.0 Upgrade (40 min), Partial Install (15 min) |
- 86: | [PRP-0 Template](templates/PRP-0-CONTEXT-ENGINEERING.md) | Template | - | Document framework installation in meta-PRP |
- 87: 
- 88: **Total**: 2 files (1 master guide + 1 template)
- 89: 
- 90: **Key Features**:
- 91: - 5-phase initialization (bucket collection, user files, repomix, blending, cleanup)
- 92: - /system/ organization for framework files (separation from user files)
- 93: - YAML header system for memories and PRPs (type: regular/critical/user)
- 94: - Zero noise guarantee (legacy files cleaned up after migration)
- 95: - PRP-0 convention (document installation in meta-PRP)
- 96: 
- 97: ### Serena Memory Templates
- 98: 
- 99: #### Recommended Memory Types for New Projects
-100: 
-101: Recommended initial knowledge base for Serena memory initialization in new projects:
-102: 
-103: | Memory Type | Purpose | IsWorkflow | When to Use | Example Topics |
-104: |-------------|---------|-----------|-------------|-----------------|
-105: | `architecture` | Document architectural decisions and design rationale | Yes | Record why certain patterns/structures were chosen | Validation approach, error handling strategy, module organization |
-106: | `pattern` | Build reusable solution library | Yes | Store recurring solution patterns discovered during development | Retry strategies, error recovery, async patterns, testing approaches |
-107: | `troubleshooting` | Capture issue resolution steps for recurring problems | Yes | Document root causes and fixes for common issues | MCP connection errors, git conflicts, validation failures |
-108: | `configuration` | Setup notes and configuration guidelines | Yes | Record framework setup decisions and best practices | Serena project activation, hook configuration, path conventions |
-109: | `documentation` | Cache frequently-accessed library documentation | Yes | Store Context7-fetched docs for quick offline access | Next.js routing, React patterns, Python asyncio guides |
-110: | `note` | Record session insights, handoffs, and observations | Conditional | Preserve context between sessions; project-specific when filled | Session end state, discovered gotchas, optimization insights |
-111: 
-112: **Initialization Strategy**: When activating Serena for a new CE project, create template memories for architecture, pattern, troubleshooting, and configuration types with framework-level guidance. Let projects accumulate documentation and note types organically during development.
-113: 
-114: #### Existing Project Memories
-115: 
-116: Current knowledge base in `.serena/memories/` (23 files, ~3,719 lines):
-117: 
-118: **Universal Memories (IsWorkflow = Yes)** - Suitable for copying to new projects:
-119: 
-120: | Memory | Type | Purpose | Lines |
-121: |--------|------|---------|-------|
-122: | [code-style-conventions.md](.serena/memories/code-style-conventions.md) | pattern | Coding principles: KISS, no fishy fallbacks, mock marking, function/file size limits | 129 |
-123: | [suggested-commands.md](.serena/memories/suggested-commands.md) | documentation | Common commands reference (UV, pytest, CE tools, Darwin) | 98 |
-124: | [task-completion-checklist.md](.serena/memories/task-completion-checklist.md) | documentation | Pre-commit verification checklist with all quality gates | 80 |
-125: | [testing-standards.md](.serena/memories/testing-standards.md) | pattern | Testing philosophy: real functionality, no mocks, TDD approach | 87 |
-126: | [tool-usage-syntropy.md](.serena/memories/tool-usage-syntropy.md) | documentation | Comprehensive Syntropy tool selection guide with decision trees | 425 |
-127: | [use-syntropy-tools-not-bash.md](.serena/memories/use-syntropy-tools-not-bash.md) | pattern | Core principle & migration patterns: prefer Syntropy over bash | 200 |
-128: 
-129: **Project-Specific Memories (IsWorkflow = No)** - Ctx-eng-plus custom knowledge:
-130: 
-131: | Memory | Type | Purpose | Lines |
-132: |--------|------|---------|-------|
-133: | [codebase-structure.md](.serena/memories/codebase-structure.md) | architecture | Complete directory layout and module organization | 196 |
-134: | [cwe78-prp22-newline-escape-issue.md](.serena/memories/cwe78-prp22-newline-escape-issue.md) | troubleshooting | Security issue with Serena regex replacement and workaround | 100 |
-135: | [l4-validation-usage.md](.serena/memories/l4-validation-usage.md) | pattern | L4 validation system usage, modules, and drift thresholds | 150 |
-136: | [linear-issue-creation-pattern.md](.serena/memories/linear-issue-creation-pattern.md) | pattern | Working example for Linear issue creation with PRP metadata | 69 |
-137: | [linear-issue-tracking-integration.md](.serena/memories/linear-issue-tracking-integration.md) | pattern | Bi-directional Linear/PRP integration workflow | 213 |
-138: | [linear-mcp-integration-example.md](.serena/memories/linear-mcp-integration-example.md) | pattern | Linear MCP integration with configuration defaults | 101 |
-139: | [linear-mcp-integration.md](.serena/memories/linear-mcp-integration.md) | documentation | Complete Linear MCP tool reference (20+ tools) | 114 |
-140: | [project-overview.md](.serena/memories/project-overview.md) | documentation | Master project documentation with tech stack & features | 188 |
-141: | [PRP-15-remediation-workflow-implementation.md](.serena/memories/PRP-15-remediation-workflow-implementation.md) | documentation | Implementation record for PRP-15 remediation workflow | 206 |
-142: | [prp-2-implementation-patterns.md](.serena/memories/prp-2-implementation-patterns.md) | pattern | State management patterns and atomic write practices | 330 |
-143: | [prp-backlog-system.md](.serena/memories/prp-backlog-system.md) | configuration | PRP backlog directory system and workflow | 106 |
-144: | [prp-structure-initialized.md](.serena/memories/prp-structure-initialized.md) | documentation | PRP structure initialization completion record | 80 |
-145: | [serena-implementation-verification-pattern.md](.serena/memories/serena-implementation-verification-pattern.md) | pattern | Pattern for verifying PRP implementations with Serena symbol lookup | 139 |
-146: | [serena-mcp-tool-restrictions.md](.serena/memories/serena-mcp-tool-restrictions.md) | configuration | Current tool restrictions, allowed tools, and workarounds | 236 |
-147: | [syntropy-status-hook-pattern.md](.serena/memories/syntropy-status-hook-pattern.md) | pattern | Cache-based architecture for SessionStart hook MCP access | 177 |
-148: | [system-model-specification.md](.serena/memories/system-model-specification.md) | documentation | Formal specification of Context Engineering target architecture | 157 |
-149: | [tool-config-optimization-completed.md](.serena/memories/tool-config-optimization-completed.md) | documentation | Completion record for tool config optimization (7 violations resolved) | 63 |
-150: 
-151: **Summary**: 23 framework memories with YAML type headers (CE 1.1)
-152: - 6 critical memory candidates (type: regular by default, upgrade to type: critical during initialization)
-153: - 17 project-specific memories (ctx-eng-plus custom knowledge)
-154: - See `.serena/memories/README.md` for complete memory type system documentation
-155: 
-156: **Storage**: `.serena/memories/` (created automatically by Serena MCP)
-157: 
-158: **Related Documentation**:
-159: - [Tool Usage Guide](TOOL-USAGE-GUIDE.md) - Native-first tool selection philosophy
-160: - [Initialization Guide](INITIALIZATION.md) - Framework initialization and memory setup
-161: 
-162: ### Slash Commands & CLI Tools
-163: 
-164: Workflow automation via slash commands and CLI tools:
-165: 
-166: | Command | Type | Description |
-167: |---------|------|-------------|
-168: | `/batch-gen-prp` | Slash Command | Generate multiple PRPs from plan with dependency analysis (see `.claude/commands/batch-gen-prp.md`) |
-169: | `/batch-exe-prp` | Slash Command | Execute PRPs in parallel stages with health monitoring (see `.claude/commands/batch-exe-prp.md`) |
-170: | `/vacuum` | Slash Command | Identify and remove project noise with confidence-based deletion (see `.claude/commands/vacuum.md`) |
-171: | `/denoise` | Slash Command | Compress verbose documentation with AI-powered denoising (see `.claude/commands/denoise.md`) |
-172: | `/analyze-context` | Slash Command | Fast drift score check without full validation (see `.claude/commands/analyze-context.md`) |
-173: | `ce context health` | CLI Tool | Context health check with drift analysis (see `tools/ce/context.py`) |
-174: | `ce validate --level 4` | CLI Tool | Full validation suite with L1-L4 checks (see `tools/ce/validate.py`) |
-175: | `ce vacuum` | CLI Tool | Vacuum cleanup with execute/auto modes (see `tools/ce/` CLI) |
-176: 
-177: **Total**: 5 slash commands + 3 CLI tools
-178: 
-179: **Documentation**: All slash commands documented in `.claude/commands/`, CLI tools documented in `tools/README.md`
-180: 
-181: ### Configuration
-182: 
-183: Commands and hooks:
-184: 
-185: | Example | Lines | Focus |
-186: |---------|-------|-------|
-187: | [Hook Configuration](config/hook-configuration.md) | 649 | Lifecycle hooks (pre-commit, session-start) |
-188: | [Slash Command Template](config/slash-command-template.md) | 622 | Custom command creation |
-189: 
-190: **Total**: 2 examples, 1,271 lines
-191: 
-192: ### Patterns
-193: 
-194: Reusable patterns and practices:
-195: 
-196: | Example | Lines | Focus |
-197: |---------|-------|-------|
-198: | [Dedrifting Lessons](patterns/dedrifting-lessons.md) | 241 | Context drift prevention |
-199: | [Git Message Rules](patterns/git-message-rules.md) | 205 | Commit message conventions |
-200: | [Example Simple Feature](patterns/example-simple-feature.md) | 182 | Complete PRP example |
-201: | [Mock Marking](patterns/mocks-marking.md) | 96 | Test mock tracking |
-202: 
-203: **Total**: 4 examples, 724 lines
-204: 
-205: ### Guides
-206: 
-207: Comprehensive guides:
-208: 
-209: | Example | Lines | Focus |
-210: |---------|-------|-------|
-211: | [Tool Usage Guide](TOOL-USAGE-GUIDE.md) | 606 | Native-first tool selection philosophy |
-212: | [PRP Decomposition Patterns](prp-decomposition-patterns.md) | 357 | Breaking down large features |
-213: 
-214: **Total**: 2 examples, 963 lines
-215: 
-216: ### Reference
-217: 
-218: Quick reference materials:
-219: 
-220: | Example | Lines | Focus |
-221: |---------|-------|-------|
-222: | [Mermaid Color Palette](mermaid-color-palette.md) | 313 | Diagram color standards |
-223: | [L4 Validation Example](l4-validation-example.md) | 290 | Pattern conformance validation |
-224: | [Linear Integration Example](linear-integration-example.md) | 204 | Legacy Linear example |
-225: | [Syntropy Status Hook](syntropy-status-hook-system.md) | 149 | MCP health check |
-226: | [tmp/ Convention](tmp-directory-convention.md) | 130 | Temp file standards |
-227: | [Settings Local Example](example.setting.local.md) | 17 | Configuration example |
-228: 
-229: **Total**: 6 examples, 1,103 lines
-230: 
-231: ### Model
-232: 
-233: System architecture:
-234: 
-235: | Example | Lines | Focus |
-236: |---------|-------|-------|
-237: | [System Model](model/SystemModel.md) | 2,981 | Complete framework architecture |
-238: 
-239: **Total**: 1 example, 2,981 lines
-240: 
-241: ## IsWorkflow Distribution
-242: 
-243: ### Examples
-244: 
-245: - **Yes** (Universal/Framework): 21 examples (84%)
-246: - **No** (Project-Specific): 4 examples (16%)
-247: 
-248: ### Serena Memories
-249: 
-250: - **Yes** (Universal/Framework): 6 memories (1,013 lines, 28%) - Suitable for all CE projects
-251: - **No** (Project-Specific): 17 memories (2,608 lines, 72%) - Ctx-eng-plus custom knowledge
-252: 
-253: ### Classification Legend
-254: 
-255: **IsWorkflow = Yes**: Universal CE framework documentation that should be copied to any target project during initialization. Includes MCP patterns, generic workflows, framework config templates, reusable practices, and essential coding/testing standards.
-256: 
-257: **IsWorkflow = No**: Project-specific documentation tied to ctx-eng-plus codebase, conventions, or implementation details. Not suitable for general distribution to other projects.
-258: 
-259: ### Project-Specific Examples (No)
-260: 
-261: 1. **Example Simple Feature** (patterns/) - Demonstrates adding git status summary command specific to ctx-eng-plus
-262: 2. **Git Message Rules** (patterns/) - Commit message conventions specific to this project
-263: 3. **L4 Validation Example** (reference/) - Validation patterns specific to ctx-eng-plus infrastructure
-264: 4. **Syntropy Status Hook** (reference/) - References ctx-eng-plus-specific scripts (scripts/session-startup.sh)
-265: 
-266: ### Universal Serena Memories to Copy to New Projects
-267: 
-268: 1. **code-style-conventions** (pattern) - Coding principles and standards
-269: 2. **suggested-commands** (documentation) - Common command reference
-270: 3. **task-completion-checklist** (documentation) - Quality gates verification
-271: 4. **testing-standards** (pattern) - Testing philosophy and practices
-272: 5. **tool-usage-syntropy** (documentation) - Syntropy tool selection guide
-273: 6. **use-syntropy-tools-not-bash** (pattern) - Migration patterns and principles
-274: 
-275: ## Syntropy Integration
-276: 
-277: **Examples using Syntropy MCP**: 9/25 (36%)
-278: 
-279: - **Heavy usage** (20+ references): Serena Symbol Search (58), Linear Integration (30), Context7 Docs (29), Tool Usage Guide (34), Memory Management (34), Syntropy README (navigation hub)
-280: - **Moderate usage** (5-20 references): Thinking Sequential (17), System Model (2)
-281: - **Light usage** (1-5 references): Syntropy Status Hook (1), Slash Command Template (1)
-282: 
-283: ## Usage Patterns
-284: 
-285: ### By Use Case
-286: 
-287: **Starting with Context Engineering**:
-288: 
-289: 1. [System Model](model/SystemModel.md) - Understand framework architecture
-290: 2. [Tool Usage Guide](TOOL-USAGE-GUIDE.md) - Learn tool selection
-291: 3. [Example Simple Feature](patterns/example-simple-feature.md) - See complete PRP
-292: 4. [Execute PRP workflow](workflows/batch-prp-execution.md) - Implement PRPs
-293: 
-294: **Learning Syntropy MCP**:
-295: 
-296: 1. [Syntropy README](syntropy/README.md) - Master overview, decision matrix, tool naming
-297: 2. [Serena Symbol Search](syntropy/serena-symbol-search.md) - Code navigation and refactoring
-298: 3. [Context7 Docs Fetch](syntropy/context7-docs-fetch.md) - Library documentation fetching
-299: 4. [Linear Integration](syntropy/linear-integration.md) - Issue tracking and project management
-300: 
-301: **Maintaining Project Health**:
-302: 
-303: 1. [Context Drift Remediation](workflows/context-drift-remediation.md) - Sync PRPs
-304: 2. [Vacuum Cleanup](workflows/vacuum-cleanup.md) - Remove noise
-305: 3. [Denoise Documents](workflows/denoise-documents.md) - Compress docs
-306: 4. [Dedrifting Lessons](patterns/dedrifting-lessons.md) - Prevention strategies
-307: 
-308: **Batch Operations**:
-309: 
-310: 1. [Batch PRP Generation](workflows/batch-prp-generation.md) - Generate from plan
-311: 2. [Batch PRP Execution](workflows/batch-prp-execution.md) - Execute in parallel
-312: 3. [PRP Decomposition Patterns](prp-decomposition-patterns.md) - Break down features
-313: 
-314: **Configuration**:
-315: 
-316: 1. [Slash Command Template](config/slash-command-template.md) - Create commands
-317: 2. [Hook Configuration](config/hook-configuration.md) - Lifecycle hooks
-318: 3. [Settings Local Example](example.setting.local.md) - Configuration format
-319: 
-320: ## Maintenance
-321: 
-322: **Updating this index**:
-323: 
-324: When adding new examples:
-325: 
-326: 1. Create example file following content template (150-300 lines)
-327: 2. Add entry to appropriate category section above
-328: 3. Update statistics
-329: 4. Commit: `git add examples/ && git commit -m "Examples: Added [name]"`
-330: 
-331: **Content template**:
-332: 
-333: - **Purpose**: What this example demonstrates, when to use
-334: - **Prerequisites**: Required setup
-335: - **Examples**: 3-4 concrete examples with input/output
-336: - **Common Patterns**: 3-5 patterns
-337: - **Anti-Patterns**: 2-3 things not to do
-338: - **Related**: Links to related examples
-339: 
-340: ## Related Documentation
-341: 
-342: - [CLAUDE.md](../CLAUDE.md) - Project guide and quick commands
-343: - [PRPs/](../PRPs/) - Executed and feature request PRPs
-344: - [.claude/commands/](../.claude/commands/) - Slash commands (11 framework commands including peer-review)
-345: 
-346: ## Contributing
-347: 
-348: To add new examples:
-349: 
-350: 1. Follow [content template](syntropy/README.md#content-template) structure
-351: 2. Add to appropriate directory (syntropy/, workflows/, config/, patterns/)
-352: 3. Update INDEX.md with new entry
-353: 4. Cross-link with related examples
-354: 5. Run validation: `cd tools && uv run ce validate --level 4`
-</file>
-
 <file path="tools/ce/blending/strategies/claude_md.py">
   1: """CLAUDE.md blending strategy with Sonnet-based section merging.
   2: 
@@ -35867,165 +35867,6 @@ This section contains the contents of the repository's files.
 203:             sources.extend([Path(s) for s in domain_config["legacy_sources"]])
 204: 
 205:         return sources
-</file>
-
-<file path="tools/ce/repomix_unpack.py">
-  1: #!/usr/bin/env python3
-  2: """
-  3: Repomix XML unpacker - extracts files from repomix-generated XML packages.
-  4: 
-  5: Since repomix CLI doesn't yet support --unpack, this utility extracts files
-  6: from XML packages generated by repomix.
-  7: """
-  8: 
-  9: import argparse
- 10: import re
- 11: import sys
- 12: from pathlib import Path
- 13: from typing import List, Tuple
- 14: 
- 15: 
- 16: def parse_repomix_xml(xml_content: str) -> List[Tuple[str, str]]:
- 17:     """
- 18:     Parse repomix XML and extract (file_path, content) tuples.
- 19: 
- 20:     Args:
- 21:         xml_content: Raw XML content from repomix package
- 22: 
- 23:     Returns:
- 24:         List of (file_path, file_content) tuples
- 25:     """
- 26:     files = []
- 27: 
- 28:     # Pattern to match <file path="...">content</file>
- 29:     # Using non-greedy match and DOTALL to handle multiline content
- 30:     pattern = r'<file path="([^"]+)">\n(.*?)\n</file>'
- 31: 
- 32:     matches = re.finditer(pattern, xml_content, re.DOTALL)
- 33: 
- 34:     for match in matches:
- 35:         file_path = match.group(1)
- 36:         content = match.group(2)
- 37: 
- 38:         # Remove line number prefix (format: " 1: " or "   123→")
- 39:         # Each line in repomix XML has line numbers
- 40:         lines = content.split('\n')
- 41:         cleaned_lines = []
- 42:         for line in lines:
- 43:             # Match line number format: spaces + number + (→ or : + space)
- 44:             cleaned = re.sub(r'^\s*\d+[→:]\s*', '', line)
- 45:             cleaned_lines.append(cleaned)
- 46: 
- 47:         cleaned_content = '\n'.join(cleaned_lines)
- 48:         files.append((file_path, cleaned_content))
- 49: 
- 50:     return files
- 51: 
- 52: 
- 53: def extract_files(xml_path: Path, target_dir: Path, verbose: bool = False) -> int:
- 54:     """
- 55:     Extract all files from repomix XML to target directory.
- 56: 
- 57:     Args:
- 58:         xml_path: Path to repomix XML file
- 59:         target_dir: Directory to extract files to
- 60:         verbose: Print extraction progress
- 61: 
- 62:     Returns:
- 63:         Number of files extracted
- 64:     """
- 65:     if not xml_path.exists():
- 66:         print(f"❌ Error: XML file not found: {xml_path}", file=sys.stderr)
- 67:         return 0
- 68: 
- 69:     # Read XML content
- 70:     if verbose:
- 71:         print(f"📦 Reading package: {xml_path}")
- 72: 
- 73:     xml_content = xml_path.read_text()
- 74: 
- 75:     # Parse files
- 76:     files = parse_repomix_xml(xml_content)
- 77: 
- 78:     if not files:
- 79:         print(f"⚠️  Warning: No files found in package", file=sys.stderr)
- 80:         return 0
- 81: 
- 82:     if verbose:
- 83:         print(f"📋 Found {len(files)} files to extract")
- 84: 
- 85:     # Extract each file
- 86:     extracted = 0
- 87:     for file_path, content in files:
- 88:         # Construct full path
- 89:         full_path = target_dir / file_path
- 90: 
- 91:         # Create parent directories
- 92:         full_path.parent.mkdir(parents=True, exist_ok=True)
- 93: 
- 94:         # Write file
- 95:         full_path.write_text(content)
- 96: 
- 97:         if verbose:
- 98:             print(f"   ✓ {file_path}")
- 99: 
-100:         extracted += 1
-101: 
-102:     return extracted
-103: 
-104: 
-105: def main():
-106:     """Main entry point for CLI."""
-107:     parser = argparse.ArgumentParser(
-108:         description="Extract files from repomix XML package",
-109:         formatter_class=argparse.RawDescriptionHelpFormatter,
-110:         epilog="""
-111: Examples:
-112:   # Extract to current directory
-113:   python repomix_unpack.py ce-infrastructure.xml
-114: 
-115:   # Extract to specific directory
-116:   python repomix_unpack.py ce-infrastructure.xml --target /path/to/project
-117: 
-118:   # Verbose output
-119:   python repomix_unpack.py ce-infrastructure.xml -v
-120:         """
-121:     )
-122: 
-123:     parser.add_argument(
-124:         "xml_file",
-125:         type=Path,
-126:         help="Path to repomix XML file"
-127:     )
-128: 
-129:     parser.add_argument(
-130:         "--target",
-131:         type=Path,
-132:         default=Path.cwd(),
-133:         help="Target directory for extraction (default: current directory)"
-134:     )
-135: 
-136:     parser.add_argument(
-137:         "-v", "--verbose",
-138:         action="store_true",
-139:         help="Verbose output"
-140:     )
-141: 
-142:     args = parser.parse_args()
-143: 
-144:     # Extract files
-145:     count = extract_files(args.xml_file, args.target, args.verbose)
-146: 
-147:     if count > 0:
-148:         print(f"\n✅ Extracted {count} files to {args.target}")
-149:         return 0
-150:     else:
-151:         print(f"\n❌ Extraction failed", file=sys.stderr)
-152:         return 1
-153: 
-154: 
-155: if __name__ == "__main__":
-156:     sys.exit(main())
 </file>
 
 <file path="tools/pyproject.toml">
@@ -37643,6 +37484,166 @@ This section contains the contents of the repository's files.
 26:     'PRPMoveStrategy',
 27:     'CommandOverwriteStrategy'
 28: ]
+</file>
+
+<file path="tools/ce/repomix_unpack.py">
+  1: #!/usr/bin/env python3
+  2: """
+  3: Repomix XML unpacker - extracts files from repomix-generated XML packages.
+  4: 
+  5: Since repomix CLI doesn't yet support --unpack, this utility extracts files
+  6: from XML packages generated by repomix.
+  7: """
+  8: 
+  9: import argparse
+ 10: import re
+ 11: import sys
+ 12: from pathlib import Path
+ 13: from typing import List, Tuple
+ 14: 
+ 15: 
+ 16: def parse_repomix_xml(xml_content: str) -> List[Tuple[str, str]]:
+ 17:     """
+ 18:     Parse repomix XML and extract (file_path, content) tuples.
+ 19: 
+ 20:     Args:
+ 21:         xml_content: Raw XML content from repomix package
+ 22: 
+ 23:     Returns:
+ 24:         List of (file_path, file_content) tuples
+ 25:     """
+ 26:     files = []
+ 27: 
+ 28:     # Pattern to match <file path="...">content</file>
+ 29:     # Using non-greedy match and DOTALL to handle multiline content
+ 30:     # Made newline before closing tag optional to catch files without trailing newlines
+ 31:     pattern = r'<file path="([^"]+)">\n(.*?)\n?</file>'
+ 32: 
+ 33:     matches = re.finditer(pattern, xml_content, re.DOTALL)
+ 34: 
+ 35:     for match in matches:
+ 36:         file_path = match.group(1)
+ 37:         content = match.group(2)
+ 38: 
+ 39:         # Remove line number prefix (format: " 1: " or "   123→")
+ 40:         # Each line in repomix XML has line numbers
+ 41:         lines = content.split('\n')
+ 42:         cleaned_lines = []
+ 43:         for line in lines:
+ 44:             # Match line number format: spaces + number + (→ or : + space)
+ 45:             cleaned = re.sub(r'^\s*\d+[→:]\s*', '', line)
+ 46:             cleaned_lines.append(cleaned)
+ 47: 
+ 48:         cleaned_content = '\n'.join(cleaned_lines)
+ 49:         files.append((file_path, cleaned_content))
+ 50: 
+ 51:     return files
+ 52: 
+ 53: 
+ 54: def extract_files(xml_path: Path, target_dir: Path, verbose: bool = False) -> int:
+ 55:     """
+ 56:     Extract all files from repomix XML to target directory.
+ 57: 
+ 58:     Args:
+ 59:         xml_path: Path to repomix XML file
+ 60:         target_dir: Directory to extract files to
+ 61:         verbose: Print extraction progress
+ 62: 
+ 63:     Returns:
+ 64:         Number of files extracted
+ 65:     """
+ 66:     if not xml_path.exists():
+ 67:         print(f"❌ Error: XML file not found: {xml_path}", file=sys.stderr)
+ 68:         return 0
+ 69: 
+ 70:     # Read XML content
+ 71:     if verbose:
+ 72:         print(f"📦 Reading package: {xml_path}")
+ 73: 
+ 74:     xml_content = xml_path.read_text()
+ 75: 
+ 76:     # Parse files
+ 77:     files = parse_repomix_xml(xml_content)
+ 78: 
+ 79:     if not files:
+ 80:         print(f"⚠️  Warning: No files found in package", file=sys.stderr)
+ 81:         return 0
+ 82: 
+ 83:     if verbose:
+ 84:         print(f"📋 Found {len(files)} files to extract")
+ 85: 
+ 86:     # Extract each file
+ 87:     extracted = 0
+ 88:     for file_path, content in files:
+ 89:         # Construct full path
+ 90:         full_path = target_dir / file_path
+ 91: 
+ 92:         # Create parent directories
+ 93:         full_path.parent.mkdir(parents=True, exist_ok=True)
+ 94: 
+ 95:         # Write file
+ 96:         full_path.write_text(content)
+ 97: 
+ 98:         if verbose:
+ 99:             print(f"   ✓ {file_path}")
+100: 
+101:         extracted += 1
+102: 
+103:     return extracted
+104: 
+105: 
+106: def main():
+107:     """Main entry point for CLI."""
+108:     parser = argparse.ArgumentParser(
+109:         description="Extract files from repomix XML package",
+110:         formatter_class=argparse.RawDescriptionHelpFormatter,
+111:         epilog="""
+112: Examples:
+113:   # Extract to current directory
+114:   python repomix_unpack.py ce-infrastructure.xml
+115: 
+116:   # Extract to specific directory
+117:   python repomix_unpack.py ce-infrastructure.xml --target /path/to/project
+118: 
+119:   # Verbose output
+120:   python repomix_unpack.py ce-infrastructure.xml -v
+121:         """
+122:     )
+123: 
+124:     parser.add_argument(
+125:         "xml_file",
+126:         type=Path,
+127:         help="Path to repomix XML file"
+128:     )
+129: 
+130:     parser.add_argument(
+131:         "--target",
+132:         type=Path,
+133:         default=Path.cwd(),
+134:         help="Target directory for extraction (default: current directory)"
+135:     )
+136: 
+137:     parser.add_argument(
+138:         "-v", "--verbose",
+139:         action="store_true",
+140:         help="Verbose output"
+141:     )
+142: 
+143:     args = parser.parse_args()
+144: 
+145:     # Extract files
+146:     count = extract_files(args.xml_file, args.target, args.verbose)
+147: 
+148:     if count > 0:
+149:         print(f"\n✅ Extracted {count} files to {args.target}")
+150:         return 0
+151:     else:
+152:         print(f"\n❌ Extraction failed", file=sys.stderr)
+153:         return 1
+154: 
+155: 
+156: if __name__ == "__main__":
+157:     sys.exit(main())
 </file>
 
 <file path="examples/INITIALIZATION.md">
@@ -39676,6 +39677,892 @@ This section contains the contents of the repository's files.
 168:         return 1
 </file>
 
+<file path="CLAUDE.md">
+  1: # Context Engineering Tools - Project Guide
+  2: 
+  3: **Project**: CLI tooling for Context Engineering framework operations
+  4: 
+  5: ## Communication
+  6: 
+  7: Direct, token-efficient. No fluff. Call out problems directly.
+  8: 
+  9: ## Core Principles
+ 10: 
+ 11: ### Syntropy MCP First
+ 12: - Use `mcp__syntropy__<server>_<tool>` format (standard MCP protocol - client-side prefixing)
+ 13: - Prefer Syntropy tools over bash/cmdline
+ 14: - See [Naming Convention](examples/syntropy-mcp-naming-convention.md) for complete spec
+ 15: 
+ 16: ### No Fishy Fallbacks
+ 17: - Fast failure: Let exceptions bubble up
+ 18: - Actionable errors: Include 🔧 troubleshooting
+ 19: - No silent corruption
+ 20: 
+ 21: ### KISS
+ 22: - Simple solutions first
+ 23: - Clear code over clever code
+ 24: - Minimal dependencies (stdlib only)
+ 25: - Single responsibility per function
+ 26: 
+ 27: ### UV Package Management - STRICT
+ 28: ```bash
+ 29: uv add package-name              # Production
+ 30: uv add --dev package-name        # Development
+ 31: uv sync                          # Install
+ 32: 
+ 33: # ❌ FORBIDDEN: Manual pyproject.toml editing
+ 34: ```
+ 35: 
+ 36: ### Ad-Hoc Code Policy
+ 37: - Max 3 LOC inline
+ 38: - Longer code → tmp/ file and execute
+ 39: - Must execute via run_py
+ 40: 
+ 41: ## Quick Commands
+ 42: 
+ 43: ```bash
+ 44: cd tools
+ 45: 
+ 46: # Validation & health
+ 47: uv run ce validate --level all
+ 48: uv run ce context health
+ 49: uv run ce git status
+ 50: 
+ 51: # Cleanup
+ 52: uv run ce vacuum                  # Dry-run (report only)
+ 53: uv run ce vacuum --execute        # Delete temp files only
+ 54: uv run ce vacuum --auto           # Delete temp files + obsolete docs/dead links
+ 55: 
+ 56: # Testing
+ 57: uv run pytest tests/ -v
+ 58: 
+ 59: # Run Python (3 LOC max ad-hoc)
+ 60: uv run ce run_py "print('hello')"
+ 61: uv run ce run_py ../tmp/script.py
+ 62: ```
+ 63: 
+ 64: ## Framework Initialization
+ 65: 
+ 66: **Quick Start** (Automated - RECOMMENDED):
+ 67: ```bash
+ 68: npx syntropy-mcp init ce-framework
+ 69: ```
+ 70: Time: <5 minutes | Automatically extracts 50 files, reorganizes tools, blends settings
+ 71: 
+ 72: **Manual Setup**: See [examples/INITIALIZATION.md](examples/INITIALIZATION.md) for complete CE 1.1 initialization guide.
+ 73: 
+ 74: **Manual Key Steps** (5-phase workflow):
+ 75: 1. **Bucket Collection**: Extract existing Serena memories, examples, PRPs, CLAUDE.md, .claude directory
+ 76: 2. **User Files Migration**: Copy validated user files with `type: user` YAML headers
+ 77: 3. **Repomix Package Handling**: Extract ce-infrastructure.xml to /system/ subfolders
+ 78: 4. **Blending**: Merge framework + user files (CLAUDE.md sections, settings.local.json, commands)
+ 79: 5. **Cleanup**: Remove initialization artifacts, verify structure
+ 80: 
+ 81: **Repomix Usage** (manual context loading):
+ 82: 
+ 83: ```bash
+ 84: # Load workflow docs (commands, validation, PRP patterns)
+ 85: # Reference package - stored in .ce/, not extracted during initialization
+ 86: cat .ce/ce-workflow-docs.xml
+ 87: 
+ 88: # Load infrastructure docs (memories, rules, system architecture)
+ 89: # Extracted to /system/ subfolders during Phase 3 of initialization
+ 90: npx repomix --unpack .ce/ce-infrastructure.xml --target tmp/extraction/
+ 91: ```
+ 92: 
+ 93: **Repomix Package Structure** (CE 1.1):
+ 94: - **ce-workflow-docs.xml**: 85KB (reference package, not extracted)
+ 95: - **ce-infrastructure.xml**: 206KB (all framework files with /system/ organization)
+ 96: - **Combined**: 291KB total
+ 97: 
+ 98: **Build and Distribution**:
+ 99: ```bash
+100: # Regenerate packages and distribute to syntropy-mcp
+101: .ce/build-and-distribute.sh
+102: ```
+103: This script regenerates both packages and copies them to `syntropy-mcp/boilerplate/ce-framework/` for automated init.
+104: 
+105: **Migration Scenarios**:
+106: 
+107: All scenarios documented in [INITIALIZATION.md](examples/INITIALIZATION.md) with scenario-specific variations within each phase:
+108: - **Greenfield**: New project setup (10 min)
+109: - **Mature Project**: Add CE to existing codebase (45 min)
+110: - **CE 1.0 Upgrade**: Upgrade CE 1.0 → CE 1.1 (40 min)
+111: - **Partial Install**: Complete partial CE installation (15 min)
+112: 
+113: **Memory Type System** (CE 1.1):
+114: 
+115: Framework memories (23 files) use `type: regular` by default:
+116: ```yaml
+117: ---
+118: type: regular
+119: category: documentation
+120: tags: [tag1, tag2, tag3]
+121: created: "2025-11-04T17:30:00Z"
+122: updated: "2025-11-04T17:30:00Z"
+123: ---
+124: ```
+125: 
+126: **Critical Memory Candidates** (upgrade during initialization):
+127: - code-style-conventions.md
+128: - suggested-commands.md
+129: - task-completion-checklist.md
+130: - testing-standards.md
+131: - tool-usage-syntropy.md
+132: - use-syntropy-tools-not-bash.md
+133: 
+134: **User File Headers** (added during Phase 2 of initialization):
+135: 
+136: User memories:
+137: ```yaml
+138: ---
+139: type: user
+140: source: target-project
+141: created: "2025-11-04T00:00:00Z"
+142: updated: "2025-11-04T00:00:00Z"
+143: ---
+144: ```
+145: 
+146: User PRPs:
+147: ```yaml
+148: ---
+149: prp_id: USER-001
+150: title: User Feature Implementation
+151: status: completed
+152: created: "2025-11-04"
+153: source: target-project
+154: type: user
+155: ---
+156: ```
+157: 
+158: **See Also**:
+159: - [examples/INITIALIZATION.md](examples/INITIALIZATION.md) - Complete initialization guide
+160: - [.serena/memories/README.md](.serena/memories/README.md) - Memory type system documentation
+161: - [examples/templates/PRP-0-CONTEXT-ENGINEERING.md](examples/templates/PRP-0-CONTEXT-ENGINEERING.md) - Document framework installation
+162: 
+163: ## Working Directory
+164: 
+165: **Default**: `/Users/bprzybysz/nc-src/ctx-eng-plus`
+166: 
+167: **For tools/ commands**: Use `cd tools &&` or `uv run -C tools`
+168: 
+169: **Note**: In THIS repo (ctx-eng-plus development), tools are at `tools/`. In TARGET projects that extract the infrastructure package, tools are installed to `.ce/tools/`.
+170: 
+171: ## Hooks
+172: 
+173: **Pre-Commit**: Runs `ce validate --level 4` before commit (skip: `--no-verify`)
+174: 
+175: **Session Start**: Auto drift score check
+176: 
+177: **Shell Functions** (optional): Source `.ce/shell-functions.sh` for `cet` alias
+178: 
+179: ## Tool Naming Convention
+180: 
+181: Format: `mcp__syntropy__<server>_<tool>`
+182: - `mcp__` - MCP prefix (double underscore)
+183: - `syntropy__` - Syntropy server (double underscore)
+184: - `<server>_` - Server name + single underscore
+185: - `<tool>` - Tool name
+186: 
+187: Example: `mcp__syntropy__serena_find_symbol`
+188: 
+189: ## Allowed Tools Summary
+190: 
+191: **Post-Lockdown State** (after PRP-A & PRP-D):
+192: - **Before**: 87 MCP tools (via Syntropy aggregator)
+193: - **After**: 28 MCP tools (59 denied for native tool preference)
+194: - **Token reduction**: ~44k tokens (96% reduction from 46k→2k)
+195: 
+196: ### Kept Tools by Category
+197: 
+198: **Serena** (13 tools): Code symbol navigation
+199: - activate_project, find_symbol, get_symbols_overview, search_for_pattern
+200: - find_referencing_symbols, replace_symbol_body, write_memory, read_memory
+201: - list_memories, create_text_file, read_file, list_dir, delete_memory
+202: 
+203: **Linear** (9 tools): Project management integration
+204: - create_issue, get_issue, list_issues, update_issue
+205: - list_projects, list_teams, list_users, get_team, create_project
+206: 
+207: **Context7** (2 tools): Library documentation
+208: - resolve_library_id, get_library_docs
+209: 
+210: **Thinking** (1 tool): Complex reasoning
+211: - sequentialthinking
+212: 
+213: **Syntropy System** (3 tools): System utilities
+214: - healthcheck (MCP diagnostics)
+215: - enable_tools (dynamic tool management)
+216: - list_all_tools (list all available tools with states)
+217: 
+218: **Bash Commands** (~50 patterns): See "Command Permissions" section below
+219: **Native Tools**: Read, Write, Edit, Glob, Grep, WebSearch, WebFetch
+220: 
+221: ### Denied Tools (55 total)
+222: 
+223: **Rationale**: Native Claude Code tools provide equivalent or better functionality
+224: 
+225: **Categories**:
+226: - Filesystem (8): Use Read, Write, Edit, Glob instead
+227: - Git (5): Use Bash(git:*) instead
+228: - GitHub (26): Use Bash(gh:*) instead
+229: - Repomix (4): Use incremental Glob/Grep/Read instead
+230: - Playwright (6): Use WebFetch or Bash(playwright CLI) instead
+231: - Perplexity (1): Use WebSearch instead
+232: - Syntropy (5): Use Read for docs, rare-use tools
+233: 
+234: **Full details**: See [TOOL-USAGE-GUIDE.md](TOOL-USAGE-GUIDE.md)
+235: 
+236: ## Command Permissions
+237: 
+238: **Permission Model**: Auto-allow safe commands, ask-first for potentially destructive operations.
+239: 
+240: ### Auto-Allow Patterns (~35 bash patterns)
+241: 
+242: Commands that never prompt:
+243: 
+244: **File Inspection**:
+245: - `ls`, `cat`, `head`, `tail`, `less`, `more`, `file`, `stat`
+246: 
+247: **Navigation**:
+248: - `cd`, `pwd`, `which`, `whereis`
+249: 
+250: **Search**:
+251: - `find`, `grep`, `rg`, `tree`
+252: 
+253: **Text Processing**:
+254: - `sed`, `awk`, `sort`, `uniq`, `cut`, `diff`, `comm`, `wc`
+255: 
+256: **Environment**:
+257: - `env`, `ps`, `echo`
+258: 
+259: **Development**:
+260: - `git` (all operations), `gh` (GitHub CLI)
+261: - `uv`, `uvx`, `pytest`
+262: - `python`, `python3`
+263: 
+264: **Special Cases**:
+265: - `rm -rf ~/.mcp-auth` (MCP troubleshooting)
+266: 
+267: **Full list**: See `.claude/settings.local.json` "allow" array
+268: 
+269: ### Ask-First Patterns (15 patterns)
+270: 
+271: Commands that require confirmation:
+272: 
+273: **File Operations** (potentially destructive):
+274: - `rm`, `mv`, `cp`
+275: 
+276: **Network Operations**:
+277: - `curl`, `wget`, `nc`, `telnet`, `ssh`, `scp`, `rsync`
+278: 
+279: **Package Management**:
+280: - `brew install`, `npm install`, `pip install`, `gem install`
+281: 
+282: **System Operations**:
+283: - `sudo` (any sudo command)
+284: 
+285: **Rationale**: Safety gate for operations that modify files, access network, or require elevated privileges.
+286: 
+287: **Full list**: See `.claude/settings.local.json` "ask" array
+288: 
+289: ### Permission Behavior
+290: 
+291: **Unlisted commands**: Prompt by default (ask before execution)
+292: **Workaround**: Add to allow list in `.claude/settings.local.json` if frequently used
+293: 
+294: ## Quick Tool Selection
+295: 
+296: **🔗 Comprehensive Guide**: See [examples/TOOL-USAGE-GUIDE.md](examples/TOOL-USAGE-GUIDE.md) for:
+297: - Decision tree (flowchart for tool selection)
+298: - Common tasks with right/wrong examples
+299: - Anti-patterns to avoid
+300: - Migration table (55 denied tools → alternatives)
+301: 
+302: **Quick Reference**:
+303: 
+304: **Analyze code**:
+305: - Know symbol → `serena_find_symbol`
+306: - Explore file → `serena_get_symbols_overview`
+307: - Search patterns → `Grep` (native, not serena_search_for_pattern)
+308: - Find usages → `serena_find_referencing_symbols`
+309: 
+310: **Modify files**:
+311: - New → `Write` (native)
+312: - Existing (surgical) → `Edit` (native)
+313: - Config/text → `Read` (native)
+314: 
+315: **Version control**:
+316: - Use `Bash(git:*)` (native git commands)
+317: - NOT `mcp__syntropy__git_git_status` (denied)
+318: 
+319: **GitHub operations**:
+320: - Use `Bash(gh:*)` (native gh CLI)
+321: - NOT `mcp__syntropy__github_*` (denied)
+322: 
+323: **External knowledge**:
+324: - Documentation → `context7_get_library_docs`
+325: - Web search → `WebSearch` (native)
+326: - Web content → `WebFetch` (native)
+327: 
+328: **Complex reasoning**: `sequentialthinking`
+329: 
+330: **Project management**: Linear tools (all 9 kept)
+331: 
+332: **System health**: `healthcheck` (detailed diagnostics with `detailed=true`)
+333: 
+334: ## Project Structure
+335: 
+336: ```
+337: tools/
+338: ├── ce/                 # Source code
+339: │   ├── core.py         # File, git, shell ops
+340: │   ├── validate.py     # 3-level validation
+341: │   └── context.py      # Context management
+342: ├── tests/              # Test suite
+343: ├── pyproject.toml      # UV config (don't edit!)
+344: └── bootstrap.sh        # Setup script
+345: ```
+346: 
+347: ## Testing Standards
+348: 
+349: **TDD**: Test first → fail → implement → refactor
+350: 
+351: **Real functionality**: No fake results, no mocks in tests
+352: 
+353: **Test before critical changes** (tool naming, API changes, refactoring)
+354: 
+355: ## Code Quality
+356: 
+357: - Functions: 50 lines (single responsibility)
+358: - Files: 300-500 lines (logical modules)
+359: - Classes: 100 lines (single concept)
+360: - Mark mocks with FIXME in production code
+361: 
+362: ## Context Commands
+363: 
+364: ```bash
+365: # Sync all PRPs with codebase
+366: cd tools && uv run ce update-context
+367: 
+368: # Sync specific PRP
+369: cd tools && uv run ce update-context --prp PRPs/executed/PRP-6.md
+370: 
+371: # Fast drift check (2-3s vs 10-15s)
+372: cd tools && uv run ce analyze-context
+373: 
+374: # Force re-analysis
+375: cd tools && uv run ce analyze-context --force
+376: ```
+377: 
+378: **Drift Exit Codes**:
+379: - 0: <5% (healthy)
+380: - 1: 5-15% (warning)
+381: - 2: ≥15% (critical)
+382: 
+383: ## Syntropy MCP Tool Sync
+384: 
+385: **Dynamic tool management** - Enable/disable tools at runtime without restart
+386: 
+387: ```bash
+388: # Sync settings with Syntropy MCP tool state
+389: /sync-with-syntropy
+390: 
+391: # Workflow example:
+392: # 1. Enable/disable tools via Syntropy
+393: mcp__syntropy__enable_tools(
+394:   enable=["serena_find_symbol", "context7_get_library_docs"],
+395:   disable=["filesystem_read_file", "git_git_status"]
+396: )
+397: 
+398: # 2. Sync settings to .claude/settings.local.json
+399: /sync-with-syntropy
+400: 
+401: # 3. Verify changes
+402: cat .claude/settings.local.json
+403: ```
+404: 
+405: **How it works**:
+406: 1. Call `mcp__syntropy__list_all_tools` to get current tool states
+407: 2. Update `.claude/settings.local.json` to match
+408: 3. Backup original settings to `.claude/settings.local.json.backup`
+409: 4. Output clear summary of changes made
+410: 
+411: **Benefits**:
+412: - Real-time tool control (no MCP restart needed)
+413: - Persistent state across sessions (`~/.syntropy/tool-state.json`)
+414: - Context-aware tool sets (enable 10 tools for quick tasks, all 87 for deep analysis)
+415: 
+416: ## Linear Integration
+417: 
+418: **Config**: `.ce/linear-defaults.yml`
+419: - Project: "Context Engineering"
+420: - Assignee: "blazej.przybyszewski@gmail.com"
+421: - Team: "Blaise78"
+422: 
+423: **Auto-create issues**: `/generate-prp` uses defaults
+424: 
+425: **Join existing issue**: `/generate-prp --join-prp 12`
+426: 
+427: **Troubleshooting**: `rm -rf ~/.mcp-auth` (pre-approved)
+428: 
+429: ## Batch PRP Generation
+430: 
+431: **Decompose large plans into staged, parallelizable PRPs with automatic dependency analysis**
+432: 
+433: ```bash
+434: # Create plan document
+435: vim FEATURE-PLAN.md
+436: 
+437: # Generate all PRPs with parallel subagents
+438: /batch-gen-prp FEATURE-PLAN.md
+439: 
+440: # Output: Multiple PRPs with format PRP-X.Y.Z
+441: #   X = Batch ID (next free number)
+442: #   Y = Stage number
+443: #   Z = Order within stage
+444: ```
+445: 
+446: **Plan Format**:
+447: ```markdown
+448: # Plan Title
+449: 
+450: ## Phases
+451: 
+452: ### Phase 1: Name
+453: 
+454: **Goal**: One-sentence objective
+455: **Estimated Hours**: 0.5
+456: **Complexity**: low
+457: **Files Modified**: path/to/file
+458: **Dependencies**: None
+459: **Implementation Steps**: [steps]
+460: **Validation Gates**: [gates]
+461: ```
+462: 
+463: **What It Does**:
+464: 1. Parses plan document → Extracts phases
+465: 2. Builds dependency graph → Analyzes deps + file conflicts
+466: 3. Assigns stages → Groups independent PRPs for parallel execution
+467: 4. Spawns Sonnet subagents → Parallel generation per stage
+468: 5. Monitors via heartbeat files → 30s polling, kills after 2 failed polls
+469: 6. Creates Linear issues → One per PRP
+470: 7. Outputs summary → All generated PRPs grouped by stage
+471: 
+472: **Example Output**:
+473: ```
+474: Batch 43:
+475:   Stage 1: PRP-43.1.1
+476:   Stage 2: PRP-43.2.1, PRP-43.2.2, PRP-43.2.3 (parallel)
+477:   Stage 3: PRP-43.3.1
+478: ```
+479: 
+480: **Integration with Execution**:
+481: ```bash
+482: # Generate PRPs from plan
+483: /batch-gen-prp BIG-FEATURE-PLAN.md
+484: 
+485: # Execute entire batch
+486: /batch-exe-prp --batch 43
+487: 
+488: # Or stage-by-stage
+489: /batch-exe-prp --batch 43 --stage 1
+490: /batch-exe-prp --batch 43 --stage 2
+491: ```
+492: 
+493: **Time Savings**: 8 PRPs sequential (30 min) → parallel (10-12 min) = **60% faster**
+494: 
+495: **See**: `.claude/commands/batch-gen-prp.md` for complete documentation
+496: 
+497: ## PRP Sizing
+498: 
+499: ```bash
+500: cd tools && uv run ce prp analyze <path-to-prp.md>
+501: ```
+502: 
+503: **Size Categories**:
+504: - GREEN: ≤700 lines, ≤8h, LOW-MEDIUM risk
+505: - YELLOW: 700-1000 lines, 8-12h, MEDIUM risk
+506: - RED: >1000 lines, >12h, HIGH risk
+507: 
+508: **Exit Codes**: 0 (GREEN), 1 (YELLOW), 2 (RED)
+509: 
+510: ## Testing Patterns
+511: 
+512: **Strategy pattern** for composable testing:
+513: - **Unit**: Test single strategy in isolation
+514: - **Integration**: Test subgraph with real + mock
+515: - **E2E**: Full pipeline, all external deps mocked
+516: 
+517: **Mock Strategies**: MockSerenaStrategy, MockContext7Strategy, MockLLMStrategy
+518: 
+519: **Real Strategies**: RealParserStrategy, RealCommandStrategy
+520: 
+521: ## Documentation Standards
+522: 
+523: **Mermaid Diagrams**: Always specify text color
+524: - Light backgrounds → `color:#000`
+525: - Dark backgrounds → `color:#fff`
+526: - Format: `style X fill:#bgcolor,color:#textcolor`
+527: 
+528: ## Efficient Doc Review
+529: 
+530: **Grep-first validation** (90% token reduction):
+531: 1. Structural validation (Grep patterns, 1-2k tokens)
+532: 2. Code quality checks (Grep anti-patterns, 500 tokens)
+533: 3. Targeted reads (2-3 files only, 3-5k tokens)
+534: 
+535: **Total**: ~5-7k tokens vs 200k+ for read-all
+536: 
+537: ## Resources
+538: 
+539: - `.ce/` - System boilerplate (don't modify)
+540: - `.ce/RULES.md` - Framework rules
+541: - `PRPs/[executed,feature-requests]` - Feature requests
+542: - `examples/` - Framework patterns and user code
+543: 
+544: ## Keyboard Shortcuts
+545: 
+546: ### Image Pasting (macOS)
+547: 
+548: **cmd+v**: Paste screenshot images into Claude Code
+549: - Requires Karabiner-Elements (configured via PRP-30)
+550: - Remaps cmd+v → ctrl+v in terminals only
+551: - Config: `~/.config/karabiner/assets/complex_modifications/claude-code-cmd-v.json`
+552: - Toggle: Karabiner-Elements → Complex Modifications
+553: 
+554: **Setup** (one-time):
+555: ```bash
+556: brew install --cask karabiner-elements
+557: # Enable rule in Karabiner-Elements UI → Complex Modifications
+558: ```
+559: 
+560: ## Git Worktree - Parallel PRP Development
+561: 
+562: **Native git solution for working on multiple PRPs simultaneously**
+563: 
+564: ### Quick Start
+565: 
+566: ```bash
+567: # Create worktree for PRP-A (creates ../ctx-eng-plus-prp-a)
+568: git worktree add ../ctx-eng-plus-prp-a -b prp-a-feature
+569: 
+570: # Work in worktree
+571: cd ../ctx-eng-plus-prp-a
+572: # Make changes...
+573: git add .
+574: git commit -m "Implement feature"
+575: 
+576: # List all worktrees
+577: git worktree list
+578: 
+579: # Remove worktree after merging
+580: git worktree remove ../ctx-eng-plus-prp-a
+581: ```
+582: 
+583: ### Commands
+584: 
+585: **Create**:
+586: ```bash
+587: git worktree add <path> -b <branch-name>
+588: # Example: git worktree add ../ctx-eng-plus-prp-12 -b prp-12-validation
+589: ```
+590: 
+591: **List**:
+592: ```bash
+593: git worktree list
+594: # Shows: path, commit hash, branch name
+595: ```
+596: 
+597: **Remove**:
+598: ```bash
+599: git worktree remove <path>
+600: # or: git worktree remove --force <path>  # if uncommitted changes
+601: ```
+602: 
+603: **Prune** (clean stale references):
+604: ```bash
+605: git worktree prune
+606: ```
+607: 
+608: ### Workflow for Parallel PRPs
+609: 
+610: **Stage 1: Create Worktrees**
+611: ```bash
+612: # From main repo: /Users/bprzybysz/nc-src/ctx-eng-plus
+613: git worktree add ../ctx-eng-plus-prp-a -b prp-a-tool-deny
+614: git worktree add ../ctx-eng-plus-prp-b -b prp-b-usage-guide
+615: git worktree add ../ctx-eng-plus-prp-c -b prp-c-worktree-docs
+616: ```
+617: 
+618: **Stage 2: Execute in Parallel**
+619: ```bash
+620: # Terminal 1
+621: cd ../ctx-eng-plus-prp-a
+622: # Edit .claude/settings.local.json
+623: git add .
+624: git commit -m "PRP-A: Add tools to deny list"
+625: 
+626: # Terminal 2
+627: cd ../ctx-eng-plus-prp-b
+628: # Create TOOL-USAGE-GUIDE.md
+629: git add .
+630: git commit -m "PRP-B: Create tool usage guide"
+631: 
+632: # Terminal 3
+633: cd ../ctx-eng-plus-prp-c
+634: # Update CLAUDE.md
+635: git add .
+636: git commit -m "PRP-C: Migrate to worktree docs"
+637: ```
+638: 
+639: **Stage 3: Merge in Order**
+640: ```bash
+641: cd /Users/bprzybysz/nc-src/ctx-eng-plus
+642: git checkout main
+643: 
+644: # Merge PRP-A first
+645: git merge prp-a-tool-deny --no-ff
+646: git push origin main
+647: 
+648: # Merge PRP-B
+649: git merge prp-b-usage-guide --no-ff
+650: git push origin main
+651: 
+652: # Merge PRP-C (may conflict with PRP-A on settings.local.json)
+653: git merge prp-c-worktree-docs --no-ff
+654: # If conflicts, resolve manually (see Conflict Resolution below)
+655: git push origin main
+656: ```
+657: 
+658: **Stage 4: Cleanup**
+659: ```bash
+660: git worktree remove ../ctx-eng-plus-prp-a
+661: git worktree remove ../ctx-eng-plus-prp-b
+662: git worktree remove ../ctx-eng-plus-prp-c
+663: git worktree prune
+664: ```
+665: 
+666: ### Critical Constraints
+667: 
+668: **⚠️ Same Branch Limitation**
+669: 
+670: **CANNOT** check out the same branch in multiple worktrees simultaneously.
+671: 
+672: **Example of ERROR**:
+673: ```bash
+674: # Main repo on `main` branch
+675: cd /Users/bprzybysz/nc-src/ctx-eng-plus
+676: git branch
+677: # * main
+678: 
+679: # Try to create worktree on `main`
+680: git worktree add ../ctx-eng-plus-test -b main
+681: # ERROR: fatal: 'main' is already checked out at '/Users/bprzybysz/nc-src/ctx-eng-plus'
+682: ```
+683: 
+684: **Solution**: Each worktree must use a **unique branch**.
+685: 
+686: ```bash
+687: # Main repo stays on gitbutler/workspace or main
+688: # Each PRP worktree uses dedicated branch
+689: git worktree add ../ctx-eng-plus-prp-a -b prp-a-unique  # ✓
+690: git worktree add ../ctx-eng-plus-prp-b -b prp-b-unique  # ✓
+691: ```
+692: 
+693: ### Conflict Resolution
+694: 
+695: When merging parallel PRPs, conflicts may occur if they modify the same file sections.
+696: 
+697: **Scenario 1: No Conflicts** (PRP-A + PRP-B)
+698: ```bash
+699: git merge prp-a-tool-deny --no-ff  # ✓ Success
+700: git merge prp-b-usage-guide --no-ff  # ✓ Success (different files)
+701: ```
+702: 
+703: **Scenario 2: Merge Conflict** (PRP-A + PRP-D both edit settings.local.json)
+704: 
+705: **Step 1: Attempt Merge**
+706: ```bash
+707: git merge prp-d-command-perms --no-ff
+708: # Auto-merging .claude/settings.local.json
+709: # CONFLICT (content): Merge conflict in .claude/settings.local.json
+710: # Automatic merge failed; fix conflicts and then commit the result.
+711: ```
+712: 
+713: **Step 2: Check Conflict Markers**
+714: ```bash
+715: git status
+716: # Unmerged paths:
+717: #   both modified:   .claude/settings.local.json
+718: ```
+719: 
+720: **Step 3: Read File to See Conflicts**
+721: ```python
+722: Read(file_path="/Users/bprzybysz/nc-src/ctx-eng-plus/.claude/settings.local.json")
+723: # Look for:
+724: # <<<<<<< HEAD
+725: # ... current branch content ...
+726: # =======
+727: # ... incoming branch content ...
+728: # >>>>>>> prp-d-command-perms
+729: ```
+730: 
+731: **Step 4: Resolve with Edit Tool**
+732: ```python
+733: # Remove conflict markers, keep desired changes from both branches
+734: Edit(
+735:   file_path="/Users/bprzybysz/nc-src/ctx-eng-plus/.claude/settings.local.json",
+736:   old_string="""<<<<<<< HEAD
+737:   "deny": [existing tools...]
+738: =======
+739:   "deny": [incoming tools...]
+740: >>>>>>> prp-d-command-perms""",
+741:   new_string="""  "deny": [merged tools from both branches...]"""
+742: )
+743: ```
+744: 
+745: **Step 5: Stage and Commit**
+746: ```bash
+747: git add .claude/settings.local.json
+748: git commit -m "Merge prp-d-command-perms: Resolve settings conflict"
+749: ```
+750: 
+751: **Scenario 3: Conflicting Logic** (PRP-A denies tool, PRP-D allows same tool)
+752: 
+753: **Resolution**: Apply **last-merged wins** or **manual decision**.
+754: 
+755: ```json
+756: // PRP-A (merged first): Denies "mcp__syntropy__git_git_status"
+757: "deny": ["mcp__syntropy__git_git_status"]
+758: 
+759: // PRP-D (merging now): Allows "git" commands implicitly
+760: "allow": ["Bash(git:*)"]
+761: 
+762: // Decision: Keep Bash(git:*) in allow, keep git_git_status in deny
+763: // Rationale: Native bash git preferred over MCP wrapper
+764: ```
+765: 
+766: ### Comparison: GitButler vs Worktree
+767: 
+768: | Feature | GitButler | Git Worktree |
+769: |---------|-----------|--------------|
+770: | **Parallel Development** | ✓ Virtual branches | ✓ Physical worktrees |
+771: | **Branch Switching** | ✗ Not needed | ✗ Not needed |
+772: | **Conflict Detection** | ✓ Real-time 🔒 icon | ⚠️ At merge time |
+773: | **Native Git** | ✗ Proprietary layer | ✓ Built-in since Git 2.5 |
+774: | **Learning Curve** | Medium (new concepts) | Low (standard git) |
+775: | **Merge Strategy** | UI-based | CLI-based (standard) |
+776: | **Same Branch Limit** | ✓ Can work on same "virtual" branch | ✗ Must use unique branches |
+777: | **Tool Requirement** | Requires GitButler app + CLI | ✓ Native git (no install) |
+778: | **Workspace Branch** | Auto-merges to `gitbutler/workspace` | Manual merge to `main` |
+779: 
+780: ### Benefits of Worktree Approach
+781: 
+782: 1. **Native Git**: No external dependencies, works everywhere
+783: 2. **Explicit Branches**: Clear separation, standard git workflow
+784: 3. **Merge Control**: Full control over merge order and conflict resolution
+785: 4. **Universal**: Works on any git version ≥2.5 (2015)
+786: 5. **Simple Cleanup**: `git worktree remove` + `git worktree prune`
+787: 
+788: ### Example: 3-PRP Parallel Execution
+789: 
+790: ```bash
+791: # Stage 1: Create worktrees (30 seconds)
+792: git worktree add ../ctx-eng-plus-prp-a -b prp-a-tool-deny
+793: git worktree add ../ctx-eng-plus-prp-b -b prp-b-usage-guide
+794: git worktree add ../ctx-eng-plus-prp-c -b prp-c-worktree-docs
+795: 
+796: # Stage 2: Execute in parallel (15 minutes total, vs 45 sequential)
+797: # Each PRP executes independently in its worktree
+798: 
+799: # Stage 3: Merge in dependency order (5 minutes)
+800: git merge prp-a-tool-deny --no-ff     # Merge order: 1
+801: git merge prp-b-usage-guide --no-ff   # Merge order: 2
+802: git merge prp-c-worktree-docs --no-ff # Merge order: 3
+803: 
+804: # Stage 4: Cleanup (30 seconds)
+805: git worktree remove ../ctx-eng-plus-prp-a
+806: git worktree remove ../ctx-eng-plus-prp-b
+807: git worktree remove ../ctx-eng-plus-prp-c
+808: git worktree prune
+809: ```
+810: 
+811: **Time Savings**: 45 min sequential → 20 min parallel (55% reduction)
+812: 
+813: ---
+814: 
+815: ## Troubleshooting
+816: 
+817: ```bash
+818: # Tool not found
+819: cd tools && uv pip install -e .
+820: 
+821: # Tests failing
+822: uv sync
+823: uv run pytest tests/ -v
+824: 
+825: # Linear "Not connected"
+826: rm -rf ~/.mcp-auth
+827: 
+828: # Check PRP's Linear issue ID
+829: grep "^issue:" PRPs/executed/PRP-12-feature.md
+830: ```
+831: 
+832: **New Issues** (added after lockdown):
+833: 
+834: ### Issue: "Permission prompt for safe command"
+835: 
+836: **Symptom**: Commands like `ls` or `cat` prompt for permission
+837: 
+838: **Cause**: Command not in auto-allow list
+839: 
+840: **Solution**:
+841: 1. Check if command matches pattern: `grep 'Bash(ls' .claude/settings.local.json`
+842: 2. If missing, add pattern to allow list
+843: 3. Or approve once (permission remembered for session)
+844: 
+845: ### Issue: "Command denied" or "tool not found"
+846: 
+847: **Symptom**: MCP tool like `mcp__syntropy__filesystem_read_file` fails
+848: 
+849: **Cause**: Tool in deny list (post-lockdown)
+850: 
+851: **Solution**:
+852: 1. Check TOOL-USAGE-GUIDE.md for alternative
+853: 2. Example: `filesystem_read_file` → Use `Read` (native) instead
+854: 3. If tool should be allowed, remove from deny list (rare)
+855: 
+856: ### Issue: "MCP tools context too large"
+857: 
+858: **Symptom**: Token usage warning for MCP tools
+859: 
+860: **Cause**: Deny list not applied (MCP not reconnected)
+861: 
+862: **Solution**:
+863: ```bash
+864: # Reconnect MCP servers
+865: /mcp
+866: 
+867: # Verify token reduction
+868: # Expected: ~2k tokens for MCP tools (was ~46k)
+869: ```
+870: 
+871: ## Permissions
+872: 
+873: **❌ NEVER** replace all permissions with one entry in `.claude/settings.local.json`
+874: 
+875: **✅ ALLOWED**: Surgical edits to individual permissions
+876: 
+877: ## Special Notes
+878: 
+879: - Linear MCP context: "linear( mcp)" = linear-server mcp
+880: - Compact conversation: Use claude-3-haiku-20240307
+881: - Activate Serena: Use project's root full path
+882: - Ad-hoc code strict: 3 LOC max, no exceptions
+883: - reset target branch = means reset --hard /Users/bprzybyszi/nc-src/ctx-eng-plus-test-target to main HEAD; create 'prp36test' branch
+</file>
+
 <file path="tools/ce/blending/strategies/simple.py">
   1: """Simple blending strategies for PRPs and Commands.
   2: 
@@ -41207,892 +42094,6 @@ This section contains the contents of the repository's files.
 1195:         import traceback
 1196:         traceback.print_exc()
 1197:         return 2
-</file>
-
-<file path="CLAUDE.md">
-  1: # Context Engineering Tools - Project Guide
-  2: 
-  3: **Project**: CLI tooling for Context Engineering framework operations
-  4: 
-  5: ## Communication
-  6: 
-  7: Direct, token-efficient. No fluff. Call out problems directly.
-  8: 
-  9: ## Core Principles
- 10: 
- 11: ### Syntropy MCP First
- 12: - Use `mcp__syntropy__<server>_<tool>` format (standard MCP protocol - client-side prefixing)
- 13: - Prefer Syntropy tools over bash/cmdline
- 14: - See [Naming Convention](examples/syntropy-mcp-naming-convention.md) for complete spec
- 15: 
- 16: ### No Fishy Fallbacks
- 17: - Fast failure: Let exceptions bubble up
- 18: - Actionable errors: Include 🔧 troubleshooting
- 19: - No silent corruption
- 20: 
- 21: ### KISS
- 22: - Simple solutions first
- 23: - Clear code over clever code
- 24: - Minimal dependencies (stdlib only)
- 25: - Single responsibility per function
- 26: 
- 27: ### UV Package Management - STRICT
- 28: ```bash
- 29: uv add package-name              # Production
- 30: uv add --dev package-name        # Development
- 31: uv sync                          # Install
- 32: 
- 33: # ❌ FORBIDDEN: Manual pyproject.toml editing
- 34: ```
- 35: 
- 36: ### Ad-Hoc Code Policy
- 37: - Max 3 LOC inline
- 38: - Longer code → tmp/ file and execute
- 39: - Must execute via run_py
- 40: 
- 41: ## Quick Commands
- 42: 
- 43: ```bash
- 44: cd tools
- 45: 
- 46: # Validation & health
- 47: uv run ce validate --level all
- 48: uv run ce context health
- 49: uv run ce git status
- 50: 
- 51: # Cleanup
- 52: uv run ce vacuum                  # Dry-run (report only)
- 53: uv run ce vacuum --execute        # Delete temp files only
- 54: uv run ce vacuum --auto           # Delete temp files + obsolete docs/dead links
- 55: 
- 56: # Testing
- 57: uv run pytest tests/ -v
- 58: 
- 59: # Run Python (3 LOC max ad-hoc)
- 60: uv run ce run_py "print('hello')"
- 61: uv run ce run_py ../tmp/script.py
- 62: ```
- 63: 
- 64: ## Framework Initialization
- 65: 
- 66: **Quick Start** (Automated - RECOMMENDED):
- 67: ```bash
- 68: npx syntropy-mcp init ce-framework
- 69: ```
- 70: Time: <5 minutes | Automatically extracts 50 files, reorganizes tools, blends settings
- 71: 
- 72: **Manual Setup**: See [examples/INITIALIZATION.md](examples/INITIALIZATION.md) for complete CE 1.1 initialization guide.
- 73: 
- 74: **Manual Key Steps** (5-phase workflow):
- 75: 1. **Bucket Collection**: Extract existing Serena memories, examples, PRPs, CLAUDE.md, .claude directory
- 76: 2. **User Files Migration**: Copy validated user files with `type: user` YAML headers
- 77: 3. **Repomix Package Handling**: Extract ce-infrastructure.xml to /system/ subfolders
- 78: 4. **Blending**: Merge framework + user files (CLAUDE.md sections, settings.local.json, commands)
- 79: 5. **Cleanup**: Remove initialization artifacts, verify structure
- 80: 
- 81: **Repomix Usage** (manual context loading):
- 82: 
- 83: ```bash
- 84: # Load workflow docs (commands, validation, PRP patterns)
- 85: # Reference package - stored in .ce/, not extracted during initialization
- 86: cat .ce/ce-workflow-docs.xml
- 87: 
- 88: # Load infrastructure docs (memories, rules, system architecture)
- 89: # Extracted to /system/ subfolders during Phase 3 of initialization
- 90: npx repomix --unpack .ce/ce-infrastructure.xml --target tmp/extraction/
- 91: ```
- 92: 
- 93: **Repomix Package Structure** (CE 1.1):
- 94: - **ce-workflow-docs.xml**: 85KB (reference package, not extracted)
- 95: - **ce-infrastructure.xml**: 206KB (all framework files with /system/ organization)
- 96: - **Combined**: 291KB total
- 97: 
- 98: **Build and Distribution**:
- 99: ```bash
-100: # Regenerate packages and distribute to syntropy-mcp
-101: .ce/build-and-distribute.sh
-102: ```
-103: This script regenerates both packages and copies them to `syntropy-mcp/boilerplate/ce-framework/` for automated init.
-104: 
-105: **Migration Scenarios**:
-106: 
-107: All scenarios documented in [INITIALIZATION.md](examples/INITIALIZATION.md) with scenario-specific variations within each phase:
-108: - **Greenfield**: New project setup (10 min)
-109: - **Mature Project**: Add CE to existing codebase (45 min)
-110: - **CE 1.0 Upgrade**: Upgrade CE 1.0 → CE 1.1 (40 min)
-111: - **Partial Install**: Complete partial CE installation (15 min)
-112: 
-113: **Memory Type System** (CE 1.1):
-114: 
-115: Framework memories (23 files) use `type: regular` by default:
-116: ```yaml
-117: ---
-118: type: regular
-119: category: documentation
-120: tags: [tag1, tag2, tag3]
-121: created: "2025-11-04T17:30:00Z"
-122: updated: "2025-11-04T17:30:00Z"
-123: ---
-124: ```
-125: 
-126: **Critical Memory Candidates** (upgrade during initialization):
-127: - code-style-conventions.md
-128: - suggested-commands.md
-129: - task-completion-checklist.md
-130: - testing-standards.md
-131: - tool-usage-syntropy.md
-132: - use-syntropy-tools-not-bash.md
-133: 
-134: **User File Headers** (added during Phase 2 of initialization):
-135: 
-136: User memories:
-137: ```yaml
-138: ---
-139: type: user
-140: source: target-project
-141: created: "2025-11-04T00:00:00Z"
-142: updated: "2025-11-04T00:00:00Z"
-143: ---
-144: ```
-145: 
-146: User PRPs:
-147: ```yaml
-148: ---
-149: prp_id: USER-001
-150: title: User Feature Implementation
-151: status: completed
-152: created: "2025-11-04"
-153: source: target-project
-154: type: user
-155: ---
-156: ```
-157: 
-158: **See Also**:
-159: - [examples/INITIALIZATION.md](examples/INITIALIZATION.md) - Complete initialization guide
-160: - [.serena/memories/README.md](.serena/memories/README.md) - Memory type system documentation
-161: - [examples/templates/PRP-0-CONTEXT-ENGINEERING.md](examples/templates/PRP-0-CONTEXT-ENGINEERING.md) - Document framework installation
-162: 
-163: ## Working Directory
-164: 
-165: **Default**: `/Users/bprzybysz/nc-src/ctx-eng-plus`
-166: 
-167: **For tools/ commands**: Use `cd tools &&` or `uv run -C tools`
-168: 
-169: **Note**: In THIS repo (ctx-eng-plus development), tools are at `tools/`. In TARGET projects that extract the infrastructure package, tools are installed to `.ce/tools/`.
-170: 
-171: ## Hooks
-172: 
-173: **Pre-Commit**: Runs `ce validate --level 4` before commit (skip: `--no-verify`)
-174: 
-175: **Session Start**: Auto drift score check
-176: 
-177: **Shell Functions** (optional): Source `.ce/shell-functions.sh` for `cet` alias
-178: 
-179: ## Tool Naming Convention
-180: 
-181: Format: `mcp__syntropy__<server>_<tool>`
-182: - `mcp__` - MCP prefix (double underscore)
-183: - `syntropy__` - Syntropy server (double underscore)
-184: - `<server>_` - Server name + single underscore
-185: - `<tool>` - Tool name
-186: 
-187: Example: `mcp__syntropy__serena_find_symbol`
-188: 
-189: ## Allowed Tools Summary
-190: 
-191: **Post-Lockdown State** (after PRP-A & PRP-D):
-192: - **Before**: 87 MCP tools (via Syntropy aggregator)
-193: - **After**: 28 MCP tools (59 denied for native tool preference)
-194: - **Token reduction**: ~44k tokens (96% reduction from 46k→2k)
-195: 
-196: ### Kept Tools by Category
-197: 
-198: **Serena** (13 tools): Code symbol navigation
-199: - activate_project, find_symbol, get_symbols_overview, search_for_pattern
-200: - find_referencing_symbols, replace_symbol_body, write_memory, read_memory
-201: - list_memories, create_text_file, read_file, list_dir, delete_memory
-202: 
-203: **Linear** (9 tools): Project management integration
-204: - create_issue, get_issue, list_issues, update_issue
-205: - list_projects, list_teams, list_users, get_team, create_project
-206: 
-207: **Context7** (2 tools): Library documentation
-208: - resolve_library_id, get_library_docs
-209: 
-210: **Thinking** (1 tool): Complex reasoning
-211: - sequentialthinking
-212: 
-213: **Syntropy System** (3 tools): System utilities
-214: - healthcheck (MCP diagnostics)
-215: - enable_tools (dynamic tool management)
-216: - list_all_tools (list all available tools with states)
-217: 
-218: **Bash Commands** (~50 patterns): See "Command Permissions" section below
-219: **Native Tools**: Read, Write, Edit, Glob, Grep, WebSearch, WebFetch
-220: 
-221: ### Denied Tools (55 total)
-222: 
-223: **Rationale**: Native Claude Code tools provide equivalent or better functionality
-224: 
-225: **Categories**:
-226: - Filesystem (8): Use Read, Write, Edit, Glob instead
-227: - Git (5): Use Bash(git:*) instead
-228: - GitHub (26): Use Bash(gh:*) instead
-229: - Repomix (4): Use incremental Glob/Grep/Read instead
-230: - Playwright (6): Use WebFetch or Bash(playwright CLI) instead
-231: - Perplexity (1): Use WebSearch instead
-232: - Syntropy (5): Use Read for docs, rare-use tools
-233: 
-234: **Full details**: See [TOOL-USAGE-GUIDE.md](TOOL-USAGE-GUIDE.md)
-235: 
-236: ## Command Permissions
-237: 
-238: **Permission Model**: Auto-allow safe commands, ask-first for potentially destructive operations.
-239: 
-240: ### Auto-Allow Patterns (~35 bash patterns)
-241: 
-242: Commands that never prompt:
-243: 
-244: **File Inspection**:
-245: - `ls`, `cat`, `head`, `tail`, `less`, `more`, `file`, `stat`
-246: 
-247: **Navigation**:
-248: - `cd`, `pwd`, `which`, `whereis`
-249: 
-250: **Search**:
-251: - `find`, `grep`, `rg`, `tree`
-252: 
-253: **Text Processing**:
-254: - `sed`, `awk`, `sort`, `uniq`, `cut`, `diff`, `comm`, `wc`
-255: 
-256: **Environment**:
-257: - `env`, `ps`, `echo`
-258: 
-259: **Development**:
-260: - `git` (all operations), `gh` (GitHub CLI)
-261: - `uv`, `uvx`, `pytest`
-262: - `python`, `python3`
-263: 
-264: **Special Cases**:
-265: - `rm -rf ~/.mcp-auth` (MCP troubleshooting)
-266: 
-267: **Full list**: See `.claude/settings.local.json` "allow" array
-268: 
-269: ### Ask-First Patterns (15 patterns)
-270: 
-271: Commands that require confirmation:
-272: 
-273: **File Operations** (potentially destructive):
-274: - `rm`, `mv`, `cp`
-275: 
-276: **Network Operations**:
-277: - `curl`, `wget`, `nc`, `telnet`, `ssh`, `scp`, `rsync`
-278: 
-279: **Package Management**:
-280: - `brew install`, `npm install`, `pip install`, `gem install`
-281: 
-282: **System Operations**:
-283: - `sudo` (any sudo command)
-284: 
-285: **Rationale**: Safety gate for operations that modify files, access network, or require elevated privileges.
-286: 
-287: **Full list**: See `.claude/settings.local.json` "ask" array
-288: 
-289: ### Permission Behavior
-290: 
-291: **Unlisted commands**: Prompt by default (ask before execution)
-292: **Workaround**: Add to allow list in `.claude/settings.local.json` if frequently used
-293: 
-294: ## Quick Tool Selection
-295: 
-296: **🔗 Comprehensive Guide**: See [examples/TOOL-USAGE-GUIDE.md](examples/TOOL-USAGE-GUIDE.md) for:
-297: - Decision tree (flowchart for tool selection)
-298: - Common tasks with right/wrong examples
-299: - Anti-patterns to avoid
-300: - Migration table (55 denied tools → alternatives)
-301: 
-302: **Quick Reference**:
-303: 
-304: **Analyze code**:
-305: - Know symbol → `serena_find_symbol`
-306: - Explore file → `serena_get_symbols_overview`
-307: - Search patterns → `Grep` (native, not serena_search_for_pattern)
-308: - Find usages → `serena_find_referencing_symbols`
-309: 
-310: **Modify files**:
-311: - New → `Write` (native)
-312: - Existing (surgical) → `Edit` (native)
-313: - Config/text → `Read` (native)
-314: 
-315: **Version control**:
-316: - Use `Bash(git:*)` (native git commands)
-317: - NOT `mcp__syntropy__git_git_status` (denied)
-318: 
-319: **GitHub operations**:
-320: - Use `Bash(gh:*)` (native gh CLI)
-321: - NOT `mcp__syntropy__github_*` (denied)
-322: 
-323: **External knowledge**:
-324: - Documentation → `context7_get_library_docs`
-325: - Web search → `WebSearch` (native)
-326: - Web content → `WebFetch` (native)
-327: 
-328: **Complex reasoning**: `sequentialthinking`
-329: 
-330: **Project management**: Linear tools (all 9 kept)
-331: 
-332: **System health**: `healthcheck` (detailed diagnostics with `detailed=true`)
-333: 
-334: ## Project Structure
-335: 
-336: ```
-337: tools/
-338: ├── ce/                 # Source code
-339: │   ├── core.py         # File, git, shell ops
-340: │   ├── validate.py     # 3-level validation
-341: │   └── context.py      # Context management
-342: ├── tests/              # Test suite
-343: ├── pyproject.toml      # UV config (don't edit!)
-344: └── bootstrap.sh        # Setup script
-345: ```
-346: 
-347: ## Testing Standards
-348: 
-349: **TDD**: Test first → fail → implement → refactor
-350: 
-351: **Real functionality**: No fake results, no mocks in tests
-352: 
-353: **Test before critical changes** (tool naming, API changes, refactoring)
-354: 
-355: ## Code Quality
-356: 
-357: - Functions: 50 lines (single responsibility)
-358: - Files: 300-500 lines (logical modules)
-359: - Classes: 100 lines (single concept)
-360: - Mark mocks with FIXME in production code
-361: 
-362: ## Context Commands
-363: 
-364: ```bash
-365: # Sync all PRPs with codebase
-366: cd tools && uv run ce update-context
-367: 
-368: # Sync specific PRP
-369: cd tools && uv run ce update-context --prp PRPs/executed/PRP-6.md
-370: 
-371: # Fast drift check (2-3s vs 10-15s)
-372: cd tools && uv run ce analyze-context
-373: 
-374: # Force re-analysis
-375: cd tools && uv run ce analyze-context --force
-376: ```
-377: 
-378: **Drift Exit Codes**:
-379: - 0: <5% (healthy)
-380: - 1: 5-15% (warning)
-381: - 2: ≥15% (critical)
-382: 
-383: ## Syntropy MCP Tool Sync
-384: 
-385: **Dynamic tool management** - Enable/disable tools at runtime without restart
-386: 
-387: ```bash
-388: # Sync settings with Syntropy MCP tool state
-389: /sync-with-syntropy
-390: 
-391: # Workflow example:
-392: # 1. Enable/disable tools via Syntropy
-393: mcp__syntropy__enable_tools(
-394:   enable=["serena_find_symbol", "context7_get_library_docs"],
-395:   disable=["filesystem_read_file", "git_git_status"]
-396: )
-397: 
-398: # 2. Sync settings to .claude/settings.local.json
-399: /sync-with-syntropy
-400: 
-401: # 3. Verify changes
-402: cat .claude/settings.local.json
-403: ```
-404: 
-405: **How it works**:
-406: 1. Call `mcp__syntropy__list_all_tools` to get current tool states
-407: 2. Update `.claude/settings.local.json` to match
-408: 3. Backup original settings to `.claude/settings.local.json.backup`
-409: 4. Output clear summary of changes made
-410: 
-411: **Benefits**:
-412: - Real-time tool control (no MCP restart needed)
-413: - Persistent state across sessions (`~/.syntropy/tool-state.json`)
-414: - Context-aware tool sets (enable 10 tools for quick tasks, all 87 for deep analysis)
-415: 
-416: ## Linear Integration
-417: 
-418: **Config**: `.ce/linear-defaults.yml`
-419: - Project: "Context Engineering"
-420: - Assignee: "blazej.przybyszewski@gmail.com"
-421: - Team: "Blaise78"
-422: 
-423: **Auto-create issues**: `/generate-prp` uses defaults
-424: 
-425: **Join existing issue**: `/generate-prp --join-prp 12`
-426: 
-427: **Troubleshooting**: `rm -rf ~/.mcp-auth` (pre-approved)
-428: 
-429: ## Batch PRP Generation
-430: 
-431: **Decompose large plans into staged, parallelizable PRPs with automatic dependency analysis**
-432: 
-433: ```bash
-434: # Create plan document
-435: vim FEATURE-PLAN.md
-436: 
-437: # Generate all PRPs with parallel subagents
-438: /batch-gen-prp FEATURE-PLAN.md
-439: 
-440: # Output: Multiple PRPs with format PRP-X.Y.Z
-441: #   X = Batch ID (next free number)
-442: #   Y = Stage number
-443: #   Z = Order within stage
-444: ```
-445: 
-446: **Plan Format**:
-447: ```markdown
-448: # Plan Title
-449: 
-450: ## Phases
-451: 
-452: ### Phase 1: Name
-453: 
-454: **Goal**: One-sentence objective
-455: **Estimated Hours**: 0.5
-456: **Complexity**: low
-457: **Files Modified**: path/to/file
-458: **Dependencies**: None
-459: **Implementation Steps**: [steps]
-460: **Validation Gates**: [gates]
-461: ```
-462: 
-463: **What It Does**:
-464: 1. Parses plan document → Extracts phases
-465: 2. Builds dependency graph → Analyzes deps + file conflicts
-466: 3. Assigns stages → Groups independent PRPs for parallel execution
-467: 4. Spawns Sonnet subagents → Parallel generation per stage
-468: 5. Monitors via heartbeat files → 30s polling, kills after 2 failed polls
-469: 6. Creates Linear issues → One per PRP
-470: 7. Outputs summary → All generated PRPs grouped by stage
-471: 
-472: **Example Output**:
-473: ```
-474: Batch 43:
-475:   Stage 1: PRP-43.1.1
-476:   Stage 2: PRP-43.2.1, PRP-43.2.2, PRP-43.2.3 (parallel)
-477:   Stage 3: PRP-43.3.1
-478: ```
-479: 
-480: **Integration with Execution**:
-481: ```bash
-482: # Generate PRPs from plan
-483: /batch-gen-prp BIG-FEATURE-PLAN.md
-484: 
-485: # Execute entire batch
-486: /batch-exe-prp --batch 43
-487: 
-488: # Or stage-by-stage
-489: /batch-exe-prp --batch 43 --stage 1
-490: /batch-exe-prp --batch 43 --stage 2
-491: ```
-492: 
-493: **Time Savings**: 8 PRPs sequential (30 min) → parallel (10-12 min) = **60% faster**
-494: 
-495: **See**: `.claude/commands/batch-gen-prp.md` for complete documentation
-496: 
-497: ## PRP Sizing
-498: 
-499: ```bash
-500: cd tools && uv run ce prp analyze <path-to-prp.md>
-501: ```
-502: 
-503: **Size Categories**:
-504: - GREEN: ≤700 lines, ≤8h, LOW-MEDIUM risk
-505: - YELLOW: 700-1000 lines, 8-12h, MEDIUM risk
-506: - RED: >1000 lines, >12h, HIGH risk
-507: 
-508: **Exit Codes**: 0 (GREEN), 1 (YELLOW), 2 (RED)
-509: 
-510: ## Testing Patterns
-511: 
-512: **Strategy pattern** for composable testing:
-513: - **Unit**: Test single strategy in isolation
-514: - **Integration**: Test subgraph with real + mock
-515: - **E2E**: Full pipeline, all external deps mocked
-516: 
-517: **Mock Strategies**: MockSerenaStrategy, MockContext7Strategy, MockLLMStrategy
-518: 
-519: **Real Strategies**: RealParserStrategy, RealCommandStrategy
-520: 
-521: ## Documentation Standards
-522: 
-523: **Mermaid Diagrams**: Always specify text color
-524: - Light backgrounds → `color:#000`
-525: - Dark backgrounds → `color:#fff`
-526: - Format: `style X fill:#bgcolor,color:#textcolor`
-527: 
-528: ## Efficient Doc Review
-529: 
-530: **Grep-first validation** (90% token reduction):
-531: 1. Structural validation (Grep patterns, 1-2k tokens)
-532: 2. Code quality checks (Grep anti-patterns, 500 tokens)
-533: 3. Targeted reads (2-3 files only, 3-5k tokens)
-534: 
-535: **Total**: ~5-7k tokens vs 200k+ for read-all
-536: 
-537: ## Resources
-538: 
-539: - `.ce/` - System boilerplate (don't modify)
-540: - `.ce/RULES.md` - Framework rules
-541: - `PRPs/[executed,feature-requests]` - Feature requests
-542: - `examples/` - Framework patterns and user code
-543: 
-544: ## Keyboard Shortcuts
-545: 
-546: ### Image Pasting (macOS)
-547: 
-548: **cmd+v**: Paste screenshot images into Claude Code
-549: - Requires Karabiner-Elements (configured via PRP-30)
-550: - Remaps cmd+v → ctrl+v in terminals only
-551: - Config: `~/.config/karabiner/assets/complex_modifications/claude-code-cmd-v.json`
-552: - Toggle: Karabiner-Elements → Complex Modifications
-553: 
-554: **Setup** (one-time):
-555: ```bash
-556: brew install --cask karabiner-elements
-557: # Enable rule in Karabiner-Elements UI → Complex Modifications
-558: ```
-559: 
-560: ## Git Worktree - Parallel PRP Development
-561: 
-562: **Native git solution for working on multiple PRPs simultaneously**
-563: 
-564: ### Quick Start
-565: 
-566: ```bash
-567: # Create worktree for PRP-A (creates ../ctx-eng-plus-prp-a)
-568: git worktree add ../ctx-eng-plus-prp-a -b prp-a-feature
-569: 
-570: # Work in worktree
-571: cd ../ctx-eng-plus-prp-a
-572: # Make changes...
-573: git add .
-574: git commit -m "Implement feature"
-575: 
-576: # List all worktrees
-577: git worktree list
-578: 
-579: # Remove worktree after merging
-580: git worktree remove ../ctx-eng-plus-prp-a
-581: ```
-582: 
-583: ### Commands
-584: 
-585: **Create**:
-586: ```bash
-587: git worktree add <path> -b <branch-name>
-588: # Example: git worktree add ../ctx-eng-plus-prp-12 -b prp-12-validation
-589: ```
-590: 
-591: **List**:
-592: ```bash
-593: git worktree list
-594: # Shows: path, commit hash, branch name
-595: ```
-596: 
-597: **Remove**:
-598: ```bash
-599: git worktree remove <path>
-600: # or: git worktree remove --force <path>  # if uncommitted changes
-601: ```
-602: 
-603: **Prune** (clean stale references):
-604: ```bash
-605: git worktree prune
-606: ```
-607: 
-608: ### Workflow for Parallel PRPs
-609: 
-610: **Stage 1: Create Worktrees**
-611: ```bash
-612: # From main repo: /Users/bprzybysz/nc-src/ctx-eng-plus
-613: git worktree add ../ctx-eng-plus-prp-a -b prp-a-tool-deny
-614: git worktree add ../ctx-eng-plus-prp-b -b prp-b-usage-guide
-615: git worktree add ../ctx-eng-plus-prp-c -b prp-c-worktree-docs
-616: ```
-617: 
-618: **Stage 2: Execute in Parallel**
-619: ```bash
-620: # Terminal 1
-621: cd ../ctx-eng-plus-prp-a
-622: # Edit .claude/settings.local.json
-623: git add .
-624: git commit -m "PRP-A: Add tools to deny list"
-625: 
-626: # Terminal 2
-627: cd ../ctx-eng-plus-prp-b
-628: # Create TOOL-USAGE-GUIDE.md
-629: git add .
-630: git commit -m "PRP-B: Create tool usage guide"
-631: 
-632: # Terminal 3
-633: cd ../ctx-eng-plus-prp-c
-634: # Update CLAUDE.md
-635: git add .
-636: git commit -m "PRP-C: Migrate to worktree docs"
-637: ```
-638: 
-639: **Stage 3: Merge in Order**
-640: ```bash
-641: cd /Users/bprzybysz/nc-src/ctx-eng-plus
-642: git checkout main
-643: 
-644: # Merge PRP-A first
-645: git merge prp-a-tool-deny --no-ff
-646: git push origin main
-647: 
-648: # Merge PRP-B
-649: git merge prp-b-usage-guide --no-ff
-650: git push origin main
-651: 
-652: # Merge PRP-C (may conflict with PRP-A on settings.local.json)
-653: git merge prp-c-worktree-docs --no-ff
-654: # If conflicts, resolve manually (see Conflict Resolution below)
-655: git push origin main
-656: ```
-657: 
-658: **Stage 4: Cleanup**
-659: ```bash
-660: git worktree remove ../ctx-eng-plus-prp-a
-661: git worktree remove ../ctx-eng-plus-prp-b
-662: git worktree remove ../ctx-eng-plus-prp-c
-663: git worktree prune
-664: ```
-665: 
-666: ### Critical Constraints
-667: 
-668: **⚠️ Same Branch Limitation**
-669: 
-670: **CANNOT** check out the same branch in multiple worktrees simultaneously.
-671: 
-672: **Example of ERROR**:
-673: ```bash
-674: # Main repo on `main` branch
-675: cd /Users/bprzybysz/nc-src/ctx-eng-plus
-676: git branch
-677: # * main
-678: 
-679: # Try to create worktree on `main`
-680: git worktree add ../ctx-eng-plus-test -b main
-681: # ERROR: fatal: 'main' is already checked out at '/Users/bprzybysz/nc-src/ctx-eng-plus'
-682: ```
-683: 
-684: **Solution**: Each worktree must use a **unique branch**.
-685: 
-686: ```bash
-687: # Main repo stays on gitbutler/workspace or main
-688: # Each PRP worktree uses dedicated branch
-689: git worktree add ../ctx-eng-plus-prp-a -b prp-a-unique  # ✓
-690: git worktree add ../ctx-eng-plus-prp-b -b prp-b-unique  # ✓
-691: ```
-692: 
-693: ### Conflict Resolution
-694: 
-695: When merging parallel PRPs, conflicts may occur if they modify the same file sections.
-696: 
-697: **Scenario 1: No Conflicts** (PRP-A + PRP-B)
-698: ```bash
-699: git merge prp-a-tool-deny --no-ff  # ✓ Success
-700: git merge prp-b-usage-guide --no-ff  # ✓ Success (different files)
-701: ```
-702: 
-703: **Scenario 2: Merge Conflict** (PRP-A + PRP-D both edit settings.local.json)
-704: 
-705: **Step 1: Attempt Merge**
-706: ```bash
-707: git merge prp-d-command-perms --no-ff
-708: # Auto-merging .claude/settings.local.json
-709: # CONFLICT (content): Merge conflict in .claude/settings.local.json
-710: # Automatic merge failed; fix conflicts and then commit the result.
-711: ```
-712: 
-713: **Step 2: Check Conflict Markers**
-714: ```bash
-715: git status
-716: # Unmerged paths:
-717: #   both modified:   .claude/settings.local.json
-718: ```
-719: 
-720: **Step 3: Read File to See Conflicts**
-721: ```python
-722: Read(file_path="/Users/bprzybysz/nc-src/ctx-eng-plus/.claude/settings.local.json")
-723: # Look for:
-724: # <<<<<<< HEAD
-725: # ... current branch content ...
-726: # =======
-727: # ... incoming branch content ...
-728: # >>>>>>> prp-d-command-perms
-729: ```
-730: 
-731: **Step 4: Resolve with Edit Tool**
-732: ```python
-733: # Remove conflict markers, keep desired changes from both branches
-734: Edit(
-735:   file_path="/Users/bprzybysz/nc-src/ctx-eng-plus/.claude/settings.local.json",
-736:   old_string="""<<<<<<< HEAD
-737:   "deny": [existing tools...]
-738: =======
-739:   "deny": [incoming tools...]
-740: >>>>>>> prp-d-command-perms""",
-741:   new_string="""  "deny": [merged tools from both branches...]"""
-742: )
-743: ```
-744: 
-745: **Step 5: Stage and Commit**
-746: ```bash
-747: git add .claude/settings.local.json
-748: git commit -m "Merge prp-d-command-perms: Resolve settings conflict"
-749: ```
-750: 
-751: **Scenario 3: Conflicting Logic** (PRP-A denies tool, PRP-D allows same tool)
-752: 
-753: **Resolution**: Apply **last-merged wins** or **manual decision**.
-754: 
-755: ```json
-756: // PRP-A (merged first): Denies "mcp__syntropy__git_git_status"
-757: "deny": ["mcp__syntropy__git_git_status"]
-758: 
-759: // PRP-D (merging now): Allows "git" commands implicitly
-760: "allow": ["Bash(git:*)"]
-761: 
-762: // Decision: Keep Bash(git:*) in allow, keep git_git_status in deny
-763: // Rationale: Native bash git preferred over MCP wrapper
-764: ```
-765: 
-766: ### Comparison: GitButler vs Worktree
-767: 
-768: | Feature | GitButler | Git Worktree |
-769: |---------|-----------|--------------|
-770: | **Parallel Development** | ✓ Virtual branches | ✓ Physical worktrees |
-771: | **Branch Switching** | ✗ Not needed | ✗ Not needed |
-772: | **Conflict Detection** | ✓ Real-time 🔒 icon | ⚠️ At merge time |
-773: | **Native Git** | ✗ Proprietary layer | ✓ Built-in since Git 2.5 |
-774: | **Learning Curve** | Medium (new concepts) | Low (standard git) |
-775: | **Merge Strategy** | UI-based | CLI-based (standard) |
-776: | **Same Branch Limit** | ✓ Can work on same "virtual" branch | ✗ Must use unique branches |
-777: | **Tool Requirement** | Requires GitButler app + CLI | ✓ Native git (no install) |
-778: | **Workspace Branch** | Auto-merges to `gitbutler/workspace` | Manual merge to `main` |
-779: 
-780: ### Benefits of Worktree Approach
-781: 
-782: 1. **Native Git**: No external dependencies, works everywhere
-783: 2. **Explicit Branches**: Clear separation, standard git workflow
-784: 3. **Merge Control**: Full control over merge order and conflict resolution
-785: 4. **Universal**: Works on any git version ≥2.5 (2015)
-786: 5. **Simple Cleanup**: `git worktree remove` + `git worktree prune`
-787: 
-788: ### Example: 3-PRP Parallel Execution
-789: 
-790: ```bash
-791: # Stage 1: Create worktrees (30 seconds)
-792: git worktree add ../ctx-eng-plus-prp-a -b prp-a-tool-deny
-793: git worktree add ../ctx-eng-plus-prp-b -b prp-b-usage-guide
-794: git worktree add ../ctx-eng-plus-prp-c -b prp-c-worktree-docs
-795: 
-796: # Stage 2: Execute in parallel (15 minutes total, vs 45 sequential)
-797: # Each PRP executes independently in its worktree
-798: 
-799: # Stage 3: Merge in dependency order (5 minutes)
-800: git merge prp-a-tool-deny --no-ff     # Merge order: 1
-801: git merge prp-b-usage-guide --no-ff   # Merge order: 2
-802: git merge prp-c-worktree-docs --no-ff # Merge order: 3
-803: 
-804: # Stage 4: Cleanup (30 seconds)
-805: git worktree remove ../ctx-eng-plus-prp-a
-806: git worktree remove ../ctx-eng-plus-prp-b
-807: git worktree remove ../ctx-eng-plus-prp-c
-808: git worktree prune
-809: ```
-810: 
-811: **Time Savings**: 45 min sequential → 20 min parallel (55% reduction)
-812: 
-813: ---
-814: 
-815: ## Troubleshooting
-816: 
-817: ```bash
-818: # Tool not found
-819: cd tools && uv pip install -e .
-820: 
-821: # Tests failing
-822: uv sync
-823: uv run pytest tests/ -v
-824: 
-825: # Linear "Not connected"
-826: rm -rf ~/.mcp-auth
-827: 
-828: # Check PRP's Linear issue ID
-829: grep "^issue:" PRPs/executed/PRP-12-feature.md
-830: ```
-831: 
-832: **New Issues** (added after lockdown):
-833: 
-834: ### Issue: "Permission prompt for safe command"
-835: 
-836: **Symptom**: Commands like `ls` or `cat` prompt for permission
-837: 
-838: **Cause**: Command not in auto-allow list
-839: 
-840: **Solution**:
-841: 1. Check if command matches pattern: `grep 'Bash(ls' .claude/settings.local.json`
-842: 2. If missing, add pattern to allow list
-843: 3. Or approve once (permission remembered for session)
-844: 
-845: ### Issue: "Command denied" or "tool not found"
-846: 
-847: **Symptom**: MCP tool like `mcp__syntropy__filesystem_read_file` fails
-848: 
-849: **Cause**: Tool in deny list (post-lockdown)
-850: 
-851: **Solution**:
-852: 1. Check TOOL-USAGE-GUIDE.md for alternative
-853: 2. Example: `filesystem_read_file` → Use `Read` (native) instead
-854: 3. If tool should be allowed, remove from deny list (rare)
-855: 
-856: ### Issue: "MCP tools context too large"
-857: 
-858: **Symptom**: Token usage warning for MCP tools
-859: 
-860: **Cause**: Deny list not applied (MCP not reconnected)
-861: 
-862: **Solution**:
-863: ```bash
-864: # Reconnect MCP servers
-865: /mcp
-866: 
-867: # Verify token reduction
-868: # Expected: ~2k tokens for MCP tools (was ~46k)
-869: ```
-870: 
-871: ## Permissions
-872: 
-873: **❌ NEVER** replace all permissions with one entry in `.claude/settings.local.json`
-874: 
-875: **✅ ALLOWED**: Surgical edits to individual permissions
-876: 
-877: ## Special Notes
-878: 
-879: - Linear MCP context: "linear( mcp)" = linear-server mcp
-880: - Compact conversation: Use claude-3-haiku-20240307
-881: - Activate Serena: Use project's root full path
-882: - Ad-hoc code strict: 3 LOC max, no exceptions
-883: - reset target branch = means reset --hard /Users/bprzybyszi/nc-src/ctx-eng-plus-test-target to main HEAD; create 'prp36test' branch
 </file>
 
 <file path="tools/ce/blending/cleanup.py">

@@ -16,6 +16,8 @@ import sys
 from pathlib import Path
 from typing import Dict, List, Optional
 
+from ce.config_loader import BlendConfig
+
 
 class ProjectInitializer:
     """
@@ -38,13 +40,20 @@ class ProjectInitializer:
         """
         self.target_project = Path(target_project).resolve()
         self.dry_run = dry_run
-        self.ce_dir = self.target_project / ".ce"
-        self.tools_dir = self.ce_dir / "tools"
 
         # Paths to framework packages (in ctx-eng-plus repo)
         self.ctx_eng_root = Path(__file__).parent.parent.parent.resolve()
         self.infrastructure_xml = self.ctx_eng_root / ".ce" / "ce-infrastructure.xml"
         self.workflow_xml = self.ctx_eng_root / ".ce" / "ce-workflow-docs.xml"
+
+        # Load unified configuration (config.yml) from ctx-eng-plus repo
+        config_path = self.ctx_eng_root / ".ce" / "config.yml"
+        self.config = BlendConfig(config_path)
+
+        # Resolve all paths from config (config-driven, not hardcoded)
+        self.ce_dir = self.target_project / self.config.get_dir_path("ce_root")
+        self.tools_dir = self.target_project / self.config.get_dir_path("tools")
+        self.serena_dir = self.target_project / self.config.get_dir_path("serena_memories").parent
 
     def run(self, phase: str = "all") -> Dict:
         """
@@ -161,9 +170,9 @@ class ProjectInitializer:
                 if item.name == ".ce":
                     continue  # Already processed
 
-                # Special case: .serena goes to project root, not .ce/
+                # Special case: .serena goes to project root (from config)
                 if item.name == ".serena":
-                    dest = self.target_project / item.name
+                    dest = self.serena_dir.parent / item.name  # .serena/ at project root
                 else:
                     dest = self.ce_dir / item.name
 
@@ -178,14 +187,16 @@ class ProjectInitializer:
             if self.workflow_xml.exists():
                 shutil.copy2(self.workflow_xml, self.ce_dir / "ce-workflow-docs.xml")
 
-            # Copy directories.yml (workaround for repomix YAML indentation issue)
-            directories_src = self.ctx_eng_root / ".ce" / "directories.yml"
-            directories_dst = self.ce_dir / "directories.yml"
-            if directories_src.exists():
+            # Copy unified config.yml (single source of truth)
+            # Note: Extracted package may contain deprecated directories.yml/blend-config.yml
+            # but config.yml is the authoritative configuration
+            config_src = self.ctx_eng_root / ".ce" / "config.yml"
+            config_dst = self.ce_dir / "config.yml"
+            if config_src.exists():
                 try:
-                    shutil.copy2(directories_src, directories_dst)
+                    shutil.copy2(config_src, config_dst)
                 except Exception:
-                    pass  # If copy fails, config loader will use fallback
+                    pass  # If copy fails, init-project will use source config from ctx-eng-plus
 
             # Cleanup temp directory
             shutil.rmtree(temp_extract.parent)
@@ -252,14 +263,14 @@ class ProjectInitializer:
             return status
 
         try:
-            # Fix YAML indentation after extraction (repomix sometimes breaks it)
-            blend_config = self.ce_dir / "blend-config.yml"
-            self._fix_yaml_indentation(blend_config)
+            # Use unified config.yml (single source of truth from ctx-eng-plus)
+            # The blend tool will read from this config in target project
+            unified_config = self.ctx_eng_root / ".ce" / "config.yml"
 
-            # Run blend command with explicit config path
+            # Run blend command - it will use config.yml for all path decisions
             result = subprocess.run(
                 ["uv", "run", "ce", "blend", "--all",
-                 "--config", str(blend_config),
+                 "--config", str(unified_config),
                  "--target-dir", str(self.target_project)],
                 cwd=self.ctx_eng_root / "tools",
                 capture_output=True,
@@ -278,7 +289,7 @@ class ProjectInitializer:
                 )
             else:
                 # Cleanup: Remove framework .claude/ and CLAUDE.md from .ce/ after blending
-                # These should only exist at root, not in .ce/
+                # Config specifies these should only exist at root, not in .ce/
                 ce_claude = self.ce_dir / ".claude"
                 ce_claude_md = self.ce_dir / "CLAUDE.md"
 
