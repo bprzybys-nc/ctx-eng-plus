@@ -71,3 +71,6 @@ repomix-output.xml
 .DS_Store
 
 **/.tmp/
+
+
+.ce/orchestration/batches/
