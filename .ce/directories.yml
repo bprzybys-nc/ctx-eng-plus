@@ -5,7 +5,7 @@ output:
   examples: .ce/examples/
   prps: .ce/PRPs/
 framework:
-  serena_memories: .ce/.serena/memories/
+  serena_memories: .serena/memories/
   examples: .ce/examples/
   prps: .ce/PRPs/
   commands: .ce/.claude/commands/

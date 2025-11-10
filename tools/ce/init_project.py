@@ -141,7 +141,8 @@ class ProjectInitializer:
 
             # Reorganize extracted files:
             # - .ce/* contents → target/.ce/ (blend-config.yml, PRPs/, etc.)
-            # - .claude/, .serena/, tools/, CLAUDE.md, examples/ → target/.ce/ (for blending)
+            # - .serena/ → target/.serena/ (project root - configured as output/framework location)
+            # - .claude/, tools/, CLAUDE.md, examples/ → target/.ce/ (framework files for blending)
 
             # First, move .ce/ contents to target/.ce/
             ce_extracted = temp_extract / ".ce"
@@ -155,12 +156,17 @@ class ProjectInitializer:
                             dest.unlink()
                     shutil.move(str(item), str(dest))
 
-            # Then, move other extracted directories to target/.ce/ (framework files for blending)
+            # Then, move other extracted directories
             for item in temp_extract.iterdir():
                 if item.name == ".ce":
                     continue  # Already processed
 
-                dest = self.ce_dir / item.name
+                # Special case: .serena goes to project root, not .ce/
+                if item.name == ".serena":
+                    dest = self.target_project / item.name
+                else:
+                    dest = self.ce_dir / item.name
+
                 if dest.exists():
                     if dest.is_dir():
                         shutil.rmtree(dest)

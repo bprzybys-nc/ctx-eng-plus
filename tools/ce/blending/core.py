@@ -330,9 +330,11 @@ class BlendingOrchestrator:
 
             if domain == "memories":
                 if self.blend_config:
+                    # Memories at project root: target/.serena/memories/
                     framework_memories_dir = target_dir / self.blend_config.get_framework_path("serena_memories")
                 else:
-                    framework_memories_dir = target_dir / ".ce" / ".serena" / "memories"
+                    # Backward compatibility: hardcoded path at project root
+                    framework_memories_dir = target_dir / ".serena" / "memories"
                 if framework_memories_dir.exists() and not files:
                     logger.info(f"  {domain}: No legacy files, but framework memories exist - processing...")
                     files = []  # Empty list signals blend mode (not migration mode)
@@ -435,10 +437,11 @@ class BlendingOrchestrator:
                         if domain == "memories":
                             # Read from framework memories location - use config if available
                             if self.blend_config:
+                                # Memories are at project root: target/.serena/memories/
                                 framework_dir = target_dir / self.blend_config.get_framework_path("serena_memories")
                             else:
-                                # Backward compatibility: hardcoded path
-                                framework_dir = target_dir / ".ce" / ".serena" / "memories"
+                                # Backward compatibility: hardcoded path at project root
+                                framework_dir = target_dir / ".serena" / "memories"
                         else:  # examples
                             if self.blend_config:
                                 framework_dir = target_dir / self.blend_config.get_framework_path("examples")
@@ -467,9 +470,11 @@ class BlendingOrchestrator:
 
                             # Verify framework memories exist
                             if self.blend_config:
+                                # Memories at project root: target/.serena/memories/
                                 framework_serena = target_dir / self.blend_config.get_framework_path("serena_memories")
                             else:
-                                framework_serena = target_dir / ".ce" / ".serena" / "memories"
+                                # Backward compatibility: hardcoded path at project root
+                                framework_serena = target_dir / ".serena" / "memories"
 
                             if not framework_serena.exists():
                                 raise RuntimeError(
