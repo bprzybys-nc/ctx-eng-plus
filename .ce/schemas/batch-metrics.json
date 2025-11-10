@@ -1,0 +1,112 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Batch Metrics",
+  "description": "Standard metrics schema for batch operations",
+  "type": "object",
+  "required": ["batch_id", "operation", "timestamp", "metrics"],
+  "properties": {
+    "batch_id": {
+      "type": "string",
+      "description": "Batch identifier (e.g., '47')"
+    },
+    "operation": {
+      "type": "string",
+      "enum": ["generate", "execute", "review", "update-context"],
+      "description": "Batch operation type"
+    },
+    "timestamp": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Operation start time (ISO 8601)"
+    },
+    "duration_seconds": {
+      "type": "number",
+      "description": "Total operation duration in seconds"
+    },
+    "metrics": {
+      "type": "object",
+      "properties": {
+        "total_items": {
+          "type": "integer",
+          "description": "Total number of items (PRPs, phases)"
+        },
+        "stages": {
+          "type": "integer",
+          "description": "Number of stages (for parallel execution)"
+        },
+        "success_count": {
+          "type": "integer",
+          "description": "Successfully completed items"
+        },
+        "failure_count": {
+          "type": "integer",
+          "description": "Failed items"
+        },
+        "partial_count": {
+          "type": "integer",
+          "description": "Partially completed items"
+        },
+        "token_usage": {
+          "type": "object",
+          "properties": {
+            "input_tokens": {"type": "integer"},
+            "output_tokens": {"type": "integer"},
+            "total_tokens": {"type": "integer"},
+            "estimated_cost": {"type": "number", "description": "USD"}
+          }
+        },
+        "stage_durations": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "stage": {"type": "integer"},
+              "duration_seconds": {"type": "number"},
+              "items": {"type": "array", "items": {"type": "string"}}
+            }
+          }
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "item_id": {"type": "string"},
+              "error_type": {"type": "string"},
+              "error_message": {"type": "string"}
+            }
+          }
+        }
+      }
+    },
+    "optimization_metrics": {
+      "type": "object",
+      "description": "Operation-specific optimization metrics",
+      "properties": {
+        "shared_context_size": {
+          "type": "integer",
+          "description": "Shared context size in tokens (review only)"
+        },
+        "token_savings": {
+          "type": "integer",
+          "description": "Tokens saved by optimization"
+        },
+        "parallel_efficiency": {
+          "type": "number",
+          "description": "Parallel speedup vs sequential (1.0 = no speedup)"
+        },
+        "drift_scores": {
+          "type": "array",
+          "description": "Drift scores for context updates",
+          "items": {
+            "type": "object",
+            "properties": {
+              "prp_id": {"type": "string"},
+              "drift": {"type": "number"}
+            }
+          }
+        }
+      }
+    }
+  }
+}
