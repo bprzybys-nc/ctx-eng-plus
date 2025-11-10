@@ -1,7 +1,7 @@
 ---
 prp_id: PRP-47.5.1
 title: Refactor /batch-peer-review Command
-status: planning
+status: completed
 type: refactor
 complexity: medium
 estimated_hours: 2
