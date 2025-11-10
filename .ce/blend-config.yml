@@ -80,3 +80,22 @@ global:
     - .serena/
     - CLAUDE.md
     - .ce/
+
+directories:
+  output:
+    claude_dir: .ce/.claude/
+    claude_md: CLAUDE.md
+    serena_memories: .serena/memories/
+    examples: .ce/examples/
+    prps: .ce/PRPs/
+  framework:
+    serena_memories: .ce/.serena/memories/
+    examples: .ce/examples/
+    prps: .ce/PRPs/
+    commands: .ce/.claude/commands/
+    settings: .ce/.claude/settings.local.json
+  legacy:
+    - PRPs/
+    - examples/
+    - context-engineering/
+    - .serena.old/

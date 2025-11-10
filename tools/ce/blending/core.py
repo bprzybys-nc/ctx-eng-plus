@@ -4,10 +4,11 @@ import shutil
 import json
 import logging
 from pathlib import Path
-from typing import Generator, Dict, List, Any, Optional
+from typing import Generator, Dict, List, Any, Optional, Union
 from contextlib import contextmanager
 
 from ce.blending.llm_client import BlendingLLM
+from ce.config_loader import BlendConfig
 
 logger = logging.getLogger(__name__)
 
@@ -85,15 +86,23 @@ class BlendingOrchestrator:
     Phase D: CLEANUP - Remove legacy directories
     """
 
-    def __init__(self, config: Dict[str, Any], dry_run: bool = False):
+    def __init__(self, config: Union[BlendConfig, Dict[str, Any]], dry_run: bool = False):
         """
         Initialize orchestrator.
 
         Args:
-            config: Configuration from blend-config.yml
+            config: BlendConfig instance or dict from blend-config.yml (for backward compatibility)
             dry_run: If True, show what would be done without executing
         """
-        self.config = config
+        # Store config - handle both BlendConfig and dict for backward compatibility
+        if isinstance(config, BlendConfig):
+            self.blend_config = config
+            self.config = config._config  # Access underlying dict if needed
+        else:
+            # Backward compatibility: dict config provided
+            self.blend_config = None
+            self.config = config
+
         self.dry_run = dry_run
         self.strategies: Dict[str, Any] = {}  # domain -> strategy mapping
         self.detected_files: Dict[str, List[Path]] = {}  # Cached detection results
@@ -210,7 +219,8 @@ class BlendingOrchestrator:
 
         logger.info("Phase A: DETECTION - Scanning legacy locations...")
 
-        detector = LegacyFileDetector(target_dir)
+        # Pass BlendConfig to detector if available for config-driven paths
+        detector = LegacyFileDetector(target_dir, config=self.blend_config)
         inventory = detector.scan_all()
 
         # Cache results
@@ -308,9 +318,12 @@ class BlendingOrchestrator:
 
         for domain, files in self.classified_files.items():
             # Special case: examples domain should run even if no legacy examples detected
-            # (framework examples in .ce/examples/ need to be processed)
+            # (framework examples need to be processed)
             if domain == "examples":
-                framework_examples_dir = target_dir / ".ce" / "examples"
+                if self.blend_config:
+                    framework_examples_dir = target_dir / ".ce" / self.blend_config.get_output_path("examples")
+                else:
+                    framework_examples_dir = target_dir / ".ce" / "examples"
                 if framework_examples_dir.exists() and not files:
                     logger.info(f"  {domain}: No legacy files, but framework examples exist - processing...")
                     files = []  # Empty list signals blend mode (not migration mode)
@@ -336,9 +349,14 @@ class BlendingOrchestrator:
 
                     # Domain-specific I/O and blending
                     if domain == 'settings':
-                        # Read JSON files
-                        framework_file = target_dir / ".ce" / ".claude" / "settings.local.json"
-                        target_file = target_dir / ".claude" / "settings.local.json"
+                        # Read JSON files - use config if available, fallback to defaults
+                        if self.blend_config:
+                            framework_file = target_dir / self.blend_config.get_framework_path("settings")
+                            target_file = target_dir / self.blend_config.get_output_path("claude_dir") / "settings.local.json"
+                        else:
+                            # Backward compatibility: hardcoded paths
+                            framework_file = target_dir / ".ce" / ".claude" / "settings.local.json"
+                            target_file = target_dir / ".claude" / "settings.local.json"
 
                         if not framework_file.exists():
                             logger.warning(f"  {domain}: Framework file not found: {framework_file}")
@@ -371,9 +389,14 @@ class BlendingOrchestrator:
                         }
 
                     elif domain == 'claude_md':
-                        # Read markdown files
-                        framework_file = target_dir / ".ce" / "CLAUDE.md"
-                        target_file = target_dir / "CLAUDE.md"
+                        # Read markdown files - use config if available, fallback to defaults
+                        if self.blend_config:
+                            framework_file = target_dir / ".ce" / self.blend_config.get_output_path("claude_md")
+                            target_file = target_dir / self.blend_config.get_output_path("claude_md")
+                        else:
+                            # Backward compatibility: hardcoded paths
+                            framework_file = target_dir / ".ce" / "CLAUDE.md"
+                            target_file = target_dir / "CLAUDE.md"
 
                         if not framework_file.exists():
                             logger.warning(f"  {domain}: Framework file not found")
@@ -401,26 +424,44 @@ class BlendingOrchestrator:
                     elif domain in ['memories', 'examples']:
                         # Path-based strategies (handle their own I/O)
                         if domain == "memories":
-                            # Read from .ce/.serena/memories/ (preserve package structure)
-                            framework_dir = target_dir / ".ce" / ".serena" / "memories"
+                            # Read from framework memories location - use config if available
+                            if self.blend_config:
+                                framework_dir = target_dir / ".ce" / self.blend_config.get_output_path("serena_memories")
+                            else:
+                                # Backward compatibility: hardcoded path
+                                framework_dir = target_dir / ".ce" / ".serena" / "memories"
                         else:  # examples
-                            framework_dir = target_dir / ".ce" / domain
+                            if self.blend_config:
+                                framework_dir = target_dir / ".ce" / self.blend_config.get_output_path("examples")
+                            else:
+                                # Backward compatibility: hardcoded path
+                                framework_dir = target_dir / ".ce" / domain
 
                         # Pre-blend workflow for memories domain
                         if domain == "memories":
-                            # Rename target's .serena/ → .serena.old/ (preserve existing state)
-                            target_serena = target_dir / ".serena"
-                            target_serena_old = target_dir / ".serena.old"
+                            # Rename target's memories dir → backup (preserve existing state)
+                            if self.blend_config:
+                                output_memories = self.blend_config.get_output_path("serena_memories")
+                                target_serena = target_dir / output_memories.parent if output_memories.name == "memories" else target_dir / output_memories
+                                target_serena_old = target_dir / (output_memories.parent.name + ".old")
+                            else:
+                                # Backward compatibility
+                                target_serena = target_dir / ".serena"
+                                target_serena_old = target_dir / ".serena.old"
 
                             if target_serena.exists():
-                                logger.info(f"    Renaming existing .serena/ → .serena.old/")
+                                logger.info(f"    Renaming existing {target_serena.name}/ → {target_serena_old.name}/")
                                 if target_serena_old.exists():
-                                    logger.warning(f"    Removing old .serena.old/ backup")
+                                    logger.warning(f"    Removing old {target_serena_old.name}/ backup")
                                     shutil.rmtree(target_serena_old)
                                 shutil.move(str(target_serena), str(target_serena_old))
 
-                            # Verify framework .serena/ exists
-                            framework_serena = target_dir / ".ce" / ".serena" / "memories"
+                            # Verify framework memories exist
+                            if self.blend_config:
+                                framework_serena = target_dir / ".ce" / self.blend_config.get_output_path("serena_memories")
+                            else:
+                                framework_serena = target_dir / ".ce" / ".serena" / "memories"
+
                             if not framework_serena.exists():
                                 raise RuntimeError(
                                     f"Framework memories not found at {framework_serena}\n"
@@ -443,12 +484,18 @@ class BlendingOrchestrator:
                             # (either .serena.old/memories or None for fresh install)
                             pass
                         elif domain == "examples":
-                            # Framework examples go to .ce/examples/ (not root examples/)
-                            # This keeps them separate from user examples in .ce/examples/user/
-                            target_domain_dir = target_dir / ".ce" / "examples"
+                            # Framework examples use config if available
+                            if self.blend_config:
+                                target_domain_dir = target_dir / ".ce" / self.blend_config.get_output_path("examples")
+                            else:
+                                # Backward compatibility
+                                target_domain_dir = target_dir / ".ce" / "examples"
                         else:
                             # Other domains
-                            target_domain_dir = target_dir / ".ce" / domain
+                            if self.blend_config:
+                                target_domain_dir = target_dir / ".ce" / self.blend_config.get_output_path(domain)
+                            else:
+                                target_domain_dir = target_dir / ".ce" / domain
 
                         # Check framework dir exists (but allow examples to proceed for migration mode)
                         if not framework_dir.exists():

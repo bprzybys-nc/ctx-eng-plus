@@ -1,24 +1,14 @@
 """Legacy file detection for CE initialization.
 
 Scans multiple legacy locations for CE framework files, handles symlinks,
-and filters garbage files.
+and filters garbage files. Uses config-driven path resolution.
 """
 
 from pathlib import Path
-from typing import Dict, List, Set
+from typing import Dict, List, Set, Optional, Any
 import logging
 
 logger = logging.getLogger(__name__)
-
-# Search patterns by domain
-SEARCH_PATTERNS = {
-    "prps": ["PRPs/", "context-engineering/PRPs/"],
-    "examples": ["examples/", "context-engineering/examples/"],
-    "claude_md": ["CLAUDE.md"],
-    "settings": [".claude/settings.local.json"],
-    "commands": [".claude/commands/"],
-    "memories": [".serena/memories/"]
-}
 
 # Garbage filter patterns
 GARBAGE_PATTERNS = [
@@ -32,38 +22,52 @@ class LegacyFileDetector:
 
     Scans PRPs/, examples/, context-engineering/, .serena/, and .claude/
     directories for CE framework files. Includes smart filtering to exclude
-    garbage files and proper symlink handling.
+    garbage files and proper symlink handling. Uses config-driven search patterns.
 
     Example:
-        >>> detector = LegacyFileDetector(Path("/project/root"))
+        >>> from ce.config_loader import BlendConfig
+        >>> config = BlendConfig(Path(".ce/blend-config.yml"))
+        >>> detector = LegacyFileDetector(Path("/project/root"), config)
         >>> inventory = detector.scan_all()
         >>> print(f"Found {len(inventory['prps'])} PRPs")
     """
 
-    def __init__(self, project_root: Path):
-        """Initialize detector with project root.
+    def __init__(self, project_root: Path, config: Optional[Any] = None):
+        """Initialize detector with project root and config.
 
         Args:
             project_root: Path to project root directory
+            config: BlendConfig instance with directory paths (optional for backward compatibility)
         """
         self.project_root = Path(project_root).resolve()
+        self.config = config
         self.visited_symlinks: Set[Path] = set()
 
     def scan_all(self) -> Dict[str, List[Path]]:
         """Scan all domains and return inventory.
+
+        Uses config-driven search patterns if config available, otherwise uses
+        sensible defaults for backward compatibility.
 
         Returns:
             Dict with keys: prps, examples, claude_md, settings, commands, memories
             Each value is List[Path] of detected files
 
         Example:
+            >>> from ce.config_loader import BlendConfig
+            >>> config = BlendConfig(Path(".ce/blend-config.yml"))
+            >>> detector = LegacyFileDetector(Path("/project/root"), config)
             >>> inventory = detector.scan_all()
             >>> inventory.keys()
             dict_keys(['prps', 'examples', 'claude_md', 'settings', 'commands', 'memories'])
         """
-        inventory = {domain: [] for domain in SEARCH_PATTERNS.keys()}
+        # Domains to scan
+        domains = ["prps", "examples", "claude_md", "settings", "commands", "memories"]
+        inventory = {domain: [] for domain in domains}
 
-        for domain, patterns in SEARCH_PATTERNS.items():
+        for domain in domains:
+            patterns = self._get_domain_search_paths(domain)
+
             for pattern in patterns:
                 search_path = self.project_root / pattern
 
@@ -81,6 +85,35 @@ class LegacyFileDetector:
                     inventory[domain].extend(files)
 
         return inventory
+
+    def _get_domain_search_paths(self, domain: str) -> List[Path]:
+        """Get search paths for domain from config or defaults.
+
+        Args:
+            domain: Domain name (prps, examples, claude_md, settings, commands, memories)
+
+        Returns:
+            List of Path objects to search for the domain
+        """
+        # If config available, use domain-specific sources
+        if self.config:
+            try:
+                sources = self.config.get_domain_legacy_sources(domain)
+                if sources:
+                    return sources
+            except (KeyError, ValueError):
+                pass
+
+        # Fallback to defaults for backward compatibility
+        defaults = {
+            "prps": [Path("PRPs/"), Path("context-engineering/PRPs/")],
+            "examples": [Path("examples/"), Path("context-engineering/examples/")],
+            "claude_md": [Path("CLAUDE.md")],
+            "settings": [Path(".claude/settings.local.json")],
+            "commands": [Path(".claude/commands/")],
+            "memories": [Path(".serena/memories/")]
+        }
+        return defaults.get(domain, [])
 
     def _resolve_symlink(self, path: Path) -> Path | None:
         """Resolve symlink, detect circular references.

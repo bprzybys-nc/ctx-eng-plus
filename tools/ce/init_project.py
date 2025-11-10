@@ -172,6 +172,15 @@ class ProjectInitializer:
             if self.workflow_xml.exists():
                 shutil.copy2(self.workflow_xml, self.ce_dir / "ce-workflow-docs.xml")
 
+            # Copy directories.yml (workaround for repomix YAML indentation issue)
+            directories_src = self.ctx_eng_root / ".ce" / "directories.yml"
+            directories_dst = self.ce_dir / "directories.yml"
+            if directories_src.exists():
+                try:
+                    shutil.copy2(directories_src, directories_dst)
+                except Exception:
+                    pass  # If copy fails, config loader will use fallback
+
             # Cleanup temp directory
             shutil.rmtree(temp_extract.parent)
 
@@ -193,6 +202,33 @@ class ProjectInitializer:
 
         return status
 
+    def _fix_yaml_indentation(self, yaml_path: Path) -> None:
+        """
+        Fix YAML indentation in extracted config files.
+
+        Repomix sometimes strips indentation when packing. This method loads
+        the YAML and re-dumps it with correct indentation.
+
+        Args:
+            yaml_path: Path to YAML file to fix
+        """
+        try:
+            import yaml
+
+            # Load the YAML
+            with open(yaml_path) as f:
+                data = yaml.safe_load(f)
+
+            if data is None:
+                return  # Empty or unparseable file
+
+            # Re-dump with proper indentation
+            with open(yaml_path, 'w') as f:
+                yaml.dump(data, f, default_flow_style=False, sort_keys=False, indent=2)
+        except Exception:
+            # If fixing fails, continue anyway (shouldn't block initialization)
+            pass
+
     def blend(self) -> Dict:
         """
         Blend framework + user files.
@@ -210,8 +246,11 @@ class ProjectInitializer:
             return status
 
         try:
-            # Run blend command with explicit config path
+            # Fix YAML indentation after extraction (repomix sometimes breaks it)
             blend_config = self.ce_dir / "blend-config.yml"
+            self._fix_yaml_indentation(blend_config)
+
+            # Run blend command with explicit config path
             result = subprocess.run(
                 ["uv", "run", "ce", "blend", "--all",
                  "--config", str(blend_config),
