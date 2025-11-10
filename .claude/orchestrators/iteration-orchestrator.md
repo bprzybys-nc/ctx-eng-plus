@@ -133,10 +133,15 @@ PHASE 6: Report & Cleanup
 **Gates** (5 independent validators):
 
 ### Gate 1: Framework Structure Preserved
-- Check: `.ce/.serena/memories/` exists
-- Check: `.ce/memories/` does NOT exist (old location)
-- Count: Framework memory files (should be 24)
+- Check: Framework memories imported into `.serena/memories/` (root canonical location)
+  - code-style-conventions.md ✅ present
+  - task-completion-checklist.md ✅ present
+  - testing-standards.md ✅ present
+- Check: `.ce/memories/` does NOT exist (old CE 1.0 location)
+- Check: All critical framework memories accessible at root level
 - Status: PASS/FAIL
+
+**Note**: Framework memories are IMPORTED into root `.serena/memories/` and blended with project memories (not stored separately under `.ce/`)
 
 ### Gate 2: Examples Migration
 - Check: `.ce/examples/` exists
