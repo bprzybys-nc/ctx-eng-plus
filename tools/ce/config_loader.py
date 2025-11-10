@@ -78,13 +78,14 @@ class BlendConfig:
         Raises:
             ValueError: If required sections missing
         """
-        required_sections = ["domains"]
-        for section in required_sections:
-            if section not in self._config:
-                raise ValueError(
-                    f"Missing required section: {section}\n"
-                    f"🔧 Troubleshooting: Add to blend-config.yml"
-                )
+        # If domains is null (repomix issue), it's OK as long as we have directories from fallback
+        if (self._config.get("domains") is None and
+            (self._config.get("directories") is None or self._config.get("directories") == {})):
+            raise ValueError(
+                f"Missing required configuration: both 'domains' and 'directories' are null/empty\n"
+                f"🔧 Troubleshooting: Check blend-config.yml - repomix may have corrupted it\n"
+                f"🔧 Ensure directories.yml exists and was loaded"
+            )
 
         # Validate directories section if present (optional for backward compatibility)
         if "directories" in self._config and self._config["directories"] is not None:
@@ -179,6 +180,8 @@ class BlendConfig:
         Returns:
             Dictionary with domain-specific config (strategy, source, etc.)
         """
+        if self._config.get("domains") is None:
+            return {}  # Return empty dict if domains is null (repomix issue)
         return self._config["domains"].get(domain, {})
 
     def get_domain_legacy_sources(self, domain: str) -> List[Path]:

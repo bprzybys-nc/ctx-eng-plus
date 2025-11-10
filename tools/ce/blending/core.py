@@ -317,8 +317,8 @@ class BlendingOrchestrator:
         results = {}
 
         for domain, files in self.classified_files.items():
-            # Special case: examples domain should run even if no legacy examples detected
-            # (framework examples need to be processed)
+            # Special case: examples and memories domains should run even if no legacy files detected
+            # (framework files need to be processed and properly located)
             if domain == "examples":
                 if self.blend_config:
                     framework_examples_dir = target_dir / ".ce" / self.blend_config.get_output_path("examples")
@@ -328,7 +328,16 @@ class BlendingOrchestrator:
                     logger.info(f"  {domain}: No legacy files, but framework examples exist - processing...")
                     files = []  # Empty list signals blend mode (not migration mode)
 
-            if not files and domain != "examples":
+            if domain == "memories":
+                if self.blend_config:
+                    framework_memories_dir = target_dir / self.blend_config.get_framework_path("serena_memories")
+                else:
+                    framework_memories_dir = target_dir / ".ce" / ".serena" / "memories"
+                if framework_memories_dir.exists() and not files:
+                    logger.info(f"  {domain}: No legacy files, but framework memories exist - processing...")
+                    files = []  # Empty list signals blend mode (not migration mode)
+
+            if not files and domain not in ["examples", "memories"]:
                 logger.debug(f"  {domain}: No files to blend")
                 continue
 
@@ -426,13 +435,13 @@ class BlendingOrchestrator:
                         if domain == "memories":
                             # Read from framework memories location - use config if available
                             if self.blend_config:
-                                framework_dir = target_dir / ".ce" / self.blend_config.get_output_path("serena_memories")
+                                framework_dir = target_dir / self.blend_config.get_framework_path("serena_memories")
                             else:
                                 # Backward compatibility: hardcoded path
                                 framework_dir = target_dir / ".ce" / ".serena" / "memories"
                         else:  # examples
                             if self.blend_config:
-                                framework_dir = target_dir / ".ce" / self.blend_config.get_output_path("examples")
+                                framework_dir = target_dir / self.blend_config.get_framework_path("examples")
                             else:
                                 # Backward compatibility: hardcoded path
                                 framework_dir = target_dir / ".ce" / domain
@@ -458,7 +467,7 @@ class BlendingOrchestrator:
 
                             # Verify framework memories exist
                             if self.blend_config:
-                                framework_serena = target_dir / ".ce" / self.blend_config.get_output_path("serena_memories")
+                                framework_serena = target_dir / self.blend_config.get_framework_path("serena_memories")
                             else:
                                 framework_serena = target_dir / ".ce" / ".serena" / "memories"
 
