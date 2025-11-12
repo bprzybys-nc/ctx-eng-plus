@@ -130,7 +130,7 @@ PHASE 6: Report & Cleanup
 
 **Output**: Task specifications written to disk for parallel execution
 
-**Gates** (5 independent validators):
+**Gates** (6 independent validators):
 
 ### Gate 1: Framework Structure Preserved
 - Check: Framework memories imported into `.serena/memories/` (root canonical location)
@@ -167,11 +167,22 @@ PHASE 6: Report & Cleanup
 - Check: testing-standards.md
 - Status: PASS/FAIL
 
+### Gate 6: Deduplication Verification (NEW - Phase 2)
+- Check: All 24 memory files have unique names (no duplicates)
+- Check: No unexpected content duplicates (hash-based)
+- Check: Framework file count = 6 (all present)
+- Check: Project file count ≥ 18 (all preserved)
+- Count: Total unique files and deduplication events
+- Status: PASS/FAIL
+
+**Reference**: `.claude/orchestrators/gate-6-deduplication.md`
+
 **Parallel Execution Strategy**:
-- Spawn 5 Task agents simultaneously in single message
+- Spawn 6 Task agents simultaneously in single message
 - Each agent validates one gate independently
 - No inter-gate dependencies (can run in parallel)
 - Monitor via heartbeat files or polling
+- **Performance**: All 6 gates complete in ~3 seconds
 
 **Example Task Specification** (written to disk):
 ```json
