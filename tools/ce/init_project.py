@@ -219,6 +219,56 @@ class ProjectInitializer:
 
         return status
 
+    def _ensure_critical_files_exist(self) -> None:
+        """
+        Ensure critical files exist after blend phase.
+
+        Creates CLAUDE.md and settings.local.json if they don't exist.
+        This handles cases where blend didn't create them.
+
+        Creates:
+        - .claude/settings.local.json (from framework template)
+        - CLAUDE.md (from framework template)
+        """
+        # Ensure .claude/ directory exists
+        claude_dir = self.target_project / ".claude"
+        claude_dir.mkdir(parents=True, exist_ok=True)
+
+        # Create settings.local.json if missing
+        settings_file = claude_dir / "settings.local.json"
+        if not settings_file.exists():
+            # Try to get template from framework
+            framework_settings = self.ctx_eng_root / ".claude" / "settings.local.json"
+            if framework_settings.exists():
+                shutil.copy2(framework_settings, settings_file)
+            else:
+                # Create minimal settings template
+                import json
+                minimal_settings = {
+                    "allow": ["Bash(git:*)", "Bash(python:*)", "Bash(uv:*)", "Bash(pytest:*)"],
+                    "ask": ["Bash(rm:*)", "Bash(mv:*)", "Bash(cp:*)"],
+                    "deny": []
+                }
+                with open(settings_file, 'w') as f:
+                    json.dump(minimal_settings, f, indent=2)
+
+        # Create CLAUDE.md if missing
+        claude_md = self.target_project / "CLAUDE.md"
+        if not claude_md.exists():
+            # Try to get template from framework
+            framework_claude_md = self.ctx_eng_root / "CLAUDE.md"
+            if framework_claude_md.exists():
+                shutil.copy2(framework_claude_md, claude_md)
+            else:
+                # Create minimal CLAUDE.md template
+                minimal_claude_md = """# Project Guide
+
+This project uses the Context Engineering framework.
+
+See `.claude/` for detailed configuration and examples.
+"""
+                claude_md.write_text(minimal_claude_md)
+
     def _fix_yaml_indentation(self, yaml_path: Path) -> None:
         """
         Fix YAML indentation in extracted config files.
@@ -297,6 +347,9 @@ class ProjectInitializer:
                     shutil.rmtree(ce_claude)
                 if ce_claude_md.exists():
                     ce_claude_md.unlink()
+
+                # Post-blend file creation: ensure critical files exist
+                self._ensure_critical_files_exist()
 
                 # Check if .ce.old exists to mention it
                 ce_old_dir = self.target_project / ".ce.old"

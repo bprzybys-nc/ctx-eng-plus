@@ -188,10 +188,20 @@ class MemoriesBlendStrategy(BlendStrategy):
         Returns:
             Dict with "action": "skip"|"merge"|"copy"
         """
-        # Critical memory: always use framework
+        # Critical memory: always use framework with type upgrade
         if fw_file.name in CRITICAL_MEMORIES:
             logger.info(f"Critical memory: {fw_file.name} (using framework)")
-            self._copy_file(fw_file, output_file)
+            content = fw_file.read_text()
+            header, body = self._parse_memory(content)
+
+            # Upgrade type to critical if currently regular
+            if header.get("type") == "regular":
+                header["type"] = "critical"
+                logger.info(f"Upgraded {fw_file.name} to type: critical")
+
+            # Write with potentially upgraded header
+            final_content = self._format_memory(header, body)
+            output_file.write_text(final_content)
             return {"action": "copy"}
 
         # No target file: copy framework
