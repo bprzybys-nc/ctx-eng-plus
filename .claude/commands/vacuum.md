@@ -4,7 +4,7 @@ Clean up project noise: temp files, obsolete docs, unreferenced code, orphaned t
 
 ## Usage
 ```bash
-/vacuum [--execute|--force|--auto|--nuclear] [--exclude-strategy STRATEGY] [--min-confidence N]
+/vacuum [--path DIR] [--execute|--force|--auto|--nuclear] [--exclude-strategy STRATEGY] [--min-confidence N]
 ```
 
 ## Modes
@@ -12,6 +12,12 @@ Clean up project noise: temp files, obsolete docs, unreferenced code, orphaned t
 **Default (dry-run)**: Generate report only, no deletions
 ```bash
 /vacuum
+```
+
+**Scoped cleanup**: Clean specific directory only
+```bash
+/vacuum --path syntropy-mcp
+/vacuum --path tools/ce --execute
 ```
 
 **Execute mode**: Delete HIGH confidence items only (100% safe: temp files, backups)
@@ -33,6 +39,7 @@ Clean up project noise: temp files, obsolete docs, unreferenced code, orphaned t
 
 ## Parameters
 
+- `--path DIR`: Directory to scan (relative to project root). Defaults to entire project
 - `--execute`: Delete HIGH confidence items (≥100%)
 - `--force`: Delete MEDIUM + HIGH confidence items (≥60%)
 - `--auto`: Automatically delete MEDIUM + HIGH confidence items (same as --force)

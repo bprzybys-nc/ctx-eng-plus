@@ -263,13 +263,13 @@ class ClaudeMdBlendStrategy(BlendStrategy):
             ValueError: If validation fails
         """
         if not blended_content.strip():
-            raise ValueError("Blended content is empty")
+            raise ValueError("Blended content is empty\n🔧 Troubleshooting: Check inputs and system state")
 
         # Parse sections
         sections = self.parse_sections(blended_content)
 
         if not sections:
-            raise ValueError("No H2 sections found in blended content")
+            raise ValueError("No H2 sections found in blended content\n🔧 Troubleshooting: Check inputs and system state")
 
         # Check required framework sections present
         required = {"Core Principles", "Framework Initialization", "Testing Standards"}

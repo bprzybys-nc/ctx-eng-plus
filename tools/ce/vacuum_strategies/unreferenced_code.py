@@ -19,13 +19,14 @@ class UnreferencedCodeStrategy(BaseStrategy):
     would check if each function/class is referenced, but this is slower.
     """
 
-    def __init__(self, project_root: Path):
+    def __init__(self, project_root: Path, scan_path: Path = None):
         """Initialize strategy and activate Serena project.
 
         Args:
             project_root: Path to project root directory
+            scan_path: Optional path to scan (defaults to project_root)
         """
-        super().__init__(project_root)
+        super().__init__(project_root, scan_path)
         self.serena_available = False
 
     def find_candidates(self) -> List[CleanupCandidate]:
@@ -41,7 +42,7 @@ class UnreferencedCodeStrategy(BaseStrategy):
             return candidates
 
         # Get all Python files
-        py_files = list(self.project_root.glob("**/*.py"))
+        py_files = list(self.scan_path.glob("**/*.py"))
 
         # Get all import statements to find which files are referenced
         referenced_modules = self._get_all_imports()

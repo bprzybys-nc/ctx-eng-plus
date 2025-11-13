@@ -11,6 +11,7 @@
  */
 
 import type { MCPClientManager } from "./client-manager.js";
+import { BUILD_TIME, VERSION } from "./build-info.js";
 
 export interface ServerHealth {
   server: string;
@@ -25,6 +26,7 @@ export interface HealthCheckResult {
   syntropy: {
     version: string;
     status: "healthy";
+    buildTime: string;
   };
   servers: ServerHealth[];
   summary: {
@@ -136,8 +138,9 @@ export async function runHealthCheck(
 
   return {
     syntropy: {
-      version: "0.1.0",
+      version: VERSION,
       status: "healthy",
+      buildTime: BUILD_TIME,
     },
     servers,
     summary,
@@ -152,7 +155,8 @@ export function formatHealthCheckText(result: HealthCheckResult): string {
   const lines: string[] = [];
 
   // Syntropy server status
-  lines.push(`✅ Syntropy MCP Server: Healthy (v${result.syntropy.version})\n`);
+  lines.push(`✅ Syntropy MCP Server: Healthy (v${result.syntropy.version})`);
+  lines.push(`   Build: ${result.syntropy.buildTime}\n`);
 
   // Server statuses
   lines.push("MCP Server Status:");

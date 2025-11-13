@@ -27,7 +27,8 @@ def parse_repomix_xml(xml_content: str) -> List[Tuple[str, str]]:
 
     # Pattern to match <file path="...">content</file>
     # Using non-greedy match and DOTALL to handle multiline content
-    pattern = r'<file path="([^"]+)">\n(.*?)\n</file>'
+    # Made newline before closing tag optional to catch files without trailing newlines
+    pattern = r'<file path="([^"]+)">\n(.*?)\n?</file>'
 
     matches = re.finditer(pattern, xml_content, re.DOTALL)
 

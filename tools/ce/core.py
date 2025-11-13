@@ -189,10 +189,10 @@ def git_status() -> Dict[str, Any]:
     """Get git repository status."""
     check_result = run_cmd("git rev-parse --git-dir", capture_output=True)
     if not check_result["success"]:
-        raise RuntimeError("Not in git repository")
+        raise RuntimeError("Not in git repository\n🔧 Troubleshooting: Check inputs and system state")
     result = run_cmd("git status --porcelain", capture_output=True)
     if not result["success"]:
-        raise RuntimeError(f"Git status failed: {result['stderr']}")
+        raise RuntimeError(f"Git status failed: {result['stderr']}\n🔧 Troubleshooting: Check inputs and system state")
     
     staged, unstaged, untracked = [], [], []
     lines = result["stdout"].strip().split("\n") if result["stdout"].strip() else []
@@ -217,7 +217,7 @@ def git_diff(since: str = "HEAD~5", name_only: bool = True) -> List[str]:
     flag = "--name-only" if name_only else "--stat"
     result = run_cmd(f"git diff {flag} {since}", capture_output=True)
     if not result["success"]:
-        raise RuntimeError(f"Git diff failed: {result['stderr']}")
+        raise RuntimeError(f"Git diff failed: {result['stderr']}\n🔧 Troubleshooting: Check inputs and system state")
     return [f.strip() for f in result["stdout"].strip().split("\n") if f.strip()]
 
 
@@ -228,7 +228,7 @@ def git_checkpoint(message: str = "Context Engineering checkpoint") -> str:
     checkpoint_id = f"checkpoint-{timestamp}"
     result = run_cmd(["git", "tag", "-a", checkpoint_id, "-m", message], capture_output=True)
     if not result["success"]:
-        raise RuntimeError(f"Failed to create checkpoint: {result['stderr']}")
+        raise RuntimeError(f"Failed to create checkpoint: {result['stderr']}\n🔧 Troubleshooting: Check inputs and system state")
     return checkpoint_id
 
 
@@ -236,19 +236,19 @@ def run_py(code: Optional[str] = None, file: Optional[str] = None, args: str = "
     """Execute Python code using uv with strict LOC limits."""
     if auto is not None:
         if code is not None or file is not None:
-            raise ValueError("Cannot use 'auto' with 'code' or 'file'")
+            raise ValueError("Cannot use 'auto' with 'code' or 'file'\n🔧 Troubleshooting: Check inputs and system state")
         file = auto if "/" in auto or auto.endswith(".py") else None
         code = auto if file is None else None
 
     if code is None and file is None:
         raise ValueError("Either 'code', 'file', or 'auto' must be provided")
     if code is not None and file is not None:
-        raise ValueError("Cannot provide both 'code' and 'file'")
+        raise ValueError("Cannot provide both 'code' and 'file'\n🔧 Troubleshooting: Check inputs and system state")
 
     if code is not None:
         lines = [line for line in code.split('\n') if line.strip()]
         if len(lines) > 3:
-            raise ValueError(f"Ad-hoc code exceeds 3 LOC limit")
+            raise ValueError(f"Ad-hoc code exceeds 3 LOC limit\n🔧 Troubleshooting: Check inputs and system state")
         cmd = ["uv", "run", "python", "-c", code]
         if args:
             cmd.extend(args.split())
@@ -259,7 +259,7 @@ def run_py(code: Optional[str] = None, file: Optional[str] = None, args: str = "
         if not any(part == "tmp" for part in file_path.parts):
             raise ValueError(f"File must be in tmp/ folder")
         if not file_path.exists():
-            raise FileNotFoundError(f"Python file not found: {file}")
+            raise FileNotFoundError(f"Python file not found: {file}\n🔧 Troubleshooting: Check inputs and system state")
         cmd = ["uv", "run", "python", file]
         if args:
             cmd.extend(args.split())

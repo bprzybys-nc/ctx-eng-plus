@@ -6,6 +6,7 @@ from pathlib import Path
 from typing import Dict, Any
 
 from .blending.core import BlendingOrchestrator
+from .config_loader import BlendConfig
 
 logger = logging.getLogger(__name__)
 
@@ -46,7 +47,7 @@ def load_config(config_path: Path) -> Dict[str, Any]:
             config = yaml.safe_load(f)
 
         if not config or 'domains' not in config:
-            raise ValueError("Config missing 'domains' section")
+            raise ValueError("Config missing 'domains' section\n🔧 Troubleshooting: Check input parameters and documentation")
 
         return config
 
@@ -71,13 +72,18 @@ def run_blend(args) -> int:
     setup_logging(getattr(args, 'verbose', False))
 
     try:
-        # Load configuration
+        # Load configuration using BlendConfig
         config_path = Path(args.config)
-        config = load_config(config_path)
 
-        # Initialize orchestrator
+        # Create BlendConfig instance for config-driven operations
+        blend_config = BlendConfig(config_path)
+
+        # Also load raw config for backward compatibility with existing orchestrator
+        config = blend_config._config
+
+        # Initialize orchestrator with BlendConfig instance
         orchestrator = BlendingOrchestrator(
-            config=config,
+            config=blend_config,  # Pass BlendConfig instance instead of dict
             dry_run=args.dry_run
         )
 

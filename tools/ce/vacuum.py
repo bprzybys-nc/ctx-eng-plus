@@ -45,6 +45,7 @@ class VacuumCommand:
         force: bool = False,
         auto: bool = False,
         nuclear: bool = False,
+        scan_path: Path = None,
     ) -> int:
         """Run vacuum command.
 
@@ -56,11 +57,22 @@ class VacuumCommand:
             force: Delete HIGH + MEDIUM confidence items
             auto: Alias for force (delete HIGH + MEDIUM automatically)
             nuclear: Delete ALL items (requires confirmation)
+            scan_path: Optional directory to scan (defaults to project root)
 
         Returns:
             Exit code: 0 = clean, 1 = candidates found, 2 = error
         """
         exclude_strategies = exclude_strategies or []
+
+        # Determine scan scope
+        effective_scan_path = scan_path if scan_path else self.project_root
+
+        # Show scope
+        if scan_path:
+            scope_rel = scan_path.relative_to(self.project_root)
+            print(f"🎯 Scope: {scope_rel}/ (scoped to directory)")
+        else:
+            print(f"🎯 Scope: entire project")
 
         # Determine deletion threshold
         if nuclear:
@@ -83,7 +95,7 @@ class VacuumCommand:
                 continue
 
             print(f"🔍 Running {strategy_name}...")
-            strategy = strategy_class(self.project_root)
+            strategy = strategy_class(self.project_root, effective_scan_path)
             candidates = strategy.find_candidates()
 
             # Filter by minimum confidence
@@ -284,6 +296,16 @@ def main():
         dest="exclude_strategies",
         help="Skip specific strategy",
     )
+    parser.add_argument(
+        "--path",
+        type=str,
+        help="Directory to scan (relative to project root, defaults to entire project)",
+    )
+    parser.add_argument(
+        "--auto",
+        action="store_true",
+        help="Automatically delete HIGH + MEDIUM confidence items (same as --force)",
+    )
 
     args = parser.parse_args()
 
@@ -297,18 +319,31 @@ def main():
             break
 
     if not project_root:
-        print("❌ Error: Not in a Context Engineering project (.ce/ not found)")
+        print("❌ Error: Not in a Context Engineering project (.ce/ not found)\n🔧 Troubleshooting: Check inputs and system state")
         return 2
+
+    # Resolve scan path if provided
+    scan_path = None
+    if args.path:
+        scan_path = project_root / args.path
+        if not scan_path.exists():
+            print(f"❌ Error: Path does not exist: {args.path}\n🔧 Troubleshooting: Verify file path exists")
+            return 2
+        if not scan_path.is_dir():
+            print(f"❌ Error: Path is not a directory: {args.path}\n🔧 Troubleshooting: Check inputs and system state")
+            return 2
 
     # Run vacuum command
     vacuum = VacuumCommand(project_root)
     return vacuum.run(
-        dry_run=not (args.execute or args.force or args.nuclear),
+        dry_run=not (args.execute or args.force or args.auto or args.nuclear),
         min_confidence=args.min_confidence,
         exclude_strategies=args.exclude_strategies or [],
         execute=args.execute,
         force=args.force,
+        auto=args.auto,
         nuclear=args.nuclear,
+        scan_path=scan_path,
     )
 
 

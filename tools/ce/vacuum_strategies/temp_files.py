@@ -30,7 +30,7 @@ class TempFileStrategy(BaseStrategy):
         candidates = []
 
         for pattern in self.TEMP_PATTERNS:
-            for path in self.project_root.glob(pattern):
+            for path in self.scan_path.glob(pattern):
                 if not path.exists():
                     continue
 

@@ -1032,8 +1032,19 @@ def cmd_vacuum(args):
                 break
 
         if not project_root:
-            print("❌ Error: Not in a Context Engineering project (.ce/ not found)", file=sys.stderr)
+            print("❌ Error: Not in a Context Engineering project (.ce/ not found)\n🔧 Troubleshooting: Check inputs and system state", file=sys.stderr)
             return 2
+
+        # Resolve scan path if provided
+        scan_path = None
+        if hasattr(args, 'path') and args.path:
+            scan_path = project_root / args.path
+            if not scan_path.exists():
+                print(f"❌ Error: Path does not exist: {args.path}\n🔧 Troubleshooting: Verify file path exists", file=sys.stderr)
+                return 2
+            if not scan_path.is_dir():
+                print(f"❌ Error: Path is not a directory: {args.path}\n🔧 Troubleshooting: Check inputs and system state", file=sys.stderr)
+                return 2
 
         # Run vacuum command
         vacuum = VacuumCommand(project_root)
@@ -1045,6 +1056,7 @@ def cmd_vacuum(args):
             force=args.force,
             auto=args.auto,
             nuclear=args.nuclear,
+            scan_path=scan_path,
         )
 
     except KeyboardInterrupt:

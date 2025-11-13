@@ -252,7 +252,7 @@ def safe_edit_pattern():
     
     # Step 2: Verify old_string exists
     if "old_value = 'X'" not in current:
-        raise ValueError("Expected text not found - file may have changed")
+        raise ValueError("Expected text not found - file may have changed\n🔧 Troubleshooting: Check inputs and system state")
     
     # Step 3: Make edit
     result = syntropy_filesystem_edit_file(
@@ -266,7 +266,7 @@ def safe_edit_pattern():
     )
     
     if not result.get("success"):
-        raise RuntimeError(f"Edit failed: {result.get('error')}")
+        raise RuntimeError(f"Edit failed: {result.get('error')}\n🔧 Troubleshooting: Check inputs and system state")
 
 
 # ✅ PATTERN: Batch File Operations

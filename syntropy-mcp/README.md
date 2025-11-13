@@ -2,7 +2,7 @@
 
 **A unified tool aggregation layer for Claude via the Model Context Protocol (MCP)**
 
-Syntropy routes tool calls to multiple underlying MCP servers using a standardized `syntropy:server:tool` naming convention. It provides connection pooling, graceful shutdown, structured logging, and production-ready error handling.
+Syntropy routes tool calls to multiple underlying MCP servers using the standard MCP protocol. Tools are registered with the `mcp__syntropy__<server>_<tool>` prefix (client-side prefixing). It provides connection pooling, graceful shutdown, structured logging, and production-ready error handling.
 
 ## Status
 
@@ -34,15 +34,15 @@ See [QUICKSTART.md](QUICKSTART.md) for usage examples.
 Syntropy aggregates multiple MCP servers under a unified interface:
 
 ```
-Claude API
+Claude Code (MCP Client)
     ↓
-syntropy:server:tool (e.g., syntropy:filesystem:read_file)
+mcp__syntropy__<server>_<tool> (e.g., mcp__syntropy__filesystem_read_file)
     ↓
-Syntropy MCP Server
+Syntropy MCP Server (aggregator)
     ↓
 MCPClientManager (connection pooling, lifecycle)
     ↓
-Underlying MCP Servers (6 servers, lazy spawned)
+Underlying MCP Servers (9 servers, lazy/eager spawned)
     ↓
 Tool Results
 ```
@@ -51,18 +51,18 @@ Tool Results
 
 ### 🔌 Unified Tool Interface
 
-Call tools via standardized naming:
+Call tools via standard MCP naming (client-side prefixing):
 
 ```
-syntropy:server:tool
+mcp__syntropy__<server>_<tool>
 
 Examples:
-- syntropy:filesystem:read_text_file
-- syntropy:git:git_commit
-- syntropy:serena:find_symbol
-- syntropy:context7:get-library-docs
-- syntropy:thinking:sequentialthinking
-- syntropy:repomix:pack_codebase
+- mcp__syntropy__filesystem_read_file
+- mcp__syntropy__git_git_commit
+- mcp__syntropy__serena_find_symbol
+- mcp__syntropy__context7_get_library_docs
+- mcp__syntropy__thinking_sequentialthinking
+- mcp__syntropy__repomix_pack_codebase
 ```
 
 ### 🚀 Connection Pooling
@@ -160,7 +160,7 @@ Edit to add/remove servers or change spawn commands.
 
 ```javascript
 {
-  "name": "syntropy:server:tool",
+  "name": "mcp__syntropy__<server>_<tool>",
   "arguments": { /* tool-specific args */ }
 }
 ```
@@ -169,7 +169,7 @@ Edit to add/remove servers or change spawn commands.
 
 ```javascript
 {
-  "name": "syntropy:filesystem:read_text_file",
+  "name": "mcp__syntropy__filesystem_read_file",
   "arguments": {
     "path": "/path/to/file.txt"
   }
@@ -180,7 +180,7 @@ Edit to add/remove servers or change spawn commands.
 
 ```javascript
 {
-  "name": "syntropy:serena:find_symbol",
+  "name": "mcp__syntropy__serena_find_symbol",
   "arguments": {
     "name_path": "MyClass/method",
     "relative_path": "src/file.ts",
@@ -197,7 +197,7 @@ See [DEPLOYMENT.md](DEPLOYMENT.md) for complete tool reference.
 
 ```javascript
 {
-  "name": "syntropy:syntropy:init_project",
+  "name": "mcp__syntropy__syntropy_init_project",
   "arguments": {
     "project_root": "/path/to/project"
   }
@@ -279,10 +279,10 @@ Check the status of all MCP servers:
 
 ```bash
 # Via Claude Code
-mcp__syntropy_healthcheck
+mcp__syntropy__healthcheck
 
 # Example output
-✅ Syntropy MCP Server: Healthy (v0.1.0)
+✅ Syntropy MCP Server: Healthy (v0.1.2)
 
 MCP Server Status:
   ✅ serena         - Healthy (250ms)
@@ -303,14 +303,14 @@ Total: 8/9 healthy, 1/9 degraded, 0/9 down
 For automation/monitoring, use detailed JSON output:
 
 ```bash
-mcp__syntropy_healthcheck(detailed=true)
+mcp__syntropy__healthcheck(detailed=true)
 ```
 
 Returns:
 
 ```json
 {
-  "syntropy": { "version": "0.1.0", "status": "healthy" },
+  "syntropy": { "version": "0.1.2", "status": "healthy" },
   "servers": [
     {
       "server": "filesystem",
@@ -328,7 +328,7 @@ Returns:
 ### Custom Timeout
 
 ```bash
-mcp__syntropy_healthcheck(timeout_ms=1000)
+mcp__syntropy__healthcheck(timeout_ms=1000)
 ```
 
 Use shorter timeout for faster checks on slower networks.
@@ -395,7 +395,7 @@ npm start 2>&1 | head -50
 
 ### Tool Not Found
 
-- Verify format: `syntropy:server:tool`
+- Verify format: `mcp__syntropy__<server>_<tool>` (double underscores after mcp and syntropy)
 - Check MCP server documentation
 - Run health checks: `npm test`
 
@@ -430,4 +430,4 @@ MIT
 2. See [DEPLOYMENT.md](DEPLOYMENT.md) for production details
 3. Run tests: `npm test` to verify setup
 4. Review logs: `npm start 2>&1` for diagnostics
-5. Check health: `mcp__syntropy_healthcheck` for server status
+5. Check health: `mcp__syntropy__healthcheck` for server status

@@ -1,62 +1,139 @@
-# Context Engineering Configuration
+# CE Framework - Unified Configuration v1.1
+# Single source of truth for init-project pipeline
 
-# PROFILE SECTION - Project-specific settings
-# Configured for ctx-eng-plus project
+version: "1.1"
+
+# Project profile
 profile:
-  # Project identification
-  # Used by Serena MCP for code navigation
   project_name: "ctx-eng-plus"
-
-  # Optional - Project description for documentation
   description: "Context Engineering framework and tools"
-
-  # Linear integration settings
   linear:
-    # Linear project name to assign issues to
     project: "Context Engineering"
-
-    # Default assignee email for PRP-generated issues
     assignee: "blazej.przybyszewski@gmail.com"
-
-    # Linear team identifier
     team: "Blaise78"
 
-    # Default labels applied to new issues
-    default_labels:
-      - "feature"
+# File discovery: domains with legacy locations
+detection:
+  domains:
+    prps:
+      paths: [PRPs/, context-engineering/PRPs/, context-engineering/]
+      patterns: ["**/*.md"]
+    examples:
+      paths: [examples/, context-engineering/examples/, context-engineering/]
+      patterns: ["**/*.md", "**/*.py"]
+    claude_md:
+      paths: [CLAUDE.md]
+      patterns: ["CLAUDE.md"]
+    settings:
+      paths: [.claude/settings.local.json]
+      patterns: ["settings.local.json"]
+    commands:
+      paths: [.claude/commands/]
+      patterns: ["**/*.md"]
+    memories:
+      paths: [.serena/memories/]
+      patterns: ["**/*.md"]
 
-  # Git defaults (optional - falls back to git config if empty)
-  git:
-    # Optional - Override git config user.name
-    author_name: "Blazej Przybyszewski"
+# Directory paths: output, framework, and legacy locations
+directories:
+  # Where framework files go in target (output) and come from after extraction (framework)
+  paths:
+    ce_root: .ce/
+    claude_dir: .claude/
+    claude_commands: .claude/commands/
+    settings: .claude/settings.local.json
+    claude_md: CLAUDE.md
+    serena: .serena/
+    serena_memories: .serena/memories/
+    examples: .ce/examples/
+    prps: .ce/PRPs/
+    tools: .ce/tools/
 
-    # Optional - Override git config user.email
-    author_email: "blazej.przybyszewski@nordcloud.com"
+  # Legacy directories to clean up after migration
+  legacy: [PRPs/, examples/, context-engineering/, .serena.old/, .ce.old/]
 
-  # Repository information (optional)
-  repository:
-    # Optional - Remote repository URL
-    url: "https://github.com/nordcloud/ctx-eng-plus.git"
+# Blending: How to merge framework + user files
+blending:
+  domains:
+    prps:
+      strategy: move-all
+      dedup: content-hash
+    examples:
+      strategy: dedupe-copy
+      dedup: nl-similarity
+      skip_cleanup: true
+    memories:
+      strategy: nl-blend
+      critical: [code-style-conventions.md, task-completion-checklist.md, testing-standards.md, tool-usage-syntropy.md, use-syntropy-tools-not-bash.md, suggested-commands.md]
+    claude_md:
+      strategy: nl-blend
+    settings:
+      strategy: rule-based
+      rules: [ce_deny_wins, merge_lists, single_membership]
+    commands:
+      strategy: overwrite
+      backup: true
 
-    # Optional - Default branch name
-    main_branch: "main"
+  llm:
+    api_key_env: ANTHROPIC_API_KEY
+    timeout: 60
+    max_retries: 3
+    draft_model: claude-3-5-haiku-20241022
+    merge_model: claude-sonnet-4-5-20250929
+    similarity_threshold: 0.9
 
-# Framework settings
-cache:
-  # TTL for drift analysis cache in minutes
-  # Used by: ce analyze-context
-  # Can be overridden with --cache-ttl flag
-  analysis_ttl_minutes: 5
+# Cleanup: Safe removal with migration verification
+cleanup:
+  strategy: safe
+  verify_before_cleanup: true
+  legacy_dirs:
+    PRPs: {required_migration: true}
+    examples: {required_migration: false}
+    context-engineering: {required_migration: true, root_files: true}
+    .serena.old: {required_migration: false}
+    .ce.old: {required_migration: false}
 
-# Validation metadata (DO NOT EDIT)
-# Used by framework to validate configuration completeness
-_validation:
-  # Required fields that must be filled (not <missing>)
-  required_fields:
-    - profile.project_name
-    - profile.linear.project
-    - profile.linear.assignee
-    - profile.linear.team
+# Repomix package composition
+repomix:
+  infrastructure:
+    output: ce-32/builds/ce-infrastructure.xml
+    include:
+      - .ce/config.yml
+      - .ce/PRPs/executed/system/PRP-0-CONTEXT-ENGINEERING.md
+      - .serena/memories/**
+      - .claude/**/*.md
+      - tools/ce/**/*.py
+      - tools/pyproject.toml
+      - tools/bootstrap.sh
+      - .claude/settings.local.json
+      - CLAUDE.md
+      - .ce/blend-config.yml
+      - examples/**/*.md
+      - examples/**/*.py
+    exclude: [".git/**", ".tmp/**", "**/__pycache__/**", "*.pyc", "tools/tests/**"]
 
-  # Schema version for migration compatibility
-  schema_version: "1.0.0"
+# Pipeline phases with timeouts
+pipeline:
+  phases:
+    extract: {timeout: 120, description: Extract framework files from XML}
+    blend: {timeout: 600, description: Merge framework + user files}
+    initialize: {timeout: 300, description: Setup Python environment}
+    verify: {timeout: 30, description: Validate installation}
+
+# Validation gates
+validation_gates:
+  gate_1:
+    name: Framework Structure
+    checks: [test -d .ce/examples/, test -d .ce/PRPs/, test -d .serena/memories/, test ! -d .ce/.claude, test ! -d .ce/.serena]
+  gate_2:
+    name: Examples Migration
+    checks: [test -d .ce/examples/]
+  gate_3:
+    name: PRPs Migration
+    checks: [test -d .ce/PRPs/, test ! -d PRPs/]
+  gate_4:
+    name: Memories Domain
+    checks: [test -d .serena/memories/, test ! -d .ce/.serena, find .serena/memories -name '*.md' | wc -l >= 24]
+  gate_5:
+    name: Critical Memories
+    checks: [test -f .serena/memories/code-style-conventions.md, test -f .serena/memories/task-completion-checklist.md, test -f .serena/memories/testing-standards.md]

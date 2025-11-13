@@ -447,6 +447,11 @@ Examples:
         dest="exclude_strategies",
         help="Skip specific strategy (can be used multiple times)"
     )
+    vacuum_parser.add_argument(
+        "--path",
+        type=str,
+        help="Directory to scan (relative to project root, defaults to entire project)"
+    )
 
     # === CLEANUP COMMAND ===
     cleanup_parser = subparsers.add_parser(
