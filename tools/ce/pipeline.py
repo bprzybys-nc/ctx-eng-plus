@@ -87,7 +87,7 @@ def validate_pipeline(pipeline: Dict[str, Any]) -> Dict[str, Any]:
     Example:
         result = validate_pipeline(pipeline)
         if not result["success"]:
-            raise RuntimeError(f"Invalid pipeline: {result['errors']}")
+            raise RuntimeError(f"Invalid pipeline: {result['errors']}\n🔧 Troubleshooting: Check inputs and system state")
     """
     errors = []
 

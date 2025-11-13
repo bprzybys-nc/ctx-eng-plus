@@ -1,8 +1,12 @@
 # Tool Usage Guide - Claude Code Native-First Philosophy
 
-**Last Updated**: 2025-11-06
+**Last Updated**: 2025-11-08
 **Status**: Authoritative reference for tool selection
 **Replaces**: Obsolete MCP tool documentation
+
+**See Also**:
+- [Syntropy MCP Naming Convention](syntropy-mcp-naming-convention.md) - Complete naming spec, testing, prevention
+- [Syntropy Naming Quick Guide](syntropy-naming-convention.md) - Quick reference for tool names
 
 ---
 
@@ -377,53 +381,60 @@ gh pr create --title "Fix" --body "Description"
 
 ### MCP Tools (Use Only When Native Unavailable)
 
-#### Serena (Code Navigation)
+#### Serena (Code Navigation) - 13 tools
 
 | Tool | Purpose | Example |
 |------|---------|---------|
-| `serena_activate_project` | Activate project for symbol indexing | `projectPath="/abs/path/to/project"` |
-| `serena_find_symbol` | Find symbol definition | `name_path="MyClass.method"` |
-| `serena_get_symbols_overview` | List all symbols in file | `relative_path="src/utils.py"` |
-| `serena_find_referencing_symbols` | Find symbol usages | `name_path="MyClass.method"` |
-| `serena_replace_symbol_body` | Replace function/class body | `name_path="MyClass.method", new_body="..."` |
-| `serena_search_for_pattern` | Regex search | `pattern="def.*async"` |
-| `serena_list_dir` | List directory contents | `relative_path="src/"` |
-| `serena_read_file` | Read file contents | `relative_path="src/main.py"` |
-| `serena_create_text_file` | Create new text file | `relative_path="new.py", content="..."` |
-| `serena_write_memory` | Store project context | `memory_name="architecture", content="..."` |
-| `serena_read_memory` | Retrieve context | `memory_name="architecture"` |
-| `serena_list_memories` | List all memories | No parameters |
-| `serena_delete_memory` | Delete memory | `memory_name="temporary"` |
+| `mcp__syntropy__serena_activate_project` | Activate project for symbol indexing | `project="/abs/path/to/project"` |
+| `mcp__syntropy__serena_find_symbol` | Find symbol definition | `name_path="MyClass.method"` |
+| `mcp__syntropy__serena_get_symbols_overview` | List all symbols in file | `relative_path="src/utils.py"` |
+| `mcp__syntropy__serena_find_referencing_symbols` | Find symbol usages | `name_path="MyClass.method"` |
+| `mcp__syntropy__serena_replace_symbol_body` | Replace function/class body | `name_path="MyClass.method", new_body="..."` |
+| `mcp__syntropy__serena_search_for_pattern` | Regex search | `pattern="def.*async"` |
+| `mcp__syntropy__serena_list_dir` | List directory contents | `directory_path="src/"` |
+| `mcp__syntropy__serena_read_file` | Read file contents | `relative_path="src/main.py"` |
+| `mcp__syntropy__serena_create_text_file` | Create new text file | `path="new.py", content="..."` |
+| `mcp__syntropy__serena_write_memory` | Store project context | `memory_type="architecture", content="..."` |
+| `mcp__syntropy__serena_read_memory` | Retrieve context | `memory_name="architecture"` |
+| `mcp__syntropy__serena_list_memories` | List all memories | No parameters |
+| `mcp__syntropy__serena_delete_memory` | Delete memory | `memory_name="temporary"` |
 
-#### Linear (Project Management)
-
-| Tool | Purpose | Example |
-|------|---------|---------|
-| `linear_list_issues` | List issues | `team_id="TEAM-123"` |
-| `linear_create_issue` | Create issue | `title="Bug", team_id="..."` |
-| `linear_get_issue` | Get issue details | `issue_id="ISSUE-123"` |
-| `linear_update_issue` | Update issue | `issue_id="...", updates={...}` |
-
-#### Context7 (Library Docs)
+#### Linear (Project Management) - 9 tools
 
 | Tool | Purpose | Example |
 |------|---------|---------|
-| `context7_resolve_library_id` | Find library ID | `libraryName="numpy"` |
-| `context7_get_library_docs` | Fetch docs | `context7CompatibleLibraryID="/numpy/doc"` |
+| `mcp__syntropy__linear_create_issue` | Create issue | `title="Bug", team_id="..."` |
+| `mcp__syntropy__linear_get_issue` | Get issue details | `issue_id="ISSUE-123"` |
+| `mcp__syntropy__linear_list_issues` | List issues | `team_id="TEAM-123"` |
+| `mcp__syntropy__linear_update_issue` | Update issue | `issue_id="...", updates={...}` |
+| `mcp__syntropy__linear_list_projects` | List all projects | No parameters |
+| `mcp__syntropy__linear_list_teams` | List all teams | No parameters |
+| `mcp__syntropy__linear_get_team` | Get team details | `team_id="TEAM-123"` |
+| `mcp__syntropy__linear_list_users` | List all users | No parameters |
+| `mcp__syntropy__linear_create_project` | Create new project | `name="Project", team_id="..."` |
 
-#### Thinking (Reasoning)
+#### Context7 (Library Docs) - 2 tools
 
 | Tool | Purpose | Example |
 |------|---------|---------|
-| `thinking_sequentialthinking` | Structured reasoning | `thought="...", thoughtNumber=1` |
+| `mcp__syntropy__context7_resolve_library_id` | Find library ID | `libraryName="numpy"` |
+| `mcp__syntropy__context7_get_library_docs` | Fetch docs | `context7CompatibleLibraryID="/numpy/doc"` |
 
-#### Syntropy (System)
+#### Thinking (Reasoning) - 1 tool
 
 | Tool | Purpose | Example |
 |------|---------|---------|
-| `healthcheck` | Check MCP servers | `detailed=True` |
-| `enable_tools` | Enable/disable tools dynamically | `enable=["tool1"], disable=["tool2"]` |
-| `list_all_tools` | List all tools with enabled/disabled status | `{}` (no args) |
+| `mcp__syntropy__thinking_sequentialthinking` | Structured reasoning | `thought="...", thoughtNumber=1` |
+
+#### Syntropy (System) - 3 tools
+
+| Tool | Purpose | Example |
+|------|---------|---------|
+| `mcp__syntropy__healthcheck` | Check MCP servers | `detailed=True` |
+| `mcp__syntropy__enable_tools` | Enable/disable tools dynamically | `enable=["tool1"], disable=["tool2"]` |
+| `mcp__syntropy__list_all_tools` | List all tools with enabled/disabled status | No parameters |
+
+**Total: 28 allowed tools** (13 Serena + 9 Linear + 2 Context7 + 1 Thinking + 3 Syntropy)
 
 ---
 

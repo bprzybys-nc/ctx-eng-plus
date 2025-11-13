@@ -61,10 +61,16 @@ logs/
 
 # Misc
 *.bak
-.serena/
+
+# Serena cache (Allow .serena/memories/ for framework packaging)
+.serena/cache/
+.serena/.cache/
 
 repomix-output.xml
 **/.DS_Store
 .DS_Store
 
 **/.tmp/
+
+
+.ce/orchestration/batches/

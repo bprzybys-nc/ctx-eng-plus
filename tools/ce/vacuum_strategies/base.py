@@ -47,13 +47,15 @@ class BaseStrategy(ABC):
         "**/bootstrap.sh",
     ]
 
-    def __init__(self, project_root: Path):
+    def __init__(self, project_root: Path, scan_path: Path = None):
         """Initialize strategy with project root.
 
         Args:
             project_root: Path to project root directory
+            scan_path: Optional path to scan (defaults to project_root)
         """
         self.project_root = project_root
+        self.scan_path = scan_path if scan_path else project_root
 
     @abstractmethod
     def find_candidates(self) -> List[CleanupCandidate]:

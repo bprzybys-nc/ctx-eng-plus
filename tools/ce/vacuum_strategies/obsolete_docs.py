@@ -92,7 +92,7 @@ class ObsoleteDocStrategy(BaseStrategy):
         candidates.extend(self._find_root_garbage_files())
 
         # Find all markdown files
-        for md_file in self.project_root.glob("**/*.md"):
+        for md_file in self.scan_path.glob("**/*.md"):
             if not md_file.exists() or md_file.is_dir():
                 continue
 

@@ -1,13 +1,13 @@
 {
   "name": "syntropy-mcp",
-  "version": "0.1.0",
+  "version": "0.1.2",
   "description": "Unified MCP tool aggregation layer",
   "type": "module",
   "bin": {
     "syntropy": "./build/index.js"
   },
   "scripts": {
-    "build": "tsc",
+    "build": "./scripts/build.sh",
     "watch": "tsc --watch",
     "prepare": "npm run build",
     "test": "tsx --test src/**/*.test.ts"

@@ -227,7 +227,10 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
     return toolStateManager.isEnabled(toolName);
   });
 
-  return { tools: enabledTools };
+  // Return tools WITHOUT prefix - Claude Code adds mcp__syntropy__ prefix client-side
+  return {
+    tools: enabledTools
+  };
 });
 
 /**

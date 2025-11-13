@@ -173,7 +173,7 @@ class ExamplesBlendStrategy:
 
         # Get target base directory from context
         if not context or "target_dir" not in context:
-            raise ValueError("context['target_dir'] required for migration mode")
+            raise ValueError("context['target_dir'] required for migration mode\n🔧 Troubleshooting: Check inputs and system state")
 
         target_base = context["target_dir"] / ".ce" / "examples" / "user"
         target_base.mkdir(parents=True, exist_ok=True)

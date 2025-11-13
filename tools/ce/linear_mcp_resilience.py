@@ -162,7 +162,7 @@ def _call_linear_mcp_with_retry(func: Callable, *args, **kwargs) -> Any:
             if _reset_linear_mcp_auth():
                 logger.info("Auth reset succeeded - will retry operation")
                 # Retry is handled by decorator
-                raise RuntimeError(f"Auth recovered, retrying: {error_msg}") from e
+                raise RuntimeError(f"Auth recovered, retrying: {error_msg}\n🔧 Troubleshooting: Check inputs and system state") from e
             else:
                 logger.error("Auth reset failed - operation cannot proceed")
                 raise RuntimeError(

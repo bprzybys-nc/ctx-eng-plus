@@ -47,7 +47,7 @@
         "@modelcontextprotocol/server-sequential-thinking"
       ],
       "env": {},
-      "lazy": false
+      "lazy": true
     },
     "syn-repomix": {
       "command": "npx",

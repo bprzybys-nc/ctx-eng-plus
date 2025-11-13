@@ -1,6 +1,6 @@
 # Syntropy MCP - Project Guide
 
-**v0.1.0**: Aggregation layer routing 78 tools across 9 MCP servers. Format: `mcp__syntropy_<server>_<tool>`.
+**v0.1.2**: Aggregation layer routing 78 tools across 9 MCP servers. Format: `mcp__syntropy__<server>_<tool>` (standard MCP protocol - client-side prefixing).
 
 ## Commands
 
@@ -13,11 +13,7 @@
 
 ## Session Start
 
-Auto health check shows:
-```
-✅ serena, filesystem, git, thinking, linear, github, perplexity, context7, repomix
-Total: 9/9 healthy
-```
+Check syntropy mcp helath. If not healthy prompot it swiftly with clear message.
 
 **Manual check**: Call `mcp__syntropy__healthcheck(detailed=true)` for diagnostics
 
