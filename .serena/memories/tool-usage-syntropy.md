@@ -430,3 +430,11 @@ All legacy `mcp__*` permissions replaced with Syntropy unified interface.
 - Located at: `/Users/bprzybysz/nc-src/ctx-eng-plus/syntropy-mcp/servers.json`
 - Spawn command format: `npx` or `uvx`
 - All servers use lazy initialization (spawn on first use)
+
+---
+
+## See Also
+
+- **Pattern Guide**: examples/serena-powerful-patterns.md - Serena MCP pattern combinations and anti-patterns
+- **Tool Usage**: examples/TOOL-USAGE-GUIDE.md - Comprehensive native-first tool selection guide
+- **Project Guide**: CLAUDE.md - Quick commands and framework overview

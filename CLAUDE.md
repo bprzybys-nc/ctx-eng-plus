@@ -292,11 +292,9 @@ Commands that require confirmation:
 
 ## Quick Tool Selection
 
-**🔗 Comprehensive Guide**: See [examples/TOOL-USAGE-GUIDE.md](examples/TOOL-USAGE-GUIDE.md) for:
-- Decision tree (flowchart for tool selection)
-- Common tasks with right/wrong examples
-- Anti-patterns to avoid
-- Migration table (55 denied tools → alternatives)
+**🔗 Comprehensive Guides**:
+- [examples/TOOL-USAGE-GUIDE.md](examples/TOOL-USAGE-GUIDE.md) - Decision tree, common tasks, anti-patterns, migration table
+- [examples/serena-powerful-patterns.md](examples/serena-powerful-patterns.md) - Serena MCP patterns (Ch1: Basic patterns, Ch2: Vector DB graph patterns for mind maps, multi-agent collaboration, drift detection)
 
 **Quick Reference**:
 

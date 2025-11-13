@@ -19,9 +19,12 @@ issue: TBD
 **What**: Redesign init-project workflow to eliminate dual implementations, add validation gates, and provide atomic installation with rollback.
 
 **Current Problems:**
-1. Dual implementations (TypeScript 733 li...
+1. Dual implementations (TypeScript 733 lines + Python 410 lines) doing same work
+2. Two sources of truth (filesystem boilerplate vs repomix package)
+3. Zero validation gates - silent failures leave broken state
+4. Certinia project failure: Phase 3 extraction failed silently, left .venv/ but no source files
 
-**Why**: Enable functionality described in INITIAL.md with 13 reference examples
+**Why**: Eliminate silent failures causing broken installs in production (Certinia project), reduce dual-implementation maintenance burden (1143 → 250 lines, 78% reduction), ensure reliable 2-3 minute init vs 10-45 minute manual workflow
 
 **Effort**: High (10 hours / 1.5 days - package reorg, dual codebase changes, validation gates)
 
@@ -522,6 +525,10 @@ uv run pytest tests/ -v
 7. ✅ **Serena Analysis**: Added pre-implementation Serena MCP usage for:
    - Phase 2 (Python): Analyze existing init_project.py structure and validation patterns
    - Phase 3 (TypeScript): Identify functions to delete and verify safe deletion
+8. ✅ **TL;DR "Why"**: Replaced generic template text with specific motivation:
+   - References Certinia project production failure
+   - Quantifies maintenance burden reduction (78%)
+   - States time improvement (2-3 min vs 10-45 min)
 
 ### Assessment
 
