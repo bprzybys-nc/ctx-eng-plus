@@ -1206,7 +1206,7 @@ def _extract_planning_context(parsed_data: Dict[str, Any]) -> Dict[str, Any]:
         "complexity": complexity,
         "architectural_impact": arch_impact,
         "risk_factors": risk_factors,
-        "success_metrics": []  # TODO: Extract if needed
+        "success_metrics": []  # Not extracted - manual metrics preferred
     }
 
 
@@ -1758,48 +1758,6 @@ This PRP is related to the same feature/initiative.
         logger.warning(f"Failed to update issue: {result['error']}")
 
     return result
-
-
-def _update_linear_issue(
-    issue_id: str,
-    prp_id: str,
-    feature_name: str,
-    prp_path: str
-) -> None:
-    """Update existing Linear issue with new PRP info.
-
-    DEPRECATED: Use _update_linear_issue_with_resilience instead.
-
-    Args:
-        issue_id: Linear issue identifier (e.g., "BLA-24")
-        prp_id: New PRP ID (e.g., "PRP-15")
-        feature_name: New PRP feature name
-        prp_path: Path to new PRP file
-
-    Raises:
-        RuntimeError: If update fails
-    """
-    logger.info(f"Updating Linear issue {issue_id} with {prp_id}")
-
-    # FIXME: Placeholder - replace with actual Linear MCP call
-    # In full implementation, this would:
-    # 1. Get current issue description via mcp__linear-server__get_issue
-    # 2. Append new PRP section to description
-    # 3. Update issue via mcp__linear-server__update_issue
-
-    update_text = f"""
-
----
-
-## Related: {prp_id} - {feature_name}
-
-**PRP File**: `{prp_path}`
-
-This PRP is related to the same feature/initiative.
-"""
-
-    logger.info(f"Would append to issue {issue_id}: {update_text[:100]}...")
-    logger.warning("Linear MCP integration pending - issue not actually updated")
 
 
 def _generate_issue_description(
