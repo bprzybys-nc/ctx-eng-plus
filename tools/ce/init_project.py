@@ -11,6 +11,7 @@ Implements the 4-phase pipeline for installing CE framework on target projects:
 
 import json
 import logging
+import os
 import shutil
 import subprocess
 import sys
@@ -98,6 +99,199 @@ class PhaseValidator:
         return ValidationResult(
             success=True,
             message=f"✅ GATE 2 PASSED: Extracted {actual_total} files"
+        )
+
+    @staticmethod
+    def gate1_preflight(target_dir: Path, infrastructure_xml: Path) -> ValidationResult:
+        """
+        Validate prerequisites before extraction (GATE 1: PREFLIGHT).
+
+        Args:
+            target_dir: Path to target project directory
+            infrastructure_xml: Path to ce-infrastructure.xml package
+
+        Returns:
+            ValidationResult indicating success/failure
+        """
+        # Check target directory writable
+        if not target_dir.exists():
+            return ValidationResult(
+                success=False,
+                message=f"❌ GATE 1 FAILED: Target directory does not exist: {target_dir}",
+                troubleshooting="🔧 Create target directory or check path"
+            )
+
+        if not os.access(target_dir, os.W_OK):
+            return ValidationResult(
+                success=False,
+                message=f"❌ GATE 1 FAILED: Target directory not writable: {target_dir}",
+                troubleshooting="🔧 Check directory permissions (chmod +w)"
+            )
+
+        # Check package exists and is readable
+        if not infrastructure_xml.exists():
+            return ValidationResult(
+                success=False,
+                message=f"❌ GATE 1 FAILED: Package not found: {infrastructure_xml}",
+                troubleshooting="🔧 Ensure you're running from ctx-eng-plus repo root"
+            )
+
+        if not os.access(infrastructure_xml, os.R_OK):
+            return ValidationResult(
+                success=False,
+                message=f"❌ GATE 1 FAILED: Package not readable: {infrastructure_xml}",
+                troubleshooting="🔧 Check file permissions (chmod +r)"
+            )
+
+        # Check disk space (300MB minimum)
+        import shutil as shutil_disk
+        disk_stats = shutil_disk.disk_usage(target_dir)
+        free_mb = disk_stats.free / (1024 * 1024)
+        required_mb = 300
+
+        if free_mb < required_mb:
+            return ValidationResult(
+                success=False,
+                message=f"❌ GATE 1 FAILED: Insufficient disk space ({free_mb:.0f}MB free, {required_mb}MB required)",
+                troubleshooting="🔧 Free up disk space or use different target directory"
+            )
+
+        return ValidationResult(
+            success=True,
+            message=f"✅ GATE 1 PASSED: Prerequisites validated ({free_mb:.0f}MB available)"
+        )
+
+    @staticmethod
+    def gate3_blend(target_dir: Path) -> ValidationResult:
+        """
+        Validate blending results (GATE 3: BLEND).
+
+        Args:
+            target_dir: Path to target project directory
+
+        Returns:
+            ValidationResult indicating success/failure
+        """
+        # Validate settings.local.json syntax
+        settings_file = target_dir / ".claude" / "settings.local.json"
+        if settings_file.exists():
+            try:
+                with open(settings_file) as f:
+                    json.load(f)
+            except json.JSONDecodeError as e:
+                return ValidationResult(
+                    success=False,
+                    message=f"❌ GATE 3 FAILED: Invalid JSON in settings.local.json: {str(e)}",
+                    troubleshooting="🔧 Check JSON syntax at line indicated above"
+                )
+        else:
+            return ValidationResult(
+                success=False,
+                message="❌ GATE 3 FAILED: settings.local.json not found after blending",
+                troubleshooting="🔧 Check blend phase output for errors"
+            )
+
+        # Validate CLAUDE.md exists (Markdown syntax check is basic - just check readable)
+        claude_md = target_dir / "CLAUDE.md"
+        if claude_md.exists():
+            try:
+                with open(claude_md) as f:
+                    content = f.read()
+                    if len(content) == 0:
+                        return ValidationResult(
+                            success=False,
+                            message="❌ GATE 3 FAILED: CLAUDE.md is empty",
+                            troubleshooting="🔧 Check blend phase - CLAUDE.md should have framework + user content"
+                        )
+            except Exception as e:
+                return ValidationResult(
+                    success=False,
+                    message=f"❌ GATE 3 FAILED: Cannot read CLAUDE.md: {str(e)}",
+                    troubleshooting="🔧 Check file permissions"
+                )
+
+        # Check no framework files at root (should be in .ce/ or /system/ subdirs)
+        ce_dir = target_dir / ".ce"
+        if not ce_dir.exists():
+            return ValidationResult(
+                success=False,
+                message="❌ GATE 3 FAILED: .ce/ directory not found after blending",
+                troubleshooting="🔧 Run extract phase first"
+            )
+
+        return ValidationResult(
+            success=True,
+            message="✅ GATE 3 PASSED: Blend validation complete"
+        )
+
+    @staticmethod
+    def gate4_finalize(tools_dir: Path) -> ValidationResult:
+        """
+        Validate installation completion (GATE 4: FINALIZE).
+
+        Args:
+            tools_dir: Path to .ce/tools/ directory
+
+        Returns:
+            ValidationResult indicating success/failure
+        """
+        # Check uv sync succeeded (.venv/ exists)
+        venv_dir = tools_dir / ".venv"
+        if not venv_dir.exists():
+            return ValidationResult(
+                success=False,
+                message="❌ GATE 4 FAILED: Virtual environment not created",
+                troubleshooting="🔧 Check initialize phase output - uv sync may have failed"
+            )
+
+        # Check pyproject.toml exists
+        pyproject = tools_dir / "pyproject.toml"
+        if not pyproject.exists():
+            return ValidationResult(
+                success=False,
+                message="❌ GATE 4 FAILED: pyproject.toml not found",
+                troubleshooting="🔧 Extract phase may have failed - check .ce/tools/ directory"
+            )
+
+        # Verify ce command works
+        try:
+            result = subprocess.run(
+                ["uv", "run", "ce", "--version"],
+                cwd=tools_dir,
+                capture_output=True,
+                text=True,
+                timeout=10
+            )
+
+            if result.returncode != 0:
+                return ValidationResult(
+                    success=False,
+                    message=f"❌ GATE 4 FAILED: 'uv run ce --version' failed (exit {result.returncode})",
+                    troubleshooting=f"🔧 Check initialization errors:\n{result.stderr}"
+                )
+
+        except subprocess.TimeoutExpired:
+            return ValidationResult(
+                success=False,
+                message="❌ GATE 4 FAILED: 'uv run ce --version' timed out",
+                troubleshooting="🔧 Check for hanging processes or dependencies"
+            )
+        except FileNotFoundError:
+            return ValidationResult(
+                success=False,
+                message="❌ GATE 4 FAILED: uv not found in PATH",
+                troubleshooting="🔧 Install UV: curl -LsSf https://astral.sh/uv/install.sh | sh"
+            )
+        except Exception as e:
+            return ValidationResult(
+                success=False,
+                message=f"❌ GATE 4 FAILED: Command validation error: {str(e)}",
+                troubleshooting="🔧 Check .ce/tools/ installation"
+            )
+
+        return ValidationResult(
+            success=True,
+            message="✅ GATE 4 PASSED: Installation verified"
         )
 
     @staticmethod
@@ -206,14 +400,29 @@ class ProjectInitializer:
             self.error_logger = ErrorLogger(self.target_project)
             self.error_logger.info("=== CE Framework Initialization Started ===")
 
-        # Check for infrastructure package
-        if not self.infrastructure_xml.exists():
-            status["message"] = (
-                f"❌ ce-infrastructure.xml not found at {self.infrastructure_xml}\n"
-                f"🔧 Ensure you're running from ctx-eng-plus repo root"
-            )
-            self.error_logger.error(f"Package not found: {self.infrastructure_xml}")
+        # ============================================================
+        # GATE 1: Validate prerequisites
+        # ============================================================
+        print(f"🔍 GATE 1: Validating prerequisites...")
+        validation = PhaseValidator.gate1_preflight(self.target_project, self.infrastructure_xml)
+
+        if not validation:
+            # Gate failed - log and abort
+            print(validation.message)
+            if validation.troubleshooting:
+                print(validation.troubleshooting)
+            print(f"📄 Full log: {self.error_logger.log_file}")
+
+            self.error_logger.error(validation.message)
+            self.error_logger.error(validation.troubleshooting)
+            print("❌ Initialization aborted")
+
+            status["message"] = f"{validation.message}\n{validation.troubleshooting}"
             return status
+
+        # Gate passed
+        print(validation.message)
+        self.error_logger.info(validation.message)
 
         if self.dry_run:
             status["success"] = True
@@ -414,6 +623,32 @@ class ProjectInitializer:
                 if ce_claude_md.exists():
                     ce_claude_md.unlink()
 
+                # ============================================================
+                # GATE 3: Validate blend results
+                # ============================================================
+                print(f"🔍 GATE 3: Validating blend results...")
+                validation = PhaseValidator.gate3_blend(self.target_project)
+
+                if not validation:
+                    # Gate failed - log and abort
+                    print(validation.message)
+                    if validation.troubleshooting:
+                        print(validation.troubleshooting)
+
+                    if self.error_logger:
+                        self.error_logger.error(validation.message)
+                        self.error_logger.error(validation.troubleshooting)
+                        print(f"📄 Full log: {self.error_logger.log_file}")
+
+                    status["success"] = False
+                    status["message"] = f"{validation.message}\n{validation.troubleshooting}"
+                    return status
+
+                # Gate passed
+                print(validation.message)
+                if self.error_logger:
+                    self.error_logger.info(validation.message)
+
                 # Check if .ce.old exists to mention it
                 ce_old_dir = self.target_project / ".ce.old"
                 if ce_old_dir.exists():
@@ -479,6 +714,32 @@ class ProjectInitializer:
                     f"🔧 Check pyproject.toml and dependency versions:\n{result.stderr}"
                 )
             else:
+                # ============================================================
+                # GATE 4: Validate installation completion
+                # ============================================================
+                print(f"🔍 GATE 4: Validating installation...")
+                validation = PhaseValidator.gate4_finalize(self.tools_dir)
+
+                if not validation:
+                    # Gate failed - log and abort
+                    print(validation.message)
+                    if validation.troubleshooting:
+                        print(validation.troubleshooting)
+
+                    if self.error_logger:
+                        self.error_logger.error(validation.message)
+                        self.error_logger.error(validation.troubleshooting)
+                        print(f"📄 Full log: {self.error_logger.log_file}")
+
+                    status["success"] = False
+                    status["message"] = f"{validation.message}\n{validation.troubleshooting}"
+                    return status
+
+                # Gate passed
+                print(validation.message)
+                if self.error_logger:
+                    self.error_logger.info(validation.message)
+
                 status["message"] = "✅ Python environment initialized"
 
         except subprocess.TimeoutExpired:
