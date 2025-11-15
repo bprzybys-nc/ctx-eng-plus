@@ -1,10 +1,11 @@
 # Tool Usage Guide - Claude Code Native-First Philosophy
 
-**Last Updated**: 2025-11-08
+**Last Updated**: 2025-11-15
 **Status**: Authoritative reference for tool selection
 **Replaces**: Obsolete MCP tool documentation
 
 **See Also**:
+
 - [Syntropy MCP Naming Convention](syntropy-mcp-naming-convention.md) - Complete naming spec, testing, prevention
 - [Syntropy Naming Quick Guide](syntropy-naming-convention.md) - Quick reference for tool names
 
@@ -569,6 +570,7 @@ The Context Engineering framework provides specialized commands for framework ma
 ### When to Use CE Commands
 
 Use CE commands for:
+
 - **Framework installation**: `ce init-project`
 - **Content merging**: `ce blend`
 - **Context updates**: `ce update-context`
@@ -576,6 +578,7 @@ Use CE commands for:
 - **Cleanup**: `ce vacuum`
 
 **Do NOT** use CE commands for:
+
 - Generic file operations (use native tools)
 - General git operations (use Bash(git:*))
 - External web requests (use WebFetch/WebSearch)
@@ -587,6 +590,7 @@ Use CE commands for:
 **Purpose**: Initialize CE Framework in target project
 
 **Usage**:
+
 ```bash
 cd tools
 uv run ce init-project ~/projects/target-app
@@ -598,6 +602,7 @@ uv run ce init-project ~/projects/app --blend-only
 ```
 
 **When to use**:
+
 - Setting up CE framework in new project
 - Upgrading existing CE installation
 - Re-initializing after major changes
@@ -613,6 +618,7 @@ uv run ce init-project ~/projects/app --blend-only
 **Purpose**: Merge CE framework files with target project customizations
 
 **Usage**:
+
 ```bash
 cd tools
 uv run ce blend --all
@@ -621,6 +627,7 @@ uv run ce blend --all --target-dir ~/projects/app
 ```
 
 **When to use**:
+
 - After updating framework files (memories, examples)
 - Re-merging user customizations
 - Upgrading framework content
@@ -636,6 +643,7 @@ uv run ce blend --all --target-dir ~/projects/app
 **Purpose**: Sync PRPs with codebase implementation state
 
 **Usage**:
+
 ```bash
 cd tools
 uv run ce update-context
@@ -643,11 +651,13 @@ uv run ce update-context --prp PRPs/executed/PRP-34.1.1-core-blending-framework.
 ```
 
 **When to use**:
+
 - After completing PRP implementation
 - Weekly system hygiene
 - Detecting pattern drift
 
 **Auto-features**:
+
 - Rebuilds repomix packages if framework files changed
 - Detects drift violations
 - Updates YAML headers
@@ -661,6 +671,7 @@ uv run ce update-context --prp PRPs/executed/PRP-34.1.1-core-blending-framework.
 **Purpose**: Validate project structure and framework files
 
 **Usage**:
+
 ```bash
 cd tools
 uv run ce validate --level all
@@ -668,6 +679,7 @@ uv run ce validate --level 4  # Pattern conformance
 ```
 
 **Levels**:
+
 - L1: File structure
 - L2: YAML headers
 - L3: Content validation
@@ -682,6 +694,7 @@ uv run ce validate --level 4  # Pattern conformance
 **Purpose**: Clean up temporary files and obsolete artifacts
 
 **Usage**:
+
 ```bash
 cd tools
 uv run ce vacuum                  # Dry-run (report only)
@@ -696,6 +709,7 @@ uv run ce vacuum --auto           # Delete temp + obsolete
 ### CE Command Patterns
 
 **✅ CORRECT**:
+
 ```python
 # Use ce commands for framework operations
 Bash(command="cd tools && uv run ce blend --all")
@@ -703,6 +717,7 @@ Bash(command="cd tools && uv run ce init-project ~/projects/app")
 ```
 
 **❌ WRONG**:
+
 ```python
 # Don't use ce commands for generic operations
 Bash(command="ce blend somefile.txt")  # Blend is not for arbitrary files
@@ -752,6 +767,139 @@ Bash(command="ce init-project .")      # Must run from tools/ directory
 1. Use `serena_get_symbols_overview` to list all symbols in file
 2. Ensure format: `ClassName.method_name` or `function_name`
 3. Check relative_path is correct from project root
+
+---
+
+## Lessons Learned from Production Debugging
+
+### Lesson 1: Always Use Serena First for Code Navigation
+
+**Anti-Pattern** (2025-11-15 debugging session):
+
+```python
+# ❌ WRONG: Falling back to Read/Grep immediately
+Read(file_path="tools/ce/blending/core.py", offset=300, limit=100)
+Grep(pattern="def.*blend", path="tools/ce/blending/")
+```
+
+**Correct Pattern**:
+
+```python
+# ✅ RIGHT: Use Serena's semantic understanding
+mcp__syntropy__serena_get_symbols_overview("tools/ce/blending/core.py")
+mcp__syntropy__serena_find_symbol("BlendingOrchestrator")
+mcp__syntropy__serena_find_symbol("BlendingOrchestrator.blend", include_body=True)
+```
+
+**Why**: Serena understands code structure, finds exact symbols, includes cross-references. Read/Grep are text tools - slower and less precise.
+
+**When to fall back to Read/Grep**:
+
+- After Serena gives you the exact location (line numbers)
+- For non-code content (markdown, config files)
+- When you need regex pattern matching across files
+
+---
+
+### Lesson 2: Track Working Directory to Avoid Path Errors
+
+**Anti-Pattern**:
+
+```bash
+# ❌ Current dir unknown, paths fail silently
+Bash("grep 'pattern' .ce/file.yml")  # Fails if not in project root
+```
+
+**Correct Pattern**:
+
+```bash
+# ✅ Always use absolute paths or explicit cd
+Bash("cd /Users/user/project && grep 'pattern' .ce/file.yml")
+
+# Or track current directory in comments
+# Working dir: /Users/user/project
+Bash("grep 'pattern' .ce/file.yml")
+```
+
+**Best Practice**: After each `cd` command, note the new working directory in a comment for the next command.
+
+---
+
+### Lesson 3: Investigate Root Cause, Not Symptoms
+
+**Anti-Pattern** (GATE 3 failure debugging):
+
+```
+Symptom: "settings.local.json not found"
+Quick fix attempt: Create the file manually ❌
+```
+
+**Correct Pattern**:
+
+```
+Symptom: "settings.local.json not found"
+Investigation path:
+1. Where should it be created? (GATE 3 validation in init_project.py:188)
+2. Who creates it? (BlendingOrchestrator settings domain)
+3. Why didn't it run? (settings domain skipped due to missing framework file)
+4. Why was framework file missing? (Wrong path in blend config)
+5. ROOT CAUSE: claude_dir: .ce/.claude/ should be .claude/
+```
+
+**Lesson**: Trace the full execution path backwards from symptom to root cause. Don't patch symptoms.
+
+---
+
+### Lesson 4: Understand Build vs Distribution vs Installation
+
+**Confusion** (ce-32/builds/ mystery):
+
+```
+❌ Where do packages live?
+- Built to: ce-32/builds/ (cryptic temp directory)
+- Consumed from: .ce/ (manual copy needed)
+- Distributed via: ?? (unclear)
+```
+
+**Clarity**:
+
+```
+✅ Proper architecture:
+1. BUILD (ctx-eng-plus): repomix → syntropy-mcp/boilerplate/
+2. DISTRIBUTE (syntropy-mcp): npm publish → includes packages
+3. INSTALL (target): npx syntropy-mcp → extracts from node_modules
+```
+
+**Lesson**: Map the complete artifact flow from source → build → distribution → installation. Don't create temp directories that break the flow.
+
+---
+
+### Lesson 5: Validate Assumptions with Quick Tests
+
+**Anti-Pattern**:
+
+```python
+# ❌ Assume extraction works, skip validation
+extract_files(xml_path, target_dir)
+# ... 50 lines later, file not found error
+```
+
+**Correct Pattern**:
+
+```python
+# ✅ Validate immediately after critical operations
+count = extract_files(xml_path, target_dir)
+print(f"Extracted {count} files")
+
+# Quick spot check
+settings = target / ".claude" / "settings.local.json"
+if settings.exists():
+    print(f"✓ settings.local.json exists ({settings.stat().st_size} bytes)")
+else:
+    print("❌ settings.local.json NOT found - STOP AND INVESTIGATE")
+```
+
+**Lesson**: Add validation checkpoints after each critical operation. Fail fast, not 50 lines later.
 
 ---
 

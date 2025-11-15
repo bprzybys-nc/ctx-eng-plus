@@ -297,7 +297,8 @@ class PhaseValidator:
     @staticmethod
     def _count_files(staging: Path) -> Dict[str, int]:
         """Count files by category in staging directory."""
-        tools = len(list(staging.glob(".ce/tools/ce/*.py")))
+        # NOTE: Staging directory has tools at root (tools/ce/*.py), not .ce/tools/
+        tools = len(list(staging.glob("tools/ce/*.py")))
         memories = len(list(staging.glob(".serena/memories/*.md")))
         commands = len(list(staging.glob(".claude/commands/*.md")))
         examples = len(list(staging.glob("examples/*.md")))
@@ -337,10 +338,22 @@ class ProjectInitializer:
         self.ce_dir = self.target_project / ".ce"
         self.tools_dir = self.ce_dir / "tools"
 
-        # Paths to framework packages (in ctx-eng-plus repo)
+        # Paths to framework packages
+        # Priority 1: syntropy-mcp boilerplate (production - installed via npm)
+        # Priority 2: ctx-eng-plus/.ce/ (development mode)
         self.ctx_eng_root = Path(__file__).parent.parent.parent.resolve()
-        self.infrastructure_xml = self.ctx_eng_root / ".ce" / "ce-infrastructure.xml"
-        self.workflow_xml = self.ctx_eng_root / ".ce" / "ce-workflow-docs.xml"
+
+        # Try syntropy-mcp boilerplate first (sibling to ctx-eng-plus)
+        syntropy_boilerplate = self.ctx_eng_root.parent / "syntropy-mcp" / "boilerplate" / "ce-framework"
+
+        if (syntropy_boilerplate / "ce-infrastructure.xml").exists():
+            # Production: packages from syntropy-mcp
+            self.infrastructure_xml = syntropy_boilerplate / "ce-infrastructure.xml"
+            self.workflow_xml = syntropy_boilerplate / "ce-workflow-docs.xml"
+        else:
+            # Development: packages from ctx-eng-plus/.ce/
+            self.infrastructure_xml = self.ctx_eng_root / ".ce" / "ce-infrastructure.xml"
+            self.workflow_xml = self.ctx_eng_root / ".ce" / "ce-workflow-docs.xml"
 
         # Error logging and rollback tracking
         self.error_logger: Optional[ErrorLogger] = None
@@ -470,12 +483,12 @@ class ProjectInitializer:
             # GATE 2: Validate extraction file count
             # ============================================================
             expected_counts = {
-                "tools": 33,
-                "memories": 23,
+                "tools": 38,
+                "memories": 24,
                 "commands": 11,
-                "examples": 0,  # May vary
+                "examples": 11,
                 "prps": 1,
-                "total": 87
+                "total": 87  # +2 for CLAUDE.md and .claude/settings.local.json in package root
             }
 
             print(f"🔍 GATE 2: Validating extraction...")

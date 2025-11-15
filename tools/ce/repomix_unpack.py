@@ -41,8 +41,9 @@ def parse_repomix_xml(xml_content: str) -> List[Tuple[str, str]]:
         lines = content.split('\n')
         cleaned_lines = []
         for line in lines:
-            # Match line number format: spaces + number + (→ or : + space)
-            cleaned = re.sub(r'^\s*\d+[→:]\s*', '', line)
+            # Match line number format: spaces + number + (→ or : + exactly one space)
+            # NOTE: Final space must be exactly one, not \s*, to preserve content indentation
+            cleaned = re.sub(r'^\s*\d+[→:] ', '', line)
             cleaned_lines.append(cleaned)
 
         cleaned_content = '\n'.join(cleaned_lines)

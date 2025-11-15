@@ -317,8 +317,26 @@ class BlendingOrchestrator:
         results = {}
 
         for domain, files in self.classified_files.items():
-            # Special case: examples and memories domains should run even if no legacy files detected
+            # Special case: Core domains should run even if no legacy files detected
             # (framework files need to be processed and properly located)
+            if domain == "settings":
+                if self.blend_config:
+                    framework_settings_file = target_dir / self.blend_config.get_framework_path("settings")
+                else:
+                    framework_settings_file = target_dir / ".ce" / ".claude" / "settings.local.json"
+                if framework_settings_file.exists() and not files:
+                    logger.info(f"  {domain}: No legacy files, but framework settings exist - processing...")
+                    files = []  # Empty list signals blend mode (not migration mode)
+
+            if domain == "claude_md":
+                if self.blend_config:
+                    framework_claude_md = target_dir / ".ce" / self.blend_config.get_output_path("claude_md")
+                else:
+                    framework_claude_md = target_dir / ".ce" / "CLAUDE.md"
+                if framework_claude_md.exists() and not files:
+                    logger.info(f"  {domain}: No legacy files, but framework CLAUDE.md exists - processing...")
+                    files = []  # Empty list signals blend mode (not migration mode)
+
             if domain == "examples":
                 if self.blend_config:
                     framework_examples_dir = target_dir / ".ce" / self.blend_config.get_output_path("examples")
@@ -339,7 +357,7 @@ class BlendingOrchestrator:
                     logger.info(f"  {domain}: No legacy files, but framework memories exist - processing...")
                     files = []  # Empty list signals blend mode (not migration mode)
 
-            if not files and domain not in ["examples", "memories"]:
+            if not files and domain not in ["examples", "memories", "settings", "claude_md"]:
                 logger.debug(f"  {domain}: No files to blend")
                 continue
 

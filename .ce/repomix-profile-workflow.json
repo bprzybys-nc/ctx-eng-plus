@@ -1,6 +1,6 @@
 {
   "output": {
-    "filePath": "ce-32/builds/ce-workflow-docs.xml",
+    "filePath": "../syntropy-mcp/boilerplate/ce-framework/ce-workflow-docs.xml",
     "style": "xml",
     "topFilesLength": 5,
     "showLineNumbers": true,

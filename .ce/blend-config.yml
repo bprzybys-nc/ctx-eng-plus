@@ -89,7 +89,7 @@ global:
 
 directories:
   output:
-    claude_dir: .ce/.claude/
+    claude_dir: .claude/
     claude_md: CLAUDE.md
     serena_memories: .serena/memories/
     examples: .ce/examples/
