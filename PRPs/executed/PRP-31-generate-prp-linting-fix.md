@@ -1,9 +1,11 @@
 ---
 prp_id: 31
 feature_name: Fix /generate-prp Linting Auto-Fix Hangs
-status: pending
+status: executed
 created: 2025-10-30T14:30:00Z
-updated: 2025-10-30T14:30:00Z
+updated: 2025-11-15T00:00:00Z
+executed_date: 2025-11-15T00:00:00Z
+executed_commit: 48d417d
 complexity: medium
 estimated_hours: 2-3
 dependencies: markdownlint CLI, Python stdlib (subprocess, time, json)
