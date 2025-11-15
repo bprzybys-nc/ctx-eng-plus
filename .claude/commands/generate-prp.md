@@ -263,6 +263,11 @@ All generated implementations follow:
 
 ## Linting Workflow (L1 Markdown Validation)
 
+**Responsibility Split**:
+
+- **Python module** (tools/ce/generate.py): Writes PRP file, does NOT run linting
+- **Claude Code interpreter**: Runs markdownlint after file is written (optional, graceful degradation)
+
 When Claude Code interprets this command, implement the following linting logic:
 
 **Step 1: Write PRP file first**
@@ -392,7 +397,13 @@ else:
 
 ## Solo Mode Heartbeat (Optional)
 
-For monitoring solo mode generation progress:
+**Current Status**: NOT implemented for solo /generate-prp (only batch mode has heartbeat)
+
+**Batch Mode**: Heartbeat implemented in /batch-gen-prp (writes tmp/batch-gen/PRP-X.status)
+
+**Solo Mode** (if needed): Could implement similar monitoring at tmp/solo-gen/PRP-X.status
+
+For monitoring solo mode generation progress (if implemented):
 
 1. Create heartbeat directory: `tmp/solo-gen/`
 2. Determine next PRP ID: Read existing PRPs, increment by 1
