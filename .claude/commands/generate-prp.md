@@ -276,6 +276,32 @@ with open(prp_file_path, 'w') as f:
 ```python
 import subprocess
 import time
+import json
+from pathlib import Path
+
+def write_heartbeat(prp_id, status, progress, current_step):
+    """Write heartbeat file for monitoring progress
+
+    Args:
+        prp_id: PRP ID (e.g., "31" or "30.2.1")
+        status: Current status (e.g., "LINTING", "WRITING")
+        progress: Progress percentage (0-100)
+        current_step: Description of current step
+    """
+    heartbeat_dir = Path("tmp/batch-gen")
+    heartbeat_dir.mkdir(parents=True, exist_ok=True)
+
+    heartbeat_file = heartbeat_dir / f"PRP-{prp_id}.status"
+    heartbeat_data = {
+        "prp_id": str(prp_id),
+        "status": status,
+        "progress": progress,
+        "timestamp": int(time.time()),
+        "current_step": current_step
+    }
+
+    with open(heartbeat_file, 'w') as f:
+        json.dump(heartbeat_data, f, indent=2)
 
 def auto_fix_with_retry(file_path, prp_id=None, max_attempts=3):
     """Auto-fix markdown with retry limit and heartbeat
