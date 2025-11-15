@@ -4,7 +4,10 @@ tools/**/__pycache__/
 tools/.pytest_cache/
 tools/**/.pytest_cache/
 tools/*.egg-info/
+
+# Ignore nested .ce directories (only root .ce/ is valid)
 tools/.ce/
+tools/**/.ce/
 
 # Temporary files and reports
 tmp/

@@ -7,6 +7,36 @@ from pathlib import Path
 from typing import Dict, List, Any, Optional, Union
 
 
+def find_project_root(start_path: Optional[Path] = None) -> Path:
+    """Find project root by walking up to find .ce/ directory.
+
+    Args:
+        start_path: Starting path (defaults to current working directory)
+
+    Returns:
+        Path to project root (where .ce/ exists)
+
+    Raises:
+        FileNotFoundError: If .ce/ not found in any parent directory
+
+    Example:
+        >>> root = find_project_root()
+        >>> config = root / ".ce" / "config.yml"
+    """
+    current = start_path or Path.cwd()
+
+    # Check current directory and all parents
+    for parent in [current] + list(current.parents):
+        if (parent / ".ce").exists():
+            return parent
+
+    raise FileNotFoundError(
+        f"Not in a Context Engineering project (.ce/ not found)\n"
+        f"Searched from: {current}\n"
+        f"🔧 Troubleshooting: Run from within a CE project directory"
+    )
+
+
 def run_cmd(
     cmd: Union[str, List[str]],
     cwd: Optional[str] = None,

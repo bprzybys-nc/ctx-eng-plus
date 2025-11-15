@@ -780,8 +780,10 @@ def enable_auto_sync() -> Dict[str, Any]:
     """
     from pathlib import Path
     import json
+    from .core import find_project_root
 
-    config_dir = Path(".ce")
+    project_root = find_project_root()
+    config_dir = project_root / ".ce"
     config_file = config_dir / "config"
 
     # Create directory if needed
@@ -823,8 +825,10 @@ def disable_auto_sync() -> Dict[str, Any]:
     """
     from pathlib import Path
     import json
+    from .core import find_project_root
 
-    config_dir = Path(".ce")
+    project_root = find_project_root()
+    config_dir = project_root / ".ce"
     config_file = config_dir / "config"
 
     # Read existing config

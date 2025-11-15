@@ -6,6 +6,7 @@ import json
 import logging
 from pathlib import Path
 from datetime import datetime, timezone
+from .core import find_project_root
 
 # Required fields schema
 REQUIRED_FIELDS = [
@@ -21,12 +22,32 @@ VALID_PRIORITY = ["HIGH", "MEDIUM", "LOW"]
 VALID_RISK = ["LOW", "MEDIUM", "HIGH"]
 VALID_PHASES = ["planning", "implementation", "testing", "validation", "complete"]
 
-# State file paths
-STATE_DIR = Path(".ce")
-STATE_FILE = STATE_DIR / "active_prp_session"
-
 # Configure logging
 logger = logging.getLogger(__name__)
+
+
+def _get_state_dir() -> Path:
+    """Get .ce directory path from project root.
+
+    Returns:
+        Path to .ce directory
+
+    Raises:
+        FileNotFoundError: If not in CE project
+    """
+    return find_project_root() / ".ce"
+
+
+def _get_state_file() -> Path:
+    """Get active PRP session state file path.
+
+    Returns:
+        Path to active_prp_session file
+
+    Raises:
+        FileNotFoundError: If not in CE project
+    """
+    return _get_state_dir() / "active_prp_session"
 
 
 def validate_prp_yaml(file_path: str) -> Dict[str, Any]:
@@ -213,10 +234,12 @@ def format_validation_result(result: Dict[str, Any]) -> str:
 
 def _write_state(state: Dict[str, Any]) -> None:
     """Write state to file using atomic write pattern."""
-    STATE_DIR.mkdir(exist_ok=True)
-    temp_file = STATE_FILE.with_suffix(".tmp")
+    state_dir = _get_state_dir()
+    state_file = _get_state_file()
+    state_dir.mkdir(exist_ok=True)
+    temp_file = state_file.with_suffix(".tmp")
     temp_file.write_text(json.dumps(state, indent=2))
-    temp_file.replace(STATE_FILE)
+    temp_file.replace(state_file)
 
 
 def start_prp(prp_id: str, prp_name: Optional[str] = None) -> Dict[str, Any]:
@@ -298,11 +321,16 @@ def get_active_prp() -> Optional[Dict[str, Any]]:
         ... else:
         ...     print("No active PRP")
     """
-    if not STATE_FILE.exists():
+    try:
+        state_file = _get_state_file()
+    except FileNotFoundError:
+        return None  # Not in CE project
+
+    if not state_file.exists():
         return None
 
     try:
-        return json.loads(STATE_FILE.read_text())
+        return json.loads(state_file.read_text())
     except (json.JSONDecodeError, OSError) as e:
         logger.warning(f"Failed to read state file: {e}")
         return None
@@ -348,7 +376,8 @@ def end_prp(prp_id: str) -> Dict[str, Any]:
     duration = f"{hours}h {minutes}m" if hours > 0 else f"{minutes}m"
 
     # Remove state file
-    STATE_FILE.unlink(missing_ok=True)
+    state_file = _get_state_file()
+    state_file.unlink(missing_ok=True)
     logger.info(f"Ended {prp_id} execution context")
 
     return {
@@ -924,7 +953,8 @@ def cleanup_prp(prp_id: str) -> Dict[str, Any]:
     # Step 7: Remove active session if matches
     active = get_active_prp()
     if active and active["prp_id"] == prp_id:
-        STATE_FILE.unlink(missing_ok=True)
+        state_file = _get_state_file()
+        state_file.unlink(missing_ok=True)
         logger.info(f"Removed active session for {prp_id}")
 
     logger.info(f"Cleanup completed for {prp_id}")
