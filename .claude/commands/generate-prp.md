@@ -45,12 +45,20 @@ Automates PRP (Product Requirements Prompt) generation from INITIAL.md with comp
    - Auto-generates next PRP ID (PRP-N+1)
    - Validates completeness (ensures all required sections present)
 
-5. **Creates/Updates Linear issue**:
+5. **Runs L1 validation with timeout and retry** (30s max):
+   - Lints markdown (markdownlint: MD031, MD032, etc.)
+   - Auto-fixes formatting issues (max 3 attempts, 10s timeout each)
+   - Detects infinite loops (abort if same error repeats)
+   - Update heartbeat every 5s during linting (batch mode)
+   - **Graceful degradation**: Output PRP with warning if linting fails
+   - **Note**: This is markdown-specific L1, not code linting
+
+6. **Creates/Updates Linear issue**:
    - **Without --join-prp**: Creates new Linear issue with project defaults (from `.ce/linear-defaults.yml`)
    - **With --join-prp**: Updates existing PRP's Linear issue with new PRP information
    - Updates PRP YAML header with `issue: {ISSUE-ID}`
 
-6. **Outputs to**: `PRPs/feature-requests/PRP-{id}-{feature-slug}.md`
+7. **Outputs to**: `PRPs/feature-requests/PRP-{id}-{feature-slug}.md`
 
 ## INITIAL.md Structure
 
@@ -252,6 +260,158 @@ All generated implementations follow:
 - **No silent failures**: Exceptions bubble up, never swallowed
 - **Real functionality**: No hardcoded success messages or fake results
 - **Naming conventions**: Business-focused (no version numbers or placeholders)
+
+## Linting Workflow (L1 Markdown Validation)
+
+When Claude Code interprets this command, implement the following linting logic:
+
+**Step 1: Write PRP file first**
+```python
+# Always write PRP content to file before linting
+with open(prp_file_path, 'w') as f:
+    f.write(prp_content)
+```
+
+**Step 2: Run markdownlint with retry and timeout**
+```python
+import subprocess
+import time
+import json
+from pathlib import Path
+
+def write_heartbeat(prp_id, status, progress, current_step):
+    """Write heartbeat file for monitoring progress
+
+    Args:
+        prp_id: PRP ID (e.g., "31" or "30.2.1")
+        status: Current status (e.g., "LINTING", "WRITING")
+        progress: Progress percentage (0-100)
+        current_step: Description of current step
+    """
+    heartbeat_dir = Path("tmp/batch-gen")
+    heartbeat_dir.mkdir(parents=True, exist_ok=True)
+
+    heartbeat_file = heartbeat_dir / f"PRP-{prp_id}.status"
+    heartbeat_data = {
+        "prp_id": str(prp_id),
+        "status": status,
+        "progress": progress,
+        "timestamp": int(time.time()),
+        "current_step": current_step
+    }
+
+    with open(heartbeat_file, 'w') as f:
+        json.dump(heartbeat_data, f, indent=2)
+
+def auto_fix_with_retry(file_path, prp_id=None, max_attempts=3):
+    """Auto-fix markdown with retry limit and heartbeat
+
+    Args:
+        file_path: Path to markdown file
+        prp_id: PRP ID for heartbeat (None for solo mode)
+        max_attempts: Max retry attempts (default: 3)
+
+    Returns: (success: bool, attempts: int, errors: list)
+    """
+    errors = []
+    previous_error = None
+
+    for attempt in range(1, max_attempts + 1):
+        # Update heartbeat (batch mode only)
+        if prp_id:
+            write_heartbeat(prp_id, "LINTING", 75,
+                          f"Auto-fix attempt {attempt}/{max_attempts}")
+
+        try:
+            # Run markdownlint with 10s timeout
+            result = subprocess.run(
+                ["markdownlint", "--fix", file_path],
+                timeout=10,
+                capture_output=True,
+                text=True
+            )
+
+            if result.returncode == 0:
+                # Success: linting passed
+                if prp_id:
+                    write_heartbeat(prp_id, "LINTING", 80, "Linting complete")
+                return (True, attempt, [])
+
+            # Errors found
+            current_error = result.stderr.strip()
+            errors.append(current_error)
+
+            # Check for infinite loop (same error twice)
+            if attempt > 1 and current_error == previous_error:
+                if prp_id:
+                    write_heartbeat(prp_id, "LINTING", 80,
+                                  "Infinite loop detected, continuing anyway")
+                return (False, attempt, errors)
+
+            previous_error = current_error
+
+        except subprocess.TimeoutExpired:
+            error_msg = f"Timeout on attempt {attempt}"
+            errors.append(error_msg)
+            if prp_id:
+                write_heartbeat(prp_id, "LINTING", 75, error_msg)
+
+        except FileNotFoundError:
+            # markdownlint not installed
+            if prp_id:
+                write_heartbeat(prp_id, "LINTING", 80,
+                              "markdownlint not found, skipping")
+            return (False, 1, ["markdownlint not installed"])
+
+    # Failed after max attempts
+    if prp_id:
+        write_heartbeat(prp_id, "LINTING", 80, "Linting failed, continuing anyway")
+    return (False, max_attempts, errors)
+```
+
+**Step 3: Handle linting result with graceful degradation**
+```python
+# Try to lint (best effort, don't block on failure)
+success, attempts, lint_errors = auto_fix_with_retry(prp_file_path, prp_id)
+
+if not success:
+    # Log warning but don't fail
+    print(f"⚠️ Warning: Linting failed after {attempts} attempts")
+    for error in lint_errors:
+        print(f"   {error}")
+    print(f"   PRP generated successfully but may have formatting issues")
+    # Continue to next step (Linear issue creation)
+else:
+    print(f"✓ Linting passed after {attempts} attempt(s)")
+```
+
+**Step 4: Continue to Linear issue creation**
+- Linting failures don't block PRP generation
+- PRP file is already written in Step 1
+- Proceed to create/update Linear issue
+
+## Solo Mode Heartbeat (Optional)
+
+For monitoring solo mode generation progress:
+
+1. Create heartbeat directory: `tmp/solo-gen/`
+2. Determine next PRP ID: Read existing PRPs, increment by 1
+3. Write heartbeat: `tmp/solo-gen/PRP-{next_id}.status`
+4. Update every 15s during generation
+5. Cleanup on completion (delete heartbeat file)
+
+**Format** (same as batch mode):
+```json
+{
+  "prp_id": "31",
+  "status": "WRITING",
+  "progress": 60,
+  "timestamp": 1730000000,
+  "current_step": "Generating Implementation Steps section"
+}
+```
+
+**Note**: Solo mode heartbeat is optional and not required by `/batch-gen-prp`. Use only if user wants to monitor solo generation progress.
 
 ## Tips
 

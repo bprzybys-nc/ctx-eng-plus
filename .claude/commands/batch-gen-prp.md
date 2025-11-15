@@ -451,7 +451,7 @@ Proceed with generation? [y/N]:
 
 **Create monitoring directory**:
 ```bash
-mkdir -p .tmp/batch-gen
+mkdir -p tmp/batch-gen
 ```
 
 **For each stage**:
@@ -504,7 +504,7 @@ Use the /generate-prp command with this structured JSON input:
 
 Follow the "Batch Mode Workflow" section of /generate-prp:
 1. Parse JSON input
-2. Write heartbeat to .tmp/batch-gen/PRP-{prp_info.prp_id}.status
+2. Write heartbeat to tmp/batch-gen/PRP-{prp_info.prp_id}.status
 3. Generate PRP file with all metadata
 4. Create Linear issue
 5. Return JSON report
@@ -571,7 +571,7 @@ def monitor_parallel_agents(agents, prp_ids, timeout=300):
                 continue  # Already completed
 
             # Check heartbeat file
-            heartbeat_file = f".tmp/batch-gen/PRP-{prp_id}.status"
+            heartbeat_file = f"tmp/batch-gen/PRP-{prp_id}.status"
             prp_file_pattern = f"PRPs/feature-requests/PRP-{prp_id}-*.md"
 
             # Check if PRP file exists (completion signal)
@@ -669,7 +669,7 @@ def monitor_parallel_agents(agents, prp_ids, timeout=300):
 
     # M3: Cleanup heartbeat files
     for prp_id in agent_status.keys():
-        heartbeat_file = f".tmp/batch-gen/PRP-{prp_id}.status"
+        heartbeat_file = f"tmp/batch-gen/PRP-{prp_id}.status"
         if os.path.exists(heartbeat_file):
             try:
                 os.remove(heartbeat_file)
@@ -947,8 +947,8 @@ Please fix plan format and retry.
 | **Input** | Plan markdown file | Generated PRP files |
 | **Output** | PRP files + Linear issues | Code changes in worktrees |
 | **Work Location** | Single directory | Git worktrees |
-| **Health Signal** | `.tmp/batch-gen/*.status` | Git log timestamps |
-| **Cleanup** | Remove .tmp/ files | Remove worktrees |
+| **Health Signal** | `tmp/batch-gen/*.status` | Git log timestamps |
+| **Cleanup** | Remove tmp/ files | Remove worktrees |
 
 ---
 

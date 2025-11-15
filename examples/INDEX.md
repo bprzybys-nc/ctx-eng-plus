@@ -35,6 +35,7 @@ Comprehensive catalog of all Context Engineering framework examples, organized b
 | Example Simple Feature | Pattern | PRP | No | Complete PRP example for adding git status summary command (ctx-eng-plus specific) | [patterns/example-simple-feature.md](patterns/example-simple-feature.md) |
 | Git Message Rules | Pattern | Git | No | Git commit message formatting and convention rules (ctx-eng-plus specific) | [patterns/git-message-rules.md](patterns/git-message-rules.md) |
 | Mock Marking Pattern | Pattern | Testing | Yes | Mark mocks with FIXME comments for tracking temporary test code | [patterns/mocks-marking.md](patterns/mocks-marking.md) |
+| Serena Powerful Patterns | Pattern | MCP | Yes | Ch1: Basic pattern combinations (symbol navigation, debugging, semantic search). Ch2: Advanced vector DB graph patterns (mind maps, multi-agent collaboration, semantic drift detection, pattern mining) | [serena-powerful-patterns.md](serena-powerful-patterns.md) |
 | **GUIDES** | | | | | |
 | Tool Usage Guide | Guide | Tools | Yes | Complete tool selection guide with native-first philosophy, decision trees and examples. Updated 2025-11-06 with CE Framework Commands section | [TOOL-USAGE-GUIDE.md](TOOL-USAGE-GUIDE.md) |
 | PRP Decomposition Patterns | Guide | PRP | Yes | Patterns for breaking down large features into manageable PRPs | [prp-decomposition-patterns.md](prp-decomposition-patterns.md) |

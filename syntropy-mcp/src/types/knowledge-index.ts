@@ -19,11 +19,12 @@ export type IndexEntry =
   | PRPEntry
   | MemoryEntry
   | RuleEntry
-  | ExampleEntry;
+  | ExampleEntry
+  | ResearchEntry;
 
 export interface BaseEntry {
   id: string;
-  type: "pattern" | "prp" | "memory" | "rule" | "example";
+  type: "pattern" | "prp" | "memory" | "rule" | "example" | "research";
   title: string;
   excerpt: string; // First 200 chars for search preview
   path: string; // Relative to project root
@@ -64,12 +65,20 @@ export interface ExampleEntry extends BaseEntry {
   framework?: string;
 }
 
+export interface ResearchEntry extends BaseEntry {
+  type: "research";
+  source: string; // e.g., "perplexity-ai", "internal-research"
+  category?: string; // e.g., "ce-graph-framework"
+  denoise_status?: "pending" | "completed" | "in-progress";
+  kb_integration?: "pending" | "completed" | "in-progress";
+}
+
 /**
  * Search query interface
  */
 export interface KnowledgeSearchQuery {
   query: string;
-  types?: Array<"pattern" | "prp" | "memory" | "rule" | "example">;
+  types?: Array<"pattern" | "prp" | "memory" | "rule" | "example" | "research">;
   tags?: string[];
   limit?: number; // Default 10
 }

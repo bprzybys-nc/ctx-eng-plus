@@ -205,3 +205,4 @@ The cache-based architecture for Syntropy status hook **proves this pattern work
 - **Policy**: CLAUDE.md (project guidelines)
 - **Permissions**: .claude/settings.local.json (lines 31-90)
 - **Tool Reference**: CLAUDE.md "Syntropy Tools Reference" section
+- **Serena Patterns**: examples/serena-powerful-patterns.md (pattern combinations and anti-patterns)

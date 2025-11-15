@@ -176,6 +176,8 @@ mcp__syntropy__serena_get_symbols_overview(relative_path="src/utils.py")
 
 **Why**: Serena provides AST-level symbol analysis not available via native tools.
 
+**See Also**: [serena-powerful-patterns.md](serena-powerful-patterns.md) for pattern combinations using Serena MCP
+
 ---
 
 ### Task 6: Library Documentation
@@ -759,6 +761,10 @@ Bash(command="ce init-project .")      # Must run from tools/ directory
 
 - `tools/ce/examples/syntropy/` - MCP tool usage patterns in Python
 - `.serena/memories/` - Serena memory management examples and patterns
+
+**Serena MCP Patterns**:
+
+- [serena-powerful-patterns.md](serena-powerful-patterns.md) - Pattern combinations and anti-patterns for effective Serena usage
 
 **Related Documentation**:
 

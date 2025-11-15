@@ -10,7 +10,7 @@
 
 import * as fs from "fs/promises";
 import * as path from "path";
-import { KnowledgeIndex, IndexEntry, PatternEntry, PRPEntry, MemoryEntry, RuleEntry, ExampleEntry } from "../types/knowledge-index.js";
+import { KnowledgeIndex, IndexEntry, PatternEntry, PRPEntry, MemoryEntry, RuleEntry, ExampleEntry, ResearchEntry } from "../types/knowledge-index.js";
 
 const INDEX_VERSION = "1.0.0";
 
@@ -33,6 +33,7 @@ export class KnowledgeIndexer {
     await this.scanPRPs();
     await this.scanExamples();
     await this.scanMemories();
+    await this.scanResearchDocs();
 
     return {
       version: INDEX_VERSION,
@@ -169,7 +170,7 @@ export class KnowledgeIndexer {
    */
   private async scanMemories(): Promise<void> {
     const memoriesDir = path.join(this.projectRoot, ".serena/memories");
-    
+
     try {
       const exists = await fs.stat(memoriesDir).then(() => true).catch(() => false);
       if (!exists) return;
@@ -193,6 +194,41 @@ export class KnowledgeIndexer {
       });
     } catch (error) {
       console.warn(`Failed to scan memories: ${error}`);
+    }
+  }
+
+  /**
+   * Scan research docs in docs/research/
+   */
+  private async scanResearchDocs(): Promise<void> {
+    const researchDir = path.join(this.projectRoot, "docs/research");
+
+    try {
+      const exists = await fs.stat(researchDir).then(() => true).catch(() => false);
+      if (!exists) return;
+
+      await this.scanDirectory(researchDir, async (filePath, relativePath) => {
+        if (!filePath.endsWith(".md")) return;
+
+        const content = await fs.readFile(filePath, "utf-8");
+        const tags = this.extractTags(content, filePath);
+        const yamlData = this.extractYAMLFrontmatter(content);
+
+        this.entries.push({
+          id: this.generateId("research", relativePath),
+          type: "research",
+          title: this.extractTitle(content, relativePath),
+          excerpt: this.extractExcerpt(content),
+          path: relativePath,
+          tags,
+          source: yamlData.source || "unknown",
+          category: yamlData.category,
+          denoise_status: yamlData.denoise_status,
+          kb_integration: yamlData.kb_integration
+        } as ResearchEntry);
+      });
+    } catch (error) {
+      console.warn(`Failed to scan research docs: ${error}`);
     }
   }
 
@@ -404,6 +440,48 @@ export class KnowledgeIndexer {
     const preview = content.substring(0, 500);
     const match = preview.match(/context:\s*(.+)/i);
     return match ? match[1].trim() : undefined;
+  }
+
+  /**
+   * Extract YAML frontmatter from content
+   */
+  private extractYAMLFrontmatter(content: string): Record<string, any> {
+    const match = content.match(/^---\n([\s\S]*?)\n---/);
+    if (!match) return {};
+
+    const yamlContent = match[1];
+    const result: Record<string, any> = {};
+
+    // Parse simple YAML key-value pairs
+    const lines = yamlContent.split("\n");
+    for (const line of lines) {
+      if (!line.trim()) continue;
+
+      // Handle key: value pairs
+      const keyMatch = line.match(/^(\w+):\s*(.+)$/);
+      if (keyMatch) {
+        const key = keyMatch[1];
+        let value: any = keyMatch[2].trim();
+
+        // Parse quoted strings
+        if (value.startsWith('"') && value.endsWith('"')) {
+          value = value.slice(1, -1);
+        } else if (value.startsWith("'") && value.endsWith("'")) {
+          value = value.slice(1, -1);
+        }
+        // Parse arrays
+        else if (value.startsWith("[") && value.endsWith("]")) {
+          value = value
+            .slice(1, -1)
+            .split(",")
+            .map((v: string) => v.trim());
+        }
+
+        result[key] = value;
+      }
+    }
+
+    return result;
   }
 }
 
