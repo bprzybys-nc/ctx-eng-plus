@@ -127,10 +127,9 @@ class LegacyFileDetector:
         # Fallback to defaults for backward compatibility
         # Note: All paths are specified in config.yml. These defaults ensure
         # backward compatibility if config.yml is unavailable.
-        # CRITICAL: Include bare context-engineering/ to detect root-level files
         defaults = {
-            "prps": [Path("PRPs/"), Path("context-engineering/PRPs/"), Path("context-engineering/")],
-            "examples": [Path("examples/"), Path("context-engineering/examples/"), Path("context-engineering/")],
+            "prps": [Path("PRPs/"), Path("context-engineering/PRPs/")],
+            "examples": [Path("examples/"), Path("context-engineering/examples/")],
             "claude_md": [Path("CLAUDE.md")],
             "settings": [Path(".claude/settings.local.json")],
             "commands": [Path(".claude/commands/")],
