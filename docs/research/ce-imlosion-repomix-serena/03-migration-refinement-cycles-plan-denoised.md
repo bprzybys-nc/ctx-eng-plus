@@ -15,18 +15,21 @@ denoise_status: completed
 ## Cycle 1: Foundation & Initial Pattern Discovery
 
 **Phase 1.1: Pattern Extraction & Graph Schema**
+
 - Extract CE patterns via Serena MCP semantic analysis
 - Define graph schema: nodes (patterns, meta-patterns, dependencies), edges (relationships, transformations, compositions)
 - Create pattern ontology: structural, behavioral, integration, meta
 - Establish baseline metrics: coverage, dependency depth, composition complexity
 
 **Phase 1.2: Initial Migration (20-30% Coverage)**
+
 - Implement graph backend (Neo4j or networkx)
 - Convert high-priority patterns to graph nodes
 - Define edge types: DEPENDS_ON, COMPOSES, EXTENDS, CONFLICTS_WITH, VALIDATES
 - Bidirectional legacy↔graph sync
 
 **Phase 1.3: Validation Layer**
+
 - Pattern validation rules engine
 - Structural validation: connectivity, cycles, orphans
 - Semantic validation: consistency, dependencies, composition
@@ -39,24 +42,28 @@ denoise_status: completed
 ## Cycle 2: Expansion & Refinement
 
 **Phase 2.1: Pattern Refinement**
+
 - Analyze Cycle 1 validation reports
 - Refactor problematic patterns
 - Enhance schema for edge cases
 - Add meta-patterns for common compositions
 
 **Phase 2.2: Extended Migration (60-70% Coverage)**
+
 - Migrate additional patterns with refined schema
 - Pattern versioning (temporal edges)
 - Similarity detection (embeddings)
 - Graph-based recommendation engine
 
 **Phase 2.3: Enhanced Validation & Quality**
+
 - CI/CD pattern validation
 - Quality metrics: cohesion, coupling, reusability
 - Validation hooks for new patterns
 - Anti-pattern detection
 
 **Phase 2.4: Migration Meta-Support**
+
 - Migration stage tracking in graph
 - Rollback capabilities
 - Health dashboard
@@ -69,24 +76,28 @@ denoise_status: completed
 ## Cycle 3: Complete Migration & Production Hardening
 
 **Phase 3.1: Final Migration (95-100% Coverage)**
+
 - Complete remaining patterns
 - Resolve validation warnings
 - Graph indexing for performance
 - Pattern query DSL
 
 **Phase 3.2: Advanced Features**
+
 - Evolution tracking (git-like versioning)
 - Multi-dimensional analysis: debt, complexity, usage
 - Impact analysis: "what breaks if I change this?"
 - Automated composition suggestions
 
 **Phase 3.3: Production Validation & Cutover**
+
 - Dual-mode operation (legacy + graph)
 - A/B testing for pattern resolution
 - Performance monitoring
 - Phased cutover with rollback
 
 **Phase 3.4: Meta-Framework**
+
 - Pattern governance model
 - Lifecycle: draft→review→approved→deprecated
 - Collaborative editing
@@ -99,22 +110,26 @@ denoise_status: completed
 ## Supporting Components
 
 **Pattern Graph Visualization**
+
 - Interactive UI (D3.js/Cytoscape)
 - Views: dependency graph, composition tree, conflict map, timeline
 - Real-time validation feedback
 
 **Tool Integration**
+
 - Serena MCP: pattern discovery
 - Context7 MCP: documentation sync
 - GitHub MCP: version control
 
 **Validation Framework**
+
 - Structural: graph integrity, schema compliance, edge validity
 - Semantic: behavior preservation, dependencies, composition
 - Performance: query latency, traversal efficiency
 - Regression: legacy equivalence
 
 **Safety Mechanisms**
+
 - Graph state snapshots per stage
 - Pattern-level rollback
 - Validation checkpoints with auto-rollback
@@ -144,10 +159,12 @@ denoise_status: completed
 ## Extended Plan: Separate Meta-Framework Repository
 
 **Architecture**
+
 - New Repo `ce-framework-meta`: Meta-level artifacts, schemas, governance (decoupled)
 - Existing Repo `ctx-eng-plus`: Concrete implementation consuming meta-framework
 
 **Repository Structure**
+
 ```
 ce-framework-meta/
 ├── schemas/v[1.0|1.1|2.0]/
@@ -175,11 +192,13 @@ ce-framework-meta/
 ```
 
 **Versioning Strategy (Semantic)**
+
 - Major (X.0.0): Schema breaking changes, removed patterns, incompatible edges
 - Minor (1.X.0): New patterns, edges, validation rules (backward compatible)
 - Patch (1.0.X): Bug fixes, documentation
 
 **Version Evolution**
+
 - v1.0.0: Initial schema + 30% patterns
 - v1.1.0: Refined schema + 70% patterns
 - v2.0.0: Complete migration + breaking improvements
@@ -187,12 +206,14 @@ ce-framework-meta/
 **Integration Options**
 
 Git Submodule:
+
 ```bash
 git submodule add https://github.com/org/ce-framework-meta.git meta
 git checkout v1.1.0
 ```
 
 Package Distribution:
+
 ```bash
 pip install ce-framework-meta==1.1.0
 npm install @ce/framework-meta@1.1.0
@@ -201,6 +222,7 @@ npm install @ce/framework-meta@1.1.0
 **Update Workflow**
 
 Meta-framework:
+
 1. Update patterns in `patterns/`
 2. Modify schemas in `schemas/vX.Y/`
 3. Add rules to `validation/rules/`
@@ -209,6 +231,7 @@ Meta-framework:
 6. Distribute
 
 Implementation consumption:
+
 1. Bump framework version
 2. Run migration scripts
 3. Validate against new meta
@@ -216,6 +239,7 @@ Implementation consumption:
 5. Deploy
 
 **Migration Stages** (migration-stages.yaml):
+
 ```yaml
 stage-1-foundation:
   version: 1.0.0
@@ -234,12 +258,14 @@ stage-3-complete:
 ```
 
 **Automated Sync** (.github/workflows/sync-meta-framework.yml):
+
 - Webhook on meta release
 - Auto-update submodule
 - Run migration validation
 - Create PR with guide
 
 **Benefits**
+
 - Independent meta evolution
 - Centralized governance
 - Reusable across implementations
@@ -254,12 +280,14 @@ stage-3-complete:
 **Repository**: [bprzybysz/ce-framework-meta](https://github.com/bprzybysz/ce-framework-meta)
 
 **Initial Content**
+
 - README.md: Repo purpose, structure, meta/implementation separation
 - migrations/stage-1-instructions.md: Refinement cycle 1 (draft axioms, review schemas)
 - schemas/{pattern-schema.json, edge-schema.json}: Graph serialization support
 - patterns/axioms-v1.yaml: Pattern axioms (serialization, versioning, relationships, separation, validation)
 
 **Refinement Cycle Preparation** (Not yet executed)
+
 - Draft foundational axioms for graph serialization
 - Review and refine key schemas
 - Build serialization-ready pattern catalog
@@ -270,16 +298,19 @@ stage-3-complete:
 ## Refinement Cycle Infrastructure
 
 **Refinement Cycle Definition** (migrations/refinement-cycle-1-definition.md)
+
 - Objective, boundaries, exit criteria, actionable steps
 - Scope: axioms, schemas, validation, documentation only
 - No concrete implementation changes
 
 **Progress Tracking** (migrations/refinement-cycle-1-progress.md)
+
 - Markdown checklist with author, timestamp, summary
 - 100% traceability from draft to approval
 - Exit criteria: >95% task completion
 
 **Agentic Patterns Catalog** (patterns/catalog-draft.md)
+
 - Best meta-representation patterns: Observer, Facade, Cascade, Sequential/Stateful, Validation/Quality Gates, Composition/Integration
 - Behavioral/structural meta, constraints, documentation
 
@@ -288,6 +319,7 @@ stage-3-complete:
 ## Two-Cycle Refinement Program
 
 **Cycle 1: Axiom Hardening**
+
 - Goal: Finalize pattern axioms for graph serialization
 - Tasks:
   - Triage axioms: keep/revise/drop
@@ -301,6 +333,7 @@ stage-3-complete:
   - Validation suite passes sample patterns
 
 **Cycle 2: Pattern Serialization Sprint**
+
 - Goal: Serialize 60-70% patterns using Cycle 1 axioms
 - Tasks:
   - Serena MCP bulk export → Neo4j test instance
@@ -313,12 +346,14 @@ stage-3-complete:
   - Version bump to v1.1.0
 
 **Speed Enablers**
+
 - Time-boxed cycles for rapid feedback
 - Wave execution: Cycle 2 while drafting Cycle 3
 - Serena MCP semantic extraction (manual cataloging shortcut)
 - Markdown checklists for transparency
 
 **Reporting**
+
 - End of cycle: push progress file, bump VERSION
 - Create PR: metrics, lessons learned, deferred issues
 - Tag release: v1.0.1 (Cycle 1), v1.1.0 (Cycle 2)
@@ -330,6 +365,7 @@ stage-3-complete:
 **ce-framework-meta Repository Status**: Fully prepared
 
 **Content**
+
 - prps/PRP-1-axiom-hardening.md: Cycle 1 task breakdown with acceptance criteria
 - prps/PRP-2-pattern-serialization.md: Cycle 2 task breakdown with metrics
 - docs/claude-code-execution-guide.md: Workflow, MCP tool usage, validation, troubleshooting
@@ -339,6 +375,7 @@ stage-3-complete:
 - CHANGELOG.md: Planned releases
 
 **Execution Steps**
+
 1. Clone ce-framework-meta
 2. Execute PRP-1: Axiom hardening
 3. Bump to v1.0.1
@@ -346,6 +383,7 @@ stage-3-complete:
 5. Bump to v1.1.0
 
 **Performance**
+
 - Manual execution: 20-30 hours
 - Framework-assisted: 5-9 hours
 - Savings: 60-70%
@@ -355,11 +393,13 @@ stage-3-complete:
 ## KISS/DRY/SOLID Alignment
 
 **Axioms v1.1** (patterns/axioms-v1.yaml)
+
 - Added KISS/DRY/SOLID enforcement rules
 - Bottom-up migration safety via versioning + abstraction
 - Guarantees simple, reusable, single-responsibility patterns
 
 **Roadmap Review** (docs/roadmap-review-2025-11-13.md)
+
 - Principle alignment findings
 - Recommended schema enhancements: `interfaces` field, `MIGRATED_TO` edge type
 - Checklist action items
