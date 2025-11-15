@@ -10,11 +10,113 @@ Implements the 4-phase pipeline for installing CE framework on target projects:
 """
 
 import json
+import logging
 import shutil
 import subprocess
 import sys
+from dataclasses import dataclass
+from datetime import datetime
 from pathlib import Path
 from typing import Dict, List, Optional
+
+
+@dataclass
+class ValidationResult:
+    """Result of a validation gate check."""
+    success: bool
+    message: str = ""
+    troubleshooting: str = ""
+
+    def __bool__(self):
+        return self.success
+
+
+class ErrorLogger:
+    """Persistent error logger for init process."""
+
+    def __init__(self, target_dir: Path):
+        """Initialize error logger with timestamped log file."""
+        self.log_file = target_dir / ".ce" / f"init-{datetime.now().strftime('%Y%m%d-%H%M%S')}.log"
+        self.log_file.parent.mkdir(parents=True, exist_ok=True)
+
+        # Configure file logging
+        self.logger = logging.getLogger("ce.init")
+        self.logger.setLevel(logging.DEBUG)
+
+        handler = logging.FileHandler(self.log_file)
+        handler.setFormatter(logging.Formatter(
+            '[%(asctime)s] %(levelname)s: %(message)s',
+            datefmt='%H:%M:%S'
+        ))
+        self.logger.addHandler(handler)
+
+    def info(self, msg: str):
+        """Log info message."""
+        self.logger.info(msg)
+
+    def error(self, msg: str):
+        """Log error message."""
+        self.logger.error(msg)
+
+    def warning(self, msg: str):
+        """Log warning message."""
+        self.logger.warning(msg)
+
+
+class PhaseValidator:
+    """Validation gates for init phases."""
+
+    @staticmethod
+    def gate2_extraction(staging: Path, expected_counts: Dict[str, int]) -> ValidationResult:
+        """
+        Validate extraction file count with tolerance.
+
+        Args:
+            staging: Path to staging directory with extracted files
+            expected_counts: Dict with expected file counts by category
+
+        Returns:
+            ValidationResult indicating success/failure
+        """
+        actual = PhaseValidator._count_files(staging)
+        expected_total = expected_counts.get("total", 87)
+        actual_total = actual["total"]
+
+        # Fail if >10 difference
+        if abs(actual_total - expected_total) > 10:
+            return ValidationResult(
+                success=False,
+                message=f"❌ GATE 2 FAILED: Expected {expected_total} files, got {actual_total}",
+                troubleshooting="🔧 Extraction incomplete - check package integrity or run with --verbose"
+            )
+
+        # Warn if within tolerance (5-10 difference)
+        if actual_total != expected_total:
+            diff = abs(actual_total - expected_total)
+            print(f"⚠️  File count {actual_total} differs from expected {expected_total} (Δ{diff}, within tolerance)")
+
+        return ValidationResult(
+            success=True,
+            message=f"✅ GATE 2 PASSED: Extracted {actual_total} files"
+        )
+
+    @staticmethod
+    def _count_files(staging: Path) -> Dict[str, int]:
+        """Count files by category in staging directory."""
+        tools = len(list(staging.glob(".ce/tools/ce/*.py")))
+        memories = len(list(staging.glob(".serena/memories/*.md")))
+        commands = len(list(staging.glob(".claude/commands/*.md")))
+        examples = len(list(staging.glob("examples/*.md")))
+        prps = len(list(staging.glob(".ce/PRPs/**/*.md")))
+
+        return {
+            "tools": tools,
+            "memories": memories,
+            "commands": commands,
+            "examples": examples,
+            "prps": prps,
+            "total": tools + memories + commands + examples + prps
+        }
 
 
 class ProjectInitializer:
@@ -45,6 +147,10 @@ class ProjectInitializer:
         self.ctx_eng_root = Path(__file__).parent.parent.parent.resolve()
         self.infrastructure_xml = self.ctx_eng_root / ".ce" / "ce-infrastructure.xml"
         self.workflow_xml = self.ctx_eng_root / ".ce" / "ce-workflow-docs.xml"
+
+        # Error logging and rollback tracking
+        self.error_logger: Optional[ErrorLogger] = None
+        self.backup_dir: Optional[Path] = None
 
     def run(self, phase: str = "all") -> Dict:
         """
@@ -79,18 +185,26 @@ class ProjectInitializer:
 
     def extract(self) -> Dict:
         """
-        Extract ce-infrastructure.xml to target project.
+        Extract ce-infrastructure.xml to target project with GATE 2 validation.
 
         Steps:
-        1. Check if ce-infrastructure.xml exists
-        2. Extract to .ce/ directory
-        3. Reorganize tools/ to .ce/tools/
-        4. Copy ce-workflow-docs.xml to .ce/
+        1. Initialize error logger
+        2. Check if ce-infrastructure.xml exists
+        3. Create backup of existing .ce/
+        4. Extract to staging directory
+        5. GATE 2: Validate file count (87 files ±5)
+        6. Move from staging to .ce/
+        7. Copy ce-workflow-docs.xml
 
         Returns:
-            Dict with extraction status and file counts
+            Dict with extraction status, file counts, and validation results
         """
         status = {"success": False, "files_extracted": 0, "message": ""}
+
+        # Initialize error logger
+        if not self.error_logger:
+            self.error_logger = ErrorLogger(self.target_project)
+            self.error_logger.info("=== CE Framework Initialization Started ===")
 
         # Check for infrastructure package
         if not self.infrastructure_xml.exists():
@@ -98,6 +212,7 @@ class ProjectInitializer:
                 f"❌ ce-infrastructure.xml not found at {self.infrastructure_xml}\n"
                 f"🔧 Ensure you're running from ctx-eng-plus repo root"
             )
+            self.error_logger.error(f"Package not found: {self.infrastructure_xml}")
             return status
 
         if self.dry_run:
@@ -105,17 +220,19 @@ class ProjectInitializer:
             status["message"] = f"[DRY-RUN] Would extract to {self.ce_dir}"
             return status
 
-        # Check for existing .ce/ directory - rename to .ce.old
-        ce_old_dir = self.target_project / ".ce.old"
-        renamed_existing = False
+        # Create backup of existing .ce/ directory
         if self.ce_dir.exists():
-            # Remove old .ce.old if it exists
-            if ce_old_dir.exists():
-                shutil.rmtree(ce_old_dir)
+            timestamp = datetime.now().strftime("%Y%m%d-%H%M%S")
+            self.backup_dir = self.target_project / f".ce.backup-{timestamp}"
 
-            # Rename .ce to .ce.old
-            shutil.move(str(self.ce_dir), str(ce_old_dir))
-            renamed_existing = True
+            # Remove old backup if it exists
+            if self.backup_dir.exists():
+                shutil.rmtree(self.backup_dir)
+
+            # Create backup
+            shutil.move(str(self.ce_dir), str(self.backup_dir))
+            self.error_logger.info(f"Created backup: {self.backup_dir}")
+            print(f"ℹ️  Created backup: {self.backup_dir.name}")
 
         try:
             # Import repomix_unpack module
@@ -126,15 +243,55 @@ class ProjectInitializer:
             temp_extract.mkdir(parents=True, exist_ok=True)
 
             # Extract files
+            self.error_logger.info(f"Extracting from {self.infrastructure_xml.name}...")
             files_extracted = extract_files(
                 xml_path=self.infrastructure_xml,
                 target_dir=temp_extract,
                 verbose=False
             )
+            self.error_logger.info(f"Extracted {files_extracted} files to staging")
 
             if files_extracted == 0:
                 status["message"] = "❌ No files extracted from package"
+                self.error_logger.error("Zero files extracted - package may be empty or corrupted")
+                self.rollback("Extraction returned 0 files")
                 return status
+
+            # ============================================================
+            # GATE 2: Validate extraction file count
+            # ============================================================
+            expected_counts = {
+                "tools": 33,
+                "memories": 23,
+                "commands": 11,
+                "examples": 0,  # May vary
+                "prps": 1,
+                "total": 87
+            }
+
+            print(f"🔍 GATE 2: Validating extraction...")
+            validation = PhaseValidator.gate2_extraction(temp_extract, expected_counts)
+
+            if not validation:
+                # Gate failed - log and rollback
+                print(validation.message)
+                if validation.troubleshooting:
+                    print(validation.troubleshooting)
+                print(f"📄 Full log: {self.error_logger.log_file}")
+
+                self.error_logger.error(validation.message)
+                self.error_logger.error(validation.troubleshooting)
+
+                # Rollback and abort
+                self.rollback("GATE 2 validation failed")
+                print("❌ Initialization aborted")
+
+                status["message"] = f"{validation.message}\n{validation.troubleshooting}"
+                return status
+
+            # Gate passed
+            print(validation.message)
+            self.error_logger.info(validation.message)
 
             # Reorganize extracted files to .ce/ structure
             self.ce_dir.mkdir(parents=True, exist_ok=True)
@@ -171,25 +328,40 @@ class ProjectInitializer:
             # Copy ce-workflow-docs.xml (reference package)
             if self.workflow_xml.exists():
                 shutil.copy2(self.workflow_xml, self.ce_dir / "ce-workflow-docs.xml")
+                self.error_logger.info("Copied ce-workflow-docs.xml")
 
             # Cleanup temp directory
             shutil.rmtree(temp_extract.parent)
+            self.error_logger.info("Cleaned up staging directory")
 
             status["success"] = True
             status["files_extracted"] = files_extracted
 
-            # Include rename message if applicable
-            if renamed_existing:
+            # Success message
+            if self.backup_dir:
                 status["message"] = (
-                    f"ℹ️  Renamed existing .ce/ to .ce.old/\n"
-                    f"💡 .ce.old/ will be included as additional context source during blend\n"
-                    f"✅ Extracted {files_extracted} files to {self.ce_dir}"
+                    f"ℹ️  Created backup: {self.backup_dir.name}\n"
+                    f"✅ Extracted {files_extracted} files to {self.ce_dir}\n"
+                    f"📄 Log: {self.error_logger.log_file}"
                 )
             else:
-                status["message"] = f"✅ Extracted {files_extracted} files to {self.ce_dir}"
+                status["message"] = (
+                    f"✅ Extracted {files_extracted} files to {self.ce_dir}\n"
+                    f"📄 Log: {self.error_logger.log_file}"
+                )
+
+            self.error_logger.info("=== Extraction Phase Complete ===")
 
         except Exception as e:
-            status["message"] = f"❌ Extraction failed: {str(e)}\n🔧 Check error details above"
+            error_msg = f"❌ Extraction failed: {str(e)}"
+            print(error_msg)
+            print(f"📄 Full log: {self.error_logger.log_file}")
+
+            self.error_logger.error(f"Exception during extraction: {str(e)}")
+            self.rollback(f"Exception: {str(e)}")
+            print("❌ Initialization aborted")
+
+            status["message"] = f"{error_msg}\n🔧 Check {self.error_logger.log_file} for details"
 
         return status
 
@@ -381,6 +553,55 @@ class ProjectInitializer:
             )
 
         return status
+
+    def rollback(self, reason: str = "Init failed") -> bool:
+        """
+        Rollback to pre-init state.
+
+        Restores .ce/ from backup if it exists, removes staging directory.
+
+        Args:
+            reason: Reason for rollback (for logging)
+
+        Returns:
+            True if rollback successful, False otherwise
+        """
+        print(f"♻️  Rolling back to pre-init state... ({reason})")
+
+        if self.error_logger:
+            self.error_logger.error(f"Rollback triggered: {reason}")
+
+        try:
+            # Remove partial .ce/ if it exists
+            if self.ce_dir.exists():
+                shutil.rmtree(self.ce_dir)
+                if self.error_logger:
+                    self.error_logger.info(f"Removed partial .ce/ directory")
+
+            # Restore from backup if it exists
+            if self.backup_dir and self.backup_dir.exists():
+                shutil.move(str(self.backup_dir), str(self.ce_dir))
+                print(f"✓ Restored .ce/ from backup")
+                if self.error_logger:
+                    self.error_logger.info(f"Restored .ce/ from {self.backup_dir}")
+            else:
+                print(f"✓ No backup to restore (clean state)")
+
+            # Remove staging directory
+            staging = self.target_project / "tmp" / "ce-extraction"
+            if staging.exists():
+                shutil.rmtree(staging.parent)
+                if self.error_logger:
+                    self.error_logger.info("Cleaned up staging directory")
+
+            print(f"✓ Rollback complete")
+            return True
+
+        except Exception as e:
+            print(f"❌ Rollback failed: {e}")
+            if self.error_logger:
+                self.error_logger.error(f"Rollback failed: {e}")
+            return False
 
 
 def main():
