@@ -534,11 +534,13 @@ class ProjectInitializer:
                             dest.unlink()
                     shutil.move(str(item), str(dest))
 
-            # Then, move other extracted directories to target/.ce/ (framework files for blending)
-            for item in temp_extract.iterdir():
-                if item.name == ".ce":
-                    continue  # Already processed
+                # FIX BUG #1: Delete empty .ce/ directory after moving contents
+                shutil.rmtree(ce_extracted)
+                self.error_logger.info("Cleaned up extracted .ce/ directory")
 
+            # Then, move other extracted directories to target/.ce/ (framework files for blending)
+            # (no .ce check needed - already deleted above)
+            for item in temp_extract.iterdir():
                 dest = self.ce_dir / item.name
                 if dest.exists():
                     if dest.is_dir():
@@ -546,6 +548,12 @@ class ProjectInitializer:
                     else:
                         dest.unlink()
                 shutil.move(str(item), str(dest))
+
+            # FIX BUG #3: Ensure complete PRP directory structure
+            prps_dir = self.ce_dir / "PRPs"
+            (prps_dir / "executed").mkdir(parents=True, exist_ok=True)
+            (prps_dir / "feature-requests").mkdir(parents=True, exist_ok=True)
+            self.error_logger.info("Created PRP directory structure (executed + feature-requests)")
 
             # Copy ce-workflow-docs.xml (reference package)
             if self.workflow_xml.exists():
@@ -630,11 +638,18 @@ class ProjectInitializer:
                 # These should only exist at root, not in .ce/
                 ce_claude = self.ce_dir / ".claude"
                 ce_claude_md = self.ce_dir / "CLAUDE.md"
+                ce_serena = self.ce_dir / ".serena"
 
                 if ce_claude.exists():
                     shutil.rmtree(ce_claude)
                 if ce_claude_md.exists():
                     ce_claude_md.unlink()
+
+                # FIX BUG #2: Cleanup temporary framework memories after blending
+                if ce_serena.exists():
+                    shutil.rmtree(ce_serena)
+                    if self.error_logger:
+                        self.error_logger.info("Cleaned up temporary framework memories (.ce/.serena/)")
 
                 # ============================================================
                 # GATE 3: Validate blend results
