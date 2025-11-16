@@ -8,6 +8,7 @@ from .unreferenced_code import UnreferencedCodeStrategy
 from .orphan_tests import OrphanTestStrategy
 from .commented_code import CommentedCodeStrategy
 from .prp_lifecycle_docs import PRPLifecycleDocsStrategy
+from .llm_analyzer import LLMBatchAnalyzer
 
 __all__ = [
     "BaseStrategy",
@@ -19,4 +20,5 @@ __all__ = [
     "OrphanTestStrategy",
     "CommentedCodeStrategy",
     "PRPLifecycleDocsStrategy",
+    "LLMBatchAnalyzer",
 ]
