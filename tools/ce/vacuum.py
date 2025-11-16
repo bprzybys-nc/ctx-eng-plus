@@ -163,8 +163,9 @@ class VacuumCommand:
             ])
             for c in high:
                 rel_path = c.path.relative_to(self.project_root)
+                last_mod_str = c.last_modified.strftime("%Y-%m-%d") if c.last_modified else "N/A"
                 report.append(
-                    f"| {rel_path} | {c.reason} | {self._format_size(c.size_bytes)} | {c.last_modified[:10]} |"
+                    f"| {rel_path} | {c.reason} | {self._format_size(c.size_bytes)} | {last_mod_str} |"
                 )
             report.append("")
 
@@ -188,13 +189,12 @@ class VacuumCommand:
             report.extend([
                 "## LOW Confidence (Manual Verification Required)",
                 "",
-                "| Path | Reason | Confidence | References |",
-                "|------|--------|------------|------------|",
+                "| Path | Reason | Confidence | Git History |",
+                "|------|--------|------------|-------------|",
             ])
             for c in low:
                 rel_path = c.path.relative_to(self.project_root)
-                refs = ", ".join(c.references[:3]) if c.references else "None"
-                report.append(f"| {rel_path} | {c.reason} | {c.confidence}% | {refs} |")
+                report.append(f"| {rel_path} | {c.reason} | {c.confidence}% | {c.git_history or 'N/A'} |")
             report.append("")
 
         # Write report
@@ -215,10 +215,6 @@ class VacuumCommand:
         deleted_count = 0
 
         for candidate in candidates:
-            # Skip report-only candidates (never delete these)
-            if candidate.report_only:
-                continue
-
             if candidate.confidence < threshold:
                 continue
 

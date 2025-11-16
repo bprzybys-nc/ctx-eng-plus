@@ -2,27 +2,40 @@
 
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
+from datetime import datetime
 from pathlib import Path
-from typing import List
+from typing import List, Optional
 import subprocess
 
 
 @dataclass
 class CleanupCandidate:
-    """Represents a file/directory candidate for cleanup."""
+    """Represents a file candidate for cleanup.
+
+    Attributes:
+        path: Path to file candidate
+        reason: Human-readable reason for flagging
+        confidence: Confidence score (0.0-1.0 float or 0-100 int, both supported)
+        size_bytes: File size in bytes
+        last_modified: Last modification timestamp
+        git_history: Git history summary
+        superseded_by: Path to PRP that supersedes this doc (NLP feature, batch 46)
+        detection_type: Detection category (NLP feature, batch 46)
+            - "INITIAL→PRP": INITIAL.md that became formal PRP
+            - "Temporary→PRP": PLAN/ANALYSIS/REPORT integrated into PRP
+            - "Superseded": Feature request superseded by executed PRP
+    """
 
     path: Path
     reason: str
-    confidence: int  # 0-100
+    confidence: float  # Changed from int to float (supports 0.0-1.0 and 0-100 ranges)
     size_bytes: int
-    last_modified: str
-    git_history: str = ""
-    references: List[str] = None
-    report_only: bool = False  # If True, never delete (only report)
+    last_modified: Optional[datetime]
+    git_history: Optional[str]
 
-    def __post_init__(self):
-        if self.references is None:
-            self.references = []
+    # NEW fields for NLP-powered detection (batch 46)
+    superseded_by: Optional[Path] = None
+    detection_type: Optional[str] = None
 
 
 class BaseStrategy(ABC):
@@ -161,19 +174,20 @@ class BaseStrategy(ABC):
             return sum(f.stat().st_size for f in path.rglob("*") if f.is_file())
         return 0
 
-    def get_last_modified(self, path: Path) -> str:
+    def get_last_modified(self, path: Path) -> Optional[datetime]:
         """Get last modified timestamp.
 
         Args:
             path: Path to file or directory
 
         Returns:
-            ISO format timestamp string
+            datetime object or None if error
         """
-        from datetime import datetime
-
-        timestamp = path.stat().st_mtime
-        return datetime.fromtimestamp(timestamp).isoformat()
+        try:
+            timestamp = path.stat().st_mtime
+            return datetime.fromtimestamp(timestamp)
+        except Exception:
+            return None
 
     def get_git_history(self, path: Path, days: int = 30) -> str:
         """Get git history summary for file.

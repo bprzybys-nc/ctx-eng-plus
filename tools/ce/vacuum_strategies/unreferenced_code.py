@@ -81,7 +81,6 @@ class UnreferencedCodeStrategy(BaseStrategy):
                     size_bytes=self.get_file_size(py_file),
                     last_modified=self.get_last_modified(py_file),
                     git_history=self.get_git_history(py_file),
-                    references=list(referenced_modules) if referenced_modules else [],
                 )
                 candidates.append(candidate)
 

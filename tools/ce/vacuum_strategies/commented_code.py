@@ -40,12 +40,11 @@ class CommentedCodeStrategy(BaseStrategy):
 
                 candidate = CleanupCandidate(
                     path=py_file,
-                    reason=f"Contains {len(blocks)} commented code block(s) ({total_lines} lines total)",
+                    reason=f"Contains {len(blocks)} commented code block(s) ({total_lines} lines total). {block_summary}",
                     confidence=30,  # LOW confidence - manual review only
                     size_bytes=self.get_file_size(py_file),
                     last_modified=self.get_last_modified(py_file),
                     git_history=self.get_git_history(py_file),
-                    references=[block_summary],
                 )
                 candidates.append(candidate)
 

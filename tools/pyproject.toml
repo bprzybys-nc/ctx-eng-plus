@@ -9,9 +9,12 @@ dependencies = [
     "deepdiff>=6.0",
     "diagrams>=0.24.4",
     "jsonschema>=4.25.1",
+    "numpy>=1.21.0",
     "packaging>=25.0",
     "python-frontmatter>=1.1.0",
     "pyyaml>=6.0",
+    "scikit-learn>=1.0.0",
+    "sentence-transformers>=2.2.0",
     "tomli>=2.3.0",
     "tomli-w>=1.2.0",
 ]

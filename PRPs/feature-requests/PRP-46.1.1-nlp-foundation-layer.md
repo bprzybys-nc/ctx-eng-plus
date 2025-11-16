@@ -304,14 +304,19 @@ class EmbeddingCache:
             with open(self.cache_path, 'r') as f:
                 data = json.load(f)
 
-            # Validate version
+            # Validate version (cache version bumps when format changes)
             if data.get("version") != self.VERSION:
-                print(f"⚠ Cache version mismatch, rebuilding")
+                import warnings
+                warnings.warn(
+                    f"Cache version mismatch (got {data.get('version')}, expected {self.VERSION}). "
+                    f"Delete {self.cache_path} to rebuild."
+                )
                 return
 
             self._cache = data.get("cache", {})
         except (json.JSONDecodeError, IOError) as e:
-            print(f"⚠ Cache corrupted ({e}), rebuilding")
+            import warnings
+            warnings.warn(f"Cache corrupted ({e}), rebuilding from scratch")
             self._cache = {}
 
     def clear(self):
@@ -369,15 +374,25 @@ class DocumentSimilarity:
         return "difflib"
 
     def _init_backend(self):
-        """Initialize detected backend."""
+        """Initialize detected backend with graceful fallback."""
         if self.backend_name == "sentence-transformers":
-            from sentence_transformers import SentenceTransformer
-            # Model auto-downloads to ~/.cache/huggingface/
-            return SentenceTransformer('all-MiniLM-L6-v2')
+            try:
+                from sentence_transformers import SentenceTransformer
+                # Model auto-downloads to ~/.cache/huggingface/
+                return SentenceTransformer('all-MiniLM-L6-v2')
+            except ImportError:
+                # Fallback to next tier if import fails
+                self.backend_name = "sklearn"
+                return self._init_backend()  # Recursive fallback
 
         elif self.backend_name == "sklearn":
-            from sklearn.feature_extraction.text import TfidfVectorizer
-            return TfidfVectorizer(max_features=384)  # Match embedding dim
+            try:
+                from sklearn.feature_extraction.text import TfidfVectorizer
+                return TfidfVectorizer(max_features=384)  # Match embedding dim
+            except ImportError:
+                # Fallback to difflib baseline
+                self.backend_name = "difflib"
+                return self._init_backend()  # Recursive fallback
 
         else:
             return None  # difflib doesn't need initialization
@@ -453,8 +468,10 @@ class DocumentSimilarity:
         """Save cache on cleanup."""
         try:
             self.cache.save()
-        except:
-            pass  # Ignore cleanup errors
+        except Exception as e:
+            # Log warning instead of silent failure
+            import warnings
+            warnings.warn(f"Failed to save NLP cache: {e}")
 ```
 
 **Step 2.4**: Create module exports (ce/nlp/__init__.py)
