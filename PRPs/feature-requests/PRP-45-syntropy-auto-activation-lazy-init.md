@@ -7,6 +7,7 @@ updated: 2025-11-16T00:00:00Z
 complexity: medium
 estimated_hours: 3-4
 dependencies: syntropy-mcp, serena-mcp
+issue: BLA-58
 ---
 
 # PRP-45: Syntropy MCP Auto-Activation and Lazy Server Initialization
