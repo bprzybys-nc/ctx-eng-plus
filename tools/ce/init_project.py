@@ -534,12 +534,10 @@ class ProjectInitializer:
                             dest.unlink()
                     shutil.move(str(item), str(dest))
 
-                # FIX BUG #1: Delete empty .ce/ directory after moving contents
+                # Delete now-empty .ce/ directory to prevent double-moving in second loop
                 shutil.rmtree(ce_extracted)
-                self.error_logger.info("Cleaned up extracted .ce/ directory")
 
             # Then, move other extracted directories to target/.ce/ (framework files for blending)
-            # (no .ce check needed - already deleted above)
             for item in temp_extract.iterdir():
                 dest = self.ce_dir / item.name
                 if dest.exists():
