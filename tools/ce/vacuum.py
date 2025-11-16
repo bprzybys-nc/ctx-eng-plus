@@ -12,6 +12,7 @@ from .vacuum_strategies import (
     CommentedCodeStrategy,
     ObsoleteDocStrategy,
     OrphanTestStrategy,
+    PRPLifecycleDocsStrategy,
     TempFileStrategy,
     UnreferencedCodeStrategy,
 )
@@ -34,6 +35,7 @@ class VacuumCommand:
             "unreferenced-code": UnreferencedCodeStrategy,
             "orphan-tests": OrphanTestStrategy,
             "commented-code": CommentedCodeStrategy,
+            "prp-lifecycle-docs": PRPLifecycleDocsStrategy,
         }
 
     def run(

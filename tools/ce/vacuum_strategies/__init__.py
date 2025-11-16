@@ -7,6 +7,7 @@ from .obsolete_docs import ObsoleteDocStrategy
 from .unreferenced_code import UnreferencedCodeStrategy
 from .orphan_tests import OrphanTestStrategy
 from .commented_code import CommentedCodeStrategy
+from .prp_lifecycle_docs import PRPLifecycleDocsStrategy
 
 __all__ = [
     "BaseStrategy",
@@ -17,4 +18,5 @@ __all__ = [
     "UnreferencedCodeStrategy",
     "OrphanTestStrategy",
     "CommentedCodeStrategy",
+    "PRPLifecycleDocsStrategy",
 ]
