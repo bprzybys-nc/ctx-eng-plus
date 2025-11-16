@@ -330,7 +330,7 @@ class BlendingOrchestrator:
 
             if domain == "claude_md":
                 if self.blend_config:
-                    framework_claude_md = target_dir / ".ce" / self.blend_config.get_output_path("claude_md")
+                    framework_claude_md = target_dir / self.blend_config.get_output_path("claude_md")
                 else:
                     framework_claude_md = target_dir / ".ce" / "CLAUDE.md"
                 if framework_claude_md.exists() and not files:
@@ -339,7 +339,7 @@ class BlendingOrchestrator:
 
             if domain == "examples":
                 if self.blend_config:
-                    framework_examples_dir = target_dir / ".ce" / self.blend_config.get_output_path("examples")
+                    framework_examples_dir = target_dir / self.blend_config.get_output_path("examples")
                 else:
                     framework_examples_dir = target_dir / ".ce" / "examples"
                 if framework_examples_dir.exists() and not files:
@@ -420,7 +420,7 @@ class BlendingOrchestrator:
                     elif domain == 'claude_md':
                         # Read markdown files - use config if available, fallback to defaults
                         if self.blend_config:
-                            framework_file = target_dir / ".ce" / self.blend_config.get_output_path("claude_md")
+                            framework_file = target_dir / self.blend_config.get_output_path("claude_md")
                             target_file = target_dir / self.blend_config.get_output_path("claude_md")
                         else:
                             # Backward compatibility: hardcoded paths
@@ -532,14 +532,14 @@ class BlendingOrchestrator:
                         elif domain == "examples":
                             # Framework examples use config if available
                             if self.blend_config:
-                                target_domain_dir = target_dir / ".ce" / self.blend_config.get_output_path("examples")
+                                target_domain_dir = target_dir / self.blend_config.get_output_path("examples")
                             else:
                                 # Backward compatibility
                                 target_domain_dir = target_dir / ".ce" / "examples"
                         else:
                             # Other domains
                             if self.blend_config:
-                                target_domain_dir = target_dir / ".ce" / self.blend_config.get_output_path(domain)
+                                target_domain_dir = target_dir / self.blend_config.get_output_path(domain)
                             else:
                                 target_domain_dir = target_dir / ".ce" / domain
 
