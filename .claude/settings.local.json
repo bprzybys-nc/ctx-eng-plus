@@ -76,7 +76,8 @@
       "mcp__syntropy__get_system_doc",
       "mcp__syntropy__get_user_doc",
       "mcp__syntropy__knowledge_search",
-      "mcp__syntropy__get_summary"
+      "mcp__syntropy__get_summary",
+      "Bash(timeout 30 uv run:*)"
     ],
     "deny": [
       "mcp__syntropy__serena_think_about_collected_information",

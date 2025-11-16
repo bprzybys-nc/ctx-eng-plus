@@ -1,6 +1,6 @@
 {
   "name": "syntropy-mcp",
-  "version": "0.1.5",
+  "version": "0.1.6",
   "description": "Unified MCP tool aggregation layer",
   "type": "module",
   "bin": {

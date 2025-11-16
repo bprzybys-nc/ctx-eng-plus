@@ -1,25 +1,27 @@
 ---
-name: Syntropy Knowledge Management & Query Interface
-description: Unified knowledge indexing and query system across framework docs, PRPs,
-  examples, and Serena memories
-prp_id: PRP-29.3
-status: executed
+context_sync:
+  ce_updated: false
+  last_sync: '2025-11-16T19:56:13.548402+00:00'
+  serena_updated: false
 created_date: '2025-10-24T09:44:26.297820'
-last_updated: '2025-10-27T00:00:00.000000'
-executed_date: '2025-10-27T03:31:00Z'
-executed_commit: 0680a90
-updated_by: prp-requirements-update
 dependencies:
 - PRP-29.1
-context_sync:
-  ce_updated: true
-  serena_updated: true
-version: 1.1
+description: Unified knowledge indexing and query system across framework docs, PRPs,
+  examples, and Serena memories
+executed_commit: 0680a90
+executed_date: '2025-10-27T03:31:00Z'
 execution_requirements:
   active_project: syntropy-mcp
-  working_directory: syntropy-mcp/
   language_context: TypeScript
   reason: Implements MCP server tools for knowledge indexing and query interface
+  working_directory: syntropy-mcp/
+last_updated: '2025-10-27T00:00:00.000000'
+name: Syntropy Knowledge Management & Query Interface
+prp_id: PRP-29.3
+status: executed
+updated: '2025-11-16T19:56:13.548554+00:00'
+updated_by: update-context-command
+version: 1.1
 ---
 
 # Syntropy Knowledge Management & Query Interface
