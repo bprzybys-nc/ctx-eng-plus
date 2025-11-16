@@ -1,28 +1,38 @@
 ---
 prp_id: PRP-45
-title: Syntropy MCP Auto-Activation and Lazy Server Initialization
-status: initial
-created: 2025-11-16
-estimated_hours: 3-4
+feature_name: Syntropy MCP Auto-Activation and Lazy Server Initialization
+status: pending
+created: 2025-11-16T00:00:00Z
+updated: 2025-11-16T00:00:00Z
 complexity: medium
-priority: medium
+estimated_hours: 3-4
+dependencies: syntropy-mcp, serena-mcp
 ---
 
 # PRP-45: Syntropy MCP Auto-Activation and Lazy Server Initialization
 
-## Overview
+## 1. TL;DR
 
-Enhance syntropy-mcp startup performance and UX by:
-1. **Auto-activating Serena** on session start (eliminates manual activation step)
-2. **Lazy-loading filesystem and git servers** (only initialize when tools are called)
+**Objective**: Eliminate manual Serena activation and improve syntropy-mcp startup performance
 
-## Problem Statement
+**What**:
+- Auto-activate Serena on session start (workspace root → git root → cwd detection)
+- Lazy-load filesystem and git servers (initialize on first use only)
 
-**Current UX Issues**:
-1. Users must manually call `serena_activate_project()` after every session start
-2. All 9 MCP servers initialize on startup (even rarely-used ones)
-3. Startup time includes unnecessary server connections
-4. Serena tools fail until project is activated
+**Why**:
+- Users currently must manually call `serena_activate_project()` every session
+- All 9 servers initialize on startup (even rarely-used filesystem/git servers)
+- Poor UX: Serena tools fail until manual activation
+
+**Effort**: 3-4 hours
+
+**Dependencies**:
+- syntropy-mcp server (TypeScript implementation)
+- serena-mcp (activate_project tool)
+
+## 2. Context
+
+### Background
 
 **Current Workflow**:
 ```
@@ -31,6 +41,11 @@ Claude Code starts
   ├─> User must manually: serena_activate_project("/path")
   └─> Only then: Serena tools work
 ```
+
+**Issues**:
+- Manual activation step every session
+- All 9 servers connect on startup (unnecessary for filesystem/git)
+- Serena tools fail until activated
 
 **Desired Workflow**:
 ```
@@ -41,7 +56,30 @@ Claude Code starts
   └─> Serena tools immediately available
 ```
 
-## Proposed Solution
+### Constraints and Considerations
+
+**Multi-Project Handling**:
+- Workspace with multiple projects → use workspace root (VSCODE_WORKSPACE_ROOT)
+- Single project → git root or cwd
+- Serena indexes entire workspace in multi-project scenarios
+
+**Performance Impact**:
+- Lazy-loading saves ~6ms + connection overhead
+- Auto-activation runs async (doesn't block session start)
+- Serena indexing takes 5-30s for large projects (runs in background)
+
+**Backward Compatibility**:
+- Manual activation still works (fallback if auto-activation fails)
+- Opt-out via config: `serena.autoActivate: false`
+- No breaking changes to MCP protocol
+
+### Documentation References
+
+- MCP Protocol Specification: Session lifecycle events
+- Syntropy-mcp architecture: Server connection patterns
+- Serena MCP: activate_project tool documentation
+
+## 3. Implementation Steps
 
 ### Feature 1: Serena Auto-Activation
 
@@ -146,27 +184,6 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
 });
 ```
 
-## Benefits
-
-### UX Improvements
-- ✅ No manual Serena activation needed
-- ✅ Serena tools work immediately after session start
-- ✅ Faster startup (lazy-load low-priority servers)
-- ✅ Servers only loaded when actually used
-
-### Performance Metrics
-- **Startup time**: Reduced by ~6ms + connection overhead for lazy servers
-- **Memory footprint**: Lower (filesystem/git only loaded if used)
-- **Session readiness**: Serena available without user action
-
-### Developer Experience
-- No breaking changes to MCP protocol
-- Backward compatible (config opt-out)
-- Graceful degradation (errors don't block session)
-- Clear logging for debugging
-
-## Implementation Plan
-
 ### Phase 1: Serena Auto-Activation (2 hours)
 
 **1.1 Implement Project Detection**
@@ -203,24 +220,111 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
 
 ### Phase 3: Testing and Validation (1 hour)
 
-**3.1 Test Auto-Activation**
-- Test git repos (standard case)
-- Test non-git projects (fallback)
-- Test monorepos (edge case)
+**3.1 Write Tests**
+- Unit tests for `detectProjectRoot()` (git, workspace, cwd fallback)
+- Unit tests for `getLazyServer()` caching
+- Integration tests for auto-activation
+- Integration tests for lazy-loading
+
+**3.2 Manual Testing**
+- Test git repos, non-git projects, monorepos
+- Test workspace multi-project detection
 - Test opt-out configuration
+- Measure startup time improvement
 
-**3.2 Test Lazy Loading**
-- Verify lazy servers don't load on startup
-- Verify lazy servers load on first tool call
-- Verify subsequent calls use cached client
-- Verify health check shows correct status
+## 4. Validation Gates
 
-**3.3 Integration Testing**
-- Test full session lifecycle
-- Test error scenarios (Serena unavailable, git detection fails)
-- Test performance impact (measure startup time)
+### Gate 1: Auto-Activation Works
 
-## Edge Cases and Error Handling
+**Command**:
+```bash
+# Start Claude Code, check Serena activated
+mcp__syntropy__healthcheck(detailed=true) | grep serena
+# Expected: serena shows as healthy with project path
+```
+
+**Success Criteria**:
+- Serena automatically activates on session start
+- No manual `serena_activate_project()` call needed
+- Serena tools work in first interaction
+
+### Gate 2: Lazy Loading Works
+
+**Command**:
+```bash
+# Check filesystem server not loaded on startup
+mcp__syntropy__healthcheck(detailed=true) | grep filesystem
+# Expected: filesystem shows "lazy (not loaded)"
+
+# Call filesystem tool
+mcp__syntropy__filesystem_read_file(path="/tmp/test.txt")
+
+# Check filesystem now loaded
+mcp__syntropy__healthcheck(detailed=true) | grep filesystem
+# Expected: filesystem shows "healthy"
+```
+
+**Success Criteria**:
+- Filesystem and git servers don't load on startup
+- Lazy servers load on first tool call
+- Subsequent calls use cached client
+
+### Gate 3: Performance Improvement
+
+**Command**:
+```bash
+# Measure startup time before/after
+time claude-code --version  # Proxy for session start
+```
+
+**Success Criteria**:
+- Startup time reduced by ≥5ms
+- No regressions in session initialization
+- Memory usage not increased
+
+### Gate 4: Graceful Degradation
+
+**Command**:
+```bash
+# Test with Serena unavailable
+# Temporarily disable Serena, start Claude Code
+# Session should start normally with warning
+```
+
+**Success Criteria**:
+- Session starts even if Serena unavailable
+- Clear warning logged (not error)
+- Manual activation still works
+
+## 5. Testing Strategy
+
+### Test Framework
+
+**Unit Tests**: Jest/Mocha (TypeScript)
+**Integration Tests**: Manual testing + MCP protocol tests
+
+### Test Command
+
+```bash
+cd syntropy-mcp
+npm test
+```
+
+### Test Coverage
+
+**Unit Tests** (15-20 tests):
+- `detectProjectRoot()` with git repos, workspace, cwd
+- `findGitRoot()` edge cases (nested dirs, no git)
+- `getLazyServer()` caching logic
+- Configuration loading (opt-out)
+
+**Integration Tests** (5-10 tests):
+- Full session start with auto-activation
+- Lazy server first-call initialization
+- Error scenarios (server unavailable, git not found)
+- Multi-project workspace detection
+
+### Edge Cases and Error Handling
 
 ### Auto-Activation Edge Cases
 
@@ -261,73 +365,89 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
    - Mark as "lazy (not loaded)" in status
    - Only check if already loaded
 
-## Files to Modify
+## 6. Rollout Plan
 
-### syntropy-mcp Repository
+### Phase 1: Development
 
-**src/index.ts** (main changes)
-- Add `onSessionStart()` hook
-- Add `detectProjectRoot()` utility
-- Add `findGitRoot()` utility
-- Separate core vs lazy server initialization
-- Add `getLazyServer()` function
-- Update tool call routing
+**Duration**: 3-4 hours
 
-**src/config.ts** (new file)
-- Read settings from ~/.claude/settings.json
-- Support serena.autoActivate flag
-- Provide configuration defaults
+**Tasks**:
+1. Implement auto-activation (Phase 1 from Implementation Steps)
+2. Implement lazy loading (Phase 2 from Implementation Steps)
+3. Write unit tests (15-20 tests)
+4. Write integration tests (5-10 tests)
 
-**src/health.ts** (update)
-- Handle lazy server status
-- Distinguish "not loaded" vs "unhealthy"
-- Update healthcheck output format
+**Deliverables**:
+- Updated syntropy-mcp code (src/index.ts, config.ts, health.ts)
+- Test suite passing
+- Documentation updated
 
-### Configuration Files
+### Phase 2: Review and Testing
 
-**~/.claude/settings.json** (user config, optional)
-```json
-{
-  "serena": {
-    "autoActivate": true
-  }
-}
+**Duration**: 1 hour
+
+**Tasks**:
+1. Code review (self-review against PRP checklist)
+2. Manual testing (git repos, workspaces, edge cases)
+3. Performance measurement (startup time before/after)
+4. Validation gates verification (all 4 gates pass)
+
+**Deliverables**:
+- All validation gates passing
+- Performance metrics documented
+- Edge cases tested
+
+### Phase 3: Deployment
+
+**Duration**: 30 minutes
+
+**Tasks**:
+1. Bump syntropy-mcp version (0.1.3 → 0.1.4)
+2. Build and publish npm package
+3. Update healthcheck cache
+4. Reconnect MCP (`/mcp` command)
+
+**Verification**:
+```bash
+# Verify version
+mcp__syntropy__healthcheck() | grep version
+# Expected: 0.1.4
+
+# Verify auto-activation
+# Start new session, Serena should auto-activate
+
+# Verify lazy loading
+mcp__syntropy__healthcheck(detailed=true) | grep filesystem
+# Expected: "lazy (not loaded)"
 ```
 
-## Testing Strategy
+**Rollback Plan**:
+- If issues found: Revert to 0.1.3
+- Manual activation still works as fallback
+- No data loss or breaking changes
 
-### Unit Tests
-- ✅ Test `detectProjectRoot()` with various project structures
-- ✅ Test `findGitRoot()` with nested directories
-- ✅ Test lazy server caching logic
-- ✅ Test configuration loading
+---
 
-### Integration Tests
-- ✅ Test full session start with auto-activation
-- ✅ Test lazy server first-call initialization
-- ✅ Test error scenarios (server unavailable, git not found)
-- ✅ Test opt-out configuration
+## Files to Modify
 
-### Manual Testing
-- ✅ Start Claude Code, verify Serena auto-activates
-- ✅ Call filesystem tool, verify lazy-load
-- ✅ Run healthcheck, verify status display
-- ✅ Test with/without git repo
-- ✅ Test opt-out configuration
+**syntropy-mcp/src/index.ts** (~100 lines changed)
+- Add session start hook
+- Project detection utilities
+- Lazy server initialization
+- Tool call routing updates
 
-## Risks and Mitigations
+**syntropy-mcp/src/config.ts** (new file, ~50 lines)
+- Configuration loading from ~/.claude/settings.json
+- Default values
 
-### Risk 1: Auto-activation fails for some projects
-**Mitigation**: Graceful degradation, clear error messages, manual activation still works
+**syntropy-mcp/src/health.ts** (~30 lines changed)
+- Lazy server status handling
+- Health check output updates
 
-### Risk 2: Lazy loading breaks existing workflows
-**Mitigation**: Only lazy-load denied tools (filesystem, git), no workflow impact expected
+**~/.claude/settings.json** (optional, user config)
+- Opt-out configuration support
 
-### Risk 3: Performance regression
-**Mitigation**: Measure startup time before/after, async activation doesn't block session
-
-### Risk 4: Configuration compatibility
-**Mitigation**: Use standard settings.json location, default=enabled requires no config
+---
 
 ## Success Metrics
 
