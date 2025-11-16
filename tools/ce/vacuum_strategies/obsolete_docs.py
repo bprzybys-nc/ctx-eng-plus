@@ -2,9 +2,16 @@
 
 import re
 from pathlib import Path
-from typing import List
+from typing import List, Optional
 
 from .base import BaseStrategy, CleanupCandidate
+
+# Import NLP module for semantic similarity
+try:
+    from ce.nlp import DocumentSimilarity
+    NLP_AVAILABLE = True
+except ImportError:
+    NLP_AVAILABLE = False
 
 
 class ObsoleteDocStrategy(BaseStrategy):
@@ -80,6 +87,27 @@ class ObsoleteDocStrategy(BaseStrategy):
         "replkan",  # REPLAN/REPLKAN pattern
     ]
 
+    def __init__(self, project_root: Path, scan_path: Path = None):
+        """Initialize strategy with NLP support.
+
+        Args:
+            project_root: Project root directory
+            scan_path: Optional scan path (defaults to project_root)
+        """
+        super().__init__(project_root, scan_path)
+
+        # Initialize NLP for semantic similarity (if available)
+        self.nlp = None
+        if NLP_AVAILABLE:
+            try:
+                self.nlp = DocumentSimilarity()
+            except Exception:
+                # If NLP init fails, continue without it
+                pass
+
+        # Cache executed PRPs for similarity comparison
+        self._executed_prps = None
+
     def find_candidates(self) -> List[CleanupCandidate]:
         """Find obsolete documentation files.
 
@@ -119,12 +147,20 @@ class ObsoleteDocStrategy(BaseStrategy):
                 if content_marker:
                     reason_parts.append(f"content: {content_marker}")
 
-                reason = f"Temporary analysis doc: {', '.join(reason_parts)}"
-
                 # Recently active files get lower confidence
                 confidence = 70
                 if self.is_recently_active(md_file, days=30):
                     confidence = 55
+
+                # Apply NLP boost if high semantic similarity to executed PRPs
+                if self.nlp and confidence < 100:
+                    similarity = self._get_max_similarity_to_prps(md_file)
+                    if similarity >= 0.7:
+                        nlp_boost = 20  # +20% boost
+                        confidence = min(100, confidence + nlp_boost)
+                        reason_parts.append(f"NLP similarity {similarity:.2f}")
+
+                reason = f"Temporary analysis doc: {', '.join(reason_parts)}"
 
                 candidate = CleanupCandidate(
                     path=md_file,
@@ -151,6 +187,14 @@ class ObsoleteDocStrategy(BaseStrategy):
                     reason = f"Versioned/obsolete doc: {suffix} suffix"
                     if newer_version:
                         reason += f" (newer: {newer_version.name})"
+
+                    # Apply NLP boost if high semantic similarity to executed PRPs
+                    if self.nlp and confidence < 100:
+                        similarity = self._get_max_similarity_to_prps(md_file)
+                        if similarity >= 0.7:
+                            nlp_boost = 20
+                            confidence = min(100, confidence + nlp_boost)
+                            reason += f", NLP similarity {similarity:.2f}"
 
                     candidate = CleanupCandidate(
                         path=md_file,
@@ -299,3 +343,45 @@ class ObsoleteDocStrategy(BaseStrategy):
                     return newer_file
 
         return None
+
+    def _get_executed_prps(self) -> List[Path]:
+        """Get list of executed PRPs (cached).
+
+        Returns:
+            List of paths to executed PRPs
+        """
+        if self._executed_prps is None:
+            executed_dir = self.project_root / "PRPs" / "executed"
+            if executed_dir.exists():
+                self._executed_prps = list(executed_dir.glob("PRP-*.md"))
+            else:
+                self._executed_prps = []
+        return self._executed_prps
+
+    def _get_max_similarity_to_prps(self, doc_path: Path) -> float:
+        """Compute maximum semantic similarity to executed PRPs.
+
+        Args:
+            doc_path: Path to document to check
+
+        Returns:
+            Maximum similarity score (0.0-1.0), or 0.0 if NLP unavailable
+        """
+        if not self.nlp:
+            return 0.0
+
+        executed_prps = self._get_executed_prps()
+        if not executed_prps:
+            return 0.0
+
+        max_similarity = 0.0
+        for prp_path in executed_prps:
+            try:
+                similarity = self.nlp.compare(doc_path, prp_path)
+                if similarity > max_similarity:
+                    max_similarity = similarity
+            except Exception:
+                # Skip if comparison fails
+                continue
+
+        return max_similarity
