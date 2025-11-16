@@ -71,7 +71,12 @@
       "mcp__syntropy__thinking_sequentialthinking",
       "mcp__syntropy__healthcheck",
       "mcp__syntropy__enable_tools",
-      "mcp__syntropy__list_all_tools"
+      "mcp__syntropy__list_all_tools",
+      "mcp__syntropy__init_project",
+      "mcp__syntropy__get_system_doc",
+      "mcp__syntropy__get_user_doc",
+      "mcp__syntropy__knowledge_search",
+      "mcp__syntropy__get_summary"
     ],
     "deny": [
       "mcp__syntropy__serena_think_about_collected_information",
@@ -139,10 +144,6 @@
       "mcp__syntropy__playwright_evaluate",
       "mcp__syntropy__playwright_get_visible_text",
       "mcp__syntropy__perplexity_perplexity_ask",
-      "mcp__syntropy__init_project",
-      "mcp__syntropy__get_system_doc",
-      "mcp__syntropy__get_user_doc",
-      "mcp__syntropy__get_summary",
       "mcp__syntropy__denoise"
     ],
     "ask": [

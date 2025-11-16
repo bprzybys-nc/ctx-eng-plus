@@ -64,9 +64,13 @@ uv run ce run_py ../tmp/script.py
 
 **Quick Start** (Automated - RECOMMENDED):
 ```bash
+# Via MCP tool (requires Syntropy MCP enabled)
+mcp__syntropy__init_project(project_root="/path/to/project")
+
+# Via CLI (not yet implemented)
 npx syntropy-mcp init ce-framework
 ```
-Time: <5 minutes | Automatically extracts 50 files, reorganizes tools, blends settings
+Time: <5 minutes | Automatically extracts framework, activates Serena, builds knowledge index
 
 **Manual Setup**: See [examples/INITIALIZATION.md](examples/INITIALIZATION.md) for complete CE 1.1 initialization guide.
 

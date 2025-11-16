@@ -523,14 +523,22 @@ gh pr create --title "Fix" --body "Description"
 |-------------|-------------|---------|
 | `perplexity_perplexity_ask` | **WebSearch** (native) | `WebSearch(query="Python asyncio patterns")` |
 
-### Syntropy System (5 tools denied)
+### Syntropy System (6 tools: 5 allowed, 1 denied)
+
+**Allowed** (framework operations):
+
+| Tool | Purpose | Example |
+|------|---------|---------|
+| `init_project` | Initialize CE framework on target project | `mcp__syntropy__init_project(project_root="/path/to/project")` |
+| `get_system_doc` | Access .ce/ framework docs | `mcp__syntropy__get_system_doc(project_root=".", doc_path="RULES.md")` |
+| `get_user_doc` | Access project docs | `mcp__syntropy__get_user_doc(project_root=".", doc_path="README.md")` |
+| `knowledge_search` | Search all knowledge sources | `mcp__syntropy__knowledge_search(project_root=".", query="validation")` |
+| `get_summary` | Get Syntropy system summary | `mcp__syntropy__get_summary(project_root=".")` |
+
+**Denied** (prefer native):
 
 | Denied Tool | Alternative | Example |
 |-------------|-------------|---------|
-| `init_project` | **Manual setup** | One-time operation, rarely needed |
-| `get_system_doc` | **Read** (native) | `Read(file_path=".ce/RULES.md")` |
-| `get_user_doc` | **Read** (native) | `Read(file_path="PRPs/executed/PRP-1.md")` |
-| `get_summary` | **Read** + manual analysis | Read REPLKAN, analyze structure |
 | `denoise` | **Edit** (native) | Manually edit verbose docs |
 
 ---
