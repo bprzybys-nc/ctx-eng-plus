@@ -4,9 +4,11 @@ feature_name: LLM Batch Analysis for Uncertain Candidates
 batch_id: 46
 stage: 3
 order: 1
-status: pending
+status: completed
 created: 2025-11-16T00:00:00Z
-updated: 2025-11-16T00:00:00Z
+updated: 2025-11-16T13:30:00Z
+completed: 2025-11-16T13:30:00Z
+commit: 49adadc
 complexity: medium
 estimated_hours: 2
 dependencies: PRP-46.2.1 (Candidate format from prp_lifecycle_docs)

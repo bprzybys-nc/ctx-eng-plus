@@ -4,9 +4,11 @@ feature_name: CleanupCandidate Base Class Updates for NLP Support
 batch_id: 46
 stage: 0
 order: 1
-status: pending
+status: completed
 created: 2025-11-16T00:00:00Z
-updated: 2025-11-16T00:00:00Z
+updated: 2025-11-16T12:00:00Z
+completed: 2025-11-16T12:00:00Z
+commit: 7957f49
 complexity: low
 estimated_hours: 0.5
 dependencies: None (must execute FIRST before batch 46)
