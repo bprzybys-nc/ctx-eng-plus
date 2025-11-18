@@ -94,14 +94,23 @@ export async function initProject(args: InitProjectArgs): Promise<InitProjectRes
     // 4. Call Python implementation for core initialization
     console.error(`\n📦 Running core initialization (Python)...`);
 
-    // Find ctx-eng-plus tools directory
-    const ctxEngTools = findCtxEngPlusTools();
+    // Use bundled init_project.py script (self-contained in boilerplate/)
+    const boilerplatePath = path.join(__dirname, "../../boilerplate/ce-framework/init_project.py");
+
+    if (!existsSync(boilerplatePath)) {
+      throw new Error(
+        `Bundled init script not found: ${boilerplatePath}\n` +
+        `🔧 Troubleshooting:\n` +
+        `   1. Ensure syntropy-mcp is properly built\n` +
+        `   2. Check that boilerplate/ce-framework/ directory exists\n` +
+        `   3. Verify init_project.py and framework packages are bundled`
+      );
+    }
 
     try {
-      // Run: uv run ce init-project --target <project_root>
-      const command = `uv run ce init-project ${projectRoot}`;
+      // Run bundled Python script directly
+      const command = `python3 "${boilerplatePath}" "${projectRoot}"`;
       execSync(command, {
-        cwd: ctxEngTools,
         stdio: 'inherit', // Show Python output directly
         encoding: 'utf-8'
       });
@@ -111,10 +120,10 @@ export async function initProject(args: InitProjectArgs): Promise<InitProjectRes
       throw new Error(
         `Python initialization failed: ${error.message}\n` +
         `🔧 Troubleshooting:\n` +
-        `   1. Ensure UV is installed: curl -LsSf https://astral.sh/uv/install.sh | sh\n` +
-        `   2. Check that ctx-eng-plus repo is at expected location\n` +
-        `   3. Verify ce-infrastructure.xml exists in .ce/\n` +
-        `   4. Check log file: .ce/init-{timestamp}.log`
+        `   1. Ensure Python 3.10+ is installed\n` +
+        `   2. Check that UV is installed: curl -LsSf https://astral.sh/uv/install.sh | sh\n` +
+        `   3. Verify framework packages exist in boilerplate/ce-framework/\n` +
+        `   4. Check log file: <project>/.ce/init-{timestamp}.log`
       );
     }
 
@@ -140,45 +149,6 @@ export async function initProject(args: InitProjectArgs): Promise<InitProjectRes
       `🔧 Troubleshooting: Check error details above`
     );
   }
-}
-
-/**
- * Find ctx-eng-plus tools directory.
- *
- * Tries:
- * 1. Environment variable CTX_ENG_PLUS_PATH
- * 2. Relative to syntropy-mcp (../../ctx-eng-plus/tools)
- * 3. Current working directory assumption
- */
-function findCtxEngPlusTools(): string {
-  // Strategy 1: Environment variable
-  if (process.env.CTX_ENG_PLUS_PATH) {
-    const toolsPath = path.join(process.env.CTX_ENG_PLUS_PATH, "tools");
-    if (existsSync(toolsPath)) {
-      return toolsPath;
-    }
-  }
-
-  // Strategy 2: Relative to syntropy-mcp (development)
-  const relativePath = path.join(__dirname, "../../../ctx-eng-plus/tools");
-  if (existsSync(relativePath)) {
-    return relativePath;
-  }
-
-  // Strategy 3: Current directory (fallback)
-  const cwdPath = path.join(process.cwd(), "tools");
-  if (existsSync(cwdPath)) {
-    return cwdPath;
-  }
-
-  throw new Error(
-    `ctx-eng-plus tools directory not found\n` +
-    `🔧 Tried:\n` +
-    `   1. CTX_ENG_PLUS_PATH env var: ${process.env.CTX_ENG_PLUS_PATH || '(not set)'}\n` +
-    `   2. Relative: ${relativePath}\n` +
-    `   3. CWD: ${cwdPath}\n` +
-    `Set CTX_ENG_PLUS_PATH environment variable to ctx-eng-plus repo root`
-  );
 }
 
 /**

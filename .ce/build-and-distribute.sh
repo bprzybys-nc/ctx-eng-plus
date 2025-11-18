@@ -19,20 +19,39 @@ if [ ! -d "$SYNTROPY_MCP_DIR" ]; then
   exit 0
 fi
 
+# Create boilerplate directory if it doesn't exist
+mkdir -p "$BOILERPLATE_DIR"
+
+# Copy Python initialization scripts
+echo "📦 Distributing Python initialization scripts..."
+cp tools/ce/init_project.py "$BOILERPLATE_DIR/"
+cp tools/ce/repomix_unpack.py "$BOILERPLATE_DIR/"
+echo "✅ Python scripts distributed"
+
 if [ ! -f "$BOILERPLATE_DIR/ce-infrastructure.xml" ] || [ ! -f "$BOILERPLATE_DIR/ce-workflow-docs.xml" ]; then
   echo "❌ Packages not found in syntropy-mcp boilerplate"
   echo "   Expected: $BOILERPLATE_DIR/*.xml"
   exit 1
 fi
 
+if [ ! -f "$BOILERPLATE_DIR/init_project.py" ] || [ ! -f "$BOILERPLATE_DIR/repomix_unpack.py" ]; then
+  echo "❌ Python scripts not found in syntropy-mcp boilerplate"
+  echo "   Expected: $BOILERPLATE_DIR/{init_project.py,repomix_unpack.py}"
+  exit 1
+fi
+
 # Validate package integrity
 WORKFLOW_SIZE=$(wc -c < "$BOILERPLATE_DIR/ce-workflow-docs.xml")
 INFRA_SIZE=$(wc -c < "$BOILERPLATE_DIR/ce-infrastructure.xml")
-TOTAL_SIZE=$((WORKFLOW_SIZE + INFRA_SIZE))
+INIT_PY_SIZE=$(wc -c < "$BOILERPLATE_DIR/init_project.py")
+REPOMIX_PY_SIZE=$(wc -c < "$BOILERPLATE_DIR/repomix_unpack.py")
+TOTAL_SIZE=$((WORKFLOW_SIZE + INFRA_SIZE + INIT_PY_SIZE + REPOMIX_PY_SIZE))
 
-echo "📊 Package sizes:"
-echo "  Workflow: $WORKFLOW_SIZE bytes"
-echo "  Infrastructure: $INFRA_SIZE bytes"
+echo "📊 Distribution sizes:"
+echo "  Workflow XML: $WORKFLOW_SIZE bytes"
+echo "  Infrastructure XML: $INFRA_SIZE bytes"
+echo "  init_project.py: $INIT_PY_SIZE bytes"
+echo "  repomix_unpack.py: $REPOMIX_PY_SIZE bytes"
 echo "  Total: $TOTAL_SIZE bytes"
 
-echo "✅ Packages built to syntropy-mcp boilerplate"
+echo "✅ All resources distributed to syntropy-mcp boilerplate"
