@@ -193,15 +193,16 @@ Example: `mcp__syntropy__serena_find_symbol`
 
 **Post-Lockdown State** (after PRP-A & PRP-D):
 - **Before**: 87 MCP tools (via Syntropy aggregator)
-- **After**: 28 MCP tools (59 denied for native tool preference)
+- **After**: 30 MCP tools (57 denied for native tool preference)
 - **Token reduction**: ~44k tokens (96% reduction from 46k→2k)
 
 ### Kept Tools by Category
 
-**Serena** (13 tools): Code symbol navigation
+**Serena** (15 tools): Code symbol navigation
 - activate_project, find_symbol, get_symbols_overview, search_for_pattern
 - find_referencing_symbols, replace_symbol_body, write_memory, read_memory
 - list_memories, create_text_file, read_file, list_dir, delete_memory
+- onboarding, check_onboarding_performed
 
 **Linear** (9 tools): Project management integration
 - create_issue, get_issue, list_issues, update_issue

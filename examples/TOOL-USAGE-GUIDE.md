@@ -384,7 +384,7 @@ gh pr create --title "Fix" --body "Description"
 
 ### MCP Tools (Use Only When Native Unavailable)
 
-#### Serena (Code Navigation) - 13 tools
+#### Serena (Code Navigation) - 15 tools
 
 | Tool | Purpose | Example |
 |------|---------|---------|
@@ -401,6 +401,8 @@ gh pr create --title "Fix" --body "Description"
 | `mcp__syntropy__serena_read_memory` | Retrieve context | `memory_name="architecture"` |
 | `mcp__syntropy__serena_list_memories` | List all memories | No parameters |
 | `mcp__syntropy__serena_delete_memory` | Delete memory | `memory_name="temporary"` |
+| `mcp__syntropy__serena_onboarding` | Identify project structure and essential tasks | No parameters |
+| `mcp__syntropy__serena_check_onboarding_performed` | Check if onboarding was already performed | No parameters |
 
 #### Linear (Project Management) - 9 tools
 
@@ -437,7 +439,7 @@ gh pr create --title "Fix" --body "Description"
 | `mcp__syntropy__enable_tools` | Enable/disable tools dynamically | `enable=["tool1"], disable=["tool2"]` |
 | `mcp__syntropy__list_all_tools` | List all tools with enabled/disabled status | No parameters |
 
-**Total: 28 allowed tools** (13 Serena + 9 Linear + 2 Context7 + 1 Thinking + 3 Syntropy)
+**Total: 30 allowed tools** (15 Serena + 9 Linear + 2 Context7 + 1 Thinking + 3 Syntropy)
 
 ---
 

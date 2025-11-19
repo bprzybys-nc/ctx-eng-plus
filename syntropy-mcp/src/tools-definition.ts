@@ -153,6 +153,245 @@ export const SYNTROPY_TOOLS = [
       required: ["relative_path"]
     }
   },
+  {
+    name: "serena_read_memory",
+    description: "Read memory from Serena's project-specific memory store",
+    inputSchema: {
+      type: "object" as const,
+      properties: {
+        name: {
+          type: "string",
+          description: "Memory name to read"
+        }
+      },
+      required: ["name"]
+    }
+  },
+  {
+    name: "serena_list_memories",
+    description: "List all memories in Serena's project-specific memory store",
+    inputSchema: {
+      type: "object" as const,
+      properties: {},
+      required: []
+    }
+  },
+  {
+    name: "serena_delete_memory",
+    description: "Delete memory from Serena's project-specific memory store",
+    inputSchema: {
+      type: "object" as const,
+      properties: {
+        name: {
+          type: "string",
+          description: "Memory name to delete"
+        }
+      },
+      required: ["name"]
+    }
+  },
+  {
+    name: "serena_replace_symbol_body",
+    description: "Replace the full definition of a symbol",
+    inputSchema: {
+      type: "object" as const,
+      properties: {
+        name_path: {
+          type: "string",
+          description: "Name path of symbol to replace"
+        },
+        new_body: {
+          type: "string",
+          description: "New symbol body content"
+        }
+      },
+      required: ["name_path", "new_body"]
+    }
+  },
+  {
+    name: "serena_onboarding",
+    description: "Performs onboarding (identifying the project structure and essential tasks, e.g. for testing or building)",
+    inputSchema: {
+      type: "object" as const,
+      properties: {},
+      required: []
+    }
+  },
+  {
+    name: "serena_check_onboarding_performed",
+    description: "Checks whether project onboarding was already performed",
+    inputSchema: {
+      type: "object" as const,
+      properties: {},
+      required: []
+    }
+  },
+  {
+    name: "serena_delete_lines",
+    description: "Deletes a range of lines within a file",
+    inputSchema: {
+      type: "object" as const,
+      properties: {
+        relative_path: {
+          type: "string",
+          description: "Relative path to file"
+        },
+        start_line: {
+          type: "number",
+          description: "Start line number (1-indexed)"
+        },
+        end_line: {
+          type: "number",
+          description: "End line number (inclusive)"
+        }
+      },
+      required: ["relative_path", "start_line", "end_line"]
+    }
+  },
+  {
+    name: "serena_insert_at_line",
+    description: "Inserts content at a given line in a file",
+    inputSchema: {
+      type: "object" as const,
+      properties: {
+        relative_path: {
+          type: "string",
+          description: "Relative path to file"
+        },
+        line_number: {
+          type: "number",
+          description: "Line number to insert at (1-indexed)"
+        },
+        content: {
+          type: "string",
+          description: "Content to insert"
+        }
+      },
+      required: ["relative_path", "line_number", "content"]
+    }
+  },
+  {
+    name: "serena_replace_lines",
+    description: "Replaces a range of lines within a file with new content",
+    inputSchema: {
+      type: "object" as const,
+      properties: {
+        relative_path: {
+          type: "string",
+          description: "Relative path to file"
+        },
+        start_line: {
+          type: "number",
+          description: "Start line number (1-indexed)"
+        },
+        end_line: {
+          type: "number",
+          description: "End line number (inclusive)"
+        },
+        new_content: {
+          type: "string",
+          description: "New content to replace with"
+        }
+      },
+      required: ["relative_path", "start_line", "end_line", "new_content"]
+    }
+  },
+  {
+    name: "serena_insert_after_symbol",
+    description: "Inserts content after the end of the definition of a given symbol",
+    inputSchema: {
+      type: "object" as const,
+      properties: {
+        name_path: {
+          type: "string",
+          description: "Name path of symbol"
+        },
+        content: {
+          type: "string",
+          description: "Content to insert"
+        }
+      },
+      required: ["name_path", "content"]
+    }
+  },
+  {
+    name: "serena_insert_before_symbol",
+    description: "Inserts content before the beginning of the definition of a given symbol",
+    inputSchema: {
+      type: "object" as const,
+      properties: {
+        name_path: {
+          type: "string",
+          description: "Name path of symbol"
+        },
+        content: {
+          type: "string",
+          description: "Content to insert"
+        }
+      },
+      required: ["name_path", "content"]
+    }
+  },
+  {
+    name: "serena_find_referencing_code_snippets",
+    description: "Finds code snippets in which the symbol at the given location is referenced",
+    inputSchema: {
+      type: "object" as const,
+      properties: {
+        name_path: {
+          type: "string",
+          description: "Name path of symbol to find references for"
+        }
+      },
+      required: ["name_path"]
+    }
+  },
+  {
+    name: "serena_get_current_config",
+    description: "Prints the current configuration of the agent, including active and available projects, tools, contexts, and modes",
+    inputSchema: {
+      type: "object" as const,
+      properties: {},
+      required: []
+    }
+  },
+  {
+    name: "serena_execute_shell_command",
+    description: "Executes a shell command",
+    inputSchema: {
+      type: "object" as const,
+      properties: {
+        command: {
+          type: "string",
+          description: "Shell command to execute"
+        }
+      },
+      required: ["command"]
+    }
+  },
+  {
+    name: "serena_restart_language_server",
+    description: "Restarts the language server, may be necessary when edits not through Serena happen",
+    inputSchema: {
+      type: "object" as const,
+      properties: {},
+      required: []
+    }
+  },
+  {
+    name: "serena_remove_project",
+    description: "Removes a project from the Serena configuration",
+    inputSchema: {
+      type: "object" as const,
+      properties: {
+        project_name: {
+          type: "string",
+          description: "Name of project to remove"
+        }
+      },
+      required: ["project_name"]
+    }
+  },
 
 
   // ============ FILESYSTEM TOOLS (13) ============
