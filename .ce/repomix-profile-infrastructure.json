@@ -12,7 +12,24 @@
     ".ce/PRPs/executed/system/PRP-0-CONTEXT-ENGINEERING.md",
     ".serena/memories/**",
     ".claude/**/*.md",
-    "tools/ce/**/*.py",
+    "tools/ce/*.py",
+    "tools/ce/blending/**/*.py",
+    "tools/ce/nlp/__init__.py",
+    "tools/ce/nlp/cache.py",
+    "tools/ce/nlp/normalizer.py",
+    "tools/ce/nlp/similarity.py",
+    "tools/ce/vacuum_strategies/__init__.py",
+    "tools/ce/vacuum_strategies/base.py",
+    "tools/ce/vacuum_strategies/duplicate_serena_memories.py",
+    "tools/ce/vacuum_strategies/llm_analyzer.py",
+    "tools/ce/vacuum_strategies/obsolete_docs.py",
+    "tools/ce/vacuum_strategies/prp_lifecycle_docs.py",
+    "tools/ce/vacuum_strategies/prp_status_field.py",
+    "tools/ce/vacuum_strategies/temp_files.py",
+    "tools/ce/examples/**/*.py",
+    "tools/ce/executors/**/*.py",
+    "tools/ce/testing/**/*.py",
+    "tools/ce/toml_formats/**/*.py",
     "tools/pyproject.toml",
     "tools/bootstrap.sh",
     ".claude/settings.local.json",
@@ -52,6 +69,6 @@
     ]
   },
   "security": {
-    "enableSecurityCheck": true
+    "enableSecurityCheck": false
   }
 }

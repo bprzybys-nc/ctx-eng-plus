@@ -7,6 +7,11 @@ echo "🔨 Regenerating CE framework packages..."
 npx repomix --config .ce/repomix-profile-workflow.json
 npx repomix --config .ce/repomix-profile-infrastructure.json
 
+# WORKAROUND: Repomix v1.9.1 bug - manually inject missing files
+# See: .serena/memories/repomix-glob-pattern-file-permissions-issue.md
+echo "🔧 Patching missing files (repomix v1.9.1 bug workaround)..."
+python3 .ce/repomix-patch-missing-files.py
+
 echo "✅ Packages regenerated"
 
 # Validate packages were built to syntropy-mcp
